@@ -1,0 +1,19 @@
+{
+  "id": "${artifactId}-${version}",
+  "name": "SIP2 Module",
+  "provides": [],
+  "requires": [
+    {
+      "id": "login",
+      "version": "5.0"
+    }
+  ],
+  "permissionSets": [],
+  "launchDescriptor": {
+    "dockerImage": "${artifactId}:${version}",
+    "dockerArgs": {
+      "HostConfig": { "PortBindings": { "6443/tcp":  [{ "HostPort": "%p" }] } }
+    },
+    "dockerPull" : false
+  }
+}
