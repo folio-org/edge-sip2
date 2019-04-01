@@ -1,11 +1,16 @@
 package api.support;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.EnumMap;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.folio.edge.sip2.MainVerticle;
 import org.folio.edge.sip2.Sip2HandlerCommandTypes;
 import org.folio.edge.sip2.handlers.LoginHandler;
 import org.folio.edge.sip2.handlers.Sip2RequestHandler;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.TestInfo;
@@ -25,7 +30,7 @@ import io.vertx.junit5.VertxTestContext;
 public abstract class BaseTest {
 
   protected MainVerticle myVerticle;
-  private final int PORT = 1234;
+  private final int PORT = getRandomPort();
 
   @BeforeEach
   @DisplayName("Deploy the verticle")
@@ -43,16 +48,22 @@ public abstract class BaseTest {
     System.out.println("done deploying in base class");
   }
 
-  public void callService(String ncipMessage, VertxTestContext testContext, Vertx vertx, Handler<String> testHandler) {
+  public void callService(String ncipMessage, VertxTestContext testContext, Vertx vertx, Handler<String> testHandler) throws Throwable {
 
-    NetClientOptions options = new NetClientOptions().setConnectTimeout(10000);
+    NetClientOptions options = new NetClientOptions();
+    options.setConnectTimeout(2);
+    options.setIdleTimeout(2);
+    options.setIdleTimeoutUnit(TimeUnit.SECONDS);
+
     NetClient tcpClient = vertx.createNetClient(options);
 
     tcpClient.connect(PORT, "localhost", res -> {
       System.out.println("Shaking hands...");
       NetSocket socket = res.result();
       socket.write(ncipMessage);
-      socket.handler(buffer -> {
+      System.out.println("done writing");
+
+      socket.handler( buffer -> {
         String message = buffer.getString(0, buffer.length());
         testContext.verify( () -> testHandler.handle(message));
         testContext.completeNow();
@@ -67,8 +78,26 @@ public abstract class BaseTest {
       requestHandlerMap.put(Sip2HandlerCommandTypes.LOGIN, loginHandler);
 
       myVerticle = new MainVerticle(requestHandlerMap);
+
     } else {
       myVerticle = new MainVerticle();
     }
+  }
+
+  private static int getRandomPort() {
+    int port = -1;
+    do {
+      // Use a random ephemeral port
+      port = new Random().nextInt(16_384) + 49_152;
+      try {
+        final ServerSocket socket = new ServerSocket(port);
+        socket.close();
+      } catch (IOException e) {
+        continue;
+      }
+      break;
+    } while (true);
+
+    return port;
   }
 }

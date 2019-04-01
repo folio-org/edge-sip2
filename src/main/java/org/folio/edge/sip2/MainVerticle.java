@@ -35,7 +35,7 @@ public class MainVerticle extends AbstractVerticle {
   }
 
   @Override
-  public void start(Future<Void> startFuture) {
+  public void start() {
     //set Config object's defaults
     int port = config().getInteger("port");
     NetServerOptions options = new NetServerOptions().setPort(port);
@@ -60,8 +60,9 @@ public class MainVerticle extends AbstractVerticle {
           socket.write(handler.execute(incomingMsg));  //call FOLIO
         }
         catch (Exception ex){
-          log.error("Problems handling the request {}", ex.getMessage());
-          startFuture.fail(ex.getMessage());
+          String message = "Problems handling the request " + ex.getMessage();
+          log.error(message);
+          socket.write(message);  //return an error message for now for the sake of negative testing. Will find a better way to handle negative test cases.
         }
       });
 
@@ -69,17 +70,14 @@ public class MainVerticle extends AbstractVerticle {
         log.info("Socket exceptionHandler caught an issue, see error logs for more details");
         log.error(handler.getMessage());
         log.error(handler.getCause());
-        startFuture.fail(handler.getCause());
       });
     });
 
     server.listen( result -> {
       if (result.succeeded()) {
         log.info("MainVerticle deeployed successfuly, server is now listening!");
-        startFuture.complete();
       } else {
         log.error("Failed to deploy MainVerticle");
-        startFuture.fail(result.cause());
       }
     });
   }
