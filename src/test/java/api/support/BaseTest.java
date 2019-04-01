@@ -1,6 +1,6 @@
 package api.support;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 
 import org.folio.edge.sip2.MainVerticle;
 import org.folio.edge.sip2.Sip2HandlerCommandTypes;
@@ -22,7 +22,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
 @ExtendWith(VertxExtension.class)
-public class BaseTest {
+public abstract class BaseTest {
 
   protected MainVerticle myVerticle;
   private final int PORT = 1234;
@@ -63,7 +63,7 @@ public class BaseTest {
   private void setMainVerticleInstance(String methodName){
     if (methodName == "CanStartMainVericleInjectingSip2RequestHandlers"){
       LoginHandler loginHandler = new LoginHandler();
-      HashMap<Sip2HandlerCommandTypes, Sip2RequestHandler> requestHandlerMap = new HashMap<>();
+      EnumMap<Sip2HandlerCommandTypes, Sip2RequestHandler> requestHandlerMap = new EnumMap<>(Sip2HandlerCommandTypes.class);
       requestHandlerMap.put(Sip2HandlerCommandTypes.LOGIN, loginHandler);
 
       myVerticle = new MainVerticle(requestHandlerMap);

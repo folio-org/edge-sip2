@@ -1,7 +1,7 @@
 package org.folio.edge.sip2;
 
 import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
+import java.util.EnumMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,19 +16,19 @@ import io.vertx.core.net.NetServerOptions;
 
 public class MainVerticle extends AbstractVerticle {
 
-  private HashMap<Sip2HandlerCommandTypes, Sip2RequestHandler> handlers;
+  private EnumMap<Sip2HandlerCommandTypes, Sip2RequestHandler> handlers;
   private NetServer server;
   private final Logger log;
 
   public MainVerticle(){
-    handlers = new HashMap<>();
+    handlers = new EnumMap<>(Sip2HandlerCommandTypes.class);
     handlers.put(Sip2HandlerCommandTypes.LOGIN, new LoginHandler());
     handlers.put(Sip2HandlerCommandTypes.CHECKOUT, new CheckoutHandler());
 
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   }
 
-  public MainVerticle(HashMap<Sip2HandlerCommandTypes, Sip2RequestHandler> handlers){
+  public MainVerticle(EnumMap<Sip2HandlerCommandTypes, Sip2RequestHandler> handlers){
     this.handlers = handlers;
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   }
