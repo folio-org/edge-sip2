@@ -1,5 +1,15 @@
 package api.support;
 
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.NetClient;
+import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.net.NetSocket;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.EnumMap;
@@ -16,22 +26,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.NetClient;
-import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.NetSocket;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
-
 @ExtendWith(VertxExtension.class)
 public abstract class BaseTest {
 
   protected MainVerticle myVerticle;
-  private final int PORT = getRandomPort();
+  private final int port = getRandomPort();
 
+  /**
+   * Deploy the verticle before each test.
+   * @param vertx the vertx instance.
+   * @param testContext vertx test context.
+   * @param testInfo info about the test.
+   */
   @BeforeEach
   @DisplayName("Deploy the verticle")
   public void deployVerticle(Vertx vertx, VertxTestContext testContext, TestInfo testInfo) {
@@ -39,16 +45,25 @@ public abstract class BaseTest {
     DeploymentOptions opt = new DeploymentOptions();
 
     JsonObject sipConfig = new JsonObject();
-    sipConfig.put("port", PORT);
+    sipConfig.put("port", port);
     opt.setConfig(sipConfig);
 
     setMainVerticleInstance(testInfo.getDisplayName());
-    vertx.deployVerticle(myVerticle, opt, testContext.completing() );
+    vertx.deployVerticle(myVerticle, opt, testContext.completing());
 
     System.out.println("done deploying in base class");
   }
 
-  public void callService(String ncipMessage, VertxTestContext testContext, Vertx vertx, Handler<String> testHandler) throws Throwable {
+  /**
+   * Calls the service.
+   * @param ncipMessage the sip message to send.
+   * @param testContext the vertx test context.
+   * @param vertx the vertx instance.
+   * @param testHandler the handler for this test.
+   * @throws Throwable an unexpected error.
+   */
+  public void callService(String ncipMessage, VertxTestContext testContext,
+      Vertx vertx, Handler<String> testHandler) throws Throwable {
 
     NetClientOptions options = new NetClientOptions();
     options.setConnectTimeout(2);
@@ -57,24 +72,25 @@ public abstract class BaseTest {
 
     NetClient tcpClient = vertx.createNetClient(options);
 
-    tcpClient.connect(PORT, "localhost", res -> {
+    tcpClient.connect(port, "localhost", res -> {
       System.out.println("Shaking hands...");
       NetSocket socket = res.result();
       socket.write(ncipMessage);
       System.out.println("done writing");
 
-      socket.handler( buffer -> {
+      socket.handler(buffer -> {
         String message = buffer.getString(0, buffer.length());
-        testContext.verify( () -> testHandler.handle(message));
+        testContext.verify(() -> testHandler.handle(message));
         testContext.completeNow();
       });
     });
   }
 
-  private void setMainVerticleInstance(String methodName){
-    if (methodName == "CanStartMainVericleInjectingSip2RequestHandlers"){
+  private void setMainVerticleInstance(String methodName) {
+    if (methodName == "CanStartMainVericleInjectingSip2RequestHandlers") {
       LoginHandler loginHandler = new LoginHandler();
-      EnumMap<Sip2HandlerCommandTypes, Sip2RequestHandler> requestHandlerMap = new EnumMap<>(Sip2HandlerCommandTypes.class);
+      EnumMap<Sip2HandlerCommandTypes, Sip2RequestHandler> requestHandlerMap =
+          new EnumMap<>(Sip2HandlerCommandTypes.class);
       requestHandlerMap.put(Sip2HandlerCommandTypes.LOGIN, loginHandler);
 
       myVerticle = new MainVerticle(requestHandlerMap);

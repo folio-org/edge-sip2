@@ -9,14 +9,19 @@ public enum Sip2HandlerCommandTypes {
 
   private int commandCode;
 
-  Sip2HandlerCommandTypes(int commandCode){
+  Sip2HandlerCommandTypes(int commandCode) {
     this.commandCode = commandCode;
   }
 
-  public int getValue(){
+  public int getValue() {
     return commandCode;
   }
 
+  /**
+   * Convert an integer value to a {@code Sip2HandlerCommandTypes}.
+   * @param value the enum value to find.
+   * @return the specified enum or {@code NONE} if not found.
+   */
   public static Sip2HandlerCommandTypes from(int value) {
     return Arrays.stream(values())
       .filter(commandCode ->  commandCode.getValue() == value)
