@@ -5,6 +5,8 @@ import static java.lang.Boolean.TRUE;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.folio.edge.sip2.domain.messages.enumerations.CurrencyType.USD;
 import static org.folio.edge.sip2.domain.messages.enumerations.FeeType.DAMAGE;
+import static org.folio.edge.sip2.domain.messages.enumerations.HoldMode.ADD;
+import static org.folio.edge.sip2.domain.messages.enumerations.HoldType.SPECIFIC_COPY_TITLE;
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.ENGLISH;
 import static org.folio.edge.sip2.domain.messages.enumerations.PaymentType.CASH;
 import static org.folio.edge.sip2.domain.messages.enumerations.StatusCode.SC_OK;
@@ -14,9 +16,15 @@ import static org.folio.edge.sip2.parser.Command.CHECKIN;
 import static org.folio.edge.sip2.parser.Command.CHECKOUT;
 import static org.folio.edge.sip2.parser.Command.END_PATRON_SESSION;
 import static org.folio.edge.sip2.parser.Command.FEE_PAID;
+import static org.folio.edge.sip2.parser.Command.HOLD;
+import static org.folio.edge.sip2.parser.Command.ITEM_INFORMATION;
+import static org.folio.edge.sip2.parser.Command.ITEM_STATUS_UPDATE;
 import static org.folio.edge.sip2.parser.Command.LOGIN;
+import static org.folio.edge.sip2.parser.Command.PATRON_ENABLE;
 import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION;
 import static org.folio.edge.sip2.parser.Command.PATRON_STATUS_REQUEST;
+import static org.folio.edge.sip2.parser.Command.RENEW;
+import static org.folio.edge.sip2.parser.Command.RENEW_ALL;
 import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 import static org.folio.edge.sip2.parser.Field.CN;
@@ -36,17 +44,22 @@ import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
 import org.folio.edge.sip2.domain.messages.requests.FeePaid;
+import org.folio.edge.sip2.domain.messages.requests.Hold;
+import org.folio.edge.sip2.domain.messages.requests.ItemInformation;
+import org.folio.edge.sip2.domain.messages.requests.ItemStatusUpdate;
 import org.folio.edge.sip2.domain.messages.requests.Login;
+import org.folio.edge.sip2.domain.messages.requests.PatronEnable;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.folio.edge.sip2.domain.messages.requests.PatronStatusRequest;
+import org.folio.edge.sip2.domain.messages.requests.Renew;
+import org.folio.edge.sip2.domain.messages.requests.RenewAll;
 import org.folio.edge.sip2.domain.messages.requests.RequestACSResend;
 import org.folio.edge.sip2.domain.messages.requests.SCStatus;
 import org.folio.edge.sip2.parser.exceptions.MissingDelimiterException;
 import org.junit.jupiter.api.Test;
 
 class ParserTests {
-  @Test
-  void testParserWithAlternateDelimiter() {
+  @Test  void testParserWithAlternateDelimiter() {
     final Parser parser = Parser.builder()
         .delimiter(Character.valueOf('^'))
         .build();
@@ -354,5 +367,183 @@ class ParserTests {
     assertEquals("1234", feePaid.getPatronPassword());
     assertEquals("Torn page", feePaid.getFeeIdentifier());
     assertEquals("a1b2c3d4e5", feePaid.getTransactionId());
+  }
+
+  @Test
+  void testItemInformationParsingWithoutErrorDetection() {
+    final Parser parser = Parser.builder().build();
+    final ZonedDateTime transactionDate =
+        ZonedDateTime.now().truncatedTo(SECONDS);
+    final String transactionDateString = DateTimeFormatter
+        .ofPattern("yyyyMMdd    HHmmss")
+        .format(transactionDate);
+    final Message<?> message = parser.parseMessage(
+        "17" + transactionDateString + "ABSomeBook|AOuniversity_id|");
+
+    assertEquals(ITEM_INFORMATION, message.getCommand());
+    assertTrue(message.getRequest() instanceof ItemInformation);
+
+    final ItemInformation itemInformation =
+        (ItemInformation) message.getRequest();
+
+    assertEquals(transactionDate.getOffset(),
+        itemInformation.getTransactionDate().getOffset());
+    assertEquals("university_id", itemInformation.getInstitutionId());
+    assertEquals("SomeBook", itemInformation.getItemIdentifier());
+    assertNull(itemInformation.getTerminalPassword());
+  }
+
+  @Test
+  void testItemStatusUpdateParsingWithoutErrorDetection() {
+    final Parser parser = Parser.builder().build();
+    final ZonedDateTime transactionDate =
+        ZonedDateTime.now().truncatedTo(SECONDS);
+    final String transactionDateString = DateTimeFormatter
+        .ofPattern("yyyyMMdd    HHmmss")
+        .format(transactionDate);
+    final Message<?> message = parser.parseMessage(
+        "19" + transactionDateString
+        + "ABSomeBook|AOuniversity_id|CHSpilled coffee on the book|");
+
+    assertEquals(ITEM_STATUS_UPDATE, message.getCommand());
+    assertTrue(message.getRequest() instanceof ItemStatusUpdate);
+
+    final ItemStatusUpdate itemStatusUpdate =
+        (ItemStatusUpdate) message.getRequest();
+
+    assertEquals(transactionDate.getOffset(),
+        itemStatusUpdate.getTransactionDate().getOffset());
+    assertEquals("university_id", itemStatusUpdate.getInstitutionId());
+    assertEquals("SomeBook", itemStatusUpdate.getItemIdentifier());
+    assertNull(itemStatusUpdate.getTerminalPassword());
+    assertEquals("Spilled coffee on the book",
+        itemStatusUpdate.getItemProperties());
+  }
+
+  @Test
+  void testPatronEnableParsingWithoutErrorDetection() {
+    final Parser parser = Parser.builder().build();
+    final ZonedDateTime transactionDate =
+        ZonedDateTime.now().truncatedTo(SECONDS);
+    final String transactionDateString = DateTimeFormatter
+        .ofPattern("yyyyMMdd    HHmmss")
+        .format(transactionDate);
+    final Message<?> message = parser.parseMessage(
+        "25" + transactionDateString
+        + "AApatron_id|AD1234|AC|AOuniversity_id|");
+
+    assertEquals(PATRON_ENABLE, message.getCommand());
+    assertTrue(message.getRequest() instanceof PatronEnable);
+
+    final PatronEnable patronEnable = (PatronEnable) message.getRequest();
+
+    assertEquals(transactionDate.getOffset(),
+        patronEnable.getTransactionDate().getOffset());
+    assertEquals("university_id", patronEnable.getInstitutionId());
+    assertEquals("patron_id", patronEnable.getPatronIdentifier());
+    assertEquals("", patronEnable.getTerminalPassword());
+    assertEquals("1234", patronEnable.getPatronPassword());
+  }
+
+  @Test
+  void testHoldParsingWithoutErrorDetection() {
+    final Parser parser = Parser.builder().build();
+    final ZonedDateTime transactionDate =
+        ZonedDateTime.now().truncatedTo(SECONDS);
+    final ZonedDateTime expirationDate = transactionDate.plusDays(30);
+    final DateTimeFormatter formatter = DateTimeFormatter
+        .ofPattern("yyyyMMdd    HHmmss");
+    final String transactionDateString = formatter.format(transactionDate);
+    final String expirationDateString = formatter.format(expirationDate);
+
+    final Message<?> message = parser.parseMessage(
+        "15+" + transactionDateString + "BW" + expirationDateString
+        + "|BScirc_desk|BY3|AApatron_id|AC|"
+        + "AD1234|AOuniversity_id|ABSome Book|AJSome Title|BON|");
+
+
+    assertEquals(HOLD, message.getCommand());
+    assertTrue(message.getRequest() instanceof Hold);
+
+    final Hold hold = (Hold) message.getRequest();
+
+    assertEquals(ADD, hold.getHoldMode());
+    assertEquals(transactionDate.getOffset(),
+        hold.getTransactionDate().getOffset());
+    assertEquals(expirationDate.getOffset(),
+        hold.getExpirationDate().getOffset());
+    assertEquals("circ_desk", hold.getPickupLocation());
+    assertEquals(SPECIFIC_COPY_TITLE, hold.getHoldType());
+    assertEquals("university_id", hold.getInstitutionId());
+    assertEquals("patron_id", hold.getPatronIdentifier());
+    assertEquals("1234", hold.getPatronPassword());
+    assertEquals("Some Book", hold.getItemIdentifier());
+    assertEquals("Some Title", hold.getTitleIdentifier());
+    assertEquals("", hold.getTerminalPassword());
+    assertEquals(FALSE, hold.getFeeAcknowledged());
+  }
+
+  @Test
+  void testRenewParsingWithoutErrorDetection() {
+    final Parser parser = Parser.builder().build();
+
+    final ZonedDateTime transactionDate =
+        ZonedDateTime.now().truncatedTo(SECONDS);
+    final ZonedDateTime nbDueDate = transactionDate.plusDays(30);
+    final DateTimeFormatter formatter = DateTimeFormatter
+        .ofPattern("yyyyMMdd    HHmmss");
+    final String transactionDateString = formatter.format(transactionDate);
+    final String nbDueDateString = formatter.format(nbDueDate);
+    final Message<?> message = parser.parseMessage(
+        "29YY" + transactionDateString + nbDueDateString
+        + "AApatron_id|AC|AD1234|AOuniversity_id|ABSome Book|"
+        + "AJSome Title|CHAutographed|BON|");
+
+    assertEquals(RENEW, message.getCommand());
+    assertTrue(message.getRequest() instanceof Renew);
+
+    final Renew renew = (Renew) message.getRequest();
+
+    assertEquals(TRUE, renew.getThirdPartyAllowed());
+    assertEquals(TRUE, renew.getNoBlock());
+    assertEquals(transactionDate.getOffset(),
+        renew.getTransactionDate().getOffset());
+    assertEquals(nbDueDate.getOffset(),
+        renew.getNbDueDate().getOffset());
+    assertEquals("university_id", renew.getInstitutionId());
+    assertEquals("patron_id", renew.getPatronIdentifier());
+    assertEquals("1234", renew.getPatronPassword());
+    assertEquals("Some Book", renew.getItemIdentifier());
+    assertEquals("Some Title", renew.getTitleIdentifier());
+    assertEquals("", renew.getTerminalPassword());
+    assertEquals("Autographed", renew.getItemProperties());
+    assertEquals(FALSE, renew.getFeeAcknowledged());
+  }
+
+  @Test
+  void testRenewAllParsingWithoutErrorDetection() {
+    final Parser parser = Parser.builder().build();
+
+    final ZonedDateTime transactionDate =
+        ZonedDateTime.now().truncatedTo(SECONDS);
+    final DateTimeFormatter formatter = DateTimeFormatter
+        .ofPattern("yyyyMMdd    HHmmss");
+    final String transactionDateString = formatter.format(transactionDate);
+    final Message<?> message = parser.parseMessage(
+        "65" + transactionDateString
+        + "AApatron_id|AC|AD1234|AOuniversity_id|BON|");
+
+    assertEquals(RENEW_ALL, message.getCommand());
+    assertTrue(message.getRequest() instanceof RenewAll);
+
+    final RenewAll renewAll = (RenewAll) message.getRequest();
+
+    assertEquals(transactionDate.getOffset(),
+        renewAll.getTransactionDate().getOffset());
+    assertEquals("university_id", renewAll.getInstitutionId());
+    assertEquals("patron_id", renewAll.getPatronIdentifier());
+    assertEquals("1234", renewAll.getPatronPassword());
+    assertEquals("", renewAll.getTerminalPassword());
+    assertEquals(FALSE, renewAll.getFeeAcknowledged());
   }
 }

@@ -9,9 +9,15 @@ import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
 import org.folio.edge.sip2.domain.messages.requests.FeePaid;
+import org.folio.edge.sip2.domain.messages.requests.Hold;
+import org.folio.edge.sip2.domain.messages.requests.ItemInformation;
+import org.folio.edge.sip2.domain.messages.requests.ItemStatusUpdate;
 import org.folio.edge.sip2.domain.messages.requests.Login;
+import org.folio.edge.sip2.domain.messages.requests.PatronEnable;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.folio.edge.sip2.domain.messages.requests.PatronStatusRequest;
+import org.folio.edge.sip2.domain.messages.requests.Renew;
+import org.folio.edge.sip2.domain.messages.requests.RenewAll;
 import org.folio.edge.sip2.domain.messages.requests.RequestACSResend;
 import org.folio.edge.sip2.domain.messages.requests.SCStatus;
 import org.folio.edge.sip2.parser.Message.MessageBuilder;
@@ -121,6 +127,34 @@ public final class Parser {
           final FeePaid feePaid =
               new FeePaidMessageParser(delimiter).parse(message);
           builder.request(feePaid);
+          break;
+        case ITEM_INFORMATION:
+          final ItemInformation itemInformation =
+              new ItemInformationMessageParser(delimiter).parse(message);
+          builder.request(itemInformation);
+          break;
+        case ITEM_STATUS_UPDATE:
+          final ItemStatusUpdate itemStatusUpdate =
+              new ItemStatusUpdateMessageParser(delimiter).parse(message);
+          builder.request(itemStatusUpdate);
+          break;
+        case PATRON_ENABLE:
+          final PatronEnable patronEnable =
+              new PatronEnableMessageParser(delimiter).parse(message);
+          builder.request(patronEnable);
+          break;
+        case HOLD:
+          final Hold hold = new HoldMessageParser(delimiter).parse(message);
+          builder.request(hold);
+          break;
+        case RENEW:
+          final Renew renew = new RenewMessageParser(delimiter).parse(message);
+          builder.request(renew);
+          break;
+        case RENEW_ALL:
+          final RenewAll renewAll =
+              new RenewAllMessageParser(delimiter).parse(message);
+          builder.request(renewAll);
           break;
         default:
           log.info("Command not supported: {}", command);

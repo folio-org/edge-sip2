@@ -57,13 +57,10 @@ public abstract class MessageParser {
   }
 
   protected ZonedDateTime parseDateTime(char [] messageChars) {
-    final String transactionDateString = new String(messageChars, position, 18);
+    final String dateTimeString = new String(messageChars, position, 18);
     position += 18;
 
-    // TIMEZONE: We'll need to get the correct TZ from somewhere
-    ZonedDateTime now = ZonedDateTime.now();
-    DateTimeMapper dtMapper = new DateTimeMapper(now.getOffset());
-    return dtMapper.mapDateTime(transactionDateString);
+    return convertFieldToDateTime(dateTimeString);
   }
 
   protected Boolean parseBoolean(char [] messageChars) {
@@ -78,6 +75,13 @@ public abstract class MessageParser {
     position++; // increment position
 
     return result;
+  }
+
+  protected ZonedDateTime convertFieldToDateTime(String dateTimeString) {
+    // TIMEZONE: We'll need to get the correct TZ from somewhere
+    ZonedDateTime now = ZonedDateTime.now();
+    DateTimeMapper dtMapper = new DateTimeMapper(now.getOffset());
+    return dtMapper.mapDateTime(dateTimeString);
   }
 
   protected Boolean convertFieldToBoolean(String value) {
