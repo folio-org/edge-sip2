@@ -1,5 +1,7 @@
 package api.support;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -12,15 +14,16 @@ import io.vertx.junit5.VertxTestContext;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.EnumMap;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.folio.edge.sip2.MainVerticle;
-import org.folio.edge.sip2.Sip2HandlerCommandTypes;
 import org.folio.edge.sip2.handlers.LoginHandler;
 import org.folio.edge.sip2.handlers.Sip2RequestHandler;
-
+import org.folio.edge.sip2.parser.Command;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.TestInfo;
@@ -86,12 +89,19 @@ public abstract class BaseTest {
     });
   }
 
+  protected String getFormattedLocalDateTime(ZonedDateTime dateTime) {
+    final ZonedDateTime d =  dateTime.truncatedTo(SECONDS);
+    final DateTimeFormatter formatter = DateTimeFormatter
+        .ofPattern("yyyyMMdd    HHmmss");
+    return formatter.format(d);
+  }
+
   private void setMainVerticleInstance(String methodName) {
     if (methodName == "CanStartMainVericleInjectingSip2RequestHandlers") {
       LoginHandler loginHandler = new LoginHandler();
-      EnumMap<Sip2HandlerCommandTypes, Sip2RequestHandler> requestHandlerMap =
-          new EnumMap<>(Sip2HandlerCommandTypes.class);
-      requestHandlerMap.put(Sip2HandlerCommandTypes.LOGIN, loginHandler);
+      EnumMap<Command, Sip2RequestHandler> requestHandlerMap =
+          new EnumMap<>(Command.class);
+      requestHandlerMap.put(Command.LOGIN, loginHandler);
 
       myVerticle = new MainVerticle(requestHandlerMap);
 
