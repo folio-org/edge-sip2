@@ -29,22 +29,22 @@ public class CheckoutMessageParser extends MessageParser {
    * @return the decoded Checkout message.
    */
   public Checkout parse(String message) {
-    final CheckoutBuilder builder = builder();
+    final CheckoutBuilder coBuilder = builder();
     final char [] messageChars = message.toCharArray();
 
     // SC renewal policy: 1-char, fixed-length required field
-    builder.scRenewalPolicy(parseBoolean(messageChars));
+    coBuilder.scRenewalPolicy(parseBoolean(messageChars));
 
     // no block: 1-char, fixed-length required field
-    builder.noBlock(parseBoolean(messageChars));
+    coBuilder.noBlock(parseBoolean(messageChars));
 
     // transaction date: 18-char, fixed-length required field
     final ZonedDateTime transactionDate = parseDateTime(messageChars);
-    builder.transactionDate(transactionDate);
+    coBuilder.transactionDate(transactionDate);
 
     // nb due date: 18-char, fixed-length required field
     final ZonedDateTime nbDueDate = parseDateTime(messageChars);
-    builder.nbDueDate(nbDueDate);
+    coBuilder.nbDueDate(nbDueDate);
 
     // Variable length fields
     do {
@@ -54,35 +54,35 @@ public class CheckoutMessageParser extends MessageParser {
       switch (field) {
         case AO:
           // institution id: variable-length required field
-          builder.institutionId(valueString);
+          coBuilder.institutionId(valueString);
           break;
         case AA:
           // patron identifier: variable-length required field
-          builder.patronIdentifier(valueString);
+          coBuilder.patronIdentifier(valueString);
           break;
         case AB:
           // item identifier: variable-length required field
-          builder.itemIdentifier(valueString);
+          coBuilder.itemIdentifier(valueString);
           break;
         case AC:
           // terminal password: variable-length required field
-          builder.terminalPassword(valueString);
+          coBuilder.terminalPassword(valueString);
           break;
         case CH:
           // item properties: variable-length optional field
-          builder.itemProperties(valueString);
+          coBuilder.itemProperties(valueString);
           break;
         case AD:
           // patron password: variable-length required field
-          builder.patronPassword(valueString);
+          coBuilder.patronPassword(valueString);
           break;
         case BO:
           // fee acknowledged: 1-char, optional field field
-          builder.feeAcknowledged(convertFieldToBoolean(valueString));
+          coBuilder.feeAcknowledged(convertFieldToBoolean(valueString));
           break;
         case BI:
           // cancel: 1-char, optional field field
-          builder.cancel(convertFieldToBoolean(valueString));
+          coBuilder.cancel(convertFieldToBoolean(valueString));
           break;
         default:
           log.warn("Unknown Checkout field with value {}",
@@ -92,6 +92,6 @@ public class CheckoutMessageParser extends MessageParser {
       position++;
     } while (position != messageChars.length);
 
-    return builder.build();
+    return coBuilder.build();
   }
 }

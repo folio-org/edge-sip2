@@ -29,22 +29,22 @@ public class RenewMessageParser extends MessageParser {
    * @return the decoded Renew message.
    */
   public Renew parse(String message) {
-    final RenewBuilder builder = builder();
+    final RenewBuilder rBuilder = builder();
     final char [] messageChars = message.toCharArray();
 
     // third party allowed: 1-char, fixed-length required field
-    builder.thirdPartyAllowed(parseBoolean(messageChars));
+    rBuilder.thirdPartyAllowed(parseBoolean(messageChars));
 
     // no block: 1-char, fixed-length required field
-    builder.noBlock(parseBoolean(messageChars));
+    rBuilder.noBlock(parseBoolean(messageChars));
 
     // transaction date: 18-char, fixed-length required field
     final ZonedDateTime transactionDate = parseDateTime(messageChars);
-    builder.transactionDate(transactionDate);
+    rBuilder.transactionDate(transactionDate);
 
     // nb due date: 18-char, fixed-length required field
     final ZonedDateTime nbDueDate = parseDateTime(messageChars);
-    builder.nbDueDate(nbDueDate);
+    rBuilder.nbDueDate(nbDueDate);
 
     // Variable length fields
     do {
@@ -54,35 +54,35 @@ public class RenewMessageParser extends MessageParser {
       switch (field) {
         case AO:
           // institution id: variable-length required field
-          builder.institutionId(valueString);
+          rBuilder.institutionId(valueString);
           break;
         case AA:
           // patron identifier: variable-length required field
-          builder.patronIdentifier(valueString);
+          rBuilder.patronIdentifier(valueString);
           break;
         case AD:
           // patron password: variable-length optional field
-          builder.patronPassword(valueString);
+          rBuilder.patronPassword(valueString);
           break;
         case AB:
           // item identifier: variable-length optional field
-          builder.itemIdentifier(valueString);
+          rBuilder.itemIdentifier(valueString);
           break;
         case AJ:
           // title identifier: variable-length optional field
-          builder.titleIdentifier(valueString);
+          rBuilder.titleIdentifier(valueString);
           break;
         case AC:
           // terminal password: variable-length optional field
-          builder.terminalPassword(valueString);
+          rBuilder.terminalPassword(valueString);
           break;
         case CH:
           // item properties: variable-length optional field
-          builder.itemProperties(valueString);
+          rBuilder.itemProperties(valueString);
           break;
         case BO:
           // fee acknowledged: 1-char, optional field field
-          builder.feeAcknowledged(convertFieldToBoolean(valueString));
+          rBuilder.feeAcknowledged(convertFieldToBoolean(valueString));
           break;
         default:
           log.warn("Unknown Renew field with value {}", valueString);
@@ -91,6 +91,6 @@ public class RenewMessageParser extends MessageParser {
       position++;
     } while (position != messageChars.length);
 
-    return builder.build();
+    return rBuilder.build();
   }
 }
