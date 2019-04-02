@@ -38,21 +38,21 @@ public class PatronInformationMessageParser extends MessageParser {
    * @return the decoded Patron Information message.
    */
   public PatronInformation parse(String message) {
-    final PatronInformationBuilder builder = builder();
+    final PatronInformationBuilder piBuilder = builder();
     final char [] messageChars = message.toCharArray();
 
     // language: 3-char, fixed-length required field
     final String languageString = new String(messageChars, position, 3);
     position += 3;
-    builder.language(LanguageMapper.find(languageString).getLanguage());
+    piBuilder.language(LanguageMapper.find(languageString).getLanguage());
 
     // transaction date: 18-char, fixed-length required field
     final ZonedDateTime transactionDate = parseDateTime(messageChars);
-    builder.transactionDate(transactionDate);
+    piBuilder.transactionDate(transactionDate);
 
     // summary: 10-char, fixed-length required field
     final Summary summary = parseSummary(messageChars);
-    builder.summary(summary);
+    piBuilder.summary(summary);
 
     // Variable length fields
     do {
@@ -62,27 +62,27 @@ public class PatronInformationMessageParser extends MessageParser {
       switch (field) {
         case AO:
           // institution id: variable-length required field
-          builder.institutionId(valueString);
+          piBuilder.institutionId(valueString);
           break;
         case AA:
           // patron identifier: variable-length required field
-          builder.patronIdentifier(valueString);
+          piBuilder.patronIdentifier(valueString);
           break;
         case AC:
           // terminal password: variable-length optional field
-          builder.terminalPassword(valueString);
+          piBuilder.terminalPassword(valueString);
           break;
         case AD:
           // patron password: variable-length optional field
-          builder.patronPassword(valueString);
+          piBuilder.patronPassword(valueString);
           break;
         case BP:
           // start item: variable-length optional field
-          builder.startItem(convertFieldToInteger(BP, valueString));
+          piBuilder.startItem(convertFieldToInteger(BP, valueString));
           break;
         case BQ:
           // end item: variable-length optional field
-          builder.endItem(convertFieldToInteger(BQ, valueString));
+          piBuilder.endItem(convertFieldToInteger(BQ, valueString));
           break;
         default:
           log.warn("Unknown Patron Information field with value {}",
@@ -92,7 +92,7 @@ public class PatronInformationMessageParser extends MessageParser {
       position++;
     } while (position != messageChars.length);
 
-    return builder.build();
+    return piBuilder.build();
   }
 
   private Summary parseSummary(char [] messageChars) {

@@ -29,17 +29,17 @@ public class PatronStatusRequestMessageParser extends MessageParser {
    * @return the decoded Patron Status Request message.
    */
   public PatronStatusRequest parse(String message) {
-    final PatronStatusRequestBuilder builder = builder();
+    final PatronStatusRequestBuilder psrBuilder = builder();
     final char [] messageChars = message.toCharArray();
 
     // language: 3-char, fixed-length required field
     final String languageString = new String(messageChars, position, 3);
     position += 3;
-    builder.language(LanguageMapper.find(languageString).getLanguage());
+    psrBuilder.language(LanguageMapper.find(languageString).getLanguage());
 
     // transaction date: 18-char, fixed-length required field
     final ZonedDateTime transactionDate = parseDateTime(messageChars);
-    builder.transactionDate(transactionDate);
+    psrBuilder.transactionDate(transactionDate);
 
     // Variable length fields
     do {
@@ -49,19 +49,19 @@ public class PatronStatusRequestMessageParser extends MessageParser {
       switch (field) {
         case AO:
           // institution id: variable-length required field
-          builder.institutionId(valueString);
+          psrBuilder.institutionId(valueString);
           break;
         case AA:
           // patron identifier: variable-length required field
-          builder.patronIdentifier(valueString);
+          psrBuilder.patronIdentifier(valueString);
           break;
         case AC:
           // terminal password: variable-length required field
-          builder.terminalPassword(valueString);
+          psrBuilder.terminalPassword(valueString);
           break;
         case AD:
           // patron password: variable-length required field
-          builder.patronPassword(valueString);
+          psrBuilder.patronPassword(valueString);
           break;
         default:
           log.warn("Unknown Patron Status Request field with value {}",
@@ -71,6 +71,6 @@ public class PatronStatusRequestMessageParser extends MessageParser {
       position++;
     } while (position != messageChars.length);
 
-    return builder.build();
+    return psrBuilder.build();
   }
 }

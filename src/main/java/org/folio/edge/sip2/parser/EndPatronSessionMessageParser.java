@@ -29,12 +29,12 @@ public class EndPatronSessionMessageParser extends MessageParser {
    * @return the decoded End Patron Session message.
    */
   public EndPatronSession parse(String message) {
-    final EndPatronSessionBuilder builder = builder();
+    final EndPatronSessionBuilder epsBuilder = builder();
     final char [] messageChars = message.toCharArray();
 
     // transaction date: 18-char, fixed-length required field
     final ZonedDateTime transactionDate = parseDateTime(messageChars);
-    builder.transactionDate(transactionDate);
+    epsBuilder.transactionDate(transactionDate);
 
     // Variable length fields
     do {
@@ -44,19 +44,19 @@ public class EndPatronSessionMessageParser extends MessageParser {
       switch (field) {
         case AO:
           // institution id: variable-length required field
-          builder.institutionId(valueString);
+          epsBuilder.institutionId(valueString);
           break;
         case AA:
           // patron identifier: variable-length required field
-          builder.patronIdentifier(valueString);
+          epsBuilder.patronIdentifier(valueString);
           break;
         case AC:
           // terminal password: variable-length optional field
-          builder.terminalPassword(valueString);
+          epsBuilder.terminalPassword(valueString);
           break;
         case AD:
           // patron password: variable-length optional field
-          builder.patronPassword(valueString);
+          epsBuilder.patronPassword(valueString);
           break;
         default:
           log.warn("Unknown End Patron Session field with value {}",
@@ -66,6 +66,6 @@ public class EndPatronSessionMessageParser extends MessageParser {
       position++;
     } while (position != messageChars.length);
 
-    return builder.build();
+    return epsBuilder.build();
   }
 }
