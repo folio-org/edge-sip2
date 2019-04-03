@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,32 +19,9 @@ public final class DateTimeMapper {
   private static final String DATE_FORMAT_STRING = "yyyyMMdd";
   private static final String TIME_FORMAT_STRING = "HHmmss";
 
-  private final ZoneOffset scTimeZone;
+  private static final Map<Long, String> TZ_MAP;
 
-  public DateTimeMapper(ZoneOffset scTimeZone) {
-    this.scTimeZone = scTimeZone;
-  }
-
-  /**
-   * Return a {@code ZoneDateTime} from a SIP formatted date and time.
-   * @param scDateTime the SIP formatted date and time.
-   * @return the domain date and time.
-   */
-  public ZonedDateTime mapDateTime(String scDateTime) {
-    final Map<Long,String> tzMap = getTimeZoneMap();
-
-    final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
-        .appendPattern(DATE_FORMAT_STRING)
-        .appendText(ChronoField.OFFSET_SECONDS, tzMap)
-        .appendPattern(TIME_FORMAT_STRING)
-        .toFormatter();
-
-    return ZonedDateTime.parse(scDateTime, formatter);
-  }
-
-  private Map<Long, String> getTimeZoneMap() {
-    final int localOffset = scTimeZone.getTotalSeconds();
-
+  static {
     final Map<Long, String> zoneLookup = new HashMap<>();
     zoneLookup.put(1L * 60L * 60L, "   A");
     zoneLookup.put(2L * 60L * 60L, "   B");
@@ -70,8 +48,43 @@ public final class DateTimeMapper {
     zoneLookup.put(-11L * 60L * 60L, "   X");
     zoneLookup.put(-12L * 60L * 60L, "   Y");
     zoneLookup.put(0L * 60L * 60L, "   Z");
-    zoneLookup.put((long) localOffset, "    ");
 
-    return zoneLookup;
+    TZ_MAP = Collections.unmodifiableMap(zoneLookup);
+  }
+
+  private final Map<Long, String> localTzMap;
+
+  /**
+   * Construct a {@code DateTimeMapper} with the specified {@code ZoneOffset}.
+   * @param scTimeZone the time zone specified by the SC.
+   */
+  public DateTimeMapper(ZoneOffset scTimeZone) {
+    final Map<Long, String> localMap = new HashMap<>();
+    localMap.put((long) scTimeZone.getTotalSeconds(), "    ");
+    localTzMap = Collections.unmodifiableMap(localMap);
+  }
+
+  /**
+   * Return a {@code ZoneDateTime} from a SIP formatted date and time.
+   * @param scDateTime the SIP formatted date and time.
+   * @return the domain date and time.
+   */
+  public ZonedDateTime mapDateTime(String scDateTime) {
+    final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+        .appendPattern(DATE_FORMAT_STRING)
+        // These optional sections are because there will be an overlap
+        // between local TZ and a specified time zone that matches the local
+        // time zone, so we need a map for "    " and a map for all the
+        // specified time zones. There might be a better way to do this.
+        .optionalStart()
+          .appendText(ChronoField.OFFSET_SECONDS, localTzMap)
+        .optionalEnd()
+        .optionalStart()
+          .appendText(ChronoField.OFFSET_SECONDS, TZ_MAP)
+        .optionalEnd()
+        .appendPattern(TIME_FORMAT_STRING)
+        .toFormatter();
+
+    return ZonedDateTime.parse(scDateTime, formatter);
   }
 }
