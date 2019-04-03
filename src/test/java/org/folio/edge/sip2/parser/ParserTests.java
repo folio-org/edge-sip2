@@ -29,13 +29,17 @@ import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 import static org.folio.edge.sip2.parser.Field.CN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.charset.Charset;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Random;
 
 import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
 import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
@@ -107,6 +111,15 @@ class ParserTests {
     assertEquals("user_id", login.getLoginUserId());
     assertEquals("passw0rd", login.getLoginPassword());
     assertNull(login.getLocationCode());
+  }
+
+  @Test
+  void testLoginParsingWithErrorDetectionAndBadChecksum() {
+    final Parser parser = Parser.builder().build();
+    final Message<?> message = parser.parseMessage(
+        "9300CNuser_id|COpassw0rd|AY1AZF595");
+
+    assertFalse(message.isValid());
   }
 
   @Test
@@ -545,5 +558,88 @@ class ParserTests {
     assertEquals("1234", renewAll.getPatronPassword());
     assertEquals("", renewAll.getTerminalPassword());
     assertEquals(FALSE, renewAll.getFeeAcknowledged());
+  }
+
+  @Test
+  void testRenewAllParsingWithErrorDetection() {
+    final Parser parser = Parser.builder().build();
+
+    final ZonedDateTime transactionDate =
+        ZonedDateTime.now().truncatedTo(SECONDS);
+    final DateTimeFormatter formatter = DateTimeFormatter
+        .ofPattern("yyyyMMdd    HHmmss");
+    final String transactionDateString = formatter.format(transactionDate);
+    final Message<?> message = parser.parseMessage(
+        addErrorDetection("65" + transactionDateString
+            + "AApatron_id|AC|AD1234|AOuniversity_id|BON|"));
+
+    assertTrue(message.isValid());
+    assertTrue(message.isErrorDetectionEnabled());
+    assertEquals(RENEW_ALL, message.getCommand());
+    assertTrue(message.getRequest() instanceof RenewAll);
+
+    final RenewAll renewAll = (RenewAll) message.getRequest();
+
+    assertEquals(transactionDate.getOffset(),
+        renewAll.getTransactionDate().getOffset());
+    assertEquals("university_id", renewAll.getInstitutionId());
+    assertEquals("patron_id", renewAll.getPatronIdentifier());
+    assertEquals("1234", renewAll.getPatronPassword());
+    assertEquals("", renewAll.getTerminalPassword());
+    assertEquals(FALSE, renewAll.getFeeAcknowledged());
+  }
+
+  @Test
+  void testRenewAllParsingWithErrorDetectionAndKnownSequenceNumber() {
+    final Parser parser = Parser.builder().build();
+
+    final int sequenceNumber = 1;
+    final ZonedDateTime transactionDate =
+        ZonedDateTime.of(2019, 5, 1, 10, 30, 15, 0, ZoneOffset.UTC);
+    final DateTimeFormatter formatter = DateTimeFormatter
+        .ofPattern("yyyyMMdd   'Z'HHmmss");
+    final String transactionDateString = formatter.format(transactionDate);
+    final Message<?> message = parser.parseMessage(
+        addErrorDetection("65" + transactionDateString
+            + "AApatron_id|AC|AD1234|AOuniversity_id|BON|", sequenceNumber));
+
+    assertTrue(message.isValid());
+    assertTrue(message.isErrorDetectionEnabled());
+    assertEquals(1, message.getSequenceNumber());
+    assertEquals("EB3B", message.getChecksumsString());
+    assertEquals(RENEW_ALL, message.getCommand());
+    assertTrue(message.getRequest() instanceof RenewAll);
+
+    final RenewAll renewAll = (RenewAll) message.getRequest();
+
+    assertEquals(transactionDate.getOffset(),
+        renewAll.getTransactionDate().getOffset());
+    assertEquals("university_id", renewAll.getInstitutionId());
+    assertEquals("patron_id", renewAll.getPatronIdentifier());
+    assertEquals("1234", renewAll.getPatronPassword());
+    assertEquals("", renewAll.getTerminalPassword());
+    assertEquals(FALSE, renewAll.getFeeAcknowledged());
+  }
+
+  private String addErrorDetection(String message) {
+    return addErrorDetection(message, new Random().nextInt(10));
+  }
+
+  private String addErrorDetection(String message, int sequenceNumber) {
+    final StringBuilder messageWithErrorDetection =
+        new StringBuilder(message.length() + 9)
+          .append(message)
+          .append("AY")
+          .append(sequenceNumber)
+          .append("AZ");
+    final byte [] bytes = messageWithErrorDetection.toString()
+        .getBytes(Charset.forName("IBM850"));
+    int checksum = 0;
+    for (byte b : bytes) {
+      checksum += b & 0xff;
+    }
+    checksum = -checksum & 0xffff; // 16 bit 2's compliment via negation
+    final String checksumString = Integer.toHexString(checksum).toUpperCase();
+    return messageWithErrorDetection.append(checksumString).toString();
   }
 }
