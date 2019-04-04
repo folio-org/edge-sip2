@@ -29,7 +29,7 @@ public class SCStatusHandler implements ISip2RequestHandler {
   }
 
   @Override
-  public String execute(String sipInputMessage) throws IOException {
+  public String execute(Object message)  {
     //Process input
 
     File fileName = new File(templatePath);
@@ -40,17 +40,16 @@ public class SCStatusHandler implements ISip2RequestHandler {
       System.out.println(file);
     }
 
-    ACSStatus acsStatus = configurationRepository.getACSStatus("fs00000010test");
-    Configuration freemakerConfig = new Configuration(Configuration.VERSION_2_3_28);
-    freemakerConfig.setDirectoryForTemplateLoading(new File(templatePath));
-    freemakerConfig.setDefaultEncoding("UTF-8");
-    freemakerConfig.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-    freemakerConfig.setLogTemplateExceptions(false);
-    freemakerConfig.setWrapUncheckedExceptions(true);
-
     String outputSipMessage = null;
 
     try {
+      ACSStatus acsStatus = configurationRepository.getACSStatus("fs00000010test");
+      Configuration freemakerConfig = new Configuration(Configuration.VERSION_2_3_28);
+      freemakerConfig.setDirectoryForTemplateLoading(new File(templatePath));
+      freemakerConfig.setDefaultEncoding("UTF-8");
+      freemakerConfig.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+      freemakerConfig.setLogTemplateExceptions(false);
+      freemakerConfig.setWrapUncheckedExceptions(true);
 
       Template template = freemakerConfig.getTemplate("acs-status.ftl");
       template.setBooleanFormat("Y,N");
