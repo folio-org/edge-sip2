@@ -1,0 +1,1 @@
+98${onLineStatus}${checkinOk}${checkoutOk}${acsRenewalPolicy}${statusUpdateOk}${offLineOk}${timeoutPeriod}${retriesAllowed}${dateTimeSync}${protocolVersion}${institutionId}${libraryName}${terminalLocation}${screenMessage}${printLine}

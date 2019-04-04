@@ -1,4 +1,4 @@
-package api.support;
+package org.folio.edge.sip2.api.support;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Handler;
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import org.folio.edge.sip2.MainVerticle;
 import org.folio.edge.sip2.Sip2HandlerCommandTypes;
 import org.folio.edge.sip2.handlers.LoginHandler;
-import org.folio.edge.sip2.handlers.Sip2RequestHandler;
+import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -87,9 +87,10 @@ public abstract class BaseTest {
   }
 
   private void setMainVerticleInstance(String methodName) {
-    if (methodName == "CanStartMainVericleInjectingSip2RequestHandlers") {
+    if (methodName.equalsIgnoreCase("CanStartMainVericleInjectingSip2RequestHandlers")) {
       LoginHandler loginHandler = new LoginHandler();
-      EnumMap<Sip2HandlerCommandTypes, Sip2RequestHandler> requestHandlerMap =
+
+      EnumMap<Sip2HandlerCommandTypes, ISip2RequestHandler> requestHandlerMap =
           new EnumMap<>(Sip2HandlerCommandTypes.class);
       requestHandlerMap.put(Sip2HandlerCommandTypes.LOGIN, loginHandler);
 

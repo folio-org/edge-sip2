@@ -12,12 +12,15 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.handlers.CheckoutHandler;
+import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.handlers.LoginHandler;
-import org.folio.edge.sip2.handlers.Sip2RequestHandler;
+import org.folio.edge.sip2.handlers.SCStatusHandler;
+import org.folio.edge.sip2.repositories.ConfigurationRepository;
+import org.folio.edge.sip2.repositories.DefaultConfigurationProvider;
 
 public class MainVerticle extends AbstractVerticle {
 
-  private Map<Sip2HandlerCommandTypes, Sip2RequestHandler> handlers;
+  private Map<Sip2HandlerCommandTypes, ISip2RequestHandler> handlers;
   private NetServer server;
   private final Logger log;
 
@@ -28,11 +31,15 @@ public class MainVerticle extends AbstractVerticle {
     handlers = new EnumMap<>(Sip2HandlerCommandTypes.class);
     handlers.put(Sip2HandlerCommandTypes.LOGIN, new LoginHandler());
     handlers.put(Sip2HandlerCommandTypes.CHECKOUT, new CheckoutHandler());
+    handlers.put(Sip2HandlerCommandTypes.SCSTATUS,
+      new SCStatusHandler(
+        new ConfigurationRepository(
+          new DefaultConfigurationProvider("./")), "./templates"));
 
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   }
 
-  public MainVerticle(Map<Sip2HandlerCommandTypes, Sip2RequestHandler> handlers) {
+  public MainVerticle(Map<Sip2HandlerCommandTypes, ISip2RequestHandler> handlers) {
     this.handlers = handlers;
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   }
@@ -59,7 +66,7 @@ public class MainVerticle extends AbstractVerticle {
           //resends validation
           //parsing
 
-          Sip2RequestHandler handler = handlers.get(Sip2HandlerCommandTypes.from(actionCodeInt));
+          ISip2RequestHandler handler = handlers.get(Sip2HandlerCommandTypes.from(actionCodeInt));
           socket.write(handler.execute(incomingMsg));  //call FOLIO
         } catch (Exception ex) {
           String message = "Problems handling the request " + ex.getMessage();

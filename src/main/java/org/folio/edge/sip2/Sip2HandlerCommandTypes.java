@@ -5,6 +5,7 @@ import java.util.Arrays;
 public enum Sip2HandlerCommandTypes {
   LOGIN(93),
   CHECKOUT(11),
+  SCSTATUS(99),
   NONE(-1);
 
   private int commandCode;

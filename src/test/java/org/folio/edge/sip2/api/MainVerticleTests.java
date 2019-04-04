@@ -1,10 +1,10 @@
-package api;
+package org.folio.edge.sip2.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import api.support.BaseTest;
+import org.folio.edge.sip2.api.support.BaseTest;
 
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
@@ -43,6 +43,14 @@ public class MainVerticleTests extends BaseTest {
   public void cannotCheckoutWithInvalidCommandCode(Vertx vertex,
       VertxTestContext testContext) throws Throwable {
     callService("blablabalb", testContext, vertex, result -> {
+      assertTrue(result.contains("Problems handling the request"));
+    });
+  }
+
+  @Test
+  public void canGetACSStatus(Vertx vertex,
+                              VertxTestContext testContext) throws Throwable {
+    callService("990231.23", testContext, vertex, result -> {
       assertTrue(result.contains("Problems handling the request"));
     });
   }

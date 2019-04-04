@@ -1,0 +1,87 @@
+{
+  "defaultConfigurations" : [
+    {
+      "tenantId": "fs00000010test",
+      "configuration": {
+        "onlineStatus": true,
+        "checkinOk": false,
+        "checkoutOk": false,
+        "acsRenewalPolicy": true,
+        "statusUpdateOk": false,
+        "offlineOk": true,
+        "timeoutPeriod": 5,
+        "retriesAllowed": 3,
+        "dateTimeSync": "2019-04-05 13:26:13",
+        "protocolVersion": "1.23",
+        "institutionId": "fs00000010test",
+        "libraryName": "Chalmers",
+        "supportedMessages": [
+          {
+            "messageName": "PATRON_STATUS_REQUEST",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "CHECKOUT",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "CHECKIN",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "BLOCK_PATRON",
+            "isSupported": "N"
+          },
+          {
+            "messageName": "SC_ACS_STATUS",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "LOGIN",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "PATRON_INFORMATION",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "END_PATRON_SESSION",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "FEE_PAID",
+            "isSupported": "N"
+          },
+          {
+            "messageName": "ITEM_INFORMATION",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "ITEM_STATUS_UPDATE",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "PATRON_ENABLE",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "HOLD",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "RENEW",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "RENEW_ALL",
+            "isSupported": "N"
+          }
+        ],
+        "terminalLocation": "",
+        "screenMessage": "",
+        "printLine": ""
+      }
+    }
+  ]
+}
+

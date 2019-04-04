@@ -88,7 +88,7 @@ public final class ACSStatus {
     this.protocolVersion = builder.protocolVersion;
     this.institutionId = builder.institutionId;
     this.libraryName = builder.libraryName;
-    this.supportedMessages = Collections.unmodifiableSet(
+    this.supportedMessages =  Collections.unmodifiableSet(
         builder.supportedMessages == null ? EnumSet.noneOf(Messages.class)
             : EnumSet.copyOf(builder.supportedMessages));
     this.terminalLocation = builder.terminalLocation;
@@ -152,7 +152,7 @@ public final class ACSStatus {
     return libraryName;
   }
 
-  public Set<Messages> getSupportedMessages() {
+  public  Set<Messages>  getSupportedMessages() {
     return supportedMessages;
   }
 
@@ -244,7 +244,7 @@ public final class ACSStatus {
     private String protocolVersion;
     private String institutionId;
     private String libraryName;
-    private Set<Messages> supportedMessages;
+    private Set<Messages>  supportedMessages;
     private String terminalLocation;
     private String screenMessage;
     private String printLine;
@@ -313,7 +313,7 @@ public final class ACSStatus {
       return this;
     }
 
-    public ACSStatusBuilder supportedMessages(Set<Messages> supportedMessages) {
+    public ACSStatusBuilder supportedMessages(Set<Messages>  supportedMessages) {
       this.supportedMessages = supportedMessages;
       return this;
     }
