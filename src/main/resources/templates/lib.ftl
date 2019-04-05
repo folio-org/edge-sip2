@@ -1,4 +1,5 @@
 <#-- General purpose operations -->
+
 <#macro booleanToYorN value>
   <#if value == true>
     Y<#t>
@@ -41,10 +42,48 @@
   ${id}${formatDateTime(value, "yyyyMMdd    HHmmss")}${delimiter}<#t>
 </#macro>
 
+<#macro limitNumberToRange value min max length>
+  <#if value gt max>
+    ${max?c}<#t>
+  <#elseif value lt min>
+    ${min?c?left_pad(length, "0")}<#t>
+  <#else>
+    ${value?c?left_pad(length, "0")}<#t>
+  </#if>
+</#macro>
+
+<#macro fixedLengthNumberToRangeField value id min max length>
+  <#if value?has_content>
+    ${id}<#t>
+    <@limitNumberToRange value=value min=min max=max length=length/><#t>
+    ${delimiter}<#t>
+  </#if>
+</#macro>
+
+<#macro variableLengthListField id value>
+  <#if value?has_content>
+    <#list value as i>
+      <@variableLengthField id=id value=i/>
+    </#list>
+  </#if>
+</#macro>
+
 <#-- Command macros that are mapped directly to a field name -->
 
 <#macro alert value>
   <@booleanTo1or0 value=value/><#t>
+</#macro>
+
+<#macro chargedItems value>
+  <@variableLengthListField id="AU" value=value/>
+</#macro>
+
+<#macro chargedItemsCount value>
+  <@limitNumberToRange value=value min=0 max=9999 length=4/>
+</#macro>
+
+<#macro chargedItemsLimit value>
+  <@fixedLengthNumberToRangeField value=value id="CB" min=0 max=9999 length=4/>
 </#macro>
 
 <#macro currencyType value>
@@ -65,9 +104,19 @@
   <@variableLengthDateField id="AH" value=value/>
 </#macro>
 
+<#macro emailAddress value>
+  <@variableLengthField id="BE" value=value/>
+</#macro>
+
 <#macro feeAmount value>
   <#if value?has_content>
     <@variableLengthField id="BV" value=value/>
+  </#if>
+</#macro>
+
+<#macro feeLimit value>
+  <#if value?has_content>
+    <@variableLengthField id="CC" value=value/>
   </#if>
 </#macro>
 
@@ -109,6 +158,34 @@
   </#if>
 </#macro>
 
+<#macro fineItems value>
+  <@variableLengthListField id="AV" value=value/>
+</#macro>
+
+<#macro fineItemsCount value>
+  <@limitNumberToRange value=value min=0 max=9999 length=4/>
+</#macro>
+
+<#macro holdItems value>
+  <@variableLengthListField id="AS" value=value/>
+</#macro>
+
+<#macro holdItemsCount value>
+  <@limitNumberToRange value=value min=0 max=9999 length=4/>
+</#macro>
+
+<#macro holdItemsLimit value>
+  <@fixedLengthNumberToRangeField value=value id="BZ" min=0 max=9999 length=4/>
+</#macro>
+
+<#macro homeAddress value>
+  <@variableLengthField id="BD" value=value/>
+</#macro>
+
+<#macro homePhoneNumber value>
+  <@variableLengthField id="BF" value=value/>
+</#macro>
+
 <#macro institutionId value>
   <@variableLengthField id="AO" value=value/>
 </#macro>
@@ -120,6 +197,100 @@
 <#macro itemProperties value>
   <#if value?has_content>
     <@variableLengthField id="CH" value=value/>
+  </#if>
+</#macro>
+
+<#macro language value>
+  <#if value?has_content>
+    <#switch value>
+      <#case "UNKNOWN">
+        000<#t>
+        <#break>
+      <#case "ENGLISH">
+        001<#t>
+        <#break>
+      <#case "FRENCH">
+        002<#t>
+        <#break>
+      <#case "GERMAN">
+        003<#t>
+        <#break>
+      <#case "ITALIAN">
+        004<#t>
+        <#break>
+      <#case "DUTCH">
+        005<#t>
+        <#break>
+      <#case "SWEDISH">
+        006<#t>
+        <#break>
+      <#case "FINNISH">
+        007<#t>
+        <#break>
+      <#case "SPANISH">
+        008<#t>
+        <#break>
+      <#case "DANISH">
+        009<#t>
+        <#break>
+      <#case "PORTUGUESE">
+        010<#t>
+        <#break>
+      <#case "CANADIAN_FRENCH">
+        011<#t>
+        <#break>
+      <#case "NORWEGIAN">
+        012<#t>
+        <#break>
+      <#case "HEBREW">
+        013<#t>
+        <#break>
+      <#case "JAPANESE">
+        014<#t>
+        <#break>
+      <#case "RUSSIAN">
+        015<#t>
+        <#break>
+      <#case "ARABIC">
+        016<#t>
+        <#break>
+      <#case "POLISH">
+        017<#t>
+        <#break>
+      <#case "GREEK">
+        018<#t>
+        <#break>
+      <#case "CHINESE">
+        019<#t>
+        <#break>
+      <#case "KOREAN">
+        020<#t>
+        <#break>
+      <#case "NORTH_AMERICAN_SPANISH">
+        021<#t>
+        <#break>
+      <#case "TAMIL">
+        022<#t>
+        <#break>
+      <#case "MALAY">
+        023<#t>
+        <#break>
+      <#case "UNITED_KINGDOM">
+        024<#t>
+        <#break>
+      <#case "ICELANDIC">
+        025<#t>
+        <#break>
+      <#case "BELGIAN">
+        026<#t>
+        <#break>
+      <#case "TAIWANESE">
+        027<#t>
+        <#break>
+      <#default>
+        000<#t>
+    </#switch>
+    ${delimiter}<#t>
   </#if>
 </#macro>
 
@@ -147,7 +318,7 @@
         004<#t>
         <#break>
       <#case "VIDEO_TAPE">
-        004<#t>
+        005<#t>
         <#break>
       <#case "CD_CDROM">
         006<#t>
@@ -175,20 +346,56 @@
   <@booleanTo1or0 value=value/><#t>
 </#macro>
 
+<#macro overdueItems value>
+  <@variableLengthListField id="AT" value=value/>
+</#macro>
+
+<#macro overdueItemsCount value>
+  <@limitNumberToRange value=value min=0 max=9999 length=4/>
+</#macro>
+
+<#macro overdueItemsLimit value>
+  <@fixedLengthNumberToRangeField value=value id="CA" min=0 max=9999 length=4/>
+</#macro>
+
 <#macro patronIdentifier value required=true>
   <#if required || value?has_content>
     <@variableLengthField id="AA" value=value/>
   </#if>
 </#macro>
 
+<#macro patronStatus value>
+  <#assign seq = ['CHARGE_PRIVILEGES_DENIED', 'RENEWAL_PRIVILEGES_DENIED',
+      'RECALL_PRIVILEGES_DENIED', 'HOLD_PRIVILEGES_DENIED',
+      'CARD_REPORTED_LOST', 'TOO_MANY_ITEMS_CHARGED', 'TOO_MANY_ITEMS_OVERDUE',
+      'TOO_MANY_RENEWALS', 'TOO_MANY_CLAIMS_OF_ITEMS_RETURNED',
+      'TOO_MANY_ITEMS_LOST', 'EXCESSIVE_OUTSTANDING_FINES',
+      'EXCESSIVE_OUTSTANDING_FEES', 'RECALL_OVERDUE', 'TOO_MANY_ITEMS_BILLED']>
+  <#list seq as check>
+    ${value?seq_contains(check)?string("Y", " ")}<#t>
+  </#list>
+</#macro>
+
 <#macro permanentLocation value>
   <@variableLengthField id="AQ" value=value/>
+</#macro>
+
+<#macro personalName value>
+  <@variableLengthField id="AE" value=value/>
 </#macro>
 
 <#macro printLine value>
   <#if value?has_content>
     <@variableLengthRepeatableField id="AG" value=value/>
   </#if>
+</#macro>
+
+<#macro recallItems value>
+  <@variableLengthListField id="BU" value=value/>
+</#macro>
+
+<#macro recallItemsCount value>
+  <@limitNumberToRange value=value min=0 max=9999 length=4/>
 </#macro>
 
 <#macro renewalOk value>
@@ -230,5 +437,25 @@
 <#macro transactionId value>
   <#if value?has_content>
     <@variableLengthField id="BK" value=value/>
+  </#if>
+</#macro>
+
+<#macro unavailableHoldItems value>
+  <@variableLengthListField id="CD" value=value/>
+</#macro>
+
+<#macro unavailableHoldsCount value>
+  <@limitNumberToRange value=value min=0 max=9999 length=4/>
+</#macro>
+
+<#macro validPatron value>
+  <#if value?has_content>
+    BL<@booleanToYorN value=value/>${delimiter}<#t>
+  </#if>
+</#macro>
+
+<#macro validPatronPassword value>
+  <#if value?has_content>
+    CQ<@booleanToYorN value=value/>${delimiter}<#t>
   </#if>
 </#macro>
