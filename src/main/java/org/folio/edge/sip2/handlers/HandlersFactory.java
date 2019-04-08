@@ -6,6 +6,7 @@ import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.DefaultResourceProvider;
+
 /**
  * Factory class that holds instantiation logic for all ISip2RequestHandlers.
  * This serves as a central point to get the handlers.
