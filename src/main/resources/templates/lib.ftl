@@ -380,6 +380,10 @@
   </#list>
 </#macro>
 
+<#macro paymentAccepted value>
+  <@booleanToYorN value=value/><#t>
+</#macro>
+
 <#macro permanentLocation value>
   <@variableLengthField id="AQ" value=value/>
 </#macro>

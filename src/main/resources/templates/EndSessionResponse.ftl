@@ -9,9 +9,7 @@
 <#-- institution id: variable-length required field -->
 <@lib.institutionId value=endSessionResponse.institutionId/>
 <#-- patron identifier: variable-length required field -->
-<@lib.patronIdentifier
-    value=endSessionResponse.patronIdentifier!""
-    required=false/>
+<@lib.patronIdentifier value=endSessionResponse.patronIdentifier/>
 <#-- screen message: variable-length optional field -->
 <@lib.screenMessage value=endSessionResponse.screenMessage!""/>
 <#-- screen message: variable-length optional field -->

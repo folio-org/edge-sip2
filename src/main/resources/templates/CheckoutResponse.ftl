@@ -33,7 +33,7 @@
 <@lib.currencyType value=checkoutResponse.currencyType!""/>
 <#--
     fee amount: variable-length optional field
-    The amount of the fee associated with checking outh this item
+    The amount of the fee associated with checking out this item
 -->
 <@lib.feeAmount value=checkoutResponse.feeAmount!""/>
 <#-- media type: 3-char, fixed-length optional field -->
