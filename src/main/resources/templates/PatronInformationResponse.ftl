@@ -1,5 +1,5 @@
 <#import "lib.ftl" as lib>
-10<#t>
+64<#t>
 <#-- patron status: 14-char, fixed-length required field -->
 <@lib.patronStatus value=patronInformationResponse.patronStatus/>
 <#-- language: 3-char, fixed-length required field -->

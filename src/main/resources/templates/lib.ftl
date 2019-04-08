@@ -104,6 +104,10 @@
   <@variableLengthDateField id="AH" value=value/>
 </#macro>
 
+<#macro endSession value>
+  <@booleanToYorN value=value/><#t>
+</#macro>
+
 <#macro emailAddress value>
   <@variableLengthField id="BE" value=value/>
 </#macro>
