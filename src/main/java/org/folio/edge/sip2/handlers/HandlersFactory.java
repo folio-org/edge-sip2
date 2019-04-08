@@ -1,7 +1,6 @@
 package org.folio.edge.sip2.handlers;
 
 import freemarker.template.Template;
-import jdk.internal.org.objectweb.asm.Handle;
 
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
