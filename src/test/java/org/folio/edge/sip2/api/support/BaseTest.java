@@ -64,10 +64,9 @@ public abstract class BaseTest {
    * @param testContext the vertx test context.
    * @param vertx the vertx instance.
    * @param testHandler the handler for this test.
-   * @throws Throwable an unexpected error.
    */
   public void callService(String ncipMessage, VertxTestContext testContext,
-      Vertx vertx, Handler<String> testHandler) throws Throwable {
+      Vertx vertx, Handler<String> testHandler) {
 
     NetClientOptions options = new NetClientOptions();
     options.setConnectTimeout(2);

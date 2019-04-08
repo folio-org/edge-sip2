@@ -12,11 +12,13 @@ import org.folio.edge.sip2.domain.messages.responses.ACSStatus;
 import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDate;
+
 public class ConfigurationRepositoryTests {
 
   @Test
   public void canCreateConfigurationRepo(){
-    IConfigurationProvider mockConfig = mock(IConfigurationProvider.class);
+    IResourceProvider mockConfig = mock(IResourceProvider.class);
     ConfigurationRepository configRepo = new ConfigurationRepository(mockConfig);
     assertNotNull(configRepo);
   }
@@ -34,37 +36,40 @@ public class ConfigurationRepositoryTests {
   @Test
   public void canGetValidAcsStatus(){
 
-    JsonArray arr = new JsonArray();
-    arr.add(new JsonObject().put("messageName", "PATRON_INFORMATION")
+    JsonArray supportedMsgs = new JsonArray();
+    supportedMsgs.add(new JsonObject().put("messageName", "PATRON_INFORMATION")
                             .put("isSupported","Y"));
-    arr.add(new JsonObject().put("messageName", "RENEW")
+    supportedMsgs.add(new JsonObject().put("messageName", "RENEW")
                             .put("isSupported","N"));
-    arr.add(new JsonObject().put("messageName", "BLOCK_PATRON")
+    supportedMsgs.add(new JsonObject().put("messageName", "BLOCK_PATRON")
                             .put("isSupported","Y"));
 
-    JsonObject mockConfig = new JsonObject();
-    mockConfig.put("onlineStatus", false);
-    mockConfig.put("checkinOk", false);
-    mockConfig.put("checkoutOk", true);
-    mockConfig.put("acsRenewalPolicy", false);
-    mockConfig.put("statusUpdateOk", false);
-    mockConfig.put("offlineOk", true);
-    mockConfig.put("timeoutPeriod", 3);
-    mockConfig.put("retriesAllowed", 2);
-    mockConfig.put("dateTimeSync", "2019-04-05 13:26:13");
-    mockConfig.put("protocolVersion", "1.23");
-    mockConfig.put("institutionId", "fs00000010");
-    mockConfig.put("printLine", "testing");
-    mockConfig.put("libraryName", "Chalmers");
-    mockConfig.put("screenMessage", "Hello, welcome");
-    mockConfig.put("terminalLocation", "SE10");
-    mockConfig.put("supportedMessages", arr);
+    JsonObject acsConfig = new JsonObject();
+    acsConfig.put("onlineStatus", false);
+    acsConfig.put("checkinOk", false);
+    acsConfig.put("checkoutOk", true);
+    acsConfig.put("acsRenewalPolicy", false);
+    acsConfig.put("statusUpdateOk", false);
+    acsConfig.put("offlineOk", true);
+    acsConfig.put("timeoutPeriod", 3);
+    acsConfig.put("retriesAllowed", 2);
+    acsConfig.put("dateTimeSync", "2019-04-05 13:26:13");
+    acsConfig.put("protocolVersion", "1.23");
+    acsConfig.put("institutionId", "fs00000010");
+    acsConfig.put("printLine", "testing");
+    acsConfig.put("libraryName", "Chalmers");
+    acsConfig.put("screenMessage", "Hello, welcome");
+    acsConfig.put("terminalLocation", "SE10");
+    acsConfig.put("supportedMessages", supportedMsgs);
 
-    IConfigurationProvider mockConfigProvider = mock(IConfigurationProvider.class);
-    when(mockConfigProvider.retrieveConfiguration("fs00000010")).thenReturn(mockConfig);
+    JsonObject defaultConfigurations = new JsonObject();
+    defaultConfigurations.put("acsConfiguration", acsConfig);
+
+    IResourceProvider mockConfigProvider = mock(IResourceProvider.class);
+    when(mockConfigProvider.retrieveResource(null)).thenReturn(defaultConfigurations);
 
     ConfigurationRepository configurationRepository = new ConfigurationRepository(mockConfigProvider);
-    final ACSStatus status  = configurationRepository.getACSStatus("fs00000010");
+    final ACSStatus status  = configurationRepository.getACSStatus();
 
     assertNotNull(status);
     assertEquals(false, status.getOnLineStatus());
@@ -80,15 +85,32 @@ public class ConfigurationRepositoryTests {
     assertEquals("Chalmers", status.getLibraryName());
     assertEquals("Hello, welcome", status.getScreenMessage());
     assertEquals("SE10", status.getTerminalLocation());
-    assertEquals("2019-04-05T13:26:13+02:00[Europe/Paris]", status.getDateTimeSync().toString());
+
+    LocalDate currentDate = LocalDate.now();
+    assertEquals(currentDate.getYear(), status.getDateTimeSync().getYear());
+    assertEquals(currentDate.getMonth(), status.getDateTimeSync().getMonth());
+    assertEquals(currentDate.getDayOfMonth(), status.getDateTimeSync().getDayOfMonth());
 
     assertEquals(2, status.getSupportedMessages().size());
-    Messages[] supportedMsgs = status.getSupportedMessages().toArray(new Messages[2]);
+    Messages[] supportedMsgsArr = status.getSupportedMessages().toArray(new Messages[2]);
 
     //note that the messages will be reordered because it's stored in a list.
     //it's up to the appropriate handler to re-present the messages in the correct order
-    assertEquals(Messages.BLOCK_PATRON, supportedMsgs[0]);
-    assertEquals(Messages.PATRON_INFORMATION, supportedMsgs[1]);
+    assertEquals(Messages.BLOCK_PATRON, supportedMsgsArr[0]);
+    assertEquals(Messages.PATRON_INFORMATION, supportedMsgsArr[1]);
   }
+
+  @Test
+  public void canRetrieveTenantConfiguration(){
+    final String defaultResourcePath = "./src/test/resources/";
+    DefaultResourceProvider resourceProvider = new DefaultResourceProvider(defaultResourcePath);
+    ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider);
+
+    JsonObject testTenantConfig = configRepo.retrieveTenantConfiguration("fs00000010test");
+    assertNotNull(testTenantConfig);
+    assertEquals("fs00000010test", testTenantConfig.getString("tenantId"));
+    assertEquals("ASCII", testTenantConfig.getString("encoding"));
+  }
+
 
 }

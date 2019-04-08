@@ -2,7 +2,7 @@ package org.folio.edge.sip2.domain.messages.enumerations;
 
 /**
  * Hold operations supported by the SC.
- * 
+ *
  * @author mreno-EBSCO
  *
  */
@@ -14,5 +14,5 @@ public enum HoldMode {
   /**
    * Change the hold to match the {@code Hold} message parameters.
    */
-  CHANGE;
+  CHANGE
 }

@@ -22,5 +22,5 @@ public enum CurrencyType {
   /** Spanish Peseta. */
   ESP,
   /** Yen. */
-  JPY;
+  JPY
 }

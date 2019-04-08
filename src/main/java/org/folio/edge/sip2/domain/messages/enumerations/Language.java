@@ -2,7 +2,7 @@ package org.folio.edge.sip2.domain.messages.enumerations;
 
 /**
  * List of languages supported by the SC.
- * 
+ *
  * @author mreno-EBSCO
  *
  */
@@ -34,5 +34,5 @@ public enum Language {
   UNITED_KINGDOM,
   ICELANDIC,
   BELGIAN,
-  TAIWANESE;
+  TAIWANESE
 }

@@ -58,7 +58,7 @@ public class MainVerticleTests extends BaseTest {
           .append("Checkout [scRenewalPolicy=true")
           .append(", noBlock=true")
           // need a better way to do dates, this could fail in rare cases
-          // due to offset changes such as DST. 
+          // due to offset changes such as DST.
           .append(", transactionDate=")
           .append(now.truncatedTo(SECONDS).toOffsetDateTime())
           .append(", nbDueDate=")
@@ -85,7 +85,17 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
-  public void canGetACSStatus(Vertx vertex,
+  public void canMakeValidSCStatusRequest(Vertx vertex,
+                                          VertxTestContext testContext) throws Throwable {
+    String sipSCStatusRequest = "9900401.00AY1AZFCA5";
+    callService(sipSCStatusRequest, testContext, vertex, result -> {
+      assertTrue(result.contains("98YYNYNN532019"));
+    });
+
+  }
+
+  @Test
+  public void canMakeInvalidStatusRequestAndGetExpectedErrorMessage(Vertx vertex,
                               VertxTestContext testContext) throws Throwable {
     callService("990231.23", testContext, vertex, result -> {
       assertTrue(result.contains("Problems handling the request"));

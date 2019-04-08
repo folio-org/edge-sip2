@@ -4,9 +4,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.lang.invoke.MethodHandles;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,49 +16,51 @@ import org.folio.edge.sip2.domain.messages.responses.ACSStatus;
 
 public class ConfigurationRepository {
 
-  private IConfigurationProvider configurationProvider;
+  private IResourceProvider resourceProvider;
   private final Logger log;
 
   /**
-   * @param configProvider
+   * Constructor that takes an IResourceProvider.
+   *
+   * @param resourceProvider This can be DefaultResourceProvider or any provider in the future.
    */
-  public ConfigurationRepository(IConfigurationProvider configProvider) {
-    if (configProvider == null) {
+  public ConfigurationRepository(IResourceProvider resourceProvider) {
+    if (resourceProvider == null) {
       throw new IllegalArgumentException("configGateway is null");
     }
-    this.configurationProvider = configProvider;
+    this.resourceProvider = resourceProvider;
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   }
 
   /**
-   * @param tenantId
-   * @return
+   * Method that returns ACSStatus built from the ACS configuration JSON snippet.
+   *
+   * @return ACSStatus object
    */
-  public ACSStatus getACSStatus(String tenantId) {
-    JsonObject jsonConfig = configurationProvider.retrieveConfiguration(tenantId);
+  public ACSStatus getACSStatus() {
+    JsonObject acsConfiguration = retrieveAcsConfiguration();
 
     ACSStatus acsStatus = null;
-    if (jsonConfig != null) {
+    if (acsConfiguration != null) {
       ACSStatus.ACSStatusBuilder builder = ACSStatus.builder();
-      builder.checkinOk(jsonConfig.getBoolean("onlineStatus"));
-      builder.acsRenewalPolicy(jsonConfig.getBoolean("acsRenewalPolicy"));
-      builder.checkoutOk(jsonConfig.getBoolean("checkoutOk"));
-      builder.dateTimeSync(LocalDateTime.parse(jsonConfig.getString("dateTimeSync"),
-                                                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                                                .atZone(ZoneId.of("Europe/Paris")));
-      builder.institutionId(jsonConfig.getString("institutionId"));
-      builder.libraryName(jsonConfig.getString("libraryName"));
-      builder.offLineOk(jsonConfig.getBoolean("checkoutOk"));
-      builder.onLineStatus(jsonConfig.getBoolean("onlineStatus"));
-      builder.printLine(jsonConfig.getString("printLine"));
-      builder.protocolVersion(jsonConfig.getString("protocolVersion"));
-      builder.retriesAllowed(jsonConfig.getInteger("retriesAllowed"));
-      builder.screenMessage(jsonConfig.getString("screenMessage"));
-      builder.statusUpdateOk(jsonConfig.getBoolean("statusUpdateOk"));
-      builder.terminalLocation(jsonConfig.getString("terminalLocation"));
-      builder.timeoutPeriod(jsonConfig.getInteger("timeoutPeriod"));
+
+      builder.checkinOk(acsConfiguration.getBoolean("onlineStatus"));
+      builder.acsRenewalPolicy(acsConfiguration.getBoolean("acsRenewalPolicy"));
+      builder.checkoutOk(acsConfiguration.getBoolean("checkoutOk"));
+      builder.dateTimeSync(ZonedDateTime.now());
+      builder.institutionId(acsConfiguration.getString("institutionId"));
+      builder.libraryName(acsConfiguration.getString("libraryName"));
+      builder.offLineOk(acsConfiguration.getBoolean("checkoutOk"));
+      builder.onLineStatus(acsConfiguration.getBoolean("onlineStatus"));
+      builder.printLine(acsConfiguration.getString("printLine"));
+      builder.protocolVersion(acsConfiguration.getString("protocolVersion"));
+      builder.retriesAllowed(acsConfiguration.getInteger("retriesAllowed"));
+      builder.screenMessage(acsConfiguration.getString("screenMessage"));
+      builder.statusUpdateOk(acsConfiguration.getBoolean("statusUpdateOk"));
+      builder.terminalLocation(acsConfiguration.getString("terminalLocation"));
+      builder.timeoutPeriod(acsConfiguration.getInteger("timeoutPeriod"));
       builder.supportedMessages(getSupportedMessagesFromJson(
-                                  jsonConfig.getJsonArray("supportedMessages")));
+              acsConfiguration.getJsonArray("supportedMessages")));
 
       acsStatus = builder.build();
 
@@ -70,19 +71,44 @@ public class ConfigurationRepository {
     return acsStatus;
   }
 
+
+  /**
+   * Method that retrieves the tenant configuration with the tenantID as configKey.
+   *
+   * @param configKey key to retrieving the desired tenant configuration. It is tenantId.
+   * @return JSON object containing tenant configuration
+   */
+  public JsonObject retrieveTenantConfiguration(String configKey) {
+
+    JsonObject configJson = null;
+
+    JsonObject jsonFile = resourceProvider.retrieveResource(null);
+    JsonArray tenantConfigurations = jsonFile.getJsonArray("tenantConfigurations");
+    Optional tenantConfigObject = tenantConfigurations
+        .stream()
+        .filter(config -> ((JsonObject)config).getString("tenantId").equalsIgnoreCase(configKey))
+        .findFirst();
+
+    if (tenantConfigObject.isPresent()) {
+      configJson = (JsonObject) tenantConfigObject.get();
+    }
+
+    return configJson;
+  }
+
+  private JsonObject retrieveAcsConfiguration() {
+
+    JsonObject acsConfiguration = null;
+    JsonObject fullConfiguration = resourceProvider.retrieveResource(null);
+
+    if (fullConfiguration != null) {
+      acsConfiguration = fullConfiguration.getJsonObject("acsConfiguration");
+    }
+
+    return acsConfiguration;
+  }
+
   private Set<Messages> getSupportedMessagesFromJson(JsonArray supportedMessages) {
-
-    /*
-    LinkedHashSet<Messages> messages = new LinkedHashSet<>();
-    supportedMessages
-     .forEach( (message) -> {
-       JsonObject aMessage = (JsonObject)message;
-       if (aMessage.getString("isSupported").equals("Y")){
-         messages.add(Messages.valueOf(aMessage.getString("messageName")));
-       }
-    });
-    */
-
     return supportedMessages
         .stream()
         .filter(el -> ((JsonObject) el).getString("isSupported").equalsIgnoreCase("Y"))

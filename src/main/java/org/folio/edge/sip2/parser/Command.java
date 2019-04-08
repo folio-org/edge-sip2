@@ -44,7 +44,7 @@ public enum Command {
 
   private final String identifier;
 
-  private Command(String identifier) {
+  Command(String identifier) {
     this.identifier = identifier;
   }
 
