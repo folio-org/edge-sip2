@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.handlers;
 
 import freemarker.template.Template;
+import jdk.internal.org.objectweb.asm.Handle;
 
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
@@ -12,6 +13,8 @@ import org.folio.edge.sip2.repositories.DefaultResourceProvider;
  * This serves as a central point to get the handlers.
  */
 public class HandlersFactory {
+
+  private HandlersFactory() {}
 
   /**
    * Factory method that encapsulates the logic of instantiating a SCStatusHandler.

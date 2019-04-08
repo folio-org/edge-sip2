@@ -16,6 +16,8 @@ public class FreemarkerUtils {
 
   private static Logger log;
 
+  private FreemarkerUtils() {}
+
   static {
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   }
@@ -44,7 +46,7 @@ public class FreemarkerUtils {
     }
 
     log.debug("Data =" + (data == null ? "" : data.toString())
-              + "Template =" + (template == null ? "" : template.getName()));
+              + "Template =" + template.getName());
 
     return outputString;
   }

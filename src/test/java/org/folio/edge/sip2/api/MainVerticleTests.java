@@ -82,7 +82,7 @@ public class MainVerticleTests extends BaseTest {
   public void cannotCheckoutWithInvalidCommandCode(Vertx vertex,
       VertxTestContext testContext) throws Throwable {
       callService("blablabalb", testContext, vertex, result -> {
-      assertTrue(result.contains("Problems handling the request"));
+        assertTrue(result.contains("Problems handling the request"));
     });
   }
 

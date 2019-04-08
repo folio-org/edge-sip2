@@ -6,7 +6,7 @@ import freemarker.template.TemplateExceptionHandler;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
+import java.util.EnumMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,19 +15,15 @@ import org.folio.edge.sip2.parser.Command;
 public class FreemarkerRepository {
 
   private static FreemarkerRepository instance;
-  private HashMap<Command, Template> templates;
+  private EnumMap<Command, Template> templates;
   private final Logger log;
 
   /**
    * Static method to get the only running Freemarker Repository instance.
    */
-  public static FreemarkerRepository getInstance() {
+  public static synchronized FreemarkerRepository getInstance() {
     if (instance == null) {
-      synchronized (FreemarkerRepository.class) {
-        if (instance == null) {
-          instance = new FreemarkerRepository();
-        }
-      }
+      instance = new FreemarkerRepository();
     }
     return instance;
   }
@@ -48,7 +44,7 @@ public class FreemarkerRepository {
   }
 
   private void initializeTemplates() {
-    templates = new HashMap<>();
+    templates = new EnumMap<>(Command.class);
 
     Configuration configuration = new Configuration(Configuration.VERSION_2_3_27);
     configuration.setClassForTemplateLoading(FreemarkerRepository.class, "/templates");
@@ -67,11 +63,7 @@ public class FreemarkerRepository {
     try {
       template = configuration.getTemplate(templateName);
       template.setBooleanFormat("Y,N");
-      if (template != null) {
-        templates.put(commmand, template);
-      } else {
-        log.error("template " + templateName + " is NULL");
-      }
+      templates.put(commmand, template);
     } catch (IOException e) {
       log.error("Error loading template: " + templateName);
     }

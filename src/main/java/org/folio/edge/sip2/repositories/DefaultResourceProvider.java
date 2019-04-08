@@ -3,6 +3,7 @@ package org.folio.edge.sip2.repositories;
 import io.vertx.core.json.JsonObject;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
@@ -29,15 +30,14 @@ public class DefaultResourceProvider implements IResourceProvider {
   public JsonObject retrieveResource(Object key) {
 
     JsonObject jsonFile = null;
+
     URL configurationResource = ClassLoader.getSystemResource("DefaultACSConfiguration.json");
 
-    try {
+    try (InputStream inputStream = configurationResource.openStream();
+         InputStreamReader isr = new InputStreamReader(inputStream);
+         BufferedReader br = new BufferedReader(isr)) {
 
       log.debug("Config file location:" + configurationResource.toString());
-      InputStream inputStream = configurationResource.openStream();
-      InputStreamReader isr = new InputStreamReader(inputStream);
-      BufferedReader br = new BufferedReader(isr);
-
       String fileContent = br.lines().collect(Collectors.joining("\n"));
       br.lines().close();
 
@@ -47,7 +47,6 @@ public class DefaultResourceProvider implements IResourceProvider {
     } catch (Exception ex) {
       log.error("General exception encountered reading configuration file: " + ex.getMessage());
     }
-
     return jsonFile;
   }
 
