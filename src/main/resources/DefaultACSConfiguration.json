@@ -1,6 +1,5 @@
 {
-  "tenantId" : "fs00000010",
-  "configuration" : {
+  "acsConfiguration": {
     "onlineStatus": true,
     "checkinOk": true,
     "checkoutOk": true,
@@ -14,69 +13,73 @@
     "institutionId": "fs00000010",
     "libraryName": "Chalmers",
     "supportedMessages": [
-     {
-       "messageName": "PATRON_STATUS_REQUEST",
-       "isSupported": "Y"
-     },
-     {
-       "messageName": "CHECKOUT",
-       "isSupported": "Y"
-     },
-     {
-       "messageName": "CHECKIN",
-       "isSupported": "Y"
-     },
-     {
-       "messageName": "BLOCK_PATRON",
-       "isSupported": "N"
-     },
-     {
-       "messageName": "SC_ACS_STATUS",
-       "isSupported": "Y"
-     },
-     {
-       "messageName": "LOGIN",
-       "isSupported": "Y"
-     },
-     {
-       "messageName": "PATRON_INFORMATION",
-       "isSupported": "Y"
-     },
-     {
-       "messageName": "END_PATRON_SESSION",
-       "isSupported": "Y"
-     },
-     {
-       "messageName": "FEE_PAID",
-       "isSupported": "N"
-     },
-     {
-       "messageName": "ITEM_INFORMATION",
-       "isSupported": "Y"
-     },
-     {
-       "messageName": "ITEM_STATUS_UPDATE",
-       "isSupported": "Y"
-     },
-     {
-       "messageName": "PATRON_ENABLE",
-       "isSupported": "Y"
-     },
-     {
-       "messageName": "HOLD",
-       "isSupported": "Y"
-     },
-     {
-       "messageName": "RENEW",
-       "isSupported": "Y"
-     },
-     {
-       "messageName": "RENEW_ALL",
-       "isSupported": "N"
-     }
-   ],
-   "terminalLocation": "",
-   "screenMessage": "",
-   "printLine": ""
- }
+      {
+        "messageName": "PATRON_STATUS_REQUEST",
+        "isSupported": "Y"
+      },
+      {
+        "messageName": "CHECKOUT",
+        "isSupported": "Y"
+      },
+      {
+        "messageName": "CHECKIN",
+        "isSupported": "Y"
+      },
+      {
+        "messageName": "BLOCK_PATRON",
+        "isSupported": "N"
+      },
+      {
+        "messageName": "SC_ACS_STATUS",
+        "isSupported": "Y"
+      },
+      {
+        "messageName": "LOGIN",
+        "isSupported": "Y"
+      },
+      {
+        "messageName": "PATRON_INFORMATION",
+        "isSupported": "Y"
+      },
+      {
+        "messageName": "END_PATRON_SESSION",
+        "isSupported": "Y"
+      },
+      {
+        "messageName": "FEE_PAID",
+        "isSupported": "N"
+      },
+      {
+        "messageName": "ITEM_INFORMATION",
+        "isSupported": "Y"
+      },
+      {
+        "messageName": "ITEM_STATUS_UPDATE",
+        "isSupported": "Y"
+      },
+      {
+        "messageName": "PATRON_ENABLE",
+        "isSupported": "Y"
+      },
+      {
+        "messageName": "HOLD",
+        "isSupported": "Y"
+      },
+      {
+        "messageName": "RENEW",
+        "isSupported": "Y"
+      },
+      {
+        "messageName": "RENEW_ALL",
+        "isSupported": "N"
+      }
+    ],
+    "terminalLocation": "TL01",
+    "screenMessage": "screenMessages",
+    "printLine": "line"
+  },
+  "tenantConfigurations": [{
+    "tenantId": "fs00000010test",
+    "encoding" : "ASCII"
+  }]
 }

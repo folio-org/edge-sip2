@@ -102,8 +102,7 @@ public class ConfigurationRepositoryTests {
 
   @Test
   public void canRetrieveTenantConfiguration(){
-    final String defaultResourcePath = "./src/test/resources/";
-    DefaultResourceProvider resourceProvider = new DefaultResourceProvider(defaultResourcePath);
+    DefaultResourceProvider resourceProvider = new DefaultResourceProvider();
     ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider);
 
     JsonObject testTenantConfig = configRepo.retrieveTenantConfiguration("fs00000010test");

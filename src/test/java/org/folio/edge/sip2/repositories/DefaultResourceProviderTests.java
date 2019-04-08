@@ -10,17 +10,15 @@ import io.vertx.core.json.JsonObject;
 
 public class DefaultResourceProviderTests {
 
-  private final String DEFAULT_RESOURCE_PATH = "./src/test/resources/";
-
   @Test
   public void canConstructDefaultConfigurationProvider(){
-    DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider("somePath");
+    DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
     assertNotNull(defaultConfigurationProvider);
   }
 
   @Test
   public void canRetrieveAcsConfiguration(){
-    DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider(DEFAULT_RESOURCE_PATH);
+    DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
     JsonObject jsonConfig = defaultConfigurationProvider.retrieveResource(null);
 
     assertNotNull(jsonConfig);
@@ -33,7 +31,7 @@ public class DefaultResourceProviderTests {
 
   @Test
   public void canRetrieveTenantConfiguration(){
-    DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider(DEFAULT_RESOURCE_PATH);
+    DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
     JsonObject jsonConfig = defaultConfigurationProvider.retrieveResource(null);
 
     assertNotNull(jsonConfig);

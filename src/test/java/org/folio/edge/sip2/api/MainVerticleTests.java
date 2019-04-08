@@ -10,7 +10,9 @@ import org.folio.edge.sip2.api.support.BaseTest;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 
+import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
+import java.util.Date;
 
 import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
 import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
@@ -79,7 +81,7 @@ public class MainVerticleTests extends BaseTest {
   @Test
   public void cannotCheckoutWithInvalidCommandCode(Vertx vertex,
       VertxTestContext testContext) throws Throwable {
-    callService("blablabalb", testContext, vertex, result -> {
+      callService("blablabalb", testContext, vertex, result -> {
       assertTrue(result.contains("Problems handling the request"));
     });
   }
@@ -87,11 +89,17 @@ public class MainVerticleTests extends BaseTest {
   @Test
   public void canMakeValidSCStatusRequest(Vertx vertex,
                                           VertxTestContext testContext) throws Throwable {
-    String sipSCStatusRequest = "9900401.00AY1AZFCA5";
-    callService(sipSCStatusRequest, testContext, vertex, result -> {
-      assertTrue(result.contains("98YYNYNN532019"));
-    });
 
+    callService("9900401.00AY1AZFCA5",
+      testContext, vertex, result -> {
+        String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
+        String expectedPostLocalTime = "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline\n\n";
+        String expectedBlankSpaces = "    ";
+
+        assertEquals(result.substring(0, 18), expectedPreLocalTime);
+        assertEquals(result.substring(18, 22), expectedBlankSpaces);
+        assertEquals(result.substring(28), expectedPostLocalTime);
+    });
   }
 
   @Test
@@ -100,5 +108,11 @@ public class MainVerticleTests extends BaseTest {
     callService("990231.23", testContext, vertex, result -> {
       assertTrue(result.contains("Problems handling the request"));
     });
+  }
+
+  private String getFormattedDateString(){
+    String pattern = "YYYYMMdd";
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+    return simpleDateFormat.format(new Date());
   }
 }

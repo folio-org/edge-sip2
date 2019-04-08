@@ -34,7 +34,7 @@ public enum Field {
 
   private final String identifier;
 
-  Field(String identifier) {
+  private Field(String identifier) {
     this.identifier = identifier;
   }
 

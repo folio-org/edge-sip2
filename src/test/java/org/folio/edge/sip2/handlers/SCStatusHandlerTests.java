@@ -21,7 +21,7 @@ public class SCStatusHandlerTests {
   @Test
   public void canExecuteASampleScStatusRequestUsingHandlersFactory(){
 
-    DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider("./src/test/resources/");
+    DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
 
     SCStatusHandler handler = ((SCStatusHandler) HandlersFactory.getScStatusHandlerInstance(null, defaultConfigurationProvider, null));
 
@@ -44,7 +44,7 @@ public class SCStatusHandlerTests {
 
   @Test
   public void cannotGetAValidResponseDueToMissingTemplate(){
-    DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider("./src/test/resources/");
+    DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
     ConfigurationRepository configurationRepository = new ConfigurationRepository(defaultConfigurationProvider);
 
     SCStatusHandler handler = new SCStatusHandler(configurationRepository, null);

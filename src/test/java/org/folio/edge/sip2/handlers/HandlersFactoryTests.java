@@ -22,7 +22,7 @@ public class HandlersFactoryTests {
   @Test
   public void canGetAcsStatusHandlerWithNonNlllArguments(){
 
-    DefaultResourceProvider resourceProvider = new DefaultResourceProvider("./");
+    DefaultResourceProvider resourceProvider = new DefaultResourceProvider();
     ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider);
     Template freemarkerTemplate = FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.ACS_STATUS);
 

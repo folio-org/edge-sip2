@@ -42,7 +42,7 @@ public enum LanguageMapper {
   private final String code;
   private final Language language;
 
-  LanguageMapper(String code, Language language) {
+  private LanguageMapper(String code, Language language) {
     this.code = code;
     this.language = language;
   }

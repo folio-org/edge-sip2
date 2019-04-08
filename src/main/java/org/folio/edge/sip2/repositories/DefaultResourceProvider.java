@@ -2,22 +2,21 @@ package org.folio.edge.sip2.repositories;
 
 import io.vertx.core.json.JsonObject;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.net.URL;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class DefaultResourceProvider implements IResourceProvider {
 
-  private String configInstancePath;
   private final Logger log;
 
-  public DefaultResourceProvider(String path) {
-    this.configInstancePath = path;
+  public DefaultResourceProvider() {
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   }
 
@@ -29,27 +28,24 @@ public class DefaultResourceProvider implements IResourceProvider {
   @Override
   public JsonObject retrieveResource(Object key) {
 
-    //Temporary debug code
-    System.out.println("Path: " + configInstancePath);
-    File fileName = new File(configInstancePath);
-    File[] fileList = fileName.listFiles();
-
-    for (File file: fileList) {
-
-      System.out.println(file);
-    }
-
     JsonObject jsonFile = null;
-    String filePath = configInstancePath + "DefaultACSConfiguration.json";
+    URL configurationResource = ClassLoader.getSystemResource("DefaultACSConfiguration.json");
 
     try {
-      String fileContent =  new String(Files.readAllBytes(Paths.get(filePath)));
+
+      log.debug("Config file location:" + configurationResource.toString());
+      InputStream inputStream = configurationResource.openStream();
+      InputStreamReader isr = new InputStreamReader(inputStream);
+      BufferedReader br = new BufferedReader(isr);
+
+      String fileContent = br.lines().collect(Collectors.joining("\n"));
+      br.lines().close();
+
+      log.debug(fileContent);
       jsonFile = new JsonObject(fileContent);
 
-    } catch (IOException e) {
-      log.error("Unable to read configuration in {} file", e, filePath);
     } catch (Exception ex) {
-      log.error("General exception encountered: " + ex.getMessage());
+      log.error("General exception encountered reading configuration file: " + ex.getMessage());
     }
 
     return jsonFile;
