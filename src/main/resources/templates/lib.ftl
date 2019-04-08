@@ -410,6 +410,14 @@
   <@booleanToYorN value=value/><#t>
 </#macro>
 
+<#macro renewedCount value>
+  <@limitNumberToRange value=value min=0 max=9999 length=4/>
+</#macro>
+
+<#macro renewedItems value>
+  <@variableLengthListField id="BM" value=value/>
+</#macro>
+
 <#macro resensitize value>
   <@booleanToYorN value=value/><#t>
 </#macro>
@@ -454,6 +462,14 @@
 
 <#macro unavailableHoldsCount value>
   <@limitNumberToRange value=value min=0 max=9999 length=4/>
+</#macro>
+
+<#macro unrenewedCount value>
+  <@limitNumberToRange value=value min=0 max=9999 length=4/>
+</#macro>
+
+<#macro unrenewedItems value>
+  <@variableLengthListField id="BN" value=value/>
 </#macro>
 
 <#macro validPatron value>
