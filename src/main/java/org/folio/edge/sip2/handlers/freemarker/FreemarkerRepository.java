@@ -39,8 +39,8 @@ public class FreemarkerRepository {
   }
 
   private FreemarkerRepository() {
-    initializeTemplates();
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+    initializeTemplates();
   }
 
   private void initializeTemplates() {

@@ -88,7 +88,7 @@ public final class ACSStatus {
     this.protocolVersion = builder.protocolVersion;
     this.institutionId = builder.institutionId;
     this.libraryName = builder.libraryName;
-    this.supportedMessages =  Collections.unmodifiableSet(
+    this.supportedMessages = Collections.unmodifiableSet(
         builder.supportedMessages == null ? EnumSet.noneOf(Messages.class)
             : EnumSet.copyOf(builder.supportedMessages));
     this.terminalLocation = builder.terminalLocation;

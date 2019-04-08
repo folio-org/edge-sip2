@@ -6,7 +6,6 @@ import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.invoke.MethodHandles;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,12 +13,12 @@ import org.apache.logging.log4j.Logger;
 
 public class FreemarkerUtils {
 
-  private static Logger log;
-
   private FreemarkerUtils() {}
 
+  private static final Logger log;
+
   static {
-    log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+    log = LogManager.getLogger();
   }
 
   /**
@@ -45,8 +44,9 @@ public class FreemarkerUtils {
       log.error("Error applying template to data: " + ex.getMessage());
     }
 
-    log.debug("Data =" + (data == null ? "" : data.toString())
-              + "Template =" + template.getName());
+    log.debug("Data = {} Template = {}",
+        () -> data == null ? "" : data.toString(),
+        () -> template.getName());
 
     return outputString;
   }

@@ -26,7 +26,7 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
-  public void canMakeARequest(Vertx vertex, VertxTestContext testContext) throws Throwable {
+  public void canMakeARequest(Vertx vertex, VertxTestContext testContext) {
     callService("9300CNMartin|COpassword|",
         testContext, vertex, result -> {
           final String expectedString = new StringBuilder()
@@ -43,8 +43,7 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
-  public void canStartMainVericleInjectingSip2RequestHandlers(Vertx vertex,
-      VertxTestContext testContext) throws Throwable {
+  public void canStartMainVericleInjectingSip2RequestHandlers(Vertx vertex, VertxTestContext testContext) {
 
     final ZonedDateTime now = ZonedDateTime.now();
     final String transactionDateString = getFormattedLocalDateTime(now);
@@ -79,21 +78,18 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
-  public void cannotCheckoutWithInvalidCommandCode(Vertx vertex,
-      VertxTestContext testContext) throws Throwable {
-      callService("blablabalb", testContext, vertex, result -> {
-        assertTrue(result.contains("Problems handling the request"));
+  public void cannotCheckoutWithInvalidCommandCode(Vertx vertex, VertxTestContext testContext) {
+    callService("blablabalb", testContext, vertex, result -> {
+      assertTrue(result.contains("Problems handling the request"));
     });
   }
 
   @Test
-  public void canMakeValidSCStatusRequest(Vertx vertex,
-                                          VertxTestContext testContext) throws Throwable {
-
+  public void canMakeValidSCStatusRequest(Vertx vertex, VertxTestContext testContext) {
     callService("9900401.00AY1AZFCA5",
       testContext, vertex, result -> {
         String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
-        String expectedPostLocalTime = "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline\n\n";
+        String expectedPostLocalTime = "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\n";
         String expectedBlankSpaces = "    ";
 
         assertEquals(result.substring(0, 18), expectedPreLocalTime);
@@ -103,8 +99,7 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
-  public void canMakeInvalidStatusRequestAndGetExpectedErrorMessage(Vertx vertex,
-                              VertxTestContext testContext) throws Throwable {
+  public void canMakeInvalidStatusRequestAndGetExpectedErrorMessage(Vertx vertex, VertxTestContext testContext) {
     callService("990231.23", testContext, vertex, result -> {
       assertTrue(result.contains("Problems handling the request"));
     });

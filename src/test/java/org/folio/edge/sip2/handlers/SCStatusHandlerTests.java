@@ -34,7 +34,7 @@ public class SCStatusHandlerTests {
     String sipMessage = handler.execute(status);
     //Because the sipMessage has a dateTime component that's supposed to be current, we can't assert on the entirety of the string, have to break it up into pieces.
     String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
-    String expectedPostLocalTime = "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline\n\n";
+    String expectedPostLocalTime = "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\n";
     String expectedBlankSpaces = "    ";
 
     assertEquals(sipMessage.substring(0, 18), expectedPreLocalTime);
