@@ -19,5 +19,5 @@ public enum CirculationStatus {
   IN_TRANSIT_BETWEEN_LIBRARY_LOCATIONS,
   CLAIMED_RETURNED,
   LOST,
-  MISSING;
+  MISSING
 }

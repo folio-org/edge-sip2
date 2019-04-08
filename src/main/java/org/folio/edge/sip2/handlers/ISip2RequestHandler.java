@@ -1,5 +1,5 @@
 package org.folio.edge.sip2.handlers;
 
-public interface Sip2RequestHandler {
+public interface ISip2RequestHandler {
   String execute(Object message);
 }

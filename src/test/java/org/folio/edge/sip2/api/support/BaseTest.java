@@ -1,4 +1,4 @@
-package api.support;
+package org.folio.edge.sip2.api.support;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
@@ -22,7 +22,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.folio.edge.sip2.MainVerticle;
 import org.folio.edge.sip2.handlers.LoginHandler;
-import org.folio.edge.sip2.handlers.Sip2RequestHandler;
+import org.folio.edge.sip2.handlers.ISip2RequestHandler;
+
 import org.folio.edge.sip2.parser.Command;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -63,10 +64,9 @@ public abstract class BaseTest {
    * @param testContext the vertx test context.
    * @param vertx the vertx instance.
    * @param testHandler the handler for this test.
-   * @throws Throwable an unexpected error.
    */
   public void callService(String ncipMessage, VertxTestContext testContext,
-      Vertx vertx, Handler<String> testHandler) throws Throwable {
+      Vertx vertx, Handler<String> testHandler) {
 
     NetClientOptions options = new NetClientOptions();
     options.setConnectTimeout(2);
@@ -97,9 +97,9 @@ public abstract class BaseTest {
   }
 
   private void setMainVerticleInstance(String methodName) {
-    if (methodName == "CanStartMainVericleInjectingSip2RequestHandlers") {
+    if (methodName.equalsIgnoreCase("CanStartMainVericleInjectingSip2RequestHandlers")) {
       LoginHandler loginHandler = new LoginHandler();
-      EnumMap<Command, Sip2RequestHandler> requestHandlerMap =
+      EnumMap<Command, ISip2RequestHandler> requestHandlerMap =
           new EnumMap<>(Command.class);
       requestHandlerMap.put(Command.LOGIN, loginHandler);
 

@@ -2,6 +2,7 @@ package org.folio.edge.sip2;
 
 import static org.folio.edge.sip2.parser.Command.CHECKOUT;
 import static org.folio.edge.sip2.parser.Command.LOGIN;
+import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -14,16 +15,16 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.folio.edge.sip2.handlers.CheckoutHandler;
-import org.folio.edge.sip2.handlers.LoginHandler;
-import org.folio.edge.sip2.handlers.Sip2RequestHandler;
+import org.folio.edge.sip2.handlers.HandlersFactory;
+import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
 
+
 public class MainVerticle extends AbstractVerticle {
 
-  private Map<Command, Sip2RequestHandler> handlers;
+  private Map<Command, ISip2RequestHandler> handlers;
   private NetServer server;
   private final Logger log;
 
@@ -32,13 +33,14 @@ public class MainVerticle extends AbstractVerticle {
    */
   public MainVerticle() {
     handlers = new EnumMap<>(Command.class);
-    handlers.put(LOGIN, new LoginHandler());
-    handlers.put(CHECKOUT, new CheckoutHandler());
+    handlers.put(LOGIN, HandlersFactory.getLoginHandlerIntance());
+    handlers.put(CHECKOUT, HandlersFactory.getCheckoutHandlerIntance());
+    handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null, null));
 
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   }
 
-  public MainVerticle(Map<Command, Sip2RequestHandler> handlers) {
+  public MainVerticle(Map<Command, ISip2RequestHandler> handlers) {
     this.handlers = handlers;
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   }
@@ -75,10 +77,14 @@ public class MainVerticle extends AbstractVerticle {
             //resends validation
           }
 
-          Sip2RequestHandler handler = handlers.get(message.getCommand());
+          ISip2RequestHandler handler = handlers.get(message.getCommand());
+
+          if (handler == null) {
+            log.error("Error locating handler for command; " + message.getCommand().name());
+          }
           socket.write(handler.execute(message.getRequest()));  //call FOLIO
         } catch (Exception ex) {
-          String message = "Problems handling the request " + ex.getMessage();
+          String message = "Problems handling the request: " + ex.getMessage();
           log.error(message);
           // Return an error message for now for the sake of negative testing.
           // Will find a better way to handle negative test cases.
