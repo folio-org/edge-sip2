@@ -1,16 +1,18 @@
-package api;
+package org.folio.edge.sip2.api;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import api.support.BaseTest;
+import org.folio.edge.sip2.api.support.BaseTest;
 
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 
+import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
+import java.util.Date;
 
 import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
 import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
@@ -24,7 +26,7 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
-  public void canMakeARequest(Vertx vertex, VertxTestContext testContext) throws Throwable {
+  public void canMakeARequest(Vertx vertex, VertxTestContext testContext) {
     callService("9300CNMartin|COpassword|",
         testContext, vertex, result -> {
           final String expectedString = new StringBuilder()
@@ -41,8 +43,7 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
-  public void canStartMainVericleInjectingSip2RequestHandlers(Vertx vertex,
-      VertxTestContext testContext) throws Throwable {
+  public void canStartMainVericleInjectingSip2RequestHandlers(Vertx vertex, VertxTestContext testContext) {
 
     final ZonedDateTime now = ZonedDateTime.now();
     final String transactionDateString = getFormattedLocalDateTime(now);
@@ -58,7 +59,7 @@ public class MainVerticleTests extends BaseTest {
           .append("Checkout [scRenewalPolicy=true")
           .append(", noBlock=true")
           // need a better way to do dates, this could fail in rare cases
-          // due to offset changes such as DST. 
+          // due to offset changes such as DST.
           .append(", transactionDate=")
           .append(now.truncatedTo(SECONDS).toOffsetDateTime())
           .append(", nbDueDate=")
@@ -77,10 +78,36 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
-  public void cannotCheckoutWithInvalidCommandCode(Vertx vertex,
-      VertxTestContext testContext) throws Throwable {
+  public void cannotCheckoutWithInvalidCommandCode(Vertx vertex, VertxTestContext testContext) {
     callService("blablabalb", testContext, vertex, result -> {
       assertTrue(result.contains("Problems handling the request"));
     });
+  }
+
+  @Test
+  public void canMakeValidSCStatusRequest(Vertx vertex, VertxTestContext testContext) {
+    callService("9900401.00AY1AZFCA5",
+      testContext, vertex, result -> {
+        String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
+        String expectedPostLocalTime = "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\n";
+        String expectedBlankSpaces = "    ";
+
+        assertEquals(result.substring(0, 18), expectedPreLocalTime);
+        assertEquals(result.substring(18, 22), expectedBlankSpaces);
+        assertEquals(result.substring(28), expectedPostLocalTime);
+    });
+  }
+
+  @Test
+  public void canMakeInvalidStatusRequestAndGetExpectedErrorMessage(Vertx vertex, VertxTestContext testContext) {
+    callService("990231.23", testContext, vertex, result -> {
+      assertTrue(result.contains("Problems handling the request"));
+    });
+  }
+
+  private String getFormattedDateString(){
+    String pattern = "YYYYMMdd";
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+    return simpleDateFormat.format(new Date());
   }
 }

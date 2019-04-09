@@ -9,5 +9,5 @@ package org.folio.edge.sip2.domain.messages.enumerations;
 public enum PaymentType {
   CASH,
   VISA,
-  CREDIT_CARD;
+  CREDIT_CARD
 }

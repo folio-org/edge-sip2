@@ -23,5 +23,5 @@ public enum Messages {
   PATRON_ENABLE,
   HOLD,
   RENEW,
-  RENEW_ALL;
+  RENEW_ALL
 }

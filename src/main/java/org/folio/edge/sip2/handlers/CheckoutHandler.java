@@ -2,7 +2,7 @@ package org.folio.edge.sip2.handlers;
 
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 
-public class CheckoutHandler implements Sip2RequestHandler {
+public class CheckoutHandler implements ISip2RequestHandler {
 
   @Override
   public String execute(Object message) {

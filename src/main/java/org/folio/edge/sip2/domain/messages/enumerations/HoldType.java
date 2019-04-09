@@ -13,5 +13,5 @@ public enum HoldType {
   /** A specific copy of a title. */
   SPECIFIC_COPY_TITLE,
   /** Any copy at a single branch or sublocation. */
-  ANY_COPY_LOCATION;
+  ANY_COPY_LOCATION
 }

@@ -7,5 +7,5 @@ package org.folio.edge.sip2.domain.messages.enumerations;
  *
  */
 public enum PWDAlgorithm {
-  NO_ENCRYPTION;
+  NO_ENCRYPTION
 }

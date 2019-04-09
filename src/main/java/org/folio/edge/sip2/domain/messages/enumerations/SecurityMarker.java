@@ -10,5 +10,5 @@ public enum SecurityMarker {
   OTHER,
   NONE,
   TATTLE_TAPE_SECURITY_STRIP,
-  WHISPER_TAPE;
+  WHISPER_TAPE
 }

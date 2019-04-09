@@ -15,5 +15,5 @@ public enum FeeType {
   RENTAL,
   REPLACEMENT,
   COMPUTER_ACCESS_CHARGE,
-  HOLD_FEE;
+  HOLD_FEE
 }
