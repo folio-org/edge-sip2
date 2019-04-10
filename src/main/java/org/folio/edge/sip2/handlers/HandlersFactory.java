@@ -49,4 +49,8 @@ public class HandlersFactory {
   public static ISip2RequestHandler getCheckoutHandlerIntance() {
     return new CheckoutHandler();
   }
+
+  public static ISip2RequestHandler getInvalidMessageHandler(){
+    return new InvalidMessageHandler();
+  }
 }
