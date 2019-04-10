@@ -73,7 +73,8 @@ public class MainVerticle extends AbstractVerticle {
           //process validation results
           if (!message.isValid()) {
             log.error("Message is invalid: {}", messageString);
-            if (message.getChecksumsString() != null) {  //The presence of the checksum string or sequence number indicates that error detection was enabled.
+            //The presence of the checksum string indicates that error detection was enabled.
+            if (message.getChecksumsString() != null) {
               //resends validation if checksum string does not match
               ISip2RequestHandler handler = handlers.get(Command.REQUEST_SC_RESEND);
               socket.write(handler.execute(message.getRequest()));

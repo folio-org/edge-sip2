@@ -50,7 +50,7 @@ public class HandlersFactory {
     return new CheckoutHandler();
   }
 
-  public static ISip2RequestHandler getInvalidMessageHandler(){
+  public static ISip2RequestHandler getInvalidMessageHandler() {
     return new InvalidMessageHandler();
   }
 }
