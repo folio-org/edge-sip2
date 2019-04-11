@@ -163,7 +163,11 @@ public final class Parser {
 
       return builder.build();
     } else {
-      return Message.builder().valid(false).build();
+      return Message.builder()
+        .valid(false)
+        .checksumString(ed.checksum)
+        .sequenceNumber(ed.sequenceNumber)
+        .build();
     }
   }
 

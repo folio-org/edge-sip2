@@ -5,8 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.folio.edge.sip2.api.support.BaseTest;
-
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 
@@ -14,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
+import org.folio.edge.sip2.api.support.BaseTest;
 import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
 import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,7 @@ public class MainVerticleTests extends BaseTest {
 
   @Test
   public void canMakeARequest(Vertx vertex, VertxTestContext testContext) {
-    callService("9300CNMartin|COpassword|",
+    callService("9300CNMartin|COpassword|\r",
         testContext, vertex, result -> {
           final String expectedString = new StringBuilder()
               .append("Logged ")
@@ -43,7 +42,8 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
-  public void canStartMainVericleInjectingSip2RequestHandlers(Vertx vertex, VertxTestContext testContext) {
+  public void canStartMainVericleInjectingSip2RequestHandlers(
+      Vertx vertex, VertxTestContext testContext) {
 
     final ZonedDateTime now = ZonedDateTime.now();
     final String transactionDateString = getFormattedLocalDateTime(now);
@@ -51,7 +51,7 @@ public class MainVerticleTests extends BaseTest {
     String title = "Angry Planet";
     String sipMessage =
         "11YY" + transactionDateString + nbDueDateString
-        + "AOinstitution_id|AApatron_id|AB" + title + "|AC1234|";
+        + "AOinstitution_id|AApatron_id|AB" + title + "|AC1234|\r";
 
     callService(sipMessage, testContext, vertex, result -> {
       final String expectedString = new StringBuilder()
@@ -79,35 +79,59 @@ public class MainVerticleTests extends BaseTest {
 
   @Test
   public void cannotCheckoutWithInvalidCommandCode(Vertx vertex, VertxTestContext testContext) {
-    callService("blablabalb", testContext, vertex, result -> {
+    callService("blablabalb\r", testContext, vertex, result -> {
       assertTrue(result.contains("Problems handling the request"));
     });
   }
 
   @Test
   public void canMakeValidSCStatusRequest(Vertx vertex, VertxTestContext testContext) {
-    callService("9900401.00AY1AZFCA5",
-      testContext, vertex, result -> {
-        String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
-        String expectedPostLocalTime = "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\n";
-        String expectedBlankSpaces = "    ";
-
-        assertEquals(result.substring(0, 18), expectedPreLocalTime);
-        assertEquals(result.substring(18, 22), expectedBlankSpaces);
-        assertEquals(result.substring(28), expectedPostLocalTime);
-    });
+    callService("9900401.00AY1AZFCA5\r",
+        testContext, vertex, result -> {
+          validateExpectedACSStatus(result);
+      });
   }
 
   @Test
-  public void canMakeInvalidStatusRequestAndGetExpectedErrorMessage(Vertx vertex, VertxTestContext testContext) {
-    callService("990231.23", testContext, vertex, result -> {
+  public void canMakeInvalidStatusRequestAndGetExpectedErrorMessage(
+      Vertx vertex, VertxTestContext testContext) {
+    callService("990231.23\r", testContext, vertex, result -> {
       assertTrue(result.contains("Problems handling the request"));
     });
   }
 
-  private String getFormattedDateString(){
+  @Test
+  public void canGetCsResendMessageWhenSendingInvalidMessage(
+      Vertx vertx, VertxTestContext testContext) {
+    String scStatusMessage = "9900401.00AY1AZAAAA\r";
+    callService(scStatusMessage, testContext, vertx, result -> {
+      assertEquals("96\r", result);
+    });
+  }
+
+  @Test
+  public void canGetACSStatusMessageWhenSendingValidMessage(
+      Vertx vertx, VertxTestContext testContext) {
+    String scStatusMessage = "9900401.00AY1AZFCA5\r";
+    callService(scStatusMessage, testContext, vertx, result -> {
+      validateExpectedACSStatus(result);
+    });
+  }
+
+  private String getFormattedDateString() {
     String pattern = "YYYYMMdd";
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
     return simpleDateFormat.format(new Date());
+  }
+
+  private void validateExpectedACSStatus(String acsResponse) {
+    String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
+    String expectedPostLocalTime =
+        "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\n";
+    String expectedBlankSpaces = "    ";
+
+    assertEquals(expectedPreLocalTime, acsResponse.substring(0, 18));
+    assertEquals(expectedBlankSpaces, acsResponse.substring(18, 22));
+    assertEquals(expectedPostLocalTime, acsResponse.substring(28));
   }
 }

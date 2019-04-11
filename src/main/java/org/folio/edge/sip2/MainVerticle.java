@@ -8,6 +8,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
+import io.vertx.core.parsetools.RecordParser;
 
 import java.lang.invoke.MethodHandles;
 import java.util.EnumMap;
@@ -20,7 +21,6 @@ import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
-
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -36,7 +36,7 @@ public class MainVerticle extends AbstractVerticle {
     handlers.put(LOGIN, HandlersFactory.getLoginHandlerIntance());
     handlers.put(CHECKOUT, HandlersFactory.getCheckoutHandlerIntance());
     handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null, null));
-
+    handlers.put(Command.REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   }
 
@@ -55,10 +55,9 @@ public class MainVerticle extends AbstractVerticle {
     log.info("Deployed verticle at port " + port);
 
     server.connectHandler(socket -> {
-
-      socket.handler(buffer -> {
+      socket.handler(RecordParser.newDelimited("\r", buffer -> {
         final String messageString = buffer.getString(0, buffer.length());
-        log.info("Received message: {}",  messageString);
+        log.info("Received message: {}", messageString);
 
         try {
           // Create a parser with the default delimiter '|' and the default
@@ -74,7 +73,15 @@ public class MainVerticle extends AbstractVerticle {
           //process validation results
           if (!message.isValid()) {
             log.error("Message is invalid: {}", messageString);
-            //resends validation
+            //The presence of the checksum string indicates that error detection was enabled.
+            if (message.getChecksumsString() != null) {
+              //resends validation if checksum string does not match
+              ISip2RequestHandler handler = handlers.get(Command.REQUEST_SC_RESEND);
+              socket.write(handler.execute(message.getRequest()));
+            } else {
+              socket.write("Problems handling the request");
+            }
+            return;
           }
 
           ISip2RequestHandler handler = handlers.get(message.getCommand());
@@ -90,7 +97,7 @@ public class MainVerticle extends AbstractVerticle {
           // Will find a better way to handle negative test cases.
           socket.write(message);
         }
-      });
+      }));
 
       socket.exceptionHandler(handler -> {
         log.info("Socket exceptionHandler caught an issue, see error logs for more details");
