@@ -5,17 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.folio.edge.sip2.api.support.BaseTest;
-
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.Date;
-
-import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
-import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
+import org.folio.edge.sip2.api.support.BaseTest;
 import org.junit.jupiter.api.Test;
 
 public class MainVerticleTests extends BaseTest {
@@ -27,23 +23,17 @@ public class MainVerticleTests extends BaseTest {
 
   @Test
   public void canMakeARequest(Vertx vertex, VertxTestContext testContext) {
-    callService("9300CNMartin|COpassword|",
+    callService("9300CNMartin|COpassword|\r",
         testContext, vertex, result -> {
-          final String expectedString = new StringBuilder()
-              .append("Logged ")
-              .append("Login [uidAlgorithm=").append(UIDAlgorithm.NO_ENCRYPTION)
-              .append(", pwdAlgorithm=").append(PWDAlgorithm.NO_ENCRYPTION)
-              .append(", loginUserId=").append("Martin")
-              .append(", loginPassword=").append("password")
-              .append(", locationCode=").append((String) null)
-              .append(']').append(" in")
-              .toString();
+          final String expectedString = "941";
           assertEquals(expectedString, result);
         });
   }
 
   @Test
-  public void canStartMainVericleInjectingSip2RequestHandlers(Vertx vertex, VertxTestContext testContext) {
+  public void canStartMainVericleInjectingSip2RequestHandlers(
+      Vertx vertex, 
+      VertxTestContext testContext) {
 
     final ZonedDateTime now = ZonedDateTime.now();
     final String transactionDateString = getFormattedLocalDateTime(now);
@@ -51,7 +41,7 @@ public class MainVerticleTests extends BaseTest {
     String title = "Angry Planet";
     String sipMessage =
         "11YY" + transactionDateString + nbDueDateString
-        + "AOinstitution_id|AApatron_id|AB" + title + "|AC1234|";
+        + "AOinstitution_id|AApatron_id|AB" + title + "|AC1234|\r";
 
     callService(sipMessage, testContext, vertex, result -> {
       final String expectedString = new StringBuilder()
@@ -79,33 +69,36 @@ public class MainVerticleTests extends BaseTest {
 
   @Test
   public void cannotCheckoutWithInvalidCommandCode(Vertx vertex, VertxTestContext testContext) {
-    callService("blablabalb", testContext, vertex, result -> {
+    callService("blablabalb\r", testContext, vertex, result -> {
       assertTrue(result.contains("Problems handling the request"));
     });
   }
 
   @Test
   public void canMakeValidSCStatusRequest(Vertx vertex, VertxTestContext testContext) {
-    callService("9900401.00AY1AZFCA5",
-      testContext, vertex, result -> {
-        String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
-        String expectedPostLocalTime = "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\n";
-        String expectedBlankSpaces = "    ";
-
-        assertEquals(result.substring(0, 18), expectedPreLocalTime);
-        assertEquals(result.substring(18, 22), expectedBlankSpaces);
-        assertEquals(result.substring(28), expectedPostLocalTime);
-    });
+    callService("9900401.00AY1AZFCA5\r",
+        testContext, vertex, result -> {
+          String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
+          String expectedPostLocalTime = "1.23|AOfs00000010test|AMChalmers|"
+              + "BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|";
+          String expectedBlankSpaces = "    ";
+  
+          assertEquals(expectedPreLocalTime, result.substring(0, 18));
+          assertEquals(expectedBlankSpaces, result.substring(18, 22));
+          assertEquals(expectedPostLocalTime, result.substring(28));
+        });
   }
 
   @Test
-  public void canMakeInvalidStatusRequestAndGetExpectedErrorMessage(Vertx vertex, VertxTestContext testContext) {
-    callService("990231.23", testContext, vertex, result -> {
+  public void canMakeInvalidStatusRequestAndGetExpectedErrorMessage(
+      Vertx vertex,
+      VertxTestContext testContext) {
+    callService("990231.23\r", testContext, vertex, result -> {
       assertTrue(result.contains("Problems handling the request"));
     });
   }
 
-  private String getFormattedDateString(){
+  private String getFormattedDateString() {
     String pattern = "YYYYMMdd";
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
     return simpleDateFormat.format(new Date());

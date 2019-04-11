@@ -1,14 +1,13 @@
-package org.folio.edge.sip2.handlers.Freemarker;
+package org.folio.edge.sip2.handlers.freemarker;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import freemarker.template.Template;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import freemarker.template.Template;
 
 public class FreemarkerRepositoryTests {
 
@@ -31,7 +30,7 @@ public class FreemarkerRepositoryTests {
   }
 
   @Test
-  public void canGetNullWhenRequestingInvalidTemplate(){
+  public void canGetNullWhenRequestingInvalidTemplate() {
     Template template = freemarkerRepoInstance.getFreemarkerTemplate(Command.CHECKOUT);
     assertNull(template);
   }

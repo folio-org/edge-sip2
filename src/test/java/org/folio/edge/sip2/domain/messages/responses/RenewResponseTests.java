@@ -41,7 +41,7 @@ class RenewResponseTests {
   final String itemProperties = "Directors Cut";
   final String transactionId = "01928374675";
   final String screenMessage = "Please rewind";
-  final static String printLine = "Enjoy!";
+  final String printLine = "Enjoy!";
 
   @Test
   void testGetOk() {

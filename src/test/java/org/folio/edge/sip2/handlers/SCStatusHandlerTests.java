@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.vertx.core.Vertx;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
@@ -15,15 +18,17 @@ import org.folio.edge.sip2.domain.messages.requests.SCStatus;
 import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.DefaultResourceProvider;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(VertxExtension.class)
 public class SCStatusHandlerTests {
 
   @Test
-  public void canExecuteASampleScStatusRequestUsingHandlersFactory(){
+  public void canExecuteASampleScStatusRequestUsingHandlersFactory(
+      Vertx vertx,
+      VertxTestContext testContext) {
 
     DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
-
-    SCStatusHandler handler = ((SCStatusHandler) HandlersFactory.getScStatusHandlerInstance(null, defaultConfigurationProvider, null));
 
     SCStatus.SCStatusBuilder statusBuilder = SCStatus.builder();
     statusBuilder.maxPrintWidth(20);
@@ -31,36 +36,53 @@ public class SCStatusHandlerTests {
     statusBuilder.statusCode(StatusCode.SC_OK);
     SCStatus status =  statusBuilder.build();
 
-    String sipMessage = handler.execute(status);
-    //Because the sipMessage has a dateTime component that's supposed to be current, we can't assert on the entirety of the string, have to break it up into pieces.
-    String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
-    String expectedPostLocalTime = "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\n";
-    String expectedBlankSpaces = "    ";
+    SCStatusHandler handler = ((SCStatusHandler) HandlersFactory
+        .getScStatusHandlerInstance(null, defaultConfigurationProvider, null));
 
-    assertEquals(sipMessage.substring(0, 18), expectedPreLocalTime);
-    assertEquals(sipMessage.substring(18, 22), expectedBlankSpaces);
-    assertEquals(sipMessage.substring(28), expectedPostLocalTime);
+    handler.execute(status).setHandler(
+        testContext.succeeding(sipMessage -> testContext.verify(() -> {
+          // Because the sipMessage has a dateTime component that's supposed
+          // to be current, we can't assert on the entirety of the string,
+          // have to break it up into pieces.
+          String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
+          String expectedPostLocalTime = 
+              "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|"
+              + "AFscreenMessages|AGline|";
+          String expectedBlankSpaces = "    ";
+      
+          assertEquals(sipMessage.substring(0, 18), expectedPreLocalTime);
+          assertEquals(sipMessage.substring(18, 22), expectedBlankSpaces);
+          assertEquals(sipMessage.substring(28), expectedPostLocalTime);
+    
+          testContext.completeNow();
+        })));
   }
 
   @Test
-  public void cannotGetAValidResponseDueToMissingTemplate(){
+  public void cannotGetAValidResponseDueToMissingTemplate(
+      Vertx vertx,
+      VertxTestContext testContext) {
     DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
-    ConfigurationRepository configurationRepository = new ConfigurationRepository(defaultConfigurationProvider);
+    ConfigurationRepository configurationRepository =
+        new ConfigurationRepository(defaultConfigurationProvider);
+
+    SCStatus.SCStatusBuilder statusBuilder = SCStatus.builder();
+    statusBuilder.maxPrintWidth(20);
+    statusBuilder.protocolVersion("1.00");
+    statusBuilder.statusCode(StatusCode.SC_OK);
+    SCStatus status =  statusBuilder.build();
 
     SCStatusHandler handler = new SCStatusHandler(configurationRepository, null);
 
-    SCStatus.SCStatusBuilder statusBuilder = SCStatus.builder();
-    statusBuilder.maxPrintWidth(20);
-    statusBuilder.protocolVersion("1.00");
-    statusBuilder.statusCode(StatusCode.SC_OK);
-    SCStatus status =  statusBuilder.build();
-
-    String sipMessage = handler.execute(status);
-    assertEquals("", sipMessage);
+    handler.execute(status).setHandler(
+        testContext.failing(throwable -> testContext.verify(() -> {
+          assertEquals("", throwable.getMessage());
+          testContext.completeNow();
+        })));
   }
 
   @Test
-  public void canGetValidPackagedSupportedMessages(){
+  public void canGetValidPackagedSupportedMessages() {
 
     Set<Messages> supportedMessages = new HashSet<>();
     supportedMessages.add(Messages.CHECKIN);
@@ -69,7 +91,8 @@ public class SCStatusHandlerTests {
     supportedMessages.add(Messages.RENEW);
 
 
-    SCStatusHandler.PackagedSupportedMessages psm = new SCStatusHandler.PackagedSupportedMessages(supportedMessages);
+    SCStatusHandler.PackagedSupportedMessages psm =
+        new SCStatusHandler.PackagedSupportedMessages(supportedMessages);
     assertTrue(psm.getCheckIn());
     assertTrue(psm.getCheckOut());
     assertTrue(psm.getHold());
@@ -88,7 +111,7 @@ public class SCStatusHandlerTests {
     assertFalse(psm.getPatronInformation());
   }
 
-  private String getFormattedDateString(){
+  private String getFormattedDateString() {
     String pattern = "YYYYMMdd";
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
     return simpleDateFormat.format(new Date());

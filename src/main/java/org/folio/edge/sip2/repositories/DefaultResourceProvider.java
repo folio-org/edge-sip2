@@ -1,5 +1,6 @@
 package org.folio.edge.sip2.repositories;
 
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 
 import java.io.BufferedReader;
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class DefaultResourceProvider implements IResourceProvider {
+public class DefaultResourceProvider implements IResourceProvider<Object> {
 
   private final Logger log;
 
@@ -21,12 +22,12 @@ public class DefaultResourceProvider implements IResourceProvider {
   }
 
   @Override
-  public JsonObject createResource(Object fromData) {
+  public Future<JsonObject> createResource(Object fromData) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public JsonObject retrieveResource(Object key) {
+  public Future<JsonObject> retrieveResource(Object key) {
 
     JsonObject jsonFile = null;
 
@@ -46,16 +47,16 @@ public class DefaultResourceProvider implements IResourceProvider {
     } catch (Exception ex) {
       log.error("General exception encountered reading configuration file: " + ex.getMessage());
     }
-    return jsonFile;
+    return Future.succeededFuture(jsonFile);
   }
 
   @Override
-  public JsonObject editResource(Object fromData) {
+  public Future<JsonObject> editResource(Object fromData) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public JsonObject deleteResource(Object resource) {
+  public Future<JsonObject> deleteResource(Object resource) {
     throw new UnsupportedOperationException();
   }
 }

@@ -1,8 +1,12 @@
 package org.folio.edge.sip2.api.support;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -21,10 +25,13 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.folio.edge.sip2.MainVerticle;
-import org.folio.edge.sip2.handlers.LoginHandler;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
-
+import org.folio.edge.sip2.handlers.LoginHandler;
+import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
+import org.folio.edge.sip2.repositories.IRequestData;
+import org.folio.edge.sip2.repositories.IResourceProvider;
+import org.folio.edge.sip2.repositories.LoginRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.TestInfo;
@@ -35,6 +42,11 @@ public abstract class BaseTest {
 
   protected MainVerticle myVerticle;
   private final int port = getRandomPort();
+
+  static {
+    System.setProperty("vertx.logger-delegate-factory-class-name",
+        "io.vertx.core.logging.Log4j2LogDelegateFactory");
+  }
 
   /**
    * Deploy the verticle before each test.
@@ -98,7 +110,23 @@ public abstract class BaseTest {
 
   private void setMainVerticleInstance(String methodName) {
     if (methodName.equalsIgnoreCase("CanStartMainVericleInjectingSip2RequestHandlers")) {
-      LoginHandler loginHandler = new LoginHandler();
+      LoginHandler loginHandler = new LoginHandler(null, null);
+      EnumMap<Command, ISip2RequestHandler> requestHandlerMap =
+          new EnumMap<>(Command.class);
+      requestHandlerMap.put(Command.LOGIN, loginHandler);
+
+      myVerticle = new MainVerticle(requestHandlerMap);
+
+    } else if (methodName.startsWith("canMakeARequest(")) {
+      @SuppressWarnings("unchecked")
+      IResourceProvider<IRequestData> mockFolioProvider =
+          mock(IResourceProvider.class);
+      when(mockFolioProvider.createResource(any()))
+        .thenReturn(Future.succeededFuture(new JsonObject()));
+      LoginHandler loginHandler = new LoginHandler(
+          new LoginRepository(mockFolioProvider),
+          FreemarkerRepository.getInstance()
+            .getFreemarkerTemplate(Command.LOGIN_RESPONSE));
       EnumMap<Command, ISip2RequestHandler> requestHandlerMap =
           new EnumMap<>(Command.class);
       requestHandlerMap.put(Command.LOGIN, loginHandler);

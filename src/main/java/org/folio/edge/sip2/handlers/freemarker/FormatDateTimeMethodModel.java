@@ -12,7 +12,8 @@ import java.util.List;
 public class FormatDateTimeMethodModel implements TemplateMethodModelEx {
 
   @Override
-  public Object exec(List args) throws TemplateModelException {
+  public Object exec(@SuppressWarnings("rawtypes") List args)
+      throws TemplateModelException {
 
     if (args.size() != 2) {
       throw new TemplateModelException("Wrong arguments");

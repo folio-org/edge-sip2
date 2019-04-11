@@ -54,6 +54,7 @@ public class FreemarkerRepository {
     configuration.setWrapUncheckedExceptions(true);
 
     addTemplate(Command.ACS_STATUS, "acs-status.ftl", configuration);
+    addTemplate(Command.LOGIN_RESPONSE, "LoginResponse.ftl", configuration);
   }
 
   private void addTemplate(Command commmand, String templateName, Configuration configuration) {
