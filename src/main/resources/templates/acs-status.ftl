@@ -15,6 +15,7 @@ BX<@supportedMessages />|<#rt>
 AN${ACSStatus.terminalLocation}|<#rt>
 AF${ACSStatus.screenMessage}|<#rt>
 AG${ACSStatus.printLine}|<#rt>
+
 <#macro supportedMessages>
  ${PackagedSupportedMessages.patronStatusRequest}<#t>
  ${PackagedSupportedMessages.checkOut}<#t>
