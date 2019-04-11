@@ -1,10 +1,12 @@
 package org.folio.edge.sip2.repositories;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.ext.web.codec.BodyCodec;
@@ -53,20 +55,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         .expect(ResponsePredicate.SC_OK)
         .expect(ResponsePredicate.JSON)
         .as(BodyCodec.jsonObject())
-        .send(ar -> {
-          if (ar.succeeded()) {
-            // Save the okapi token. There is probably a better way to do this.
-            final String serverToken = ar.result()
-                .getHeader(HEADER_X_OKAPI_TOKEN);
-            if (!serverToken.equals(okapiToken)) {
-              okapiToken = serverToken;
-            }
-            future.complete(ar.result().body());
-          } else {
-            log.error("Retrieval failed", ar.cause());
-            future.fail(ar.cause());
-          }
-        });
+        .send(ar -> handleResponse(future, ar));
 
     return future;
   }
@@ -83,20 +72,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         .expect(ResponsePredicate.SC_CREATED)
         .expect(ResponsePredicate.JSON)
         .as(BodyCodec.jsonObject())
-        .sendJsonObject(requestData.getBody(), ar -> {
-          if (ar.succeeded()) {
-            // Save the okapi token. There is probably a better way to do this.
-            final String serverToken = ar.result()
-                .getHeader(HEADER_X_OKAPI_TOKEN);
-            if (!serverToken.equals(okapiToken)) {
-              okapiToken = serverToken;
-            }
-            future.complete(ar.result().body());
-          } else {
-            log.error("Creation failed", ar.cause());
-            future.fail(ar.cause());
-          }
-        });
+        .sendJsonObject(requestData.getBody(),
+            ar -> handleResponse(future, ar));
 
     return future;
   }
@@ -124,5 +101,22 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     }
 
     request.putHeader("x-okapi-tenant", tenant);
+  }
+
+  private void handleResponse(
+      Future<JsonObject> future,
+      AsyncResult<HttpResponse<JsonObject>> ar) {
+    if (ar.succeeded()) {
+      // Save the okapi token. There is probably a better way to do this.
+      final String serverToken = ar.result()
+          .getHeader(HEADER_X_OKAPI_TOKEN);
+      if (!serverToken.equals(okapiToken)) {
+        okapiToken = serverToken;
+      }
+      future.complete(ar.result().body());
+    } else {
+      log.error("Creation failed", ar.cause());
+      future.fail(ar.cause());
+    }
   }
 }
