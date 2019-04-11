@@ -32,8 +32,7 @@ public class MainVerticleTests extends BaseTest {
 
   @Test
   public void canStartMainVericleInjectingSip2RequestHandlers(
-      Vertx vertex, 
-      VertxTestContext testContext) {
+      Vertx vertex, VertxTestContext testContext) {
 
     final ZonedDateTime now = ZonedDateTime.now();
     final String transactionDateString = getFormattedLocalDateTime(now);
@@ -78,23 +77,33 @@ public class MainVerticleTests extends BaseTest {
   public void canMakeValidSCStatusRequest(Vertx vertex, VertxTestContext testContext) {
     callService("9900401.00AY1AZFCA5\r",
         testContext, vertex, result -> {
-          String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
-          String expectedPostLocalTime = "1.23|AOfs00000010test|AMChalmers|"
-              + "BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|";
-          String expectedBlankSpaces = "    ";
-  
-          assertEquals(expectedPreLocalTime, result.substring(0, 18));
-          assertEquals(expectedBlankSpaces, result.substring(18, 22));
-          assertEquals(expectedPostLocalTime, result.substring(28));
-        });
+          validateExpectedACSStatus(result);
+      });
   }
 
   @Test
   public void canMakeInvalidStatusRequestAndGetExpectedErrorMessage(
-      Vertx vertex,
-      VertxTestContext testContext) {
+      Vertx vertex, VertxTestContext testContext) {
     callService("990231.23\r", testContext, vertex, result -> {
       assertTrue(result.contains("Problems handling the request"));
+    });
+  }
+
+  @Test
+  public void canGetCsResendMessageWhenSendingInvalidMessage(
+      Vertx vertx, VertxTestContext testContext) {
+    String scStatusMessage = "9900401.00AY1AZAAAA\r";
+    callService(scStatusMessage, testContext, vertx, result -> {
+      assertEquals("96\r", result);
+    });
+  }
+
+  @Test
+  public void canGetACSStatusMessageWhenSendingValidMessage(
+      Vertx vertx, VertxTestContext testContext) {
+    String scStatusMessage = "9900401.00AY1AZFCA5\r";
+    callService(scStatusMessage, testContext, vertx, result -> {
+      validateExpectedACSStatus(result);
     });
   }
 
@@ -102,5 +111,16 @@ public class MainVerticleTests extends BaseTest {
     String pattern = "YYYYMMdd";
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
     return simpleDateFormat.format(new Date());
+  }
+
+  private void validateExpectedACSStatus(String acsResponse) {
+    String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
+    String expectedPostLocalTime =
+        "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|";
+    String expectedBlankSpaces = "    ";
+
+    assertEquals(expectedPreLocalTime, acsResponse.substring(0, 18));
+    assertEquals(expectedBlankSpaces, acsResponse.substring(18, 22));
+    assertEquals(expectedPostLocalTime, acsResponse.substring(28));
   }
 }

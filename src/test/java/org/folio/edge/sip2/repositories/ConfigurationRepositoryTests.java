@@ -41,7 +41,6 @@ public class ConfigurationRepositoryTests {
 
   @Test
   public void canGetValidAcsStatus(Vertx vertx, VertxTestContext testContext) {
-
     JsonArray supportedMsgs = new JsonArray();
     supportedMsgs.add(new JsonObject().put("messageName", "PATRON_INFORMATION")
                             .put("isSupported","Y"));

@@ -120,6 +120,8 @@ class ParserTests {
         "9300CNuser_id|COpassw0rd|AY1AZF595");
 
     assertFalse(message.isValid());
+    assertNotNull(message.getChecksumsString());
+    assertEquals(1, message.getSequenceNumber());
   }
 
   @Test
@@ -333,7 +335,7 @@ class ParserTests {
         .ofPattern("yyyyMMdd    HHmmss")
         .format(transactionDate);
     final Message<?> message = parser.parseMessage(
-        "35" + transactionDateString 
+        "35" + transactionDateString
         + "AApatron_id|AD1234|AC|AOuniversity_id|");
 
     assertEquals(END_PATRON_SESSION, message.getCommand());

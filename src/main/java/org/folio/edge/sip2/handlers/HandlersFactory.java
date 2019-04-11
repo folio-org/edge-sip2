@@ -69,6 +69,10 @@ public class HandlersFactory {
     return new CheckoutHandler();
   }
 
+  public static ISip2RequestHandler getInvalidMessageHandler() {
+    return new InvalidMessageHandler();
+  }
+
   @SuppressWarnings("unchecked")
   private static <T> IResourceProvider<T> getResourceProvider(
       IResourceProvider<T> resourceProvider) {

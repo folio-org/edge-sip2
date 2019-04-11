@@ -2,6 +2,7 @@ package org.folio.edge.sip2;
 
 import static org.folio.edge.sip2.parser.Command.CHECKOUT;
 import static org.folio.edge.sip2.parser.Command.LOGIN;
+import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 
 import io.vertx.core.AbstractVerticle;
@@ -22,7 +23,6 @@ import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
 import org.folio.edge.sip2.repositories.FolioResourceProvider;
 import org.folio.edge.sip2.repositories.LoginRepository;
-
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -53,64 +53,79 @@ public class MainVerticle extends AbstractVerticle {
           new LoginRepository(folioResourceProvider),
           folioResourceProvider, null));
       handlers.put(CHECKOUT, HandlersFactory.getCheckoutHandlerIntance());
-      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null, null));
+      handlers.put(SC_STATUS,
+          HandlersFactory.getScStatusHandlerInstance(null, null, null));
+      handlers.put(REQUEST_SC_RESEND,
+          HandlersFactory.getInvalidMessageHandler());
     }
 
     //set Config object's defaults
     int port = config().getInteger("port");
-    String messageDelimiter = config().getString("messageDelimiter", "\r");
     NetServerOptions options = new NetServerOptions().setPort(port);
     server = vertx.createNetServer(options);
 
     log.info("Deployed verticle at port " + port);
 
     server.connectHandler(socket -> {
+      socket.handler(RecordParser.newDelimited("\r", buffer -> {
+        final String messageString = buffer.getString(0, buffer.length());
+        log.info("Received message: {}", messageString);
 
-      socket.handler(socketBuffer ->
-          RecordParser.newDelimited(messageDelimiter, buffer -> {
-            final String messageString = buffer.getString(0, buffer.length());
-            log.info("Received message: {}",  messageString);
+        try {
+          // Create a parser with the default delimiter '|' and the default
+          // charset 'IMB850'. At some point we will need to have these be
+          // tenant specific. This will be difficult considering that we need
+          // to parse the login message before we know which tenant it is.
+          // We may need another mechanism to obtain this configuration...
+          final Parser parser = Parser.builder().build();
 
-            try {
-              // Create a parser with the default delimiter '|' and the default
-              // charset 'IMB850'. At some point we will need to have these be
-              // tenant specific. This will be difficult considering that we need
-              // to parse the login message before we know which tenant it is.
-              // We may need another mechanism to obtain this configuration...
-              final Parser parser = Parser.builder().build();
+          //parsing
+          final Message<Object> message = parser.parseMessage(messageString);
 
-              //parsing
-              final Message<Object> message = parser.parseMessage(messageString);
-
-              //process validation results
-              if (!message.isValid()) {
-                log.error("Message is invalid: {}", messageString);
-                //resends validation
-              }
-
-              ISip2RequestHandler handler = handlers.get(message.getCommand());
-
-              if (handler == null) {
-                log.error("Error locating handler for command; " + message.getCommand().name());
-              }
-
-              handler
-                  .execute(message.getRequest())
+          //process validation results
+          if (!message.isValid()) {
+            log.error("Message is invalid: {}", messageString);
+            //The presence of the checksum string indicates that error detection was enabled.
+            if (message.getChecksumsString() != null) {
+              //resends validation if checksum string does not match
+              ISip2RequestHandler handler = handlers.get(Command.REQUEST_SC_RESEND);
+              handler.execute(message.getRequest())
                   .setHandler(ar -> {
                     if (ar.succeeded()) {
-                      socket.write(ar.result());  //call FOLIO
+                      socket.write(ar.result());
                     } else {
-                      log.error("Failed to respond to request", ar.cause());
+                      log.error("Failed to send SC resend", ar.cause());
                     }
                   });
-            } catch (Exception ex) {
-              String message = "Problems handling the request: " + ex.getMessage();
-              log.error(message, ex);
-              // Return an error message for now for the sake of negative testing.
-              // Will find a better way to handle negative test cases.
-              socket.write(message);
+            } else {
+              socket.write("Problems handling the request");
             }
-          }).handle(socketBuffer));
+            return;
+          }
+
+          ISip2RequestHandler handler = handlers.get(message.getCommand());
+
+          if (handler == null) {
+            log.error("Error locating handler for command; " + message.getCommand().name());
+          }
+
+          handler
+              .execute(message.getRequest())
+              .setHandler(ar -> {
+                if (ar.succeeded()) {
+                  socket.write(ar.result());  //call FOLIO
+                } else {
+                  log.error("Failed to respond to request", ar.cause());
+                }
+              });
+        } catch (Exception ex) {
+          String message = "Problems handling the request: " + ex.getMessage();
+          log.error(message, ex);
+          // Return an error message for now for the sake of negative testing.
+          // Will find a better way to handle negative test cases.
+          socket.write(message);
+        }
+      }));
 
       socket.exceptionHandler(handler -> {
         log.info("Socket exceptionHandler caught an issue, see error logs for more details");

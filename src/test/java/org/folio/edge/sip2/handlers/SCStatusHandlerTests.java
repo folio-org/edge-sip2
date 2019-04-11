@@ -50,9 +50,9 @@ public class SCStatusHandlerTests {
               + "AFscreenMessages|AGline|";
           String expectedBlankSpaces = "    ";
       
-          assertEquals(sipMessage.substring(0, 18), expectedPreLocalTime);
-          assertEquals(sipMessage.substring(18, 22), expectedBlankSpaces);
-          assertEquals(sipMessage.substring(28), expectedPostLocalTime);
+          assertEquals(expectedPreLocalTime, sipMessage.substring(0, 18));
+          assertEquals(expectedBlankSpaces, sipMessage.substring(18, 22));
+          assertEquals(expectedPostLocalTime, sipMessage.substring(28));
     
           testContext.completeNow();
         })));
@@ -83,7 +83,6 @@ public class SCStatusHandlerTests {
 
   @Test
   public void canGetValidPackagedSupportedMessages() {
-
     Set<Messages> supportedMessages = new HashSet<>();
     supportedMessages.add(Messages.CHECKIN);
     supportedMessages.add(Messages.CHECKOUT);
