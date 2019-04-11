@@ -37,12 +37,12 @@ public class SCStatusHandlerTests {
     //we can't assert on the entirety of the string, have to break it up into pieces.
     String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
     String expectedPostLocalTime =
-        "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\r";
+        "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|";
     String expectedBlankSpaces = "    ";
 
-    assertEquals(sipMessage.substring(0, 18), expectedPreLocalTime);
-    assertEquals(sipMessage.substring(18, 22), expectedBlankSpaces);
-    assertEquals(sipMessage.substring(28), expectedPostLocalTime);
+    assertEquals(expectedPreLocalTime, sipMessage.substring(0, 18));
+    assertEquals(expectedBlankSpaces, sipMessage.substring(18, 22));
+    assertEquals(expectedPostLocalTime, sipMessage.substring(28));
   }
 
   @Test

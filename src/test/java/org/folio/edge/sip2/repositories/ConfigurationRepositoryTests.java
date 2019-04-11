@@ -34,8 +34,7 @@ public class ConfigurationRepositoryTests {
   }
 
   @Test
-  public void canGetValidAcsStatus(){
-
+  public void canGetValidAcsStatus() {
     JsonArray supportedMsgs = new JsonArray();
     supportedMsgs.add(new JsonObject().put("messageName", "PATRON_INFORMATION")
                             .put("isSupported","Y"));
