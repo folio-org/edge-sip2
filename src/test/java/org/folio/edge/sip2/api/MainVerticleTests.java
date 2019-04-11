@@ -94,7 +94,7 @@ public class MainVerticleTests extends BaseTest {
       Vertx vertx, VertxTestContext testContext) {
     String scStatusMessage = "9900401.00AY1AZAAAA\r";
     callService(scStatusMessage, testContext, vertx, result -> {
-      assertEquals("96\r", result);
+      assertEquals("96", result);
     });
   }
 

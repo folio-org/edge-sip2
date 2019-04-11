@@ -55,6 +55,7 @@ public class FreemarkerRepository {
 
     addTemplate(Command.ACS_STATUS, "acs-status.ftl", configuration);
     addTemplate(Command.LOGIN_RESPONSE, "LoginResponse.ftl", configuration);
+    addTemplate(Command.REQUEST_SC_RESEND, "RequestSCResend.ftl", configuration);
   }
 
   private void addTemplate(Command commmand, String templateName, Configuration configuration) {
