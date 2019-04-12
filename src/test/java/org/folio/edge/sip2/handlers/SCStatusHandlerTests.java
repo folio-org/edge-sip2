@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.vertx.core.Vertx;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
@@ -15,16 +18,17 @@ import org.folio.edge.sip2.domain.messages.requests.SCStatus;
 import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.DefaultResourceProvider;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(VertxExtension.class)
 public class SCStatusHandlerTests {
 
   @Test
-  public void canExecuteASampleScStatusRequestUsingHandlersFactory() {
+  public void canExecuteASampleScStatusRequestUsingHandlersFactory(
+      Vertx vertx,
+      VertxTestContext testContext) {
 
     DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
-
-    SCStatusHandler handler = ((SCStatusHandler) HandlersFactory.getScStatusHandlerInstance(
-        null, defaultConfigurationProvider, null));
 
     SCStatus.SCStatusBuilder statusBuilder = SCStatus.builder();
     statusBuilder.maxPrintWidth(20);
@@ -32,35 +36,49 @@ public class SCStatusHandlerTests {
     statusBuilder.statusCode(StatusCode.SC_OK);
     SCStatus status =  statusBuilder.build();
 
-    String sipMessage = handler.execute(status);
-    //Because the sipMessage has a dateTime component that's supposed to be current,
-    //we can't assert on the entirety of the string, have to break it up into pieces.
-    String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
-    String expectedPostLocalTime =
-        "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\n";
-    String expectedBlankSpaces = "    ";
+    SCStatusHandler handler = ((SCStatusHandler) HandlersFactory
+        .getScStatusHandlerInstance(null, defaultConfigurationProvider, null));
 
-    assertEquals(expectedPreLocalTime, sipMessage.substring(0, 18));
-    assertEquals(expectedBlankSpaces, sipMessage.substring(18, 22));
-    assertEquals(expectedPostLocalTime, sipMessage.substring(28));
+    handler.execute(status).setHandler(
+        testContext.succeeding(sipMessage -> testContext.verify(() -> {
+          // Because the sipMessage has a dateTime component that's supposed
+          // to be current, we can't assert on the entirety of the string,
+          // have to break it up into pieces.
+          String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
+          String expectedPostLocalTime = 
+              "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|"
+              + "AFscreenMessages|AGline|";
+          String expectedBlankSpaces = "    ";
+      
+          assertEquals(expectedPreLocalTime, sipMessage.substring(0, 18));
+          assertEquals(expectedBlankSpaces, sipMessage.substring(18, 22));
+          assertEquals(expectedPostLocalTime, sipMessage.substring(28));
+    
+          testContext.completeNow();
+        })));
   }
 
   @Test
-  public void cannotGetAValidResponseDueToMissingTemplate() {
+  public void cannotGetAValidResponseDueToMissingTemplate(
+      Vertx vertx,
+      VertxTestContext testContext) {
     DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
     ConfigurationRepository configurationRepository =
         new ConfigurationRepository(defaultConfigurationProvider);
 
-    SCStatusHandler handler = new SCStatusHandler(configurationRepository, null);
-
     SCStatus.SCStatusBuilder statusBuilder = SCStatus.builder();
     statusBuilder.maxPrintWidth(20);
     statusBuilder.protocolVersion("1.00");
     statusBuilder.statusCode(StatusCode.SC_OK);
     SCStatus status =  statusBuilder.build();
 
-    String sipMessage = handler.execute(status);
-    assertEquals("", sipMessage);
+    SCStatusHandler handler = new SCStatusHandler(configurationRepository, null);
+
+    handler.execute(status).setHandler(
+        testContext.failing(throwable -> testContext.verify(() -> {
+          assertEquals("", throwable.getMessage());
+          testContext.completeNow();
+        })));
   }
 
   @Test

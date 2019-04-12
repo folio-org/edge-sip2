@@ -2,6 +2,7 @@ package org.folio.edge.sip2;
 
 import static org.folio.edge.sip2.parser.Command.CHECKOUT;
 import static org.folio.edge.sip2.parser.Command.LOGIN;
+import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 
 import io.vertx.core.AbstractVerticle;
@@ -9,7 +10,6 @@ import io.vertx.core.Future;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.parsetools.RecordParser;
-
 import java.lang.invoke.MethodHandles;
 import java.util.EnumMap;
 import java.util.Map;
@@ -21,6 +21,8 @@ import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
+import org.folio.edge.sip2.repositories.FolioResourceProvider;
+import org.folio.edge.sip2.repositories.LoginRepository;
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -32,11 +34,6 @@ public class MainVerticle extends AbstractVerticle {
    * Construct the {@code MainVerticle}.
    */
   public MainVerticle() {
-    handlers = new EnumMap<>(Command.class);
-    handlers.put(LOGIN, HandlersFactory.getLoginHandlerIntance());
-    handlers.put(CHECKOUT, HandlersFactory.getCheckoutHandlerIntance());
-    handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null, null));
-    handlers.put(Command.REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   }
 
@@ -47,6 +44,21 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start() {
+    if (handlers == null) {
+      final FolioResourceProvider folioResourceProvider =
+          new FolioResourceProvider(config().getString("okapiUrl"),
+              config().getString("tenant"), vertx);
+      handlers = new EnumMap<>(Command.class);
+      handlers.put(LOGIN, HandlersFactory.getLoginHandlerInstance(
+          new LoginRepository(folioResourceProvider),
+          folioResourceProvider, null));
+      handlers.put(CHECKOUT, HandlersFactory.getCheckoutHandlerIntance());
+      handlers.put(SC_STATUS,
+          HandlersFactory.getScStatusHandlerInstance(null, null, null));
+      handlers.put(REQUEST_SC_RESEND,
+          HandlersFactory.getInvalidMessageHandler());
+    }
+
     //set Config object's defaults
     int port = config().getInteger("port");
     NetServerOptions options = new NetServerOptions().setPort(port);
@@ -77,7 +89,14 @@ public class MainVerticle extends AbstractVerticle {
             if (message.getChecksumsString() != null) {
               //resends validation if checksum string does not match
               ISip2RequestHandler handler = handlers.get(Command.REQUEST_SC_RESEND);
-              socket.write(handler.execute(message.getRequest()));
+              handler.execute(message.getRequest())
+                  .setHandler(ar -> {
+                    if (ar.succeeded()) {
+                      socket.write(ar.result());
+                    } else {
+                      log.error("Failed to send SC resend", ar.cause());
+                    }
+                  });
             } else {
               socket.write("Problems handling the request");
             }
@@ -89,10 +108,19 @@ public class MainVerticle extends AbstractVerticle {
           if (handler == null) {
             log.error("Error locating handler for command; " + message.getCommand().name());
           }
-          socket.write(handler.execute(message.getRequest()));  //call FOLIO
+
+          handler
+              .execute(message.getRequest())
+              .setHandler(ar -> {
+                if (ar.succeeded()) {
+                  socket.write(ar.result());  //call FOLIO
+                } else {
+                  log.error("Failed to respond to request", ar.cause());
+                }
+              });
         } catch (Exception ex) {
           String message = "Problems handling the request: " + ex.getMessage();
-          log.error(message);
+          log.error(message, ex);
           // Return an error message for now for the sake of negative testing.
           // Will find a better way to handle negative test cases.
           socket.write(message);

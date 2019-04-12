@@ -54,11 +54,6 @@ public final class LoginMessageParser extends MessageParser {
       final Field field = parseFieldIdentifier(messageChars);
       final String valueString = parseVariableLengthField(messageChars, field);
 
-      if (valueString == null) {
-        // The field was unparsable, bail...
-        return null;
-      }
-
       switch (field) {
         case CN:
           // Login user id: variable-length required field

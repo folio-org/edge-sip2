@@ -22,7 +22,7 @@ public class FreemarkerUtils {
   }
 
   /**
-   * Utility method that executes a freemarker template to return a templated-formmated string.
+   * Utility method that executes a freemarker template to return a templated-formated string.
    *
    * @param data the data used by the template.
    * @param template the template to apply to the data.
@@ -46,7 +46,7 @@ public class FreemarkerUtils {
 
     log.debug("Data = {} Template = {}",
         () -> data == null ? "" : data.toString(),
-        () -> template.getName());
+        template::getName);
 
     return outputString;
   }

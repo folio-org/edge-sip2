@@ -11,10 +11,7 @@ import io.vertx.junit5.VertxTestContext;
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.Date;
-
 import org.folio.edge.sip2.api.support.BaseTest;
-import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
-import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
 import org.junit.jupiter.api.Test;
 
 public class MainVerticleTests extends BaseTest {
@@ -28,15 +25,7 @@ public class MainVerticleTests extends BaseTest {
   public void canMakeARequest(Vertx vertex, VertxTestContext testContext) {
     callService("9300CNMartin|COpassword|\r",
         testContext, vertex, result -> {
-          final String expectedString = new StringBuilder()
-              .append("Logged ")
-              .append("Login [uidAlgorithm=").append(UIDAlgorithm.NO_ENCRYPTION)
-              .append(", pwdAlgorithm=").append(PWDAlgorithm.NO_ENCRYPTION)
-              .append(", loginUserId=").append("Martin")
-              .append(", loginPassword=").append("password")
-              .append(", locationCode=").append((String) null)
-              .append(']').append(" in")
-              .toString();
+          final String expectedString = "941";
           assertEquals(expectedString, result);
         });
   }
@@ -105,7 +94,7 @@ public class MainVerticleTests extends BaseTest {
       Vertx vertx, VertxTestContext testContext) {
     String scStatusMessage = "9900401.00AY1AZAAAA\r";
     callService(scStatusMessage, testContext, vertx, result -> {
-      assertEquals("96\r", result);
+      assertEquals("96", result);
     });
   }
 
@@ -127,7 +116,7 @@ public class MainVerticleTests extends BaseTest {
   private void validateExpectedACSStatus(String acsResponse) {
     String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
     String expectedPostLocalTime =
-        "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\n";
+        "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|";
     String expectedBlankSpaces = "    ";
 
     assertEquals(expectedPreLocalTime, acsResponse.substring(0, 18));

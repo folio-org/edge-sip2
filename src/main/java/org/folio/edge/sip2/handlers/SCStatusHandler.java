@@ -3,6 +3,7 @@ package org.folio.edge.sip2.handlers;
 import static org.folio.edge.sip2.parser.Command.ACS_STATUS;
 
 import freemarker.template.Template;
+import io.vertx.core.Future;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,24 +37,26 @@ public class SCStatusHandler implements ISip2RequestHandler {
   }
 
   @Override
-  public String execute(Object message)  {
-    ACSStatus acsStatus = configurationRepository.getACSStatus();
+  public Future<String> execute(Object message)  {
+    Future<ACSStatus> future = configurationRepository.getACSStatus();
 
-    Map<String, Object> root = new HashMap<>();
-    root.put("PackagedSupportedMessages",
-        new PackagedSupportedMessages(acsStatus.getSupportedMessages()));
-    root.put("ACSStatus",acsStatus);
-    root.put("formatDateTime", new FormatDateTimeMethodModel());
-
-    if (template == null) {
-      log.error("Unable to locate Freemarker template for the command: " + ACS_STATUS.name());
-      return  "";
-    }
-
-    String acsSipStatusMessage = FreemarkerUtils.executeFreemarkerTemplate(root, template);
-    log.debug("Sip2 ACSStatus message: " + acsSipStatusMessage);
-
-    return acsSipStatusMessage;
+    return future.compose(acsStatus -> {
+      Map<String, Object> root = new HashMap<>();
+      root.put("PackagedSupportedMessages",
+          new PackagedSupportedMessages(acsStatus.getSupportedMessages()));
+      root.put("ACSStatus",acsStatus);
+      root.put("formatDateTime", new FormatDateTimeMethodModel());
+  
+      if (template == null) {
+        log.error("Unable to locate Freemarker template for the command: " + ACS_STATUS.name());
+        return Future.failedFuture("");
+      }
+  
+      String acsSipStatusMessage = FreemarkerUtils.executeFreemarkerTemplate(root, template);
+      log.debug("Sip2 ACSStatus message: " + acsSipStatusMessage);
+  
+      return Future.succeededFuture(acsSipStatusMessage);
+    });
   }
 
   /**
