@@ -30,20 +30,16 @@ public class HandlersFactory {
    */
   public static ISip2RequestHandler getScStatusHandlerInstance(
       ConfigurationRepository configRepo,
-      DefaultResourceProvider resProvider,
+      IResourceProvider<Object> resProvider,
       Template freeMarkerTemplate) {
-    if (resProvider == null) {
-      resProvider = new DefaultResourceProvider();
-    }
+    resProvider = getResourceProvider(resProvider);
 
     if (configRepo == null) {
       configRepo = new ConfigurationRepository(resProvider);
     }
 
-    if (freeMarkerTemplate == null) {
-      freeMarkerTemplate = FreemarkerRepository.getInstance()
-                                               .getFreemarkerTemplate(Command.ACS_STATUS);
-    }
+    freeMarkerTemplate = getCommandTemplate(freeMarkerTemplate,
+        Command.ACS_STATUS);
 
     return new SCStatusHandler(configRepo, freeMarkerTemplate);
   }
@@ -60,8 +56,10 @@ public class HandlersFactory {
       LoginRepository loginRepository,
       IResourceProvider<IRequestData> resourceProvider,
       Template commandTemplate) {
-    return new LoginHandler(getLoginRepository(
-        loginRepository, getResourceProvider(resourceProvider)),
+    return new LoginHandler(
+        loginRepository == null ? new LoginRepository(
+            getResourceProvider(resourceProvider))
+            : loginRepository,
         getCommandTemplate(commandTemplate, LOGIN_RESPONSE));
   }
 
@@ -81,16 +79,6 @@ public class HandlersFactory {
     }
 
     return resourceProvider;
-  }
-
-  private static LoginRepository getLoginRepository(
-      LoginRepository loginRepository,
-      IResourceProvider<IRequestData> resourceProvider) {
-    if (loginRepository == null) {
-      return new LoginRepository(resourceProvider);
-    }
-
-    return loginRepository;
   }
 
   private static Template getCommandTemplate(
