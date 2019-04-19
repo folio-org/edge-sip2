@@ -6,6 +6,7 @@ import static java.lang.Boolean.TRUE;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import java.time.Clock;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -15,11 +16,13 @@ import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
+import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.domain.messages.responses.CheckinResponse;
+import org.folio.edge.sip2.domain.messages.responses.CheckoutResponse;
 import org.folio.edge.sip2.session.SessionData;
 
 /**
- * Provides interaction with the login service.
+ * Provides interaction with the circulation service.
  *
  * @author mreno-EBSCO
  *
@@ -38,7 +41,7 @@ public class CirculationRepository {
   /**
    * Perform a checkin.
    *
-   * @param checkin the login domain object
+   * @param checkin the checkin domain object
    * @return the checkin response domain object
    */
   public Future<CheckinResponse> checkin(Checkin checkin, SessionData sessionData) {
@@ -53,7 +56,8 @@ public class CirculationRepository {
         .put("checkInDate", DateTimeFormatter.ISO_DATE_TIME
             .withZone(ZoneOffset.UTC)
             .format(returnDate));
-    Map<String, String> headers = new HashMap<>();
+
+    final Map<String, String> headers = new HashMap<>();
     headers.put("accept", "application/json");
 
     final CheckinRequestData checkinRequestData =
@@ -84,6 +88,52 @@ public class CirculationRepository {
               .build()));
   }
 
+  /**
+   * Perform a checkout.
+   *
+   * @param checkout the checkout domain object
+   * @return the checkout response domain object
+   */
+  public Future<CheckoutResponse> checkout(Checkout checkout, SessionData sessionData) {
+    final String institutionId = checkout.getInstitutionId();
+    final String patronIdentifier = checkout.getPatronIdentifier();
+    final String itemIdentifier = checkout.getItemIdentifier();
+
+    final JsonObject body = new JsonObject()
+        .put("itemBarcode", itemIdentifier)
+        .put("userBarcode", patronIdentifier)
+        .put("servicePointId", sessionData.getScLocation());
+
+    final Map<String, String> headers = new HashMap<>();
+    headers.put("accept", "application/json");
+
+    final CheckoutRequestData checkoutRequestData =
+        new CheckoutRequestData(body, headers, sessionData);
+    final Future<IResource> result = resourceProvider.createResource(checkoutRequestData);
+
+    return result
+        .otherwiseEmpty()
+        .compose(resource -> Future.succeededFuture(
+            CheckoutResponse.builder()
+              .ok(resource.getResource() == null ? FALSE : TRUE)
+              .renewalOk(FALSE)
+              .magneticMedia(null)
+              .desensitize(resource.getResource() == null ? FALSE : TRUE)
+              // Need to get the "local" time zone from somewhere
+              // Using UTC for now
+              .transactionDate(ZonedDateTime.now(clock))
+              .institutionId(institutionId)
+              .patronIdentifier(patronIdentifier)
+              .itemIdentifier(itemIdentifier)
+              .titleIdentifier(resource.getResource() == null ? "Unknown" :
+                resource.getResource().getJsonObject("item",
+                    new JsonObject()).getString("title", "Unknown"))
+              // We shouldn't be using the system default zone here...
+              .dueDate(resource.getResource() == null ? null :
+                resource.getResource().getInstant("dueDate").atZone(ZoneId.systemDefault()))
+              .build()));
+  }
+
   private class CheckinRequestData implements IRequestData {
     private final JsonObject body;
     private final Map<String, String> headers;
@@ -99,6 +149,39 @@ public class CirculationRepository {
     @Override
     public String getPath() {
       return "/circulation/check-in-by-barcode";
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return headers;
+    }
+
+    @Override
+    public JsonObject getBody() {
+      return body;
+    }
+
+    @Override
+    public SessionData getSessionData() {
+      return sessionData;
+    }
+  }
+
+  private class CheckoutRequestData implements IRequestData {
+    private final JsonObject body;
+    private final Map<String, String> headers;
+    private final SessionData sessionData;
+
+    private CheckoutRequestData(JsonObject body, Map<String, String> headers,
+        SessionData sessionData) {
+      this.body = body;
+      this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
+      this.sessionData = sessionData;
+    }
+
+    @Override
+    public String getPath() {
+      return "/circulation/check-out-by-barcode";
     }
 
     @Override
