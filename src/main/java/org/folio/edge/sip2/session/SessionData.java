@@ -8,7 +8,7 @@ public class SessionData {
 
   private String scLocation;
   private String authenticationToken;
-  private int maxWidth;
+  private int maxPrintWidth = -1; // since 0 is valid 
   private String username;
   private String password; // should we really save this?
 
@@ -36,12 +36,12 @@ public class SessionData {
     this.authenticationToken = authenticationToken;
   }
 
-  public int getMaxWidth() {
-    return maxWidth;
+  public int getMaxPrintWidth() {
+    return maxPrintWidth;
   }
 
-  public void setMaxWidth(int maxWidth) {
-    this.maxWidth = maxWidth;
+  public void setMaxPrintWidth(int maxPrintWidth) {
+    this.maxPrintWidth = maxPrintWidth;
   }
 
   public String getUsername() {
