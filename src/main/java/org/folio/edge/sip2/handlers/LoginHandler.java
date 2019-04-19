@@ -43,7 +43,7 @@ public class LoginHandler implements ISip2RequestHandler {
 
     return responseFuture.compose(loginResponse -> {
       log.debug("LoginResponse: {}", () -> loginResponse);
-  
+
       final Map<String, Object> root = new HashMap<>();
       root.put("formatDateTime", new FormatDateTimeMethodModel());
       root.put("delimiter", "|");

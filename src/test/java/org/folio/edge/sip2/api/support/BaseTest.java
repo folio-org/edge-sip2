@@ -25,6 +25,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.folio.edge.sip2.MainVerticle;
+import org.folio.edge.sip2.handlers.ACSResendHandler;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.handlers.LoginHandler;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
@@ -57,7 +58,6 @@ public abstract class BaseTest {
   @BeforeEach
   @DisplayName("Deploy the verticle")
   public void deployVerticle(Vertx vertx, VertxTestContext testContext, TestInfo testInfo) {
-
     DeploymentOptions opt = new DeploymentOptions();
 
     JsonObject sipConfig = new JsonObject();
@@ -130,6 +130,7 @@ public abstract class BaseTest {
       EnumMap<Command, ISip2RequestHandler> requestHandlerMap =
           new EnumMap<>(Command.class);
       requestHandlerMap.put(Command.LOGIN, loginHandler);
+      requestHandlerMap.put(Command.REQUEST_ACS_RESEND, new ACSResendHandler());
 
       myVerticle = new MainVerticle(requestHandlerMap);
 
@@ -139,7 +140,7 @@ public abstract class BaseTest {
   }
 
   private static int getRandomPort() {
-    int port = -1;
+    int port;
     do {
       // Use a random ephemeral port
       port = new Random().nextInt(16_384) + 49_152;
