@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.parser;
 
 import static java.lang.Boolean.FALSE;
+import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
 
 import java.nio.charset.Charset;
 import org.apache.logging.log4j.LogManager;
@@ -61,14 +62,16 @@ public final class Parser {
   public Message<Object> parseMessage(String message) {
     log.debug("Message to parse: {}", message);
 
-    final ErrorDetection ed = validateChecksum(message);
+    // Try to get the command first so it can be used in error detection
+    final Command command = parseCommandIdentifier(message);
+
+    final ErrorDetection ed = validateChecksum(message, command);
     if (ed.valid) {
       if (ed.sequenceNumber != null) {
         // Remove the error detection chars before parsing the message
         message = message.substring(0, message.length() - 9);
       }
 
-      final Command command = parseCommandIdentifier(message);
       // Remove the command identifier before parsing
       message = message.substring(2);
       final MessageBuilder<Object> builder =  Message.builder()
@@ -170,27 +173,37 @@ public final class Parser {
     }
   }
 
-  private ErrorDetection validateChecksum(String message) {
+  private ErrorDetection validateChecksum(String message, Command command) {
     final ErrorDetection ed = new ErrorDetection();
 
     if (errorDetectionEnabled) {
-      // 11 is the minimum message length with SIP2 error detection enabled
+      // 8 is the minimum message length with SIP2 error detection enabled
+      // The Request ACS Resend will not include a sequence number, but will
+      // include a checksum.
+      // 11 is the minimum message length for all the other SIP2 messages.
       // 2 char command code
-      // 2 char sequence number code
-      // 1 char sequence number
+      // 2 char sequence number code (non-Request ACS Resend messages)
+      // 1 char sequence number (non-Request ACS Resend messages)
       // 2 char checksum code
       // 4 char checksum
       final int len = message.length();
-      if (len >= 11 && message.charAt(len - 9) == 'A'
-          && message.charAt(len - 8) == 'Y'
+
+      final int minLen = command == REQUEST_ACS_RESEND ? 8 : 11;
+      if (len >= minLen && ((command != REQUEST_ACS_RESEND && message.charAt(len - 9) == 'A'
+          && message.charAt(len - 8) == 'Y') || command == REQUEST_ACS_RESEND)
           && message.charAt(len - 6) == 'A'
           && message.charAt(len - 5) == 'Z') {
-        final char sequenceChar = message.charAt(len - 7);
-        final int sequenceNumber = Character.getNumericValue(sequenceChar);
-        if (sequenceNumber < 0) {
-          log.error("Sequence number is not 0-9: {}", sequenceChar);
-          ed.valid = false;
-          return ed;
+        final Integer sequenceNumber;
+        if (command != REQUEST_ACS_RESEND) {
+          final char sequenceChar = message.charAt(len - 7);
+          sequenceNumber = Integer.valueOf(Character.getNumericValue(sequenceChar));
+          if (sequenceNumber.intValue() < 0) {
+            log.error("Sequence number is not 0-9: {}", sequenceChar);
+            ed.valid = false;
+            return ed;
+          }
+        } else {
+          sequenceNumber = null;
         }
 
         // To validate the message, we total the byte values of each character
@@ -210,7 +223,7 @@ public final class Parser {
         value &= 0xffff;
 
         ed.valid = value == 0;
-        ed.sequenceNumber = Integer.valueOf(sequenceNumber);
+        ed.sequenceNumber = sequenceNumber;
         ed.checksum = checksumString;
       } else {
         // SC did not send error detection or something is really messed up

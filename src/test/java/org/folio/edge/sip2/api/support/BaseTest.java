@@ -24,6 +24,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.folio.edge.sip2.MainVerticle;
+import org.folio.edge.sip2.handlers.ACSResendHandler;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.handlers.LoginHandler;
 import org.folio.edge.sip2.parser.Command;
@@ -125,6 +126,7 @@ public abstract class BaseTest {
       EnumMap<Command, ISip2RequestHandler> requestHandlerMap =
           new EnumMap<>(Command.class);
       requestHandlerMap.put(Command.LOGIN, mockLoginHandler);
+      requestHandlerMap.put(Command.REQUEST_ACS_RESEND, new ACSResendHandler());
 
       myVerticle = new MainVerticle(requestHandlerMap);
 
@@ -134,7 +136,7 @@ public abstract class BaseTest {
   }
 
   private static int getRandomPort() {
-    int port = -1;
+    int port;
     do {
       // Use a random ephemeral port
       port = new Random().nextInt(16_384) + 49_152;
