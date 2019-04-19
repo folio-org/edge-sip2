@@ -1,7 +1,8 @@
 package org.folio.edge.sip2.parser;
 
-import java.nio.charset.Charset;
+import static java.lang.Boolean.FALSE;
 
+import java.nio.charset.Charset;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.BlockPatron;
@@ -33,21 +34,18 @@ public final class Parser {
 
   private static final Charset DEFAULT_CHARSET = Charset.forName("IBM850");
   private static final Character DEFAULT_DELIMITER = Character.valueOf('|');
+  private static final Boolean DEFAULT_ERROR_DETECTION_ENABLED = FALSE;
 
   private final Charset charset;
   private final Character delimiter;
+  private final Boolean errorDetectionEnabled;
 
   private Parser(ParserBuilder builder) {
-    if (builder.charset == null) {
-      this.charset = DEFAULT_CHARSET;
-    } else {
-      this.charset = builder.charset;
-    }
-    if (builder.delimiter == null) {
-      this.delimiter = DEFAULT_DELIMITER;
-    } else {
-      this.delimiter = builder.delimiter;
-    }
+    charset = builder.charset == null ? DEFAULT_CHARSET : builder.charset;
+    delimiter = builder.delimiter == null
+        ? DEFAULT_DELIMITER : builder.delimiter;
+    errorDetectionEnabled = builder.errorDetectionEnabled == null
+        ? DEFAULT_ERROR_DETECTION_ENABLED : builder.errorDetectionEnabled;
   }
 
   public static ParserBuilder builder() {
@@ -62,6 +60,7 @@ public final class Parser {
    */
   public Message<Object> parseMessage(String message) {
     log.debug("Message to parse: {}", message);
+
     final ErrorDetection ed = validateChecksum(message);
     if (ed.valid) {
       if (ed.sequenceNumber != null) {
@@ -172,21 +171,22 @@ public final class Parser {
   }
 
   private ErrorDetection validateChecksum(String message) {
-    ErrorDetection ed = new ErrorDetection();
-    // 11 is the minimum length of a SIP2 message with error detection enabled
-    // 2 char message code
-    // 2 char sequence number code
-    // 1 char sequence number
-    // 2 char checksum code
-    // 4 char checksum
-    if (message.length() >= 11) {
-      String tail = message.substring(message.length() - 9);
-      if (tail.charAt(0) == 'A' && tail.charAt(1) == 'Y'
-          && tail.charAt(3) == 'A' && tail.charAt(4) == 'Z') {
-        log.debug("Error detection detected: {}", tail);
+    final ErrorDetection ed = new ErrorDetection();
 
-        char sequenceChar = tail.charAt(2);
-        int sequenceNumber = Character.getNumericValue(sequenceChar);
+    if (errorDetectionEnabled) {
+      // 11 is the minimum message length with SIP2 error detection enabled
+      // 2 char command code
+      // 2 char sequence number code
+      // 1 char sequence number
+      // 2 char checksum code
+      // 4 char checksum
+      final int len = message.length();
+      if (len >= 11 && message.charAt(len - 9) == 'A'
+          && message.charAt(len - 8) == 'Y'
+          && message.charAt(len - 6) == 'A'
+          && message.charAt(len - 5) == 'Z') {
+        final char sequenceChar = message.charAt(len - 7);
+        final int sequenceNumber = Character.getNumericValue(sequenceChar);
         if (sequenceNumber < 0) {
           log.error("Sequence number is not 0-9: {}", sequenceChar);
           ed.valid = false;
@@ -196,15 +196,14 @@ public final class Parser {
         // To validate the message, we total the byte values of each character
         // in the message including the checksum identifier, then we add the
         // checksum hex value. If the message is valid, the result will be 0.
-        final byte [] bytes =
-            message.substring(0, message.length() - 4).getBytes(charset);
+        final byte [] bytes = message.substring(0, len - 4).getBytes(charset);
 
         int value = 0;
         for (byte b : bytes) {
           value += b & 0xff;
         }
 
-        final String checksumString = tail.substring(tail.length() - 4);
+        final String checksumString = message.substring(len - 4);
         final int checksum = Integer.parseUnsignedInt(checksumString, 16);
 
         value += checksum;
@@ -214,13 +213,12 @@ public final class Parser {
         ed.sequenceNumber = Integer.valueOf(sequenceNumber);
         ed.checksum = checksumString;
       } else {
-        // No error detection
-        log.debug("SC did not enable error detection");
-        ed.valid = true;
+        // SC did not send error detection or something is really messed up
+        log.error("Error detection enabled: SC did not send error detection");
+        ed.valid = false;
       }
     } else {
-      // No error detection
-      log.debug("SC did not enable error detection");
+      // Error detection is not enabled
       ed.valid = true;
     }
 
@@ -243,6 +241,7 @@ public final class Parser {
   public static class ParserBuilder {
     private Charset charset;
     private Character delimiter;
+    private Boolean errorDetectionEnabled;
 
     private ParserBuilder() {
       super();
@@ -255,6 +254,11 @@ public final class Parser {
 
     public ParserBuilder delimiter(Character delimiter) {
       this.delimiter = delimiter;
+      return this;
+    }
+
+    public ParserBuilder errorDetectionEnaled(Boolean errorDetectionEnabled) {
+      this.errorDetectionEnabled = errorDetectionEnabled;
       return this;
     }
 

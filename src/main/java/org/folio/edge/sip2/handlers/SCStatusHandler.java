@@ -16,6 +16,7 @@ import org.folio.edge.sip2.domain.messages.responses.ACSStatus;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.ConfigurationRepository;
+import org.folio.edge.sip2.session.SessionData;
 
 public class SCStatusHandler implements ISip2RequestHandler {
 
@@ -37,7 +38,7 @@ public class SCStatusHandler implements ISip2RequestHandler {
   }
 
   @Override
-  public Future<String> execute(Object message)  {
+  public Future<String> execute(Object message, SessionData sessionData)  {
     Future<ACSStatus> future = configurationRepository.getACSStatus();
 
     return future.compose(acsStatus -> {

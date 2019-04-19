@@ -8,6 +8,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
 import io.vertx.core.Future;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
@@ -15,6 +16,7 @@ import io.vertx.junit5.VertxTestContext;
 import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
 import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
 import org.folio.edge.sip2.domain.messages.requests.Login;
+import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -33,7 +35,7 @@ public class LoginRepositoryTests {
   }
 
   @Test
-  public void cannotCreateConfigurationRepoWhenConfigProviderIsNull() {
+  public void cannotCreateLoginRepositoryWhenResourceProviderIsNull() {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
         () -> new LoginRepository(null));
@@ -54,11 +56,13 @@ public class LoginRepositoryTests {
         .build();
 
     when(mockFolioProvider.createResource(any()))
-      .thenReturn(Future.succeededFuture(new JsonObject()));
+        .thenReturn(Future.succeededFuture(new FolioResource(new JsonObject(),
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
-    final LoginRepository loginRepository =
-        new LoginRepository(mockFolioProvider);
-    loginRepository.login(login).setHandler(
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
+    loginRepository.login(login, sessionData).setHandler(
         testContext.succeeding(loginResponse -> testContext.verify(() -> {
           assertNotNull(loginResponse);
           assertTrue(loginResponse.getOk());

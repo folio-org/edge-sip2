@@ -26,12 +26,12 @@ public class DefaultResourceProviderTests {
       VertxTestContext testContext) {
     DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
     defaultConfigurationProvider.retrieveResource(null).setHandler(
-        testContext.succeeding(jsonConfig -> testContext.verify(() -> {
-
+        testContext.succeeding(resource -> testContext.verify(() -> {
+          final JsonObject jsonConfig = resource.getResource();
           assertNotNull(jsonConfig);
-      
+
           JsonObject acsConfig = jsonConfig.getJsonObject("acsConfiguration");
-      
+
           assertEquals("fs00000010test", acsConfig.getString("institutionId"));
           assertEquals("1.23", acsConfig.getString("protocolVersion"));
 
@@ -46,13 +46,13 @@ public class DefaultResourceProviderTests {
 
     DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
     defaultConfigurationProvider.retrieveResource(null).setHandler(
-        testContext.succeeding(jsonConfig -> testContext.verify(() -> {
-
+        testContext.succeeding(resource -> testContext.verify(() -> {
+          final JsonObject jsonConfig = resource.getResource();
           assertNotNull(jsonConfig);
-      
+
           JsonArray tenantConfigs = jsonConfig.getJsonArray("tenantConfigurations");
           JsonObject firstTenantConfig = tenantConfigs.getJsonObject(0);
-      
+
           assertEquals("fs00000010test", firstTenantConfig.getString("tenantId"));
           assertEquals("ASCII", firstTenantConfig.getString("encoding"));
 

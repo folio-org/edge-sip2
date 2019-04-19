@@ -8,8 +8,12 @@ import io.vertx.core.json.JsonObject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import javax.inject.Inject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.Login;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
+import org.folio.edge.sip2.session.SessionData;
 
 /**
  * Provides interaction with the login service.
@@ -18,9 +22,11 @@ import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
  *
  */
 public class LoginRepository {
+  private static final Logger log = LogManager.getLogger();
   private final IResourceProvider<IRequestData> resourceProvider;
 
-  public LoginRepository(IResourceProvider<IRequestData> resourceProvider) {
+  @Inject
+  LoginRepository(IResourceProvider<IRequestData> resourceProvider) {
     this.resourceProvider = Objects.requireNonNull(resourceProvider,
         "Resource provider cannot be null");
   }
@@ -31,7 +37,7 @@ public class LoginRepository {
    * @param login the login domain object
    * @return the login response domain object
    */
-  public Future<LoginResponse> login(Login login) {
+  public Future<LoginResponse> login(Login login, SessionData sessionData) {
     final String user = login.getLoginUserId();
     final String password = login.getLoginPassword();
     // We'll need to figure out what to do with the location code
@@ -40,15 +46,24 @@ public class LoginRepository {
         .put("username", user)
         .put("password", password);
     
-    final Future<JsonObject> result = resourceProvider
+    final Future<IResource> result = resourceProvider
         .createResource(new LoginRequestData(credentials));
 
     return result
         .otherwiseEmpty()
-        .compose(jo -> Future.succeededFuture(
+        .compose(resource -> {
+          final String authenticationToken = resource.getAuthenticationToken();
+          if (authenticationToken == null) {
+            // Can't continue without an auth token
+            log.error("Login does not have a valid authentication token");
+            return Future.succeededFuture(LoginResponse.builder().ok(FALSE).build());
+          }
+          sessionData.setAuthenticationToken(authenticationToken);
+          return Future.succeededFuture(
             LoginResponse.builder()
-              .ok(jo == null ? FALSE : TRUE)
-              .build()));
+              .ok(resource.getResource() == null ? FALSE : TRUE)
+              .build());
+        });
   }
 
   private class LoginRequestData implements IRequestData {

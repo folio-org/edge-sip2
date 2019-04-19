@@ -2,7 +2,6 @@ package org.folio.edge.sip2.api.support;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.vertx.core.DeploymentOptions;
@@ -27,19 +26,18 @@ import java.util.concurrent.TimeUnit;
 import org.folio.edge.sip2.MainVerticle;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.handlers.LoginHandler;
-import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
-import org.folio.edge.sip2.repositories.IRequestData;
-import org.folio.edge.sip2.repositories.IResourceProvider;
-import org.folio.edge.sip2.repositories.LoginRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(VertxExtension.class)
+@ExtendWith({VertxExtension.class, MockitoExtension.class})
 public abstract class BaseTest {
-
+  @Mock
+  private LoginHandler mockLoginHandler;
   protected MainVerticle myVerticle;
   private final int port = getRandomPort();
 
@@ -58,10 +56,15 @@ public abstract class BaseTest {
   @DisplayName("Deploy the verticle")
   public void deployVerticle(Vertx vertx, VertxTestContext testContext, TestInfo testInfo) {
 
-    DeploymentOptions opt = new DeploymentOptions();
-
     JsonObject sipConfig = new JsonObject();
     sipConfig.put("port", port);
+    if (testInfo.getTags().contains("ErrorDetectionEnabled")) {
+      sipConfig.put("errorDetectionEnabled", true);
+    }
+    sipConfig.put("okapiUrl", "http://example.com");
+    sipConfig.put("tenant", "diku");
+
+    DeploymentOptions opt = new DeploymentOptions();
     opt.setConfig(sipConfig);
 
     setMainVerticleInstance(testInfo.getDisplayName());
@@ -110,26 +113,18 @@ public abstract class BaseTest {
 
   private void setMainVerticleInstance(String methodName) {
     if (methodName.equalsIgnoreCase("CanStartMainVericleInjectingSip2RequestHandlers")) {
-      LoginHandler loginHandler = new LoginHandler(null, null);
       EnumMap<Command, ISip2RequestHandler> requestHandlerMap =
           new EnumMap<>(Command.class);
-      requestHandlerMap.put(Command.LOGIN, loginHandler);
+      requestHandlerMap.put(Command.LOGIN, mockLoginHandler);
 
       myVerticle = new MainVerticle(requestHandlerMap);
 
     } else if (methodName.startsWith("canMakeARequest(")) {
-      @SuppressWarnings("unchecked")
-      IResourceProvider<IRequestData> mockFolioProvider =
-          mock(IResourceProvider.class);
-      when(mockFolioProvider.createResource(any()))
-        .thenReturn(Future.succeededFuture(new JsonObject()));
-      LoginHandler loginHandler = new LoginHandler(
-          new LoginRepository(mockFolioProvider),
-          FreemarkerRepository.getInstance()
-            .getFreemarkerTemplate(Command.LOGIN_RESPONSE));
+      when(mockLoginHandler.execute(any(), any())).thenReturn(Future.succeededFuture("941"));
+
       EnumMap<Command, ISip2RequestHandler> requestHandlerMap =
           new EnumMap<>(Command.class);
-      requestHandlerMap.put(Command.LOGIN, loginHandler);
+      requestHandlerMap.put(Command.LOGIN, mockLoginHandler);
 
       myVerticle = new MainVerticle(requestHandlerMap);
 

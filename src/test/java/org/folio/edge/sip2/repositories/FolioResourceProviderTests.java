@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.io.IOException;
@@ -61,7 +62,7 @@ public class FolioResourceProviderTests {
       Vertx vertx,
       VertxTestContext testContext) {
     final FolioResourceProvider folioResourceProvider =
-        new FolioResourceProvider("http://example.com", "diku", vertx);
+        new FolioResourceProvider("http://example.com", vertx);
 
     assertNotNull(folioResourceProvider);
 
@@ -73,9 +74,11 @@ public class FolioResourceProviderTests {
       Vertx vertx,
       VertxTestContext testContext) {
     final FolioResourceProvider folioResourceProvider =
-        new FolioResourceProvider("http://localhost:" + port, "diku", vertx);
+        new FolioResourceProvider("http://localhost:" + port, vertx);
     folioResourceProvider.retrieveResource(() -> "/test_retrieve").setHandler(
-        testContext.succeeding(jo -> testContext.verify(() -> {
+        testContext.succeeding(resource -> testContext.verify(() -> {
+          final JsonObject jo = resource.getResource();
+
           assertNotNull(jo);
           assertTrue(jo.containsKey("test"));
           assertEquals("value", jo.getString("test"));
@@ -89,7 +92,7 @@ public class FolioResourceProviderTests {
       Vertx vertx,
       VertxTestContext testContext) {
     final FolioResourceProvider folioResourceProvider =
-        new FolioResourceProvider("http://localhost:" + port, "diku", vertx);
+        new FolioResourceProvider("http://localhost:" + port, vertx);
     folioResourceProvider.retrieveResource(() -> "/test_retrieve_bad")
         .setHandler(testContext.failing(throwable -> testContext.verify(() -> {
           assertNotNull(throwable);
@@ -105,9 +108,11 @@ public class FolioResourceProviderTests {
       Vertx vertx,
       VertxTestContext testContext) {
     final FolioResourceProvider folioResourceProvider =
-        new FolioResourceProvider("http://localhost:" + port, "diku", vertx);
+        new FolioResourceProvider("http://localhost:" + port, vertx);
     folioResourceProvider.createResource(() -> "/test_create").setHandler(
-        testContext.succeeding(jo -> testContext.verify(() -> {
+        testContext.succeeding(resource -> testContext.verify(() -> {
+          final JsonObject jo = resource.getResource();
+
           assertNotNull(jo);
           assertTrue(jo.containsKey("test"));
           assertEquals("value", jo.getString("test"));
@@ -121,11 +126,11 @@ public class FolioResourceProviderTests {
       Vertx vertx,
       VertxTestContext testContext) {
     final FolioResourceProvider folioResourceProvider =
-        new FolioResourceProvider("http://localhost:" + port, "diku", vertx);
+        new FolioResourceProvider("http://localhost:" + port, vertx);
     folioResourceProvider.createResource(() -> "/test_create_bad")
         .setHandler(testContext.failing(throwable -> testContext.verify(() -> {
           assertNotNull(throwable);
-          assertEquals("Response status code 500 is not equal to 201",
+          assertEquals("Response status code 500 is not between 200 and 300",
               throwable.getMessage());
 
           testContext.completeNow();

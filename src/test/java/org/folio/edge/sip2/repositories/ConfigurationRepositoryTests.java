@@ -73,7 +73,7 @@ public class ConfigurationRepositoryTests {
     @SuppressWarnings("unchecked")
     IResourceProvider<Object> mockConfigProvider = mock(IResourceProvider.class);
     when(mockConfigProvider.retrieveResource(null))
-      .thenReturn(Future.succeededFuture(defaultConfigurations));
+      .thenReturn(Future.succeededFuture(() -> defaultConfigurations));
 
     ConfigurationRepository configurationRepository =
         new ConfigurationRepository(mockConfigProvider);

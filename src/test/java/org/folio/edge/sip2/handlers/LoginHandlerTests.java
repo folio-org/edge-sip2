@@ -1,5 +1,8 @@
 package org.folio.edge.sip2.handlers;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+import static org.folio.edge.sip2.parser.Command.LOGIN_RESPONSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -8,22 +11,25 @@ import static org.mockito.Mockito.when;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
 import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
 import org.folio.edge.sip2.domain.messages.requests.Login;
-import org.folio.edge.sip2.repositories.IRequestData;
-import org.folio.edge.sip2.repositories.IResourceProvider;
+import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
+import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.repositories.LoginRepository;
+import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(VertxExtension.class)
+@ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class LoginHandlerTests {
   @Test
-  public void canExecuteASampleLoginUsingHandlersFactory(
+  public void canExecuteASampleLoginUsingHandler(
+      @Mock LoginRepository mockLoginRepository,
       Vertx vertx,
       VertxTestContext testContext) {
     final Login login = Login.builder()
@@ -34,16 +40,15 @@ public class LoginHandlerTests {
         .locationCode("library")
         .build();
 
-    @SuppressWarnings("unchecked")
-    final IResourceProvider<IRequestData> mockFolioProvider =
-        mock(IResourceProvider.class);
-    when(mockFolioProvider.createResource(any()))
-      .thenReturn(Future.succeededFuture(new JsonObject()));
+    when(mockLoginRepository.login(any(), any()))
+        .thenReturn(Future.succeededFuture(LoginResponse.builder().ok(TRUE).build()));
 
-    final LoginHandler handler = ((LoginHandler) HandlersFactory
-        .getLoginHandlerInstance(null, mockFolioProvider, null));
+    final LoginHandler handler = new LoginHandler(mockLoginRepository,
+        FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE));
 
-    handler.execute(login).setHandler(
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    handler.execute(login, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "941";
 
@@ -54,7 +59,8 @@ public class LoginHandlerTests {
   }
 
   @Test
-  public void canExecuteASampleFailedLoginUsingHandlersFactory(
+  public void canExecuteASampleFailedLoginUsingHandler(
+      @Mock LoginRepository mockLoginRepository,
       Vertx vertx,
       VertxTestContext testContext) {
     final Login login = Login.builder()
@@ -65,16 +71,15 @@ public class LoginHandlerTests {
         .locationCode("library")
         .build();
 
-    @SuppressWarnings("unchecked")
-    final IResourceProvider<IRequestData> mockFolioProvider =
-        mock(IResourceProvider.class);
-    when(mockFolioProvider.createResource(any()))
-      .thenReturn(Future.succeededFuture(null));
+    when(mockLoginRepository.login(any(), any()))
+        .thenReturn(Future.succeededFuture(LoginResponse.builder().ok(FALSE).build()));
 
-    final LoginHandler handler = ((LoginHandler) HandlersFactory
-        .getLoginHandlerInstance(null, mockFolioProvider, null));
+    final LoginHandler handler = new LoginHandler(mockLoginRepository,
+        FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE));
 
-    handler.execute(login).setHandler(
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    handler.execute(login, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "940";
 
@@ -95,17 +100,8 @@ public class LoginHandlerTests {
 
   @Test
   public void cannotCreateHandlerDueToMissingTemplate() {
-    @SuppressWarnings("unchecked")
-    final IResourceProvider<IRequestData> mockFolioProvider =
-        mock(IResourceProvider.class);
-    when(mockFolioProvider.createResource(any()))
-      .thenReturn(Future.succeededFuture(new JsonObject()));
-    final LoginRepository loginRepository =
-        new LoginRepository(mockFolioProvider);
-
-    final NullPointerException thrown = assertThrows(
-        NullPointerException.class,
-        () -> new LoginHandler(loginRepository, null));
+    final NullPointerException thrown = assertThrows(NullPointerException.class,
+        () -> new LoginHandler(mock(LoginRepository.class), null));
 
     assertEquals("Template cannot be null", thrown.getMessage());
   }

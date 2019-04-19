@@ -71,7 +71,7 @@
 <#-- Command macros that are mapped directly to a field name -->
 
 <#macro alert value>
-  <@booleanTo1or0 value=value/><#t>
+  <@booleanToYorN value=value/><#t>
 </#macro>
 
 <#macro chargedItems value>
