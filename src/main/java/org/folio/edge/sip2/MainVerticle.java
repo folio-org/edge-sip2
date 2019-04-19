@@ -70,7 +70,7 @@ public class MainVerticle extends AbstractVerticle {
     NetServerOptions options = new NetServerOptions().setPort(port);
     server = vertx.createNetServer(options);
 
-    log.info("Deployed verticle at port " + port);
+    log.info("Deployed verticle at port {}", port);
 
     server.connectHandler(socket -> {
       final SessionData sessionData = SessionData.createSession(

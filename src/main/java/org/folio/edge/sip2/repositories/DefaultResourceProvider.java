@@ -37,7 +37,7 @@ public class DefaultResourceProvider implements IResourceProvider<Object> {
          InputStreamReader isr = new InputStreamReader(inputStream);
          BufferedReader br = new BufferedReader(isr)) {
 
-      log.debug("Config file location:" + configurationResource.toString());
+      log.debug("Config file location: {}", configurationResource);
       String fileContent = br.lines().collect(Collectors.joining("\n"));
       br.lines().close();
 
