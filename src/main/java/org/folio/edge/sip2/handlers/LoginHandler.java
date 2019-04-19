@@ -23,7 +23,7 @@ public class LoginHandler implements ISip2RequestHandler {
   private final Template commandTemplate;
 
   @Inject
-  LoginHandler(LoginRepository loginRepository,@Named("loginResponse") Template commandTemplate) {
+  LoginHandler(LoginRepository loginRepository, @Named("loginResponse") Template commandTemplate) {
     this.loginRepository = Objects.requireNonNull(loginRepository,
         "LoginRepository cannot be null");
     this.commandTemplate = Objects.requireNonNull(commandTemplate, "Template cannot be null");
