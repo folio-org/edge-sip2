@@ -46,7 +46,7 @@ public class HandlersFactory {
 
   /**
    * Returns a Login Response command handler with the specified arguments.
-   * 
+   *
    * @param loginRepository a store of login data
    * @param resourceProvider a service for interacting with resources
    * @param commandTemplate the template for SIP2 command output
@@ -89,5 +89,9 @@ public class HandlersFactory {
     }
 
     return commandTemplate;
+  }
+
+  public static ISip2RequestHandler getACSResendHandler() {
+    return new ACSResendHandler();
   }
 }

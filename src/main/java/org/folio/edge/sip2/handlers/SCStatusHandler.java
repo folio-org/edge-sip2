@@ -46,15 +46,15 @@ public class SCStatusHandler implements ISip2RequestHandler {
           new PackagedSupportedMessages(acsStatus.getSupportedMessages()));
       root.put("ACSStatus",acsStatus);
       root.put("formatDateTime", new FormatDateTimeMethodModel());
-  
+
       if (template == null) {
         log.error("Unable to locate Freemarker template for the command: " + ACS_STATUS.name());
         return Future.failedFuture("");
       }
-  
+
       String acsSipStatusMessage = FreemarkerUtils.executeFreemarkerTemplate(root, template);
       log.debug("Sip2 ACSStatus message: " + acsSipStatusMessage);
-  
+
       return Future.succeededFuture(acsSipStatusMessage);
     });
   }

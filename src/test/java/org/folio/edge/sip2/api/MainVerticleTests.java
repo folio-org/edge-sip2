@@ -11,14 +11,36 @@ import io.vertx.junit5.VertxTestContext;
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.Date;
+
 import org.folio.edge.sip2.api.support.BaseTest;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Integration tests for SIP service.
+ * 1. Not all cases need to be tested.
+ * 2. Only test cases that cannot be unit tested
+ * 3. The order of the tests need to be kept as is.
+ *    New tests should be added on the bottom.
+ */
 public class MainVerticleTests extends BaseTest {
 
   @Test
   public void canStartMainVerticle() {
+    System.out.print("canStartMainVerticle");
     assertNotNull(myVerticle.deploymentID());
+  }
+
+  /**
+   * This test checks the negative case when there is no previous request stored.
+   */
+  @Test
+  public void cannotSuccessfullyResendPreviousRequest(Vertx vertx, VertxTestContext context) {
+    String sipMessage = "97\r";
+    callService(sipMessage,
+        context, vertx, result -> {
+          final String expectedString = "PreviousMessage is NULL";
+          assertEquals(expectedString, result);
+        });
   }
 
   @Test
@@ -105,6 +127,44 @@ public class MainVerticleTests extends BaseTest {
     callService(scStatusMessage, testContext, vertx, result -> {
       validateExpectedACSStatus(result);
     });
+  }
+
+  @Test
+  public void canTriggerAcsToResendMessage(
+      Vertx vertx, VertxTestContext testContext) {
+    // Note that this test is highly dependent on the previous test
+    // to set the previous message to be "9900401.00AY1AZFCA5\r";
+
+    //make an ACS resend request
+    callService("97\r",
+        testContext, vertx, result -> {
+          validateExpectedACSStatus(result);
+        });
+  }
+
+  @Test
+  public void canTriggerAcsToResendMessageBySendingSameRequestMessage(
+      Vertx vertx, VertxTestContext testContext) {
+
+    //Assuming that the previous message "9900401.00AY1AZFCA5\r" is still there
+    callService("9900401.00AY1AZFCA5\r",
+        testContext, vertx, result -> {
+          validateExpectedACSStatus(result);
+        });
+  }
+
+  @Test
+  public void cannotTriggerAcsToResendMessageBySendingSameMessageWithoutED(
+      Vertx vertx, VertxTestContext testContext) {
+
+    //Assuming that the previous message "9900401.00AY1AZFCA5\r" is still there
+    callService("9900401.00\r",
+        testContext, vertx, result -> {
+          // there is no way to verify the intended behavior
+          // because it also results in a fresh lookup by the ACS.
+          // Can only verify the lookup's result.
+          validateExpectedACSStatus(result);
+      });
   }
 
   private String getFormattedDateString() {

@@ -29,9 +29,9 @@ public class DefaultResourceProviderTests {
         testContext.succeeding(jsonConfig -> testContext.verify(() -> {
 
           assertNotNull(jsonConfig);
-      
+
           JsonObject acsConfig = jsonConfig.getJsonObject("acsConfiguration");
-      
+
           assertEquals("fs00000010test", acsConfig.getString("institutionId"));
           assertEquals("1.23", acsConfig.getString("protocolVersion"));
 
@@ -49,10 +49,10 @@ public class DefaultResourceProviderTests {
         testContext.succeeding(jsonConfig -> testContext.verify(() -> {
 
           assertNotNull(jsonConfig);
-      
+
           JsonArray tenantConfigs = jsonConfig.getJsonArray("tenantConfigurations");
           JsonObject firstTenantConfig = tenantConfigs.getJsonObject(0);
-      
+
           assertEquals("fs00000010test", firstTenantConfig.getString("tenantId"));
           assertEquals("ASCII", firstTenantConfig.getString("encoding"));
 

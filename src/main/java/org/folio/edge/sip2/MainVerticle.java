@@ -2,6 +2,7 @@ package org.folio.edge.sip2;
 
 import static org.folio.edge.sip2.parser.Command.CHECKOUT;
 import static org.folio.edge.sip2.parser.Command.LOGIN;
+import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 
@@ -16,12 +17,14 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.handlers.HandlersFactory;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
 import org.folio.edge.sip2.repositories.FolioResourceProvider;
+import org.folio.edge.sip2.repositories.HistoricalMessageRepository;
 import org.folio.edge.sip2.repositories.LoginRepository;
 
 public class MainVerticle extends AbstractVerticle {
@@ -29,6 +32,8 @@ public class MainVerticle extends AbstractVerticle {
   private Map<Command, ISip2RequestHandler> handlers;
   private NetServer server;
   private final Logger log;
+
+  private final String trailingDelimeter = "\r";
 
   /**
    * Construct the {@code MainVerticle}.
@@ -57,6 +62,7 @@ public class MainVerticle extends AbstractVerticle {
           HandlersFactory.getScStatusHandlerInstance(null, null, null));
       handlers.put(REQUEST_SC_RESEND,
           HandlersFactory.getInvalidMessageHandler());
+      handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
     }
 
     //set Config object's defaults
@@ -67,7 +73,7 @@ public class MainVerticle extends AbstractVerticle {
     log.info("Deployed verticle at port " + port);
 
     server.connectHandler(socket -> {
-      socket.handler(RecordParser.newDelimited("\r", buffer -> {
+      socket.handler(RecordParser.newDelimited(trailingDelimeter, buffer -> {
         final String messageString = buffer.getString(0, buffer.length());
         log.info("Received message: {}", messageString);
 
@@ -85,8 +91,7 @@ public class MainVerticle extends AbstractVerticle {
           //process validation results
           if (!message.isValid()) {
             log.error("Message is invalid: {}", messageString);
-            //The presence of the checksum string indicates that error detection was enabled.
-            if (message.getChecksumsString() != null) {
+            if (message.isErrorDetectionEnabled()) {
               //resends validation if checksum string does not match
               ISip2RequestHandler handler = handlers.get(Command.REQUEST_SC_RESEND);
               handler.execute(message.getRequest())
@@ -103,19 +108,35 @@ public class MainVerticle extends AbstractVerticle {
             return;
           }
 
+          //check if the previous message needs resending
+          if (requiredResending(message)) {
+            String prvMessage = HistoricalMessageRepository
+                .getPreviousMessage()
+                .getPreviousMessageResponse();
+            log.info("Sending previous Sip response {}",prvMessage);
+            socket.write(prvMessage);
+            return;
+          }
+
           ISip2RequestHandler handler = handlers.get(message.getCommand());
 
           if (handler == null) {
             log.error("Error locating handler for command; " + message.getCommand().name());
+            return;
           }
 
           handler
-              .execute(message.getRequest())
+              .execute(message.getRequest()) //call FOLIO
               .setHandler(ar -> {
                 if (ar.succeeded()) {
-                  socket.write(ar.result());  //call FOLIO
+                  String responseMsg = ar.result();
+                  handler.writeHistory(message, responseMsg);
+                  log.info("Sip response {}", responseMsg);
+                  socket.write(responseMsg);
                 } else {
-                  log.error("Failed to respond to request", ar.cause());
+                  String errorMsg = "Failed to respond to request";
+                  log.error(errorMsg, ar.cause());
+                  socket.write(ar.cause().getMessage());
                 }
               });
         } catch (Exception ex) {
@@ -153,5 +174,27 @@ public class MainVerticle extends AbstractVerticle {
         stopFuture.fail(result.cause());
       }
     });
+  }
+
+  /**
+   * Method that evaluates whether or not the previous message needs to be resent.
+   * Resending happens when the current message's checksum and sequence number
+   * match the previous message's checksum and sequence number.
+   *
+   * @param currentMessage current message to check against the previous message
+   * @return boolean indicating whether the message needs to be resent.
+   */
+  private boolean requiredResending(Message<Object> currentMessage) {
+
+    PreviousMessage prevMessage = HistoricalMessageRepository.getPreviousMessage();
+
+    if (prevMessage == null || !currentMessage.isErrorDetectionEnabled()) {
+      log.debug("requiredResending is FALSE");
+      return false;
+    } else {
+      log.debug("requiredResending is TRUE");
+      return currentMessage.getChecksumsString().equals(prevMessage.getPreviousRequestChecksum())
+        && currentMessage.getSequenceNumber() == prevMessage.getPreviousRequestSequenceNo();
+    }
   }
 }
