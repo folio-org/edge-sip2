@@ -22,11 +22,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.EnumMap;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.MainVerticle;
+import org.folio.edge.sip2.handlers.ACSResendHandler;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.handlers.LoginHandler;
 import org.folio.edge.sip2.parser.Command;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.TestInfo;
@@ -36,6 +39,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public abstract class BaseTest {
+  private static Logger log = LogManager.getLogger();
+
   @Mock
   private LoginHandler mockLoginHandler;
   protected MainVerticle myVerticle;
@@ -55,6 +60,7 @@ public abstract class BaseTest {
   @BeforeEach
   @DisplayName("Deploy the verticle")
   public void deployVerticle(Vertx vertx, VertxTestContext testContext, TestInfo testInfo) {
+    log.info("Starting: {}", testInfo.getDisplayName());
 
     JsonObject sipConfig = new JsonObject();
     sipConfig.put("port", port);
@@ -70,7 +76,13 @@ public abstract class BaseTest {
     setMainVerticleInstance(testInfo.getDisplayName());
     vertx.deployVerticle(myVerticle, opt, testContext.completing());
 
-    System.out.println("done deploying in base class");
+    log.info("done deploying in base class");
+  }
+
+  @AfterEach
+  @DisplayName("Shutdown")
+  void shutdown(Vertx vertx, TestInfo testInfo) {
+    log.info("Finished: {}", testInfo.getDisplayName());
   }
 
   /**
@@ -91,15 +103,18 @@ public abstract class BaseTest {
     NetClient tcpClient = vertx.createNetClient(options);
 
     tcpClient.connect(port, "localhost", res -> {
-      System.out.println("Shaking hands...");
+      log.debug("Shaking hands...");
       NetSocket socket = res.result();
       socket.write(ncipMessage);
-      System.out.println("done writing");
+      log.debug("done writing");
 
       socket.handler(buffer -> {
         String message = buffer.getString(0, buffer.length());
         testContext.verify(() -> testHandler.handle(message));
         testContext.completeNow();
+      }).exceptionHandler(t -> {
+        log.error(t);
+        testContext.failNow(t);
       });
     });
   }
@@ -125,6 +140,7 @@ public abstract class BaseTest {
       EnumMap<Command, ISip2RequestHandler> requestHandlerMap =
           new EnumMap<>(Command.class);
       requestHandlerMap.put(Command.LOGIN, mockLoginHandler);
+      requestHandlerMap.put(Command.REQUEST_ACS_RESEND, new ACSResendHandler());
 
       myVerticle = new MainVerticle(requestHandlerMap);
 
@@ -134,7 +150,7 @@ public abstract class BaseTest {
   }
 
   private static int getRandomPort() {
-    int port = -1;
+    int port;
     do {
       // Use a random ephemeral port
       port = new Random().nextInt(16_384) + 49_152;

@@ -40,4 +40,11 @@ public class HandlersFactoryTests {
     assertNotNull(checkoutHandler);
     assertTrue(checkoutHandler instanceof CheckoutHandler);
   }
+
+  @Test
+  public void canGetAcsResendHandler() {
+    ISip2RequestHandler acsResendHandler = HandlersFactory.getACSResendHandler();
+    assertNotNull(acsResendHandler);
+    assertTrue(acsResendHandler instanceof ACSResendHandler);
+  }
 }

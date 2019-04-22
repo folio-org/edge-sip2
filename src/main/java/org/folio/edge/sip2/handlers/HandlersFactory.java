@@ -67,4 +67,8 @@ public class HandlersFactory {
 
     return commandTemplate;
   }
+
+  public static ISip2RequestHandler getACSResendHandler() {
+    return new ACSResendHandler();
+  }
 }
