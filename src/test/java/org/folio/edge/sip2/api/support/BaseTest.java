@@ -103,19 +103,22 @@ public abstract class BaseTest {
     NetClient tcpClient = vertx.createNetClient(options);
 
     tcpClient.connect(port, "localhost", res -> {
-      log.debug("Shaking hands...");
-      NetSocket socket = res.result();
-      socket.write(ncipMessage);
-      log.debug("done writing");
-
-      socket.handler(buffer -> {
-        String message = buffer.getString(0, buffer.length());
-        testContext.verify(() -> testHandler.handle(message));
-        testContext.completeNow();
-      }).exceptionHandler(t -> {
-        log.error(t);
-        testContext.failNow(t);
-      });
+      if (res.succeeded()) {
+        log.debug("Shaking hands...");
+        NetSocket socket = res.result();
+  
+        socket.handler(buffer -> {
+          String message = buffer.getString(0, buffer.length());
+          testContext.verify(() -> testHandler.handle(message));
+          testContext.completeNow();
+        }).exceptionHandler(t -> {
+          log.error("Socket handler test expection", t);
+          testContext.failNow(t);
+        }).write(ncipMessage);
+        log.debug("done writing");
+      } else {
+        log.error("Failed to connect", res.cause());
+      }
     });
   }
 

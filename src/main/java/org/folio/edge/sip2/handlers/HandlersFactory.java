@@ -40,10 +40,6 @@ public class HandlersFactory {
     return new SCStatusHandler(configRepo, freeMarkerTemplate);
   }
 
-  public static ISip2RequestHandler getCheckoutHandlerIntance() {
-    return new CheckoutHandler();
-  }
-
   public static ISip2RequestHandler getInvalidMessageHandler() {
     return new InvalidMessageHandler();
   }

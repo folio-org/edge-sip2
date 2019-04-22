@@ -24,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.handlers.CheckinHandler;
+import org.folio.edge.sip2.handlers.CheckoutHandler;
 import org.folio.edge.sip2.handlers.HandlersFactory;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.handlers.LoginHandler;
@@ -54,7 +55,7 @@ public class MainVerticle extends AbstractVerticle {
   }
 
   @Override
-  public void start() {
+  public void start(Future<Void> startFuture) {
     // We need to reduce the complexity of this method...
     if (handlers == null) {
       final Injector injector = Guice.createInjector(
@@ -63,7 +64,7 @@ public class MainVerticle extends AbstractVerticle {
       handlers = new EnumMap<>(Command.class);
       handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
       handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
-      handlers.put(CHECKOUT, HandlersFactory.getCheckoutHandlerIntance());
+      handlers.put(CHECKOUT, injector.getInstance(CheckoutHandler.class));
       handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null, null));
       handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
       handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
@@ -119,7 +120,7 @@ public class MainVerticle extends AbstractVerticle {
                     }
                   });
             } else {
-              socket.write("Problems handling the request");
+              socket.write("Problems handling the request" + messageDelimiter);
             }
             return;
           }
@@ -129,7 +130,7 @@ public class MainVerticle extends AbstractVerticle {
             String prvMessage = HistoricalMessageRepository
                 .getPreviousMessage()
                 .getPreviousMessageResponse();
-            log.info("Sending previous Sip response {}",prvMessage);
+            log.info("Sending previous Sip response {}", prvMessage);
             socket.write(prvMessage);
             return;
           }
@@ -159,7 +160,7 @@ public class MainVerticle extends AbstractVerticle {
                 } else {
                   String errorMsg = "Failed to respond to request";
                   log.error(errorMsg, ar.cause());
-                  socket.write(ar.cause().getMessage());
+                  socket.write(ar.cause().getMessage() + messageDelimiter);
                 }
               });
         } catch (Exception ex) {
@@ -167,22 +168,23 @@ public class MainVerticle extends AbstractVerticle {
           log.error(message, ex);
           // Return an error message for now for the sake of negative testing.
           // Will find a better way to handle negative test cases.
-          socket.write(message);
+          socket.write(message + messageDelimiter);
         }
       }));
 
-      socket.exceptionHandler(handler -> {
+      socket.exceptionHandler(t -> {
         log.info("Socket exceptionHandler caught an issue, see error logs for more details");
-        log.error(handler.getMessage());
-        log.error(handler.getCause());
+        log.error("Socket exception", t);
       });
     });
 
     server.listen(result -> {
       if (result.succeeded()) {
         log.info("MainVerticle deeployed successfuly, server is now listening!");
+        startFuture.complete();
       } else {
-        log.error("Failed to deploy MainVerticle");
+        log.error("Failed to deploy MainVerticle", result.cause());
+        startFuture.fail(result.cause());
       }
     });
   }
@@ -194,6 +196,7 @@ public class MainVerticle extends AbstractVerticle {
         stopFuture.complete();
         log.info("MainVerticle stopped successfully!");
       } else {
+        log.error("Failed to stop MainVerticle", result.cause());
         stopFuture.fail(result.cause());
       }
     });
