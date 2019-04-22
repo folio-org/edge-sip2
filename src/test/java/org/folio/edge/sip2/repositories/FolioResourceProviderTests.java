@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -75,7 +76,7 @@ public class FolioResourceProviderTests {
       VertxTestContext testContext) {
     final FolioResourceProvider folioResourceProvider =
         new FolioResourceProvider("http://localhost:" + port, vertx);
-    folioResourceProvider.retrieveResource(() -> "/test_retrieve").setHandler(
+    folioResourceProvider.retrieveResource((FolioRequestData)() -> "/test_retrieve").setHandler(
         testContext.succeeding(resource -> testContext.verify(() -> {
           final JsonObject jo = resource.getResource();
 
@@ -93,7 +94,7 @@ public class FolioResourceProviderTests {
       VertxTestContext testContext) {
     final FolioResourceProvider folioResourceProvider =
         new FolioResourceProvider("http://localhost:" + port, vertx);
-    folioResourceProvider.retrieveResource(() -> "/test_retrieve_bad")
+    folioResourceProvider.retrieveResource((FolioRequestData)() -> "/test_retrieve_bad")
         .setHandler(testContext.failing(throwable -> testContext.verify(() -> {
           assertNotNull(throwable);
           assertEquals("Response status code 500 is not equal to 200",
@@ -109,7 +110,7 @@ public class FolioResourceProviderTests {
       VertxTestContext testContext) {
     final FolioResourceProvider folioResourceProvider =
         new FolioResourceProvider("http://localhost:" + port, vertx);
-    folioResourceProvider.createResource(() -> "/test_create").setHandler(
+    folioResourceProvider.createResource((FolioRequestData)() -> "/test_create").setHandler(
         testContext.succeeding(resource -> testContext.verify(() -> {
           final JsonObject jo = resource.getResource();
 
@@ -127,7 +128,7 @@ public class FolioResourceProviderTests {
       VertxTestContext testContext) {
     final FolioResourceProvider folioResourceProvider =
         new FolioResourceProvider("http://localhost:" + port, vertx);
-    folioResourceProvider.createResource(() -> "/test_create_bad")
+    folioResourceProvider.createResource((FolioRequestData)() -> "/test_create_bad")
         .setHandler(testContext.failing(throwable -> testContext.verify(() -> {
           assertNotNull(throwable);
           assertEquals("Response status code 500 is not between 200 and 300",
@@ -152,5 +153,12 @@ public class FolioResourceProviderTests {
     } while (true);
 
     return port;
+  }
+
+  private interface FolioRequestData extends IRequestData {
+    @Override
+    default SessionData getSessionData() {
+      return SessionData.createSession("diku", '|', true, "IBM850");
+    }
   }
 }

@@ -41,7 +41,7 @@ public class CirculationRepositoryTests {
   }
 
   @Test
-  public void cannotCreateCircilationRepositoryWhenResourceProviderIsNull() {
+  public void cannotCreateCirculationRepositoryWhenResourceProviderIsNull() {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
         () -> new CirculationRepository(null, null));

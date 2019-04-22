@@ -15,6 +15,7 @@ import io.vertx.ext.web.codec.BodyCodec;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -53,7 +54,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     final HttpRequest<Buffer> request =
         client.getAbs(okapiUrl + requestData.getPath());
 
-    setHeaders(requestData.getHeaders(), request, requestData.getSessionData());
+    setHeaders(requestData.getHeaders(), request,
+        Objects.requireNonNull(requestData.getSessionData(), "SessionData cannot be null"));
 
     final Future<IResource> future = Future.future();
     request
@@ -112,13 +114,11 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
       request.putHeader(entry.getKey(), entry.getValue());
     }
 
-    if (sessionData != null) {
-      final String authenticationToken = sessionData.getAuthenticationToken();
-      if (authenticationToken != null) {
-        request.putHeader(HEADER_X_OKAPI_TOKEN, authenticationToken);
-      }
-      request.putHeader("x-okapi-tenant", sessionData.getTenant());
+    final String authenticationToken = sessionData.getAuthenticationToken();
+    if (authenticationToken != null) {
+      request.putHeader(HEADER_X_OKAPI_TOKEN, authenticationToken);
     }
+    request.putHeader("x-okapi-tenant", sessionData.getTenant());
   }
 
   private void handleResponse(
