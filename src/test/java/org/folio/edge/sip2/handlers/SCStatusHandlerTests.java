@@ -39,7 +39,7 @@ public class SCStatusHandlerTests {
     SCStatusHandler handler = ((SCStatusHandler) HandlersFactory
         .getScStatusHandlerInstance(null, defaultConfigurationProvider, null));
 
-    handler.execute(status).setHandler(
+    handler.execute(status, null).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           // Because the sipMessage has a dateTime component that's supposed
           // to be current, we can't assert on the entirety of the string,
@@ -74,7 +74,7 @@ public class SCStatusHandlerTests {
 
     SCStatusHandler handler = new SCStatusHandler(configurationRepository, null);
 
-    handler.execute(status).setHandler(
+    handler.execute(status, null).setHandler(
         testContext.failing(throwable -> testContext.verify(() -> {
           assertEquals("", throwable.getMessage());
           testContext.completeNow();

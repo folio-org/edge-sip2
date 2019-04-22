@@ -26,8 +26,8 @@ public class DefaultResourceProviderTests {
       VertxTestContext testContext) {
     DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
     defaultConfigurationProvider.retrieveResource(null).setHandler(
-        testContext.succeeding(jsonConfig -> testContext.verify(() -> {
-
+        testContext.succeeding(resource -> testContext.verify(() -> {
+          final JsonObject jsonConfig = resource.getResource();
           assertNotNull(jsonConfig);
 
           JsonObject acsConfig = jsonConfig.getJsonObject("acsConfiguration");
@@ -46,8 +46,8 @@ public class DefaultResourceProviderTests {
 
     DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
     defaultConfigurationProvider.retrieveResource(null).setHandler(
-        testContext.succeeding(jsonConfig -> testContext.verify(() -> {
-
+        testContext.succeeding(resource -> testContext.verify(() -> {
+          final JsonObject jsonConfig = resource.getResource();
           assertNotNull(jsonConfig);
 
           JsonArray tenantConfigs = jsonConfig.getJsonArray("tenantConfigurations");

@@ -15,7 +15,7 @@ public class HistoricalMessageRepositoryTests {
     final String expectedChecksum = "AABBCC";
     final String expectedResponse = "this is a SIP response";
 
-    Message.MessageBuilder builder = Message.builder();
+    Message.MessageBuilder<Object> builder = Message.builder();
     builder.sequenceNumber(expectedSeqNo);
     builder.checksumString(expectedChecksum);
     builder.valid(true);

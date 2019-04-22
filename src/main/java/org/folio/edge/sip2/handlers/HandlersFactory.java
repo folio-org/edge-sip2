@@ -1,16 +1,12 @@
 package org.folio.edge.sip2.handlers;
 
-import static org.folio.edge.sip2.parser.Command.LOGIN_RESPONSE;
-
 import freemarker.template.Template;
 
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.DefaultResourceProvider;
-import org.folio.edge.sip2.repositories.IRequestData;
 import org.folio.edge.sip2.repositories.IResourceProvider;
-import org.folio.edge.sip2.repositories.LoginRepository;
 
 /**
  * Factory class that holds instantiation logic for all ISip2RequestHandlers.
@@ -42,25 +38,6 @@ public class HandlersFactory {
         Command.ACS_STATUS);
 
     return new SCStatusHandler(configRepo, freeMarkerTemplate);
-  }
-
-  /**
-   * Returns a Login Response command handler with the specified arguments.
-   *
-   * @param loginRepository a store of login data
-   * @param resourceProvider a service for interacting with resources
-   * @param commandTemplate the template for SIP2 command output
-   * @return
-   */
-  public static ISip2RequestHandler getLoginHandlerInstance(
-      LoginRepository loginRepository,
-      IResourceProvider<IRequestData> resourceProvider,
-      Template commandTemplate) {
-    return new LoginHandler(
-        loginRepository == null ? new LoginRepository(
-            getResourceProvider(resourceProvider))
-            : loginRepository,
-        getCommandTemplate(commandTemplate, LOGIN_RESPONSE));
   }
 
   public static ISip2RequestHandler getCheckoutHandlerIntance() {

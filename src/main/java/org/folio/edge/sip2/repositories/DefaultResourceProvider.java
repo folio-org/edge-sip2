@@ -22,12 +22,12 @@ public class DefaultResourceProvider implements IResourceProvider<Object> {
   }
 
   @Override
-  public Future<JsonObject> createResource(Object fromData) {
+  public Future<IResource> createResource(Object fromData) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Future<JsonObject> retrieveResource(Object key) {
+  public Future<IResource> retrieveResource(Object key) {
 
     JsonObject jsonFile = null;
 
@@ -37,7 +37,7 @@ public class DefaultResourceProvider implements IResourceProvider<Object> {
          InputStreamReader isr = new InputStreamReader(inputStream);
          BufferedReader br = new BufferedReader(isr)) {
 
-      log.debug("Config file location:" + configurationResource.toString());
+      log.debug("Config file location: {}", configurationResource);
       String fileContent = br.lines().collect(Collectors.joining("\n"));
       br.lines().close();
 
@@ -47,16 +47,17 @@ public class DefaultResourceProvider implements IResourceProvider<Object> {
     } catch (Exception ex) {
       log.error("General exception encountered reading configuration file: " + ex.getMessage());
     }
-    return Future.succeededFuture(jsonFile);
+    final JsonObject result = jsonFile;
+    return Future.succeededFuture(() -> result);
   }
 
   @Override
-  public Future<JsonObject> editResource(Object fromData) {
+  public Future<IResource> editResource(Object fromData) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Future<JsonObject> deleteResource(Object resource) {
+  public Future<IResource> deleteResource(Object resource) {
     throw new UnsupportedOperationException();
   }
 }

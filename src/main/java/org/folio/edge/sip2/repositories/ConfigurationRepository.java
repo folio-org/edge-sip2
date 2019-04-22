@@ -83,9 +83,10 @@ public class ConfigurationRepository {
    */
   public Future<JsonObject> retrieveTenantConfiguration(String configKey) {
 
-    Future<JsonObject> future = resourceProvider.retrieveResource(null);
+    Future<IResource> future = resourceProvider.retrieveResource(null);
 
-    return future.compose(jsonFile -> {
+    return future.compose(resource -> {
+      final JsonObject jsonFile = resource.getResource();
       JsonObject configJson = null;
 
       JsonArray tenantConfigurations = jsonFile.getJsonArray("tenantConfigurations");
@@ -104,8 +105,9 @@ public class ConfigurationRepository {
 
   private Future<JsonObject> retrieveAcsConfiguration() {
 
-    Future<JsonObject> future = resourceProvider.retrieveResource(null);
-    return future.compose(fullConfiguration -> {
+    Future<IResource> future = resourceProvider.retrieveResource(null);
+    return future.compose(resource -> {
+      final JsonObject fullConfiguration = resource.getResource();
       JsonObject acsConfiguration = null;
       if (fullConfiguration != null) {
         acsConfiguration = fullConfiguration.getJsonObject("acsConfiguration");

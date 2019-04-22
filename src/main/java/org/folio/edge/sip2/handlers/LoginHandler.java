@@ -5,6 +5,8 @@ import io.vertx.core.Future;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.Login;
@@ -12,6 +14,7 @@ import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.LoginRepository;
+import org.folio.edge.sip2.session.SessionData;
 
 public class LoginHandler implements ISip2RequestHandler {
   private static final Logger log = LogManager.getLogger();
@@ -19,34 +22,27 @@ public class LoginHandler implements ISip2RequestHandler {
   private final LoginRepository loginRepository;
   private final Template commandTemplate;
 
-  /**
-   * Construct a Login handler with the specified parameters.
-   * @param loginRepository the login repository
-   * @param commandTemplate the command template
-   */
-  public LoginHandler(
-      LoginRepository loginRepository,
-      Template commandTemplate) {
+  @Inject
+  LoginHandler(LoginRepository loginRepository, @Named("loginResponse") Template commandTemplate) {
     this.loginRepository = Objects.requireNonNull(loginRepository,
         "LoginRepository cannot be null");
-    this.commandTemplate = Objects.requireNonNull(commandTemplate,
-        "Template cannot be null");
+    this.commandTemplate = Objects.requireNonNull(commandTemplate, "Template cannot be null");
   }
 
   @Override
-  public Future<String> execute(Object message) {
+  public Future<String> execute(Object message, SessionData sessionData) {
     final Login login = (Login) message;
 
     log.debug("Login: {}", () -> login);
 
-    final Future<LoginResponse> responseFuture = loginRepository.login(login);
+    final Future<LoginResponse> responseFuture = loginRepository.login(login, sessionData);
 
     return responseFuture.compose(loginResponse -> {
       log.debug("LoginResponse: {}", () -> loginResponse);
 
       final Map<String, Object> root = new HashMap<>();
       root.put("formatDateTime", new FormatDateTimeMethodModel());
-      root.put("delimiter", "|");
+      root.put("delimiter", sessionData.getFieldDelimiter());
       root.put("loginResponse", loginResponse);
 
       final String response = FreemarkerUtils

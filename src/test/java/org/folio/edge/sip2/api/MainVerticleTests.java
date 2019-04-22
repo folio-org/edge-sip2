@@ -11,8 +11,8 @@ import io.vertx.junit5.VertxTestContext;
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.Date;
-
 import org.folio.edge.sip2.api.support.BaseTest;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -26,7 +26,6 @@ public class MainVerticleTests extends BaseTest {
 
   @Test
   public void canStartMainVerticle() {
-    System.out.print("canStartMainVerticle");
     assertNotNull(myVerticle.deploymentID());
   }
 
@@ -47,7 +46,7 @@ public class MainVerticleTests extends BaseTest {
   public void canMakeARequest(Vertx vertex, VertxTestContext testContext) {
     callService("9300CNMartin|COpassword|\r",
         testContext, vertex, result -> {
-          final String expectedString = "941";
+          final String expectedString = "941\r";
           assertEquals(expectedString, result);
         });
   }
@@ -83,7 +82,7 @@ public class MainVerticleTests extends BaseTest {
           .append(", patronPassword=null")
           .append(", feeAcknowledged=null")
           .append(", cancel=null")
-          .append(']').toString();
+          .append("]\r").toString();
       assertEquals(expectedString, result);
     });
   }
@@ -112,11 +111,12 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
+  @Tag("ErrorDetectionEnabled")
   public void canGetCsResendMessageWhenSendingInvalidMessage(
       Vertx vertx, VertxTestContext testContext) {
     String scStatusMessage = "9900401.00AY1AZAAAA\r";
     callService(scStatusMessage, testContext, vertx, result -> {
-      assertEquals("96", result);
+      assertEquals("96AZFEF6\r", result);
     });
   }
 
@@ -176,7 +176,7 @@ public class MainVerticleTests extends BaseTest {
   private void validateExpectedACSStatus(String acsResponse) {
     String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
     String expectedPostLocalTime =
-        "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|";
+        "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\r";
     String expectedBlankSpaces = "    ";
 
     assertEquals(expectedPreLocalTime, acsResponse.substring(0, 18));

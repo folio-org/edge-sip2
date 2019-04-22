@@ -5,12 +5,13 @@ import io.vertx.core.Future;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.repositories.HistoricalMessageRepository;
+import org.folio.edge.sip2.session.SessionData;
 
 
 public class ACSResendHandler implements ISip2RequestHandler {
 
   @Override
-  public Future<String> execute(Object message) {
+  public Future<String> execute(Object message, SessionData sessionData) {
     PreviousMessage prevMessage = HistoricalMessageRepository.getPreviousMessage();
 
     if (prevMessage == null) {

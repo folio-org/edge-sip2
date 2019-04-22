@@ -1,39 +1,45 @@
 package org.folio.edge.sip2;
 
+import static java.lang.Boolean.FALSE;
+import static org.folio.edge.sip2.parser.Command.CHECKIN;
 import static org.folio.edge.sip2.parser.Command.CHECKOUT;
 import static org.folio.edge.sip2.parser.Command.LOGIN;
 import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.parsetools.RecordParser;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.Charset;
 import java.util.EnumMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.PreviousMessage;
+import org.folio.edge.sip2.handlers.CheckinHandler;
 import org.folio.edge.sip2.handlers.HandlersFactory;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
+import org.folio.edge.sip2.handlers.LoginHandler;
+import org.folio.edge.sip2.modules.ApplicationModule;
+import org.folio.edge.sip2.modules.FolioResourceProviderModule;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
-import org.folio.edge.sip2.repositories.FolioResourceProvider;
 import org.folio.edge.sip2.repositories.HistoricalMessageRepository;
-import org.folio.edge.sip2.repositories.LoginRepository;
+import org.folio.edge.sip2.session.SessionData;
 
 public class MainVerticle extends AbstractVerticle {
 
   private Map<Command, ISip2RequestHandler> handlers;
   private NetServer server;
   private final Logger log;
-
-  private final String trailingDelimeter = "\r";
 
   /**
    * Construct the {@code MainVerticle}.
@@ -49,19 +55,17 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start() {
+    // We need to reduce the complexity of this method...
     if (handlers == null) {
-      final FolioResourceProvider folioResourceProvider =
-          new FolioResourceProvider(config().getString("okapiUrl"),
-              config().getString("tenant"), vertx);
+      final Injector injector = Guice.createInjector(
+          new FolioResourceProviderModule(config().getString("okapiUrl"), vertx),
+          new ApplicationModule());
       handlers = new EnumMap<>(Command.class);
-      handlers.put(LOGIN, HandlersFactory.getLoginHandlerInstance(
-          new LoginRepository(folioResourceProvider),
-          folioResourceProvider, null));
+      handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
+      handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
       handlers.put(CHECKOUT, HandlersFactory.getCheckoutHandlerIntance());
-      handlers.put(SC_STATUS,
-          HandlersFactory.getScStatusHandlerInstance(null, null, null));
-      handlers.put(REQUEST_SC_RESEND,
-          HandlersFactory.getInvalidMessageHandler());
+      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null, null));
+      handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
       handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
     }
 
@@ -70,12 +74,19 @@ public class MainVerticle extends AbstractVerticle {
     NetServerOptions options = new NetServerOptions().setPort(port);
     server = vertx.createNetServer(options);
 
-    log.info("Deployed verticle at port " + port);
+    log.info("Deployed verticle at port {}", port);
 
     server.connectHandler(socket -> {
-      socket.handler(RecordParser.newDelimited(trailingDelimeter, buffer -> {
+      final SessionData sessionData = SessionData.createSession(
+          config().getString("tenant"),
+          config().getString("fieldDelimiter", "|").charAt(0),
+          config().getBoolean("errorDetectionEnabled", FALSE),
+          config().getString("charset", "IBM850"));
+      final String messageDelimiter = config().getString("messageDelimiter", "\r");
+
+      socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
         final String messageString = buffer.getString(0, buffer.length());
-        log.info("Received message: {}", messageString);
+        log.debug("Received message: {}", messageString);
 
         try {
           // Create a parser with the default delimiter '|' and the default
@@ -83,7 +94,11 @@ public class MainVerticle extends AbstractVerticle {
           // tenant specific. This will be difficult considering that we need
           // to parse the login message before we know which tenant it is.
           // We may need another mechanism to obtain this configuration...
-          final Parser parser = Parser.builder().build();
+          final Parser parser = Parser.builder()
+              .delimiter(sessionData.getFieldDelimiter())
+              .charset(Charset.forName(sessionData.getCharset()))
+              .errorDetectionEnaled(sessionData.isErrorDetectionEnabled())
+              .build();
 
           //parsing
           final Message<Object> message = parser.parseMessage(messageString);
@@ -94,10 +109,11 @@ public class MainVerticle extends AbstractVerticle {
             if (message.isErrorDetectionEnabled()) {
               //resends validation if checksum string does not match
               ISip2RequestHandler handler = handlers.get(Command.REQUEST_SC_RESEND);
-              handler.execute(message.getRequest())
+              handler.execute(message.getRequest(), sessionData)
                   .setHandler(ar -> {
                     if (ar.succeeded()) {
-                      socket.write(ar.result());
+                      socket.write(formatResponse(ar.result(), message, sessionData,
+                          messageDelimiter, true));
                     } else {
                       log.error("Failed to send SC resend", ar.cause());
                     }
@@ -126,10 +142,17 @@ public class MainVerticle extends AbstractVerticle {
           }
 
           handler
-              .execute(message.getRequest()) //call FOLIO
+              .execute(message.getRequest(), sessionData)
               .setHandler(ar -> {
                 if (ar.succeeded()) {
-                  String responseMsg = ar.result();
+                  final String responseMsg;
+                  if (message.getCommand() == REQUEST_ACS_RESEND) {
+                    // we don't want to modify the response
+                    responseMsg = ar.result();
+                  } else {
+                    responseMsg = formatResponse(ar.result(), message, sessionData,
+                        messageDelimiter);
+                  }
                   handler.writeHistory(message, responseMsg);
                   log.info("Sip response {}", responseMsg);
                   socket.write(responseMsg);
@@ -174,6 +197,43 @@ public class MainVerticle extends AbstractVerticle {
         stopFuture.fail(result.cause());
       }
     });
+  }
+
+  private String formatResponse(String response, Message<Object> message, SessionData sessionData,
+      String messageDelimiter) {
+    return formatResponse(response, message, sessionData, messageDelimiter, false);
+  }
+
+  private String formatResponse(String response, Message<Object> message, SessionData sessionData,
+      String messageDelimiter, boolean isSCResend) {
+    final String result;
+
+    if (message.isErrorDetectionEnabled()) {
+      final StringBuilder sb = new StringBuilder(response.length() + (isSCResend ? 6 : 9)
+          + messageDelimiter.length())
+          .append(response);
+      // SC Resend messages never include a sequence number, but will include the checksum
+      if (!isSCResend) {
+        sb.append("AY").append(message.getSequenceNumber());
+      }
+
+      sb.append("AZ");
+
+      final byte [] bytes = sb.toString().getBytes(Charset.forName(sessionData.getCharset()));
+      int checksum = 0;
+      for (final byte b : bytes) {
+        checksum += b & 0xff;
+      }
+
+      checksum = -checksum & 0xffff;
+      sb.append(String.format("%04X", checksum)).append(messageDelimiter);
+
+      result = sb.toString();
+    } else {
+      result = response + messageDelimiter;
+    }
+
+    return result;
   }
 
   /**

@@ -35,13 +35,6 @@ public class HandlersFactoryTests {
   }
 
   @Test
-  public void canGetLoginHandler() {
-    ISip2RequestHandler loginHandler = HandlersFactory.getLoginHandlerInstance(null, null, null);
-    assertNotNull(loginHandler);
-    assertTrue(loginHandler instanceof LoginHandler);
-  }
-
-  @Test
   public void canGetCheckoutHandler() {
     ISip2RequestHandler checkoutHandler = HandlersFactory.getCheckoutHandlerIntance();
     assertNotNull(checkoutHandler);
