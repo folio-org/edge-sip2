@@ -69,7 +69,7 @@ public final class Parser {
     if (ed.valid) {
       if (ed.sequenceNumber != null) {
         // Remove the error detection chars before parsing the message
-        message = message.substring(0, message.length() - 9);
+        message = message.substring(0, message.length() - (command == REQUEST_ACS_RESEND ? 6 : 9));
       }
 
       // Remove the command identifier before parsing
