@@ -40,14 +40,14 @@ public class LoginRepository {
   public Future<LoginResponse> login(Login login, SessionData sessionData) {
     final String user = login.getLoginUserId();
     final String password = login.getLoginPassword();
-    // We'll need to figure out what to do with the location code
+    final String locationCode = login.getLocationCode();
 
     final JsonObject credentials = new JsonObject()
         .put("username", user)
         .put("password", password);
     
     final Future<IResource> result = resourceProvider
-        .createResource(new LoginRequestData(credentials));
+        .createResource(new LoginRequestData(credentials, sessionData));
 
     return result
         .otherwiseEmpty()
@@ -59,6 +59,7 @@ public class LoginRepository {
             return Future.succeededFuture(LoginResponse.builder().ok(FALSE).build());
           }
           sessionData.setAuthenticationToken(authenticationToken);
+          sessionData.setScLocation(locationCode);
           return Future.succeededFuture(
             LoginResponse.builder()
               .ok(resource.getResource() == null ? FALSE : TRUE)
@@ -68,9 +69,11 @@ public class LoginRepository {
 
   private class LoginRequestData implements IRequestData {
     private final JsonObject body;
+    private final SessionData sessionData;
 
-    private LoginRequestData(JsonObject body) {
+    private LoginRequestData(JsonObject body, SessionData sessionData) {
       this.body = body;
+      this.sessionData = sessionData;
     }
 
     @Override
@@ -88,6 +91,11 @@ public class LoginRepository {
     @Override
     public JsonObject getBody() {
       return body;
+    }
+
+    @Override
+    public SessionData getSessionData() {
+      return sessionData;
     }
   }
 }

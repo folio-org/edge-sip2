@@ -6,7 +6,6 @@ import static java.lang.Boolean.TRUE;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import java.time.Clock;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -45,14 +44,16 @@ public class CirculationRepository {
    * @return the checkin response domain object
    */
   public Future<CheckinResponse> checkin(Checkin checkin, SessionData sessionData) {
+    // We'll need to convert this date properly. It is likely that it will not include timezone
+    // information, so we'll need to use the tenant/SC timezone as the basis and convert to UTC.
     final ZonedDateTime returnDate = checkin.getReturnDate();
-    final String currentLocation = checkin.getCurrentLocation();
+    final String scLocation = sessionData.getScLocation();
     final String institutionId = checkin.getInstitutionId();
     final String itemIdentifier = checkin.getItemIdentifier();
 
     final JsonObject body = new JsonObject()
         .put("itemBarcode", itemIdentifier)
-        .put("servicePointId", currentLocation)
+        .put("servicePointId", scLocation)
         .put("checkInDate", DateTimeFormatter.ISO_DATE_TIME
             .withZone(ZoneOffset.UTC)
             .format(returnDate));
@@ -113,7 +114,26 @@ public class CirculationRepository {
 
     return result
         .otherwiseEmpty()
-        .compose(resource -> Future.succeededFuture(
+        .compose(resource -> {
+          final ZonedDateTime dueDate;
+          // This is a mess. Need to clean this up. The problem here is that the checkout has
+          // already succeeded, but something could be wrong with the returned data. The odds of
+          // this are low, so we should be able to simplify this logic. The "dueDate" field is not
+          // required, so a loan could be missing one. I am not sure what that means for SIP2
+          // where the due date field is required. Setting it to null is probably wrong and will
+          // likely break the template when building the SIP2 response.
+          if (resource.getResource() != null) {
+            final String dueDateString = resource.getResource().getString("dueDate", null);
+            if (dueDateString == null) {
+              dueDate = null;
+            } else {
+              // Need to convert to the tenant local timezone
+              dueDate = ZonedDateTime.from(Utils.getFolioDateTimeFormatter().parse(dueDateString));
+            }
+          } else {
+            dueDate = null;
+          }
+          return Future.succeededFuture(
             CheckoutResponse.builder()
               .ok(resource.getResource() == null ? FALSE : TRUE)
               .renewalOk(FALSE)
@@ -128,10 +148,9 @@ public class CirculationRepository {
               .titleIdentifier(resource.getResource() == null ? "Unknown" :
                 resource.getResource().getJsonObject("item",
                     new JsonObject()).getString("title", "Unknown"))
-              // We shouldn't be using the system default zone here...
-              .dueDate(resource.getResource() == null ? null :
-                resource.getResource().getInstant("dueDate").atZone(ZoneId.systemDefault()))
-              .build()));
+              .dueDate(dueDate)
+              .build());
+        });
   }
 
   private class CheckinRequestData implements IRequestData {
