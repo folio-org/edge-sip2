@@ -47,7 +47,7 @@ public class LoginRepository {
         .put("password", password);
     
     final Future<IResource> result = resourceProvider
-        .createResource(new LoginRequestData(credentials));
+        .createResource(new LoginRequestData(credentials, sessionData));
 
     return result
         .otherwiseEmpty()
@@ -68,9 +68,11 @@ public class LoginRepository {
 
   private class LoginRequestData implements IRequestData {
     private final JsonObject body;
+    private final SessionData sessionData;
 
-    private LoginRequestData(JsonObject body) {
+    private LoginRequestData(JsonObject body, SessionData sessionData) {
       this.body = body;
+      this.sessionData = sessionData;
     }
 
     @Override
@@ -88,6 +90,11 @@ public class LoginRepository {
     @Override
     public JsonObject getBody() {
       return body;
+    }
+
+    @Override
+    public SessionData getSessionData() {
+      return sessionData;
     }
   }
 }
