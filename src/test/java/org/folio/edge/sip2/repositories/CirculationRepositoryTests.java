@@ -20,8 +20,10 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
+import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -99,6 +101,70 @@ public class CirculationRepositoryTests {
           assertNull(checkinResponse.getItemProperties());
           assertNull(checkinResponse.getScreenMessage());
           assertNull(checkinResponse.getPrintLine());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void canCheckout(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final ZonedDateTime nbDueDate = ZonedDateTime.now().plusDays(30);
+    final String patronIdentifier = "1029384756";
+    final String itemIdentifier = "1234567890";
+    final String title = "Some book";
+    final Checkout checkout = Checkout.builder()
+        .scRenewalPolicy(FALSE)
+        .noBlock(FALSE)
+        .transactionDate(ZonedDateTime.now())
+        .nbDueDate(nbDueDate)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .patronPassword("7890")
+        .feeAcknowledged(FALSE)
+        .cancel(FALSE)
+        .build();
+
+    final JsonObject response = new JsonObject()
+        .put("item", new JsonObject()
+            .put("title", title))
+        .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+    when(mockFolioProvider.createResource(any()))
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final CirculationRepository circulationRepository =
+        new CirculationRepository(mockFolioProvider, clock);
+    circulationRepository.checkout(checkout, sessionData).setHandler(
+        testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
+          assertNotNull(checkoutResponse);
+          assertTrue(checkoutResponse.getOk());
+          assertFalse(checkoutResponse.getRenewalOk());
+          assertNull(checkoutResponse.getMagneticMedia());
+          assertTrue(checkoutResponse.getDesensitize());
+          assertEquals(ZonedDateTime.now(clock), checkoutResponse.getTransactionDate());
+          assertEquals("diku", checkoutResponse.getInstitutionId());
+          assertEquals(patronIdentifier, checkoutResponse.getPatronIdentifier());
+          assertEquals(itemIdentifier, checkoutResponse.getItemIdentifier());
+          assertEquals(title, checkoutResponse.getTitleIdentifier());
+          assertEquals(nbDueDate.toOffsetDateTime(),
+              checkoutResponse.getDueDate().toOffsetDateTime());
+          assertNull(checkoutResponse.getFeeType());
+          assertNull(checkoutResponse.getSecurityInhibit());
+          assertNull(checkoutResponse.getCurrencyType());
+          assertNull(checkoutResponse.getFeeAmount());
+          assertNull(checkoutResponse.getMediaType());
+          assertNull(checkoutResponse.getItemProperties());
+          assertNull(checkoutResponse.getTransactionId());
+          assertNull(checkoutResponse.getScreenMessage());
+          assertNull(checkoutResponse.getPrintLine());
 
           testContext.completeNow();
         })));

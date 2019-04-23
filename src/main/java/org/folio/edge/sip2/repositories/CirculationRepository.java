@@ -167,8 +167,6 @@ public class CirculationRepository {
       this.sessionData = sessionData;
     }
 
-    public abstract String getPath();
-
     @Override
     public Map<String, String> getHeaders() {
       return headers;
