@@ -27,6 +27,8 @@ import org.folio.edge.sip2.session.SessionData;
  *
  */
 public class CirculationRepository {
+  // Should consider letting the template take care of required fields with missing values
+  private static final String UNKNOWN = "Unknown";
   private final IResourceProvider<IRequestData> resourceProvider;
   private final Clock clock;
 
@@ -82,10 +84,10 @@ public class CirculationRepository {
               // this is probably not the permanent location
               // this might require a call to inventory
               .permanentLocation(
-                  resource.getResource() == null ? "Unknown"
+                  resource.getResource() == null ? UNKNOWN
                       : resource.getResource().getJsonObject("item",
                           new JsonObject()).getJsonObject("location",
-                              new JsonObject()).getString("name", "Unknown"))
+                              new JsonObject()).getString("name", UNKNOWN))
               .build()));
   }
 
@@ -145,77 +147,65 @@ public class CirculationRepository {
               .institutionId(institutionId)
               .patronIdentifier(patronIdentifier)
               .itemIdentifier(itemIdentifier)
-              .titleIdentifier(resource.getResource() == null ? "Unknown" :
+              .titleIdentifier(resource.getResource() == null ? UNKNOWN :
                 resource.getResource().getJsonObject("item",
-                    new JsonObject()).getString("title", "Unknown"))
+                    new JsonObject()).getString("title", UNKNOWN))
               .dueDate(dueDate)
               .build());
         });
   }
 
-  private class CheckinRequestData implements IRequestData {
+  private abstract class CirculationRequestData implements IRequestData {
     private final JsonObject body;
     private final Map<String, String> headers;
     private final SessionData sessionData;
 
-    private CheckinRequestData(JsonObject body, Map<String, String> headers,
+    private CirculationRequestData(JsonObject body, Map<String, String> headers,
         SessionData sessionData) {
       this.body = body;
       this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
       this.sessionData = sessionData;
+    }
+
+    public abstract String getPath();
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return headers;
+    }
+
+    @Override
+    public JsonObject getBody() {
+      return body;
+    }
+
+    @Override
+    public SessionData getSessionData() {
+      return sessionData;
+    }
+  }
+
+  private class CheckinRequestData extends CirculationRequestData {
+    private CheckinRequestData(JsonObject body, Map<String, String> headers,
+        SessionData sessionData) {
+      super(body, headers, sessionData);
     }
 
     @Override
     public String getPath() {
       return "/circulation/check-in-by-barcode";
     }
-
-    @Override
-    public Map<String, String> getHeaders() {
-      return headers;
-    }
-
-    @Override
-    public JsonObject getBody() {
-      return body;
-    }
-
-    @Override
-    public SessionData getSessionData() {
-      return sessionData;
-    }
   }
 
-  private class CheckoutRequestData implements IRequestData {
-    private final JsonObject body;
-    private final Map<String, String> headers;
-    private final SessionData sessionData;
-
+  private class CheckoutRequestData extends CirculationRequestData {
     private CheckoutRequestData(JsonObject body, Map<String, String> headers,
         SessionData sessionData) {
-      this.body = body;
-      this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
-      this.sessionData = sessionData;
+      super(body, headers, sessionData);
     }
 
     @Override
     public String getPath() {
       return "/circulation/check-out-by-barcode";
-    }
-
-    @Override
-    public Map<String, String> getHeaders() {
-      return headers;
-    }
-
-    @Override
-    public JsonObject getBody() {
-      return body;
-    }
-
-    @Override
-    public SessionData getSessionData() {
-      return sessionData;
     }
   }
 }

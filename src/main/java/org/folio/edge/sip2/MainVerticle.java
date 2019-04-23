@@ -14,6 +14,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
+import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
@@ -107,21 +108,7 @@ public class MainVerticle extends AbstractVerticle {
           //process validation results
           if (!message.isValid()) {
             log.error("Message is invalid: {}", messageString);
-            if (message.isErrorDetectionEnabled()) {
-              //resends validation if checksum string does not match
-              ISip2RequestHandler handler = handlers.get(Command.REQUEST_SC_RESEND);
-              handler.execute(message.getRequest(), sessionData)
-                  .setHandler(ar -> {
-                    if (ar.succeeded()) {
-                      socket.write(formatResponse(ar.result(), message, sessionData,
-                          messageDelimiter, true));
-                    } else {
-                      log.error("Failed to send SC resend", ar.cause());
-                    }
-                  });
-            } else {
-              socket.write("Problems handling the request" + messageDelimiter);
-            }
+            handleInvalidMessage(message, socket, sessionData, messageDelimiter);
             return;
           }
 
@@ -200,6 +187,28 @@ public class MainVerticle extends AbstractVerticle {
         stopFuture.fail(result.cause());
       }
     });
+  }
+
+  private void handleInvalidMessage(
+      Message<Object> message,
+      NetSocket socket,
+      SessionData sessionData,
+      String messageDelimiter) {
+    if (message.isErrorDetectionEnabled()) {
+      //resends validation if checksum string does not match
+      ISip2RequestHandler handler = handlers.get(Command.REQUEST_SC_RESEND);
+      handler.execute(message.getRequest(), sessionData)
+          .setHandler(ar -> {
+            if (ar.succeeded()) {
+              socket.write(formatResponse(ar.result(), message, sessionData,
+                  messageDelimiter, true));
+            } else {
+              log.error("Failed to send SC resend", ar.cause());
+            }
+          });
+    } else {
+      socket.write("Problems handling the request" + messageDelimiter);
+    }
   }
 
   private String formatResponse(String response, Message<Object> message, SessionData sessionData,
