@@ -3,6 +3,7 @@ package org.folio.edge.sip2.modules;
 import static org.folio.edge.sip2.parser.Command.CHECKIN_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.CHECKOUT_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.LOGIN_RESPONSE;
+import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION_RESPONSE;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -16,6 +17,7 @@ import org.folio.edge.sip2.repositories.FolioResourceProvider;
 import org.folio.edge.sip2.repositories.IRequestData;
 import org.folio.edge.sip2.repositories.IResourceProvider;
 import org.folio.edge.sip2.repositories.LoginRepository;
+import org.folio.edge.sip2.repositories.UsersRepository;
 
 /**
  * Module to bind dependencies for {@code CirculationRespository}.
@@ -31,12 +33,7 @@ public class ApplicationModule extends AbstractModule {
     bind(Clock.class).toInstance(Clock.systemUTC());
     bind(CirculationRepository.class);
     bind(LoginRepository.class);
-  }
-
-  @Provides
-  @Named("checkinResponse")
-  Template provideCheckinResponseTemplate() {
-    return FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKIN_RESPONSE);
+    bind(UsersRepository.class);
   }
 
   @Provides
@@ -46,8 +43,20 @@ public class ApplicationModule extends AbstractModule {
   }
 
   @Provides
+  @Named("checkinResponse")
+  Template provideCheckinResponseTemplate() {
+    return FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKIN_RESPONSE);
+  }
+
+  @Provides
   @Named("loginResponse")
   Template provideLoginResponseTemplate() {
     return FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE);
+  }
+
+  @Provides
+  @Named("patronInformationResponse")
+  Template providePatronInformationResponseTemplate() {
+    return FreemarkerRepository.getInstance().getFreemarkerTemplate(PATRON_INFORMATION_RESPONSE);
   }
 }
