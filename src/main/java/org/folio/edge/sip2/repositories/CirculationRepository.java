@@ -28,7 +28,7 @@ import org.folio.edge.sip2.session.SessionData;
  */
 public class CirculationRepository {
   // Should consider letting the template take care of required fields with missing values
-  private static final String UNKNOWN = "Unknown";
+  private static final String UNKNOWN = "";
   private final IResourceProvider<IRequestData> resourceProvider;
   private final Clock clock;
 
@@ -69,7 +69,7 @@ public class CirculationRepository {
         .createResource(checkinRequestData);
 
     return result
-        .otherwiseEmpty()
+        .otherwise(() -> null)
         .compose(resource -> Future.succeededFuture(
             CheckinResponse.builder()
               .ok(resource.getResource() == null ? FALSE : TRUE)
@@ -115,7 +115,7 @@ public class CirculationRepository {
     final Future<IResource> result = resourceProvider.createResource(checkoutRequestData);
 
     return result
-        .otherwiseEmpty()
+        .otherwise(() -> null)
         .compose(resource -> {
           final ZonedDateTime dueDate;
           // This is a mess. Need to clean this up. The problem here is that the checkout has

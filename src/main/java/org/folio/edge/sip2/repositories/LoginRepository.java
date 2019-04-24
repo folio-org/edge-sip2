@@ -50,7 +50,7 @@ public class LoginRepository {
         .createResource(new LoginRequestData(credentials, sessionData));
 
     return result
-        .otherwiseEmpty()
+        .otherwise(() -> null)
         .compose(resource -> {
           final String authenticationToken = resource.getAuthenticationToken();
           if (authenticationToken == null) {

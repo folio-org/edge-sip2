@@ -39,7 +39,11 @@
 </#macro>
 
 <#macro variableLengthDateField id value>
-  ${id}${formatDateTime(value, "yyyyMMdd    HHmmss")}${delimiter}<#t>
+  ${id}<#t>
+  <#if value?has_content>
+    ${formatDateTime(value, "yyyyMMdd    HHmmss")}<#t>
+  </#if>
+  ${delimiter}<#t>
 </#macro>
 
 <#macro limitNumberToRange value min max length>
@@ -100,8 +104,10 @@
   <@booleanToYorNorU value=value/><#t>
 </#macro>
 
-<#macro dueDate value>
-  <@variableLengthDateField id="AH" value=value/>
+<#macro dueDate value required=true>
+  <#if required || value?has_content>
+    <@variableLengthDateField id="AH" value=value/>
+  </#if>
 </#macro>
 
 <#macro endSession value>

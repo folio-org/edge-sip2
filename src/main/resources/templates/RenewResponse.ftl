@@ -21,7 +21,7 @@
 <#-- title identifier: variable-length required field -->
 <@lib.titleIdentifier value=renewResponse.titleIdentifier/>
 <#-- due date: variable-length required field -->
-<@lib.dueDate value=renewResponse.dueDate/>
+<@lib.dueDate value=renewResponse.dueDate!""/>
 <#--
     fee type: 2-char, fixed-length optional field (01 thru 99)
     The type of fee associated with renewing this item

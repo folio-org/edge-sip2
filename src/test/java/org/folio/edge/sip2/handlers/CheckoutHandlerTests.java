@@ -124,8 +124,8 @@ public class CheckoutHandlerTests {
             .institutionId(institutionId)
             .patronIdentifier(patronIdentifier)
             .itemIdentifier(itemIdentifier)
-            .titleIdentifier("Some Book")
-            .dueDate(ZonedDateTime.now(clock).plusDays(30))
+            .titleIdentifier("")
+            .dueDate(null)
             .build()));
 
     final CheckoutHandler handler = new CheckoutHandler(mockCirculationRepository,
@@ -138,10 +138,7 @@ public class CheckoutHandlerTests {
           final String expectedString = "120NUN"
               + ZonedDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
               + "AO" + institutionId + "|AA" + patronIdentifier + "|AB" + itemIdentifier
-              + "|AJSome Book|AH"
-              + ZonedDateTime.now(clock).plusDays(30).format(
-                  DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
-              + '|';
+              + "|AJ|AH|";
 
           assertEquals(expectedString, sipMessage);
 

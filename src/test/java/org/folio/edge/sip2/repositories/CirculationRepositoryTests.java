@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -107,6 +108,56 @@ public class CirculationRepositoryTests {
   }
 
   @Test
+  public void cannotCheckin(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final ZonedDateTime returnDate = ZonedDateTime.now();
+    final String currentLocation = UUID.randomUUID().toString();
+    final String itemIdentifier = "1234567890";
+    final Checkin checkin = Checkin.builder()
+        .noBlock(FALSE)
+        .transactionDate(ZonedDateTime.now())
+        .returnDate(returnDate)
+        .currentLocation(currentLocation)
+        .institutionId("diku")
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .cancel(FALSE)
+        .build();
+
+    when(mockFolioProvider.createResource(any()))
+        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final CirculationRepository circulationRepository =
+        new CirculationRepository(mockFolioProvider, clock);
+    circulationRepository.checkin(checkin, sessionData).setHandler(
+        testContext.succeeding(checkinResponse -> testContext.verify(() -> {
+          assertNotNull(checkinResponse);
+          assertFalse(checkinResponse.getOk());
+          assertFalse(checkinResponse.getResensitize());
+          assertNull(checkinResponse.getMagneticMedia());
+          assertFalse(checkinResponse.getAlert());
+          assertEquals(ZonedDateTime.now(clock), checkinResponse.getTransactionDate());
+          assertEquals("diku", checkinResponse.getInstitutionId());
+          assertEquals(itemIdentifier, checkinResponse.getItemIdentifier());
+          assertEquals("", checkinResponse.getPermanentLocation());
+          assertNull(checkinResponse.getTitleIdentifier());
+          assertNull(checkinResponse.getSortBin());
+          assertNull(checkinResponse.getPatronIdentifier());
+          assertNull(checkinResponse.getMediaType());
+          assertNull(checkinResponse.getItemProperties());
+          assertNull(checkinResponse.getScreenMessage());
+          assertNull(checkinResponse.getPrintLine());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
   public void canCheckout(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
@@ -156,6 +207,63 @@ public class CirculationRepositoryTests {
           assertEquals(title, checkoutResponse.getTitleIdentifier());
           assertEquals(nbDueDate.toOffsetDateTime(),
               checkoutResponse.getDueDate().toOffsetDateTime());
+          assertNull(checkoutResponse.getFeeType());
+          assertNull(checkoutResponse.getSecurityInhibit());
+          assertNull(checkoutResponse.getCurrencyType());
+          assertNull(checkoutResponse.getFeeAmount());
+          assertNull(checkoutResponse.getMediaType());
+          assertNull(checkoutResponse.getItemProperties());
+          assertNull(checkoutResponse.getTransactionId());
+          assertNull(checkoutResponse.getScreenMessage());
+          assertNull(checkoutResponse.getPrintLine());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void cannotCheckout(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final ZonedDateTime nbDueDate = ZonedDateTime.now().plusDays(30);
+    final String patronIdentifier = "1029384756";
+    final String itemIdentifier = "1234567890";
+    final Checkout checkout = Checkout.builder()
+        .scRenewalPolicy(FALSE)
+        .noBlock(FALSE)
+        .transactionDate(ZonedDateTime.now())
+        .nbDueDate(nbDueDate)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .patronPassword("7890")
+        .feeAcknowledged(FALSE)
+        .cancel(FALSE)
+        .build();
+
+    when(mockFolioProvider.createResource(any()))
+        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final CirculationRepository circulationRepository =
+        new CirculationRepository(mockFolioProvider, clock);
+    circulationRepository.checkout(checkout, sessionData).setHandler(
+        testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
+          assertNotNull(checkoutResponse);
+          assertFalse(checkoutResponse.getOk());
+          assertFalse(checkoutResponse.getRenewalOk());
+          assertNull(checkoutResponse.getMagneticMedia());
+          assertFalse(checkoutResponse.getDesensitize());
+          assertEquals(ZonedDateTime.now(clock), checkoutResponse.getTransactionDate());
+          assertEquals("diku", checkoutResponse.getInstitutionId());
+          assertEquals(patronIdentifier, checkoutResponse.getPatronIdentifier());
+          assertEquals(itemIdentifier, checkoutResponse.getItemIdentifier());
+          assertEquals("", checkoutResponse.getTitleIdentifier());
+          assertNull(checkoutResponse.getDueDate());
           assertNull(checkoutResponse.getFeeType());
           assertNull(checkoutResponse.getSecurityInhibit());
           assertNull(checkoutResponse.getCurrencyType());

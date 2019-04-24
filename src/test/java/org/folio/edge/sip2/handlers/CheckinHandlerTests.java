@@ -112,7 +112,7 @@ public class CheckinHandlerTests {
             .transactionDate(ZonedDateTime.now(clock))
             .institutionId(institutionId)
             .itemIdentifier(itemIdentifier)
-            .permanentLocation("Main Library")
+            .permanentLocation("")
             .build()));
 
     final CheckinHandler handler = new CheckinHandler(mockCirculationRepository,
@@ -124,7 +124,7 @@ public class CheckinHandlerTests {
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "100YUN"
               + ZonedDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
-              + "AO" + institutionId + "|AB" + itemIdentifier + "|AQMain Library|";
+              + "AO" + institutionId + "|AB" + itemIdentifier + "|AQ|";
 
           assertEquals(expectedString, sipMessage);
 
