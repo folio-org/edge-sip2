@@ -2,7 +2,7 @@ package org.folio.edge.sip2.handlers;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static org.folio.edge.sip2.parser.Command.CHECKIN_RESPONSE;
+import static org.folio.edge.sip2.parser.Command.CHECKOUT_RESPONSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,9 +17,8 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
-import org.folio.edge.sip2.domain.messages.requests.Checkin;
-import org.folio.edge.sip2.domain.messages.responses.CheckinResponse;
+import org.folio.edge.sip2.domain.messages.requests.Checkout;
+import org.folio.edge.sip2.domain.messages.responses.CheckoutResponse;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.repositories.CirculationRepository;
 import org.folio.edge.sip2.session.SessionData;
@@ -29,51 +28,60 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class CheckinHandlerTests {
+public class CheckoutHandlerTests {
   @Test
-  public void canExecuteASampleCheckinUsingHandler(
+  public void canExecuteASampleCheckoutUsingHandler(
       @Mock CirculationRepository mockCirculationRepository,
       Vertx vertx,
       VertxTestContext testContext) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
-    final ZonedDateTime returnDate = ZonedDateTime.now();
+    final ZonedDateTime nbDueDate = ZonedDateTime.now();
     final String institutionId = "diku";
+    final String patronIdentifier = "0192837465";
     final String itemIdentifier = "1234567890";
-    final String currentLocation = UUID.randomUUID().toString();
-    final Checkin checkin = Checkin.builder()
+    final Checkout checkout = Checkout.builder()
+        .scRenewalPolicy(FALSE)
         .noBlock(FALSE)
         .transactionDate(ZonedDateTime.now())
-        .returnDate(returnDate)
-        .currentLocation(currentLocation)
+        .nbDueDate(nbDueDate)
         .institutionId(institutionId)
+        .patronIdentifier(patronIdentifier)
         .itemIdentifier(itemIdentifier)
         .terminalPassword("1234")
         .itemProperties("Some property of this item")
+        .patronPassword("4321")
+        .feeAcknowledged(FALSE)
         .cancel(FALSE)
         .build();
 
-    when(mockCirculationRepository.checkin(any(), any()))
-        .thenReturn(Future.succeededFuture(CheckinResponse.builder()
+    when(mockCirculationRepository.checkout(any(), any()))
+        .thenReturn(Future.succeededFuture(CheckoutResponse.builder()
             .ok(TRUE)
-            .resensitize(TRUE)
+            .renewalOk(FALSE)
             .magneticMedia(null)
-            .alert(FALSE)
+            .desensitize(TRUE)
             .transactionDate(ZonedDateTime.now(clock))
             .institutionId(institutionId)
+            .patronIdentifier(patronIdentifier)
             .itemIdentifier(itemIdentifier)
-            .permanentLocation("Main Library")
+            .titleIdentifier("Some Book")
+            .dueDate(ZonedDateTime.now(clock).plusDays(30))
             .build()));
 
-    final CheckinHandler handler = new CheckinHandler(mockCirculationRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKIN_RESPONSE));
+    final CheckoutHandler handler = new CheckoutHandler(mockCirculationRepository,
+        FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKOUT_RESPONSE));
 
     final SessionData sessionData = SessionData.createSession(institutionId, '|', false, "IBM850");
 
-    handler.execute(checkin, sessionData).setHandler(
+    handler.execute(checkout, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
-          final String expectedString = "101YUN"
+          final String expectedString = "121NUY"
               + ZonedDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
-              + "AO" + institutionId + "|AB" + itemIdentifier + "|AQMain Library|";
+              + "AO" + institutionId + "|AA" + patronIdentifier + "|AB" + itemIdentifier
+              + "|AJSome Book|AH"
+              + ZonedDateTime.now(clock).plusDays(30).format(
+                  DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
+              + '|';
 
           assertEquals(expectedString, sipMessage);
 
@@ -82,49 +90,55 @@ public class CheckinHandlerTests {
   }
 
   @Test
-  public void canExecuteASampleFailedCheckinUsingHandler(
+  public void canExecuteASampleFailedCheckoutUsingHandler(
       @Mock CirculationRepository mockCirculationRepository,
       Vertx vertx,
       VertxTestContext testContext) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
-    final ZonedDateTime returnDate = ZonedDateTime.now();
+    final ZonedDateTime nbDueDate = ZonedDateTime.now();
     final String institutionId = "diku";
+    final String patronIdentifier = "0192837465";
     final String itemIdentifier = "1234567890";
-    final String currentLocation = UUID.randomUUID().toString();
-    final Checkin checkin = Checkin.builder()
+    final Checkout checkout = Checkout.builder()
+        .scRenewalPolicy(FALSE)
         .noBlock(FALSE)
         .transactionDate(ZonedDateTime.now())
-        .returnDate(returnDate)
-        .currentLocation(currentLocation)
+        .nbDueDate(nbDueDate)
         .institutionId(institutionId)
+        .patronIdentifier(patronIdentifier)
         .itemIdentifier(itemIdentifier)
         .terminalPassword("1234")
         .itemProperties("Some property of this item")
+        .patronPassword("4321")
+        .feeAcknowledged(FALSE)
         .cancel(FALSE)
         .build();
 
-    when(mockCirculationRepository.checkin(any(), any()))
-        .thenReturn(Future.succeededFuture(CheckinResponse.builder()
+    when(mockCirculationRepository.checkout(any(), any()))
+        .thenReturn(Future.succeededFuture(CheckoutResponse.builder()
             .ok(FALSE)
-            .resensitize(TRUE)
+            .renewalOk(FALSE)
             .magneticMedia(null)
-            .alert(FALSE)
+            .desensitize(FALSE)
             .transactionDate(ZonedDateTime.now(clock))
             .institutionId(institutionId)
+            .patronIdentifier(patronIdentifier)
             .itemIdentifier(itemIdentifier)
-            .permanentLocation("")
+            .titleIdentifier("")
+            .dueDate(null)
             .build()));
 
-    final CheckinHandler handler = new CheckinHandler(mockCirculationRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKIN_RESPONSE));
+    final CheckoutHandler handler = new CheckoutHandler(mockCirculationRepository,
+        FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKOUT_RESPONSE));
 
     final SessionData sessionData = SessionData.createSession(institutionId, '|', false, "IBM850");
 
-    handler.execute(checkin, sessionData).setHandler(
+    handler.execute(checkout, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
-          final String expectedString = "100YUN"
+          final String expectedString = "120NUN"
               + ZonedDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
-              + "AO" + institutionId + "|AB" + itemIdentifier + "|AQ|";
+              + "AO" + institutionId + "|AA" + patronIdentifier + "|AB" + itemIdentifier
+              + "|AJ|AH|";
 
           assertEquals(expectedString, sipMessage);
 

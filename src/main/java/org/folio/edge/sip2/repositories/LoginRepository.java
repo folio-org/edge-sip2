@@ -40,7 +40,7 @@ public class LoginRepository {
   public Future<LoginResponse> login(Login login, SessionData sessionData) {
     final String user = login.getLoginUserId();
     final String password = login.getLoginPassword();
-    // We'll need to figure out what to do with the location code
+    final String locationCode = login.getLocationCode();
 
     final JsonObject credentials = new JsonObject()
         .put("username", user)
@@ -50,7 +50,7 @@ public class LoginRepository {
         .createResource(new LoginRequestData(credentials, sessionData));
 
     return result
-        .otherwiseEmpty()
+        .otherwise(() -> null)
         .compose(resource -> {
           final String authenticationToken = resource.getAuthenticationToken();
           if (authenticationToken == null) {
@@ -59,6 +59,7 @@ public class LoginRepository {
             return Future.succeededFuture(LoginResponse.builder().ok(FALSE).build());
           }
           sessionData.setAuthenticationToken(authenticationToken);
+          sessionData.setScLocation(locationCode);
           return Future.succeededFuture(
             LoginResponse.builder()
               .ok(resource.getResource() == null ? FALSE : TRUE)

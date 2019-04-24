@@ -6,6 +6,7 @@
     </Console>
   </Appenders>
   <Loggers>
+    <Logger name="org.folio.edge.sip2" level="debug"/>
     <Root level="info">
       <AppenderRef ref="STDOUT"/>
     </Root>

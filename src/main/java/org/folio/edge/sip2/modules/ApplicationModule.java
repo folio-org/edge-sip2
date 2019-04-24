@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.modules;
 
 import static org.folio.edge.sip2.parser.Command.CHECKIN_RESPONSE;
+import static org.folio.edge.sip2.parser.Command.CHECKOUT_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.LOGIN_RESPONSE;
 
 import com.google.inject.AbstractModule;
@@ -36,6 +37,12 @@ public class ApplicationModule extends AbstractModule {
   @Named("checkinResponse")
   Template provideCheckinResponseTemplate() {
     return FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKIN_RESPONSE);
+  }
+
+  @Provides
+  @Named("checkoutResponse")
+  Template provideCheckoutResponseTemplate() {
+    return FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKOUT_RESPONSE);
   }
 
   @Provides

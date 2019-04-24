@@ -1,15 +1,12 @@
 package org.folio.edge.sip2.api;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
-
 import java.text.SimpleDateFormat;
-import java.time.ZonedDateTime;
 import java.util.Date;
 import org.folio.edge.sip2.api.support.BaseTest;
 import org.junit.jupiter.api.Tag;
@@ -37,7 +34,7 @@ public class MainVerticleTests extends BaseTest {
     String sipMessage = "97\r";
     callService(sipMessage,
         context, vertx, result -> {
-          final String expectedString = "PreviousMessage is NULL";
+          final String expectedString = "PreviousMessage is NULL\r";
           assertEquals(expectedString, result);
         });
   }
@@ -49,42 +46,6 @@ public class MainVerticleTests extends BaseTest {
           final String expectedString = "941\r";
           assertEquals(expectedString, result);
         });
-  }
-
-  @Test
-  public void canStartMainVericleInjectingSip2RequestHandlers(
-      Vertx vertex, VertxTestContext testContext) {
-
-    final ZonedDateTime now = ZonedDateTime.now();
-    final String transactionDateString = getFormattedLocalDateTime(now);
-    final String nbDueDateString = getFormattedLocalDateTime(now.plusDays(30));
-    String title = "Angry Planet";
-    String sipMessage =
-        "11YY" + transactionDateString + nbDueDateString
-        + "AOinstitution_id|AApatron_id|AB" + title + "|AC1234|\r";
-
-    callService(sipMessage, testContext, vertex, result -> {
-      final String expectedString = new StringBuilder()
-          .append("Successfully checked out ")
-          .append("Checkout [scRenewalPolicy=true")
-          .append(", noBlock=true")
-          // need a better way to do dates, this could fail in rare cases
-          // due to offset changes such as DST.
-          .append(", transactionDate=")
-          .append(now.truncatedTo(SECONDS).toOffsetDateTime())
-          .append(", nbDueDate=")
-          .append(now.plusDays(30).truncatedTo(SECONDS).toOffsetDateTime())
-          .append(", institutionId=institution_id")
-          .append(", patronIdentifier=patron_id")
-          .append(", itemIdentifier=").append(title)
-          .append(", terminalPassword=1234")
-          .append(", itemProperties=null")
-          .append(", patronPassword=null")
-          .append(", feeAcknowledged=null")
-          .append(", cancel=null")
-          .append("]\r").toString();
-      assertEquals(expectedString, result);
-    });
   }
 
   @Test

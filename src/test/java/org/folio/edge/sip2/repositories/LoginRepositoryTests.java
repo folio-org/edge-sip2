@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.repositories;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,6 +11,7 @@ import static org.mockito.Mockito.when;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -66,6 +68,33 @@ public class LoginRepositoryTests {
         testContext.succeeding(loginResponse -> testContext.verify(() -> {
           assertNotNull(loginResponse);
           assertTrue(loginResponse.getOk());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void cannotLogin(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final Login login = Login.builder()
+        .uidAlgorithm(UIDAlgorithm.NO_ENCRYPTION)
+        .pwdAlgorithm(PWDAlgorithm.NO_ENCRYPTION)
+        .loginUserId("test")
+        .loginPassword("xyzzy")
+        .locationCode("library")
+        .build();
+
+    when(mockFolioProvider.createResource(any()))
+        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
+    loginRepository.login(login, sessionData).setHandler(
+        testContext.succeeding(loginResponse -> testContext.verify(() -> {
+          assertNotNull(loginResponse);
+          assertFalse(loginResponse.getOk());
 
           testContext.completeNow();
         })));

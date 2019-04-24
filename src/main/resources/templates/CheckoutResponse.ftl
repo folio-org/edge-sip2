@@ -21,7 +21,7 @@
 <#-- title identifier: variable-length required field -->
 <@lib.titleIdentifier value=checkoutResponse.titleIdentifier/>
 <#-- due date: variable-length required field -->
-<@lib.dueDate value=checkoutResponse.dueDate/>
+<@lib.dueDate value=checkoutResponse.dueDate!""/>
 <#--
     fee type: 2-char, fixed-length optional field (01 thru 99)
     The type of fee associated with checking out this item

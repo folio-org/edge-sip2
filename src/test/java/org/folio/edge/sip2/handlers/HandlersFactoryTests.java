@@ -35,13 +35,6 @@ public class HandlersFactoryTests {
   }
 
   @Test
-  public void canGetCheckoutHandler() {
-    ISip2RequestHandler checkoutHandler = HandlersFactory.getCheckoutHandlerIntance();
-    assertNotNull(checkoutHandler);
-    assertTrue(checkoutHandler instanceof CheckoutHandler);
-  }
-
-  @Test
   public void canGetAcsResendHandler() {
     ISip2RequestHandler acsResendHandler = HandlersFactory.getACSResendHandler();
     assertNotNull(acsResendHandler);
