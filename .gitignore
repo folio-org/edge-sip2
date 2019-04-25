@@ -4,3 +4,5 @@
 /.settings/
 /.classpath
 /.checkstyle
+.idea/
+edge-sip2.iml
