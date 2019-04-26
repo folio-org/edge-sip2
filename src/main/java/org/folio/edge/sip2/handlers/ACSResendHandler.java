@@ -4,7 +4,6 @@ import io.vertx.core.Future;
 
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.parser.Message;
-import org.folio.edge.sip2.repositories.HistoricalMessageRepository;
 import org.folio.edge.sip2.session.SessionData;
 
 
@@ -12,7 +11,7 @@ public class ACSResendHandler implements ISip2RequestHandler {
 
   @Override
   public Future<String> execute(Object message, SessionData sessionData) {
-    PreviousMessage prevMessage = HistoricalMessageRepository.getPreviousMessage();
+    PreviousMessage prevMessage = sessionData.getPreviousMessage();
 
     if (prevMessage == null) {
       return Future.failedFuture("PreviousMessage is NULL");
@@ -21,7 +20,7 @@ public class ACSResendHandler implements ISip2RequestHandler {
   }
 
   @Override
-  public void writeHistory(Message<Object> request, String response) {
+  public void writeHistory(SessionData sessionData, Message<Object> request, String response) {
     //Do nothing. No need to save a response for the 97 message.
   }
 }

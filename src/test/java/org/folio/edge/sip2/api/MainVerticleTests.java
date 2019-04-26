@@ -96,19 +96,26 @@ public class MainVerticleTests extends BaseTest {
     // Note that this test is highly dependent on the previous test
     // to set the previous message to be "9900401.00AY1AZFCA5\r";
 
-    //make an ACS resend request
-    callService("97\r",
+    String[] sipMessaces = new String[2];
+    sipMessaces[0] = "9900401.00AY1AZFCA5\r";
+    sipMessaces[1] = "97\r";
+
+    callServiceMultiple(sipMessaces,
         testContext, vertx, result -> {
           validateExpectedACSStatus(result);
         });
+
   }
 
   @Test
   public void canTriggerAcsToResendMessageBySendingSameRequestMessage(
       Vertx vertx, VertxTestContext testContext) {
 
-    //Assuming that the previous message "9900401.00AY1AZFCA5\r" is still there
-    callService("9900401.00AY1AZFCA5\r",
+    String[] sipMessaces = new String[2];
+    sipMessaces[0] = "9900401.00AY1AZFCA5\r";
+    sipMessaces[1] = "9900401.00AY1AZFCA5\r";
+
+    callServiceMultiple(sipMessaces,
         testContext, vertx, result -> {
           validateExpectedACSStatus(result);
         });
@@ -118,14 +125,17 @@ public class MainVerticleTests extends BaseTest {
   public void cannotTriggerAcsToResendMessageBySendingSameMessageWithoutED(
       Vertx vertx, VertxTestContext testContext) {
 
-    //Assuming that the previous message "9900401.00AY1AZFCA5\r" is still there
-    callService("9900401.00\r",
+    String[] sipMessaces = new String[2];
+    sipMessaces[0] = "9900401.00AY1AZFCA5\r";
+    sipMessaces[1] = "9900401.00\r";
+
+    callServiceMultiple(sipMessaces,
         testContext, vertx, result -> {
           // there is no way to verify the intended behavior
           // because it also results in a fresh lookup by the ACS.
           // Can only verify the lookup's result.
           validateExpectedACSStatus(result);
-      });
+        });
   }
 
   private String getFormattedDateString() {
@@ -135,13 +145,19 @@ public class MainVerticleTests extends BaseTest {
   }
 
   private void validateExpectedACSStatus(String acsResponse) {
+
+    log.info("ACS response: " + acsResponse);
+
     String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
     String expectedPostLocalTime =
         "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\r";
     String expectedBlankSpaces = "    ";
 
-    assertEquals(expectedPreLocalTime, acsResponse.substring(0, 18));
-    assertEquals(expectedBlankSpaces, acsResponse.substring(18, 22));
-    assertEquals(expectedPostLocalTime, acsResponse.substring(28));
+    assertEquals(expectedPreLocalTime, acsResponse.substring(0, 18),
+        "preLocalTime substring is not as expected");
+    assertEquals(expectedBlankSpaces, acsResponse.substring(18, 22),
+        "blank spaces substring is not as expected");
+    assertEquals(expectedPostLocalTime, acsResponse.substring(28),
+        "postLocalTime substring is not as expected");
   }
 }
