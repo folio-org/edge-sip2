@@ -5,8 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.net.NetClient;
 import io.vertx.junit5.VertxTestContext;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import org.folio.edge.sip2.api.support.BaseTest;
 import org.junit.jupiter.api.Tag;
@@ -96,35 +98,45 @@ public class MainVerticleTests extends BaseTest {
     // Note that this test is highly dependent on the previous test
     // to set the previous message to be "9900401.00AY1AZFCA5\r";
 
-    //make an ACS resend request
-    callService("97\r",
-        testContext, vertx, result -> {
-          validateExpectedACSStatus(result);
-        });
+    String[] sipMessaces = new String[2];
+    sipMessaces[0] = "9900401.00AY1AZFCA5\r";
+    sipMessaces[1] = "97\r";
+
+    callServiceMultiple(sipMessaces,
+      testContext, vertx, result -> {
+        validateExpectedACSStatus(result);
+      });
+
   }
 
   @Test
   public void canTriggerAcsToResendMessageBySendingSameRequestMessage(
       Vertx vertx, VertxTestContext testContext) {
 
-    //Assuming that the previous message "9900401.00AY1AZFCA5\r" is still there
-    callService("9900401.00AY1AZFCA5\r",
-        testContext, vertx, result -> {
-          validateExpectedACSStatus(result);
-        });
+    String[] sipMessaces = new String[2];
+    sipMessaces[0] = "9900401.00AY1AZFCA5\r";
+    sipMessaces[1] = "9900401.00AY1AZFCA5\r";
+
+    callServiceMultiple(sipMessaces,
+      testContext, vertx, result -> {
+        validateExpectedACSStatus(result);
+      });
   }
 
   @Test
   public void cannotTriggerAcsToResendMessageBySendingSameMessageWithoutED(
       Vertx vertx, VertxTestContext testContext) {
 
-    //Assuming that the previous message "9900401.00AY1AZFCA5\r" is still there
-    callService("9900401.00\r",
-        testContext, vertx, result -> {
-          // there is no way to verify the intended behavior
-          // because it also results in a fresh lookup by the ACS.
-          // Can only verify the lookup's result.
-          validateExpectedACSStatus(result);
+    String[] sipMessaces = new String[2];
+    sipMessaces[0] = "9900401.00AY1AZFCA5\r";
+    sipMessaces[1] = "9900401.00\r";
+
+    callServiceMultiple(sipMessaces,
+      testContext, vertx, result -> {
+        // there is no way to verify the intended behavior
+        // because it also results in a fresh lookup by the ACS.
+        // Can only verify the lookup's result.
+        validateExpectedACSStatus(result);
       });
   }
 

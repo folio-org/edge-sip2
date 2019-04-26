@@ -4,6 +4,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -89,11 +90,53 @@ public abstract class BaseTest {
    * Calls the service.
    * @param ncipMessage the sip message to send.
    * @param testContext the vertx test context.
+   * @param testHandler the handler for this test.
+   */
+  public void callServiceMultiple(String[] ncipMessage, VertxTestContext testContext,
+                          Vertx vertx, Handler<String> testHandler) {
+
+    NetClientOptions options = new NetClientOptions();
+    options.setConnectTimeout(2);
+    options.setIdleTimeout(2);
+    options.setIdleTimeoutUnit(TimeUnit.SECONDS);
+
+    NetClient tcpClient = vertx.createNetClient(options);
+
+    tcpClient.connect(port, "localhost", res -> {
+      if (res.succeeded()) {
+
+        log.debug("Shaking hands...");
+        NetSocket socket = res.result();
+
+        for ( int i = 0; i < ncipMessage.length; i++) {
+          socket.handler(buffer -> {
+            String message = buffer.getString(0, buffer.length());
+            testContext.verify(() -> testHandler.handle(message));
+            testContext.completeNow();
+          }).exceptionHandler(t -> {
+            log.error("Socket handler test expection", t);
+            testContext.failNow(t);
+          }).write(ncipMessage[i]);
+          log.debug("done writing");
+        }
+
+      } else {
+        log.error("Failed to connect", res.cause());
+      }
+    });
+
+  }
+
+
+  /**
+   * Calls the service.
+   * @param ncipMessage the sip message to send.
+   * @param testContext the vertx test context.
    * @param vertx the vertx instance.
    * @param testHandler the handler for this test.
    */
   public void callService(String ncipMessage, VertxTestContext testContext,
-      Vertx vertx, Handler<String> testHandler) {
+                          Vertx vertx, Handler<String> testHandler) {
 
     NetClientOptions options = new NetClientOptions();
     options.setConnectTimeout(2);
@@ -106,7 +149,7 @@ public abstract class BaseTest {
       if (res.succeeded()) {
         log.debug("Shaking hands...");
         NetSocket socket = res.result();
-  
+
         socket.handler(buffer -> {
           String message = buffer.getString(0, buffer.length());
           testContext.verify(() -> testHandler.handle(message));
