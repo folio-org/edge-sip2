@@ -58,6 +58,7 @@ public class FreemarkerRepository {
     addTemplate(Command.CHECKIN_RESPONSE, "CheckinResponse.ftl", configuration);
     addTemplate(Command.CHECKOUT_RESPONSE, "CheckoutResponse.ftl", configuration);
     addTemplate(Command.REQUEST_SC_RESEND, "RequestSCResend.ftl", configuration);
+    addTemplate(Command.END_PATRON_SESSION, "EndSessionResponse.ftl", configuration);
   }
 
   private void addTemplate(Command commmand, String templateName, Configuration configuration) {

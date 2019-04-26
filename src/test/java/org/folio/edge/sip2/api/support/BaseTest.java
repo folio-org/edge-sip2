@@ -39,7 +39,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public abstract class BaseTest {
-  private static Logger log = LogManager.getLogger();
+  protected static Logger log = LogManager.getLogger();
 
   @Mock
   private LoginHandler mockLoginHandler;
@@ -87,7 +87,7 @@ public abstract class BaseTest {
 
   /**
    * Calls the service.
-   * @param ncipMessage the sip message to send.
+   * @param sipMessage the sip message to send.
    * @param testContext the vertx test context.
    * @param vertx the vertx instance.
    * @param testHandler the handler for this test.
@@ -114,7 +114,7 @@ public abstract class BaseTest {
         }).exceptionHandler(t -> {
           log.error("Socket handler test expection", t);
           testContext.failNow(t);
-        }).write(ncipMessage);
+        }).write(sipMessage);
         log.debug("done writing");
       } else {
         log.error("Failed to connect", res.cause());
