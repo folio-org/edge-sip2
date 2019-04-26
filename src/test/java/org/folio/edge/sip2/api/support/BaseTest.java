@@ -39,7 +39,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public abstract class BaseTest {
-  private static Logger log = LogManager.getLogger();
+  protected static Logger log = LogManager.getLogger();
 
   @Mock
   private LoginHandler mockLoginHandler;
@@ -107,7 +107,7 @@ public abstract class BaseTest {
         log.debug("Shaking hands...");
         NetSocket socket = res.result();
 
-        for (String sipMessage : sipMessages) {
+        for (int i = 0; i < sipMessages.length; i++) {
           socket.handler(buffer -> {
             String message = buffer.getString(0, buffer.length());
             testContext.verify(() -> testHandler.handle(message));
@@ -115,15 +115,13 @@ public abstract class BaseTest {
           }).exceptionHandler(t -> {
             log.error("Socket handler test expection", t);
             testContext.failNow(t);
-          }).write(sipMessage);
+          }).write(sipMessages[i]);
           log.debug("done writing");
         }
-
       } else {
         log.error("Failed to connect", res.cause());
       }
     });
-
   }
 
 
