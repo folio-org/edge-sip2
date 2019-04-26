@@ -92,7 +92,7 @@ public abstract class BaseTest {
    * @param vertx the vertx instance.
    * @param testHandler the handler for this test.
    */
-  public void callService(String ncipMessage, VertxTestContext testContext,
+  public void callService(String sipMessage, VertxTestContext testContext,
       Vertx vertx, Handler<String> testHandler) {
 
     NetClientOptions options = new NetClientOptions();
@@ -106,7 +106,7 @@ public abstract class BaseTest {
       if (res.succeeded()) {
         log.debug("Shaking hands...");
         NetSocket socket = res.result();
-  
+
         socket.handler(buffer -> {
           String message = buffer.getString(0, buffer.length());
           testContext.verify(() -> testHandler.handle(message));
