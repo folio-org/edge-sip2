@@ -5,10 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.net.NetClient;
 import io.vertx.junit5.VertxTestContext;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import org.folio.edge.sip2.api.support.BaseTest;
 import org.junit.jupiter.api.Tag;
@@ -103,9 +101,9 @@ public class MainVerticleTests extends BaseTest {
     sipMessaces[1] = "97\r";
 
     callServiceMultiple(sipMessaces,
-      testContext, vertx, result -> {
-        validateExpectedACSStatus(result);
-      });
+        testContext, vertx, result -> {
+          validateExpectedACSStatus(result);
+        });
 
   }
 
@@ -118,9 +116,9 @@ public class MainVerticleTests extends BaseTest {
     sipMessaces[1] = "9900401.00AY1AZFCA5\r";
 
     callServiceMultiple(sipMessaces,
-      testContext, vertx, result -> {
-        validateExpectedACSStatus(result);
-      });
+        testContext, vertx, result -> {
+          validateExpectedACSStatus(result);
+        });
   }
 
   @Test
@@ -132,12 +130,12 @@ public class MainVerticleTests extends BaseTest {
     sipMessaces[1] = "9900401.00\r";
 
     callServiceMultiple(sipMessaces,
-      testContext, vertx, result -> {
-        // there is no way to verify the intended behavior
-        // because it also results in a fresh lookup by the ACS.
-        // Can only verify the lookup's result.
-        validateExpectedACSStatus(result);
-      });
+        testContext, vertx, result -> {
+          // there is no way to verify the intended behavior
+          // because it also results in a fresh lookup by the ACS.
+          // Can only verify the lookup's result.
+          validateExpectedACSStatus(result);
+        });
   }
 
   private String getFormattedDateString() {

@@ -108,7 +108,7 @@ public abstract class BaseTest {
         log.debug("Shaking hands...");
         NetSocket socket = res.result();
 
-        for ( int i = 0; i < ncipMessage.length; i++) {
+        for (int i = 0; i < ncipMessage.length; i++) {
           socket.handler(buffer -> {
             String message = buffer.getString(0, buffer.length());
             testContext.verify(() -> testHandler.handle(message));
