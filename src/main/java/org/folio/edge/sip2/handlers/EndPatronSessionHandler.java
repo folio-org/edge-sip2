@@ -61,7 +61,7 @@ public class EndPatronSessionHandler implements ISip2RequestHandler {
   }
 
   @Override
-  public void writeHistory(Message<Object> request, String response) {
+  public void writeHistory(SessionData sessionData, Message<Object> request, String response) {
     //Do not write history for this command
   }
 }
