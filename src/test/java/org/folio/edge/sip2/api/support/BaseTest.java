@@ -111,7 +111,6 @@ public abstract class BaseTest {
           socket.handler(buffer -> {
             String message = buffer.getString(0, buffer.length());
             testContext.verify(() -> testHandler.handle(message));
-            testContext.completeNow();
           }).exceptionHandler(t -> {
             log.error("Socket handler test expection", t);
             testContext.failNow(t);
@@ -121,6 +120,7 @@ public abstract class BaseTest {
       } else {
         log.error("Failed to connect", res.cause());
       }
+      testContext.completeNow();
     });
   }
 
