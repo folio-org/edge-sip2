@@ -86,6 +86,46 @@ public abstract class BaseTest {
   }
 
   /**
+   * Calls the service multiple times for all the sipMessages passed in.
+   * @param sipMessages the sip messages to send.
+   * @param testContext the vertx test context.
+   * @param testHandler the handler for this test.
+   */
+  public void callServiceMultiple(String[] sipMessages, VertxTestContext testContext,
+                          Vertx vertx, Handler<String> testHandler) {
+
+    NetClientOptions options = new NetClientOptions();
+    options.setConnectTimeout(2);
+    options.setIdleTimeout(2);
+    options.setIdleTimeoutUnit(TimeUnit.SECONDS);
+
+    NetClient tcpClient = vertx.createNetClient(options);
+
+    tcpClient.connect(port, "localhost", res -> {
+      if (res.succeeded()) {
+
+        log.debug("Shaking hands...");
+        NetSocket socket = res.result();
+
+        for (int i = 0; i < sipMessages.length; i++) {
+          socket.handler(buffer -> {
+            String message = buffer.getString(0, buffer.length());
+            testContext.verify(() -> testHandler.handle(message));
+          }).exceptionHandler(t -> {
+            log.error("Socket handler test expection", t);
+            testContext.failNow(t);
+          }).write(sipMessages[i]);
+          log.debug("done writing");
+        }
+      } else {
+        log.error("Failed to connect", res.cause());
+      }
+      testContext.completeNow();
+    });
+  }
+
+
+  /**
    * Calls the service.
    * @param sipMessage the sip message to send.
    * @param testContext the vertx test context.
@@ -93,7 +133,7 @@ public abstract class BaseTest {
    * @param testHandler the handler for this test.
    */
   public void callService(String sipMessage, VertxTestContext testContext,
-      Vertx vertx, Handler<String> testHandler) {
+                          Vertx vertx, Handler<String> testHandler) {
 
     NetClientOptions options = new NetClientOptions();
     options.setConnectTimeout(2);

@@ -36,7 +36,6 @@ import org.folio.edge.sip2.modules.FolioResourceProviderModule;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
-import org.folio.edge.sip2.repositories.HistoricalMessageRepository;
 import org.folio.edge.sip2.session.SessionData;
 
 public class MainVerticle extends AbstractVerticle {
@@ -116,8 +115,8 @@ public class MainVerticle extends AbstractVerticle {
           }
 
           //check if the previous message needs resending
-          if (requiredResending(message)) {
-            String prvMessage = HistoricalMessageRepository
+          if (requiredResending(sessionData, message)) {
+            String prvMessage = sessionData
                 .getPreviousMessage()
                 .getPreviousMessageResponse();
             log.info("Sending previous Sip response {}", prvMessage);
@@ -144,7 +143,7 @@ public class MainVerticle extends AbstractVerticle {
                     responseMsg = formatResponse(ar.result(), message, sessionData,
                         messageDelimiter);
                   }
-                  handler.writeHistory(message, responseMsg);
+                  handler.writeHistory(sessionData, message, responseMsg);
                   log.info("Sip response {}", responseMsg);
                   socket.write(responseMsg);
                 } else {
@@ -259,9 +258,9 @@ public class MainVerticle extends AbstractVerticle {
    * @param currentMessage current message to check against the previous message
    * @return boolean indicating whether the message needs to be resent.
    */
-  private boolean requiredResending(Message<Object> currentMessage) {
+  private boolean requiredResending(SessionData sessionData, Message<Object> currentMessage) {
 
-    PreviousMessage prevMessage = HistoricalMessageRepository.getPreviousMessage();
+    PreviousMessage prevMessage = sessionData.getPreviousMessage();
 
     if (prevMessage == null || !currentMessage.isErrorDetectionEnabled()) {
       log.debug("requiredResending is FALSE");
