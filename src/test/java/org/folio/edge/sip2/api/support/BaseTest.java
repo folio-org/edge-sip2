@@ -4,7 +4,6 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -87,12 +86,12 @@ public abstract class BaseTest {
   }
 
   /**
-   * Calls the service.
-   * @param ncipMessage the sip message to send.
+   * Calls the service multiple times for all the sipMessages passed in.
+   * @param sipMessages the sip messages to send.
    * @param testContext the vertx test context.
    * @param testHandler the handler for this test.
    */
-  public void callServiceMultiple(String[] ncipMessage, VertxTestContext testContext,
+  public void callServiceMultiple(String[] sipMessages, VertxTestContext testContext,
                           Vertx vertx, Handler<String> testHandler) {
 
     NetClientOptions options = new NetClientOptions();
@@ -108,7 +107,7 @@ public abstract class BaseTest {
         log.debug("Shaking hands...");
         NetSocket socket = res.result();
 
-        for (int i = 0; i < ncipMessage.length; i++) {
+        for (String sipMessage : sipMessages) {
           socket.handler(buffer -> {
             String message = buffer.getString(0, buffer.length());
             testContext.verify(() -> testHandler.handle(message));
@@ -116,7 +115,7 @@ public abstract class BaseTest {
           }).exceptionHandler(t -> {
             log.error("Socket handler test expection", t);
             testContext.failNow(t);
-          }).write(ncipMessage[i]);
+          }).write(sipMessage);
           log.debug("done writing");
         }
 
@@ -130,12 +129,12 @@ public abstract class BaseTest {
 
   /**
    * Calls the service.
-   * @param ncipMessage the sip message to send.
+   * @param sipMessage the sip message to send.
    * @param testContext the vertx test context.
    * @param vertx the vertx instance.
    * @param testHandler the handler for this test.
    */
-  public void callService(String ncipMessage, VertxTestContext testContext,
+  public void callService(String sipMessage, VertxTestContext testContext,
                           Vertx vertx, Handler<String> testHandler) {
 
     NetClientOptions options = new NetClientOptions();
@@ -157,7 +156,7 @@ public abstract class BaseTest {
         }).exceptionHandler(t -> {
           log.error("Socket handler test expection", t);
           testContext.failNow(t);
-        }).write(ncipMessage);
+        }).write(sipMessage);
         log.debug("done writing");
       } else {
         log.error("Failed to connect", res.cause());
