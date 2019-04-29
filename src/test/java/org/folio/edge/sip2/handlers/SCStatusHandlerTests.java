@@ -26,8 +26,8 @@ public class SCStatusHandlerTests {
 
   @Test
   public void canExecuteASampleScStatusRequestUsingHandlersFactory(
-    Vertx vertx,
-    VertxTestContext testContext) {
+      Vertx vertx,
+      VertxTestContext testContext) {
 
     DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
 
@@ -38,34 +38,34 @@ public class SCStatusHandlerTests {
     SCStatus status =  statusBuilder.build();
 
     SCStatusHandler handler = ((SCStatusHandler) HandlersFactory
-      .getScStatusHandlerInstance(null, defaultConfigurationProvider, null));
+        .getScStatusHandlerInstance(null, defaultConfigurationProvider, null));
 
     handler.execute(status, null).setHandler(
-      testContext.succeeding(sipMessage -> testContext.verify(() -> {
-        // Because the sipMessage has a dateTime component that's supposed
-        // to be current, we can't assert on the entirety of the string,
-        // have to break it up into pieces.
-        String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
-        String expectedPostLocalTime =
-          "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|"
-            + "AFscreenMessages|AGline|";
-        String expectedBlankSpaces = "    ";
+        testContext.succeeding(sipMessage -> testContext.verify(() -> {
+          // Because the sipMessage has a dateTime component that's supposed
+          // to be current, we can't assert on the entirety of the string,
+          // have to break it up into pieces.
+          String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
+          String expectedPostLocalTime =
+              "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|"
+              + "AFscreenMessages|AGline|";
+          String expectedBlankSpaces = "    ";
 
-        assertEquals(expectedPreLocalTime, sipMessage.substring(0, 18));
-        assertEquals(expectedBlankSpaces, sipMessage.substring(18, 22));
-        assertEquals(expectedPostLocalTime, sipMessage.substring(28));
+          assertEquals(expectedPreLocalTime, sipMessage.substring(0, 18));
+          assertEquals(expectedBlankSpaces, sipMessage.substring(18, 22));
+          assertEquals(expectedPostLocalTime, sipMessage.substring(28));
 
-        testContext.completeNow();
-      })));
+          testContext.completeNow();
+        })));
   }
 
   @Test
   public void cannotGetAValidResponseDueToMissingTemplate(
-    Vertx vertx,
-    VertxTestContext testContext) {
+      Vertx vertx,
+      VertxTestContext testContext) {
     DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
     ConfigurationRepository configurationRepository =
-      new ConfigurationRepository(defaultConfigurationProvider);
+        new ConfigurationRepository(defaultConfigurationProvider);
 
     SCStatus.SCStatusBuilder statusBuilder = SCStatus.builder();
     statusBuilder.maxPrintWidth(20);
@@ -76,10 +76,10 @@ public class SCStatusHandlerTests {
     SCStatusHandler handler = new SCStatusHandler(configurationRepository, null);
 
     handler.execute(status, null).setHandler(
-      testContext.failing(throwable -> testContext.verify(() -> {
-        assertEquals("", throwable.getMessage());
-        testContext.completeNow();
-      })));
+        testContext.failing(throwable -> testContext.verify(() -> {
+          assertEquals("", throwable.getMessage());
+          testContext.completeNow();
+        })));
   }
 
   @Test
@@ -92,7 +92,7 @@ public class SCStatusHandlerTests {
 
 
     SCStatusHandler.PackagedSupportedMessages psm =
-      new SCStatusHandler.PackagedSupportedMessages(supportedMessages);
+        new SCStatusHandler.PackagedSupportedMessages(supportedMessages);
     assertTrue(psm.getCheckIn());
     assertTrue(psm.getCheckOut());
     assertTrue(psm.getHold());

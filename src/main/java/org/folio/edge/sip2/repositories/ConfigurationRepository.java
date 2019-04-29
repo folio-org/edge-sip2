@@ -63,7 +63,7 @@ public class ConfigurationRepository {
         builder.terminalLocation(acsConfiguration.getString("terminalLocation"));
         builder.timeoutPeriod(acsConfiguration.getInteger("timeoutPeriod"));
         builder.supportedMessages(getSupportedMessagesFromJson(
-          acsConfiguration.getJsonArray("supportedMessages")));
+                acsConfiguration.getJsonArray("supportedMessages")));
 
         acsStatus = builder.build();
 
@@ -92,9 +92,9 @@ public class ConfigurationRepository {
 
       JsonArray tenantConfigurations = jsonFile.getJsonArray("tenantConfigurations");
       Optional<Object> tenantConfigObject = tenantConfigurations
-        .stream()
-        .filter(config -> ((JsonObject)config).getString("tenantId").equalsIgnoreCase(configKey))
-        .findFirst();
+          .stream()
+          .filter(config -> ((JsonObject)config).getString("tenantId").equalsIgnoreCase(configKey))
+          .findFirst();
 
       if (tenantConfigObject.isPresent()) {
         configJson = (JsonObject) tenantConfigObject.get();
@@ -120,9 +120,9 @@ public class ConfigurationRepository {
 
   private Set<Messages> getSupportedMessagesFromJson(JsonArray supportedMessages) {
     return supportedMessages
-      .stream()
-      .filter(el -> ((JsonObject) el).getString("isSupported").equalsIgnoreCase("Y"))
-      .map(el -> Messages.valueOf(((JsonObject) el).getString("messageName")))
-      .collect(Collectors.toSet());
+        .stream()
+        .filter(el -> ((JsonObject) el).getString("isSupported").equalsIgnoreCase("Y"))
+        .map(el -> Messages.valueOf(((JsonObject) el).getString("messageName")))
+        .collect(Collectors.toSet());
   }
 }

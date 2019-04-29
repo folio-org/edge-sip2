@@ -12,7 +12,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
@@ -45,11 +45,11 @@ public class ConfigurationRepositoryTests {
   public void canGetValidAcsStatus(Vertx vertx, VertxTestContext testContext) {
     JsonArray supportedMsgs = new JsonArray();
     supportedMsgs.add(new JsonObject().put("messageName", "PATRON_INFORMATION")
-      .put("isSupported","Y"));
+                            .put("isSupported","Y"));
     supportedMsgs.add(new JsonObject().put("messageName", "RENEW")
-      .put("isSupported","N"));
+                            .put("isSupported","N"));
     supportedMsgs.add(new JsonObject().put("messageName", "BLOCK_PATRON")
-      .put("isSupported","Y"));
+                            .put("isSupported","Y"));
 
     JsonObject acsConfig = new JsonObject();
     acsConfig.put("onlineStatus", false);
@@ -78,58 +78,58 @@ public class ConfigurationRepositoryTests {
       .thenReturn(Future.succeededFuture(() -> defaultConfigurations));
 
     ConfigurationRepository configurationRepository =
-      new ConfigurationRepository(mockConfigProvider);
+        new ConfigurationRepository(mockConfigProvider);
     configurationRepository.getACSStatus().setHandler(
-      testContext.succeeding(status -> testContext.verify(() -> {
+        testContext.succeeding(status -> testContext.verify(() -> {
 
-        assertNotNull(status);
-        assertEquals(false, status.getOnLineStatus());
-        assertEquals(false, status.getCheckinOk());
-        assertEquals(true, status.getCheckoutOk());
-        assertEquals(false, status.getAcsRenewalPolicy());
-        assertEquals(true, status.getOffLineOk());
-        assertEquals(3, status.getTimeoutPeriod());
-        assertEquals(2, status.getRetriesAllowed());
-        assertEquals("1.23", status.getProtocolVersion());
-        assertEquals("fs00000010", status.getInstitutionId());
-        assertEquals("testing", status.getPrintLine());
-        assertEquals("Chalmers", status.getLibraryName());
-        assertEquals("Hello, welcome", status.getScreenMessage());
-        assertEquals("SE10", status.getTerminalLocation());
+          assertNotNull(status);
+          assertEquals(false, status.getOnLineStatus());
+          assertEquals(false, status.getCheckinOk());
+          assertEquals(true, status.getCheckoutOk());
+          assertEquals(false, status.getAcsRenewalPolicy());
+          assertEquals(true, status.getOffLineOk());
+          assertEquals(3, status.getTimeoutPeriod());
+          assertEquals(2, status.getRetriesAllowed());
+          assertEquals("1.23", status.getProtocolVersion());
+          assertEquals("fs00000010", status.getInstitutionId());
+          assertEquals("testing", status.getPrintLine());
+          assertEquals("Chalmers", status.getLibraryName());
+          assertEquals("Hello, welcome", status.getScreenMessage());
+          assertEquals("SE10", status.getTerminalLocation());
 
-        LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+          LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
 
-        assertEquals(currentDate.getYear(), status.getDateTimeSync().getYear());
-        assertEquals(currentDate.getMonth(), status.getDateTimeSync().getMonth());
-        assertEquals(currentDate.getDayOfMonth(), status.getDateTimeSync().getDayOfMonth());
+          assertEquals(currentDate.getYear(), status.getDateTimeSync().getYear());
+          assertEquals(currentDate.getMonth(), status.getDateTimeSync().getMonth());
+          assertEquals(currentDate.getDayOfMonth(), status.getDateTimeSync().getDayOfMonth());
 
-        assertEquals(2, status.getSupportedMessages().size());
-        Messages[] supportedMsgsArr = status.getSupportedMessages().toArray(new Messages[2]);
+          assertEquals(2, status.getSupportedMessages().size());
+          Messages[] supportedMsgsArr = status.getSupportedMessages().toArray(new Messages[2]);
 
-        //note that the messages will be reordered because it's stored in a list.
-        //it's up to the appropriate handler to re-present the messages in the correct order
-        assertEquals(Messages.BLOCK_PATRON, supportedMsgsArr[0]);
-        assertEquals(Messages.PATRON_INFORMATION, supportedMsgsArr[1]);
+          //note that the messages will be reordered because it's stored in a list.
+          //it's up to the appropriate handler to re-present the messages in the correct order
+          assertEquals(Messages.BLOCK_PATRON, supportedMsgsArr[0]);
+          assertEquals(Messages.PATRON_INFORMATION, supportedMsgsArr[1]);
 
-        testContext.completeNow();
-      })));
+          testContext.completeNow();
+        })));
   }
 
   @Test
   public void canRetrieveTenantConfiguration(
-    Vertx vertx,
-    VertxTestContext testContext) {
+      Vertx vertx,
+      VertxTestContext testContext) {
     DefaultResourceProvider resourceProvider = new DefaultResourceProvider();
     ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider);
 
     configRepo.retrieveTenantConfiguration("fs00000010test").setHandler(
-      testContext.succeeding(testTenantConfig -> testContext.verify(() -> {
-        assertNotNull(testTenantConfig);
-        assertEquals("fs00000010test",
-          testTenantConfig.getString("tenantId"));
-        assertEquals("ASCII", testTenantConfig.getString("encoding"));
+        testContext.succeeding(testTenantConfig -> testContext.verify(() -> {
+          assertNotNull(testTenantConfig);
+          assertEquals("fs00000010test",
+              testTenantConfig.getString("tenantId"));
+          assertEquals("ASCII", testTenantConfig.getString("encoding"));
 
-        testContext.completeNow();
-      })));
+          testContext.completeNow();
+        })));
   }
 }
