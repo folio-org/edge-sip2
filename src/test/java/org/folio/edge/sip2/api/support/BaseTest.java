@@ -1,6 +1,5 @@
 package org.folio.edge.sip2.api.support;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -17,8 +16,6 @@ import io.vertx.junit5.VertxTestContext;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.EnumMap;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -160,13 +157,6 @@ public abstract class BaseTest {
         log.error("Failed to connect", res.cause());
       }
     });
-  }
-
-  protected String getFormattedLocalDateTime(ZonedDateTime dateTime) {
-    final ZonedDateTime d =  dateTime.truncatedTo(SECONDS);
-    final DateTimeFormatter formatter = DateTimeFormatter
-        .ofPattern("yyyyMMdd    HHmmss");
-    return formatter.format(d);
   }
 
   private void setMainVerticleInstance(String methodName) {

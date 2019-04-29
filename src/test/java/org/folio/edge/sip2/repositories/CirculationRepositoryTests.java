@@ -18,11 +18,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
+
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.session.SessionData;
@@ -56,7 +56,7 @@ public class CirculationRepositoryTests {
   public void canCheckin(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
-    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final Clock clock = TestUtils.getUtcFixedClock();
     final ZonedDateTime returnDate = ZonedDateTime.now();
     final String currentLocation = UUID.randomUUID().toString();
     final String itemIdentifier = "1234567890";
@@ -111,7 +111,7 @@ public class CirculationRepositoryTests {
   public void cannotCheckin(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
-    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final Clock clock = TestUtils.getUtcFixedClock();
     final ZonedDateTime returnDate = ZonedDateTime.now();
     final String currentLocation = UUID.randomUUID().toString();
     final String itemIdentifier = "1234567890";
@@ -161,7 +161,7 @@ public class CirculationRepositoryTests {
   public void canCheckout(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
-    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final Clock clock = TestUtils.getUtcFixedClock();
     final ZonedDateTime nbDueDate = ZonedDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
     final String itemIdentifier = "1234567890";
@@ -225,7 +225,7 @@ public class CirculationRepositoryTests {
   public void cannotCheckout(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
-    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final Clock clock = TestUtils.getUtcFixedClock();
     final ZonedDateTime nbDueDate = ZonedDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
     final String itemIdentifier = "1234567890";

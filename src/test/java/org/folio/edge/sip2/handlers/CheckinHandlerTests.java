@@ -13,11 +13,11 @@ import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
+
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.responses.CheckinResponse;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
@@ -35,7 +35,7 @@ public class CheckinHandlerTests {
       @Mock CirculationRepository mockCirculationRepository,
       Vertx vertx,
       VertxTestContext testContext) {
-    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final Clock clock = TestUtils.getUtcFixedClock();
     final ZonedDateTime returnDate = ZonedDateTime.now();
     final String institutionId = "diku";
     final String itemIdentifier = "1234567890";
@@ -86,7 +86,7 @@ public class CheckinHandlerTests {
       @Mock CirculationRepository mockCirculationRepository,
       Vertx vertx,
       VertxTestContext testContext) {
-    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final Clock clock = TestUtils.getUtcFixedClock();
     final ZonedDateTime returnDate = ZonedDateTime.now();
     final String institutionId = "diku";
     final String itemIdentifier = "1234567890";

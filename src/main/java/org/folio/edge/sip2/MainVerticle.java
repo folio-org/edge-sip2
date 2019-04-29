@@ -67,7 +67,7 @@ public class MainVerticle extends AbstractVerticle {
       handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
       handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
       handlers.put(CHECKOUT, injector.getInstance(CheckoutHandler.class));
-      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null, null));
+      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null, null, null));
       handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
       handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
       handlers.put(END_PATRON_SESSION, injector.getInstance(EndPatronSessionHandler.class));

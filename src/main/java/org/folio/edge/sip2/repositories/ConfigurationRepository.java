@@ -7,6 +7,7 @@ import io.vertx.core.json.JsonObject;
 import java.lang.invoke.MethodHandles;
 import java.time.Clock;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,17 +21,18 @@ public class ConfigurationRepository {
 
   private IResourceProvider<Object> resourceProvider;
   private final Logger log;
-
+  private Clock clock;
   /**
    * Constructor that takes an IResourceProvider.
    *
    * @param resourceProvider This can be DefaultResourceProvider or any provider in the future.
    */
-  public ConfigurationRepository(IResourceProvider<Object> resourceProvider) {
-    if (resourceProvider == null) {
-      throw new IllegalArgumentException("configGateway is null");
-    }
-    this.resourceProvider = resourceProvider;
+
+  public ConfigurationRepository(IResourceProvider<Object> resourceProvider,
+                                 Clock clock) {
+    this.resourceProvider = Objects.requireNonNull(resourceProvider,
+        "ConfigGateway cannot be null");
+    this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   }
 
@@ -49,7 +51,7 @@ public class ConfigurationRepository {
         builder.checkinOk(acsConfiguration.getBoolean("onlineStatus"));
         builder.acsRenewalPolicy(acsConfiguration.getBoolean("acsRenewalPolicy"));
         builder.checkoutOk(acsConfiguration.getBoolean("checkoutOk"));
-        builder.dateTimeSync(ZonedDateTime.now(Clock.systemUTC()));
+        builder.dateTimeSync(ZonedDateTime.now(clock));
         builder.institutionId(acsConfiguration.getString("institutionId"));
         builder.libraryName(acsConfiguration.getString("libraryName"));
         builder.offLineOk(acsConfiguration.getBoolean("checkoutOk"));

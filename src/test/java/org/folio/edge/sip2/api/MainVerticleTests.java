@@ -8,14 +8,13 @@ import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 import java.text.SimpleDateFormat;
 import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.TimeZone;
 
 import org.folio.edge.sip2.api.support.BaseTest;
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -151,12 +150,12 @@ public class MainVerticleTests extends BaseTest {
     final String patronIdentifier = "patronId1234";
     final String patronPassword = "patronPassword";
     final String terminalPassword = "terminalPassword";
-    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final Clock clock = TestUtils.getUtcFixedClock();
     final String delimeter = "|";
 
     StringBuffer sipMessageBf = new StringBuffer();
     sipMessageBf.append("35");
-    sipMessageBf.append(getFormattedLocalDateTime(ZonedDateTime.now(clock)));
+    sipMessageBf.append(TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock)));
     sipMessageBf.append("AO" + institutionId + delimeter);
     sipMessageBf.append("AA" + patronIdentifier + delimeter);
     sipMessageBf.append("AC" + terminalPassword + delimeter);
