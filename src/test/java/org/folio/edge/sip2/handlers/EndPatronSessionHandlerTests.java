@@ -10,11 +10,10 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
 import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.session.SessionData;
@@ -30,7 +29,7 @@ public class EndPatronSessionHandlerTests {
     final String institutionId = "fs00000001";
     final String patronIdentifier = "patronId1234";
     final String patronPassword = "patronPassword";
-    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final Clock clock = TestUtils.getUtcFixedClock();
 
     final EndPatronSession endPatronSessionRequest = EndPatronSession.builder()
         .patronIdentifier(patronIdentifier)

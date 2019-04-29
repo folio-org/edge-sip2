@@ -3,19 +3,18 @@
     "onlineStatus": true,
     "checkinOk": true,
     "checkoutOk": true,
-    "acsRenewalPolicy": true,
-    "statusUpdateOk": true,
-    "offlineOk": true,
+    "acsRenewalPolicy": false,
+    "statusUpdateOk": false,
+    "offlineOk": false,
     "timeoutPeriod": 5,
     "retriesAllowed": 3,
-    "dateTimeSync": "2019-04-05 13:26:13",
-    "protocolVersion": "1.23",
+    "protocolVersion": "2.00",
     "institutionId": "fs00000010",
     "libraryName": "Chalmers",
     "supportedMessages": [
       {
         "messageName": "PATRON_STATUS_REQUEST",
-        "isSupported": "Y"
+        "isSupported": "N"
       },
       {
         "messageName": "CHECKOUT",
@@ -51,23 +50,23 @@
       },
       {
         "messageName": "ITEM_INFORMATION",
-        "isSupported": "Y"
+        "isSupported": "N"
       },
       {
         "messageName": "ITEM_STATUS_UPDATE",
-        "isSupported": "Y"
+        "isSupported": "N"
       },
       {
         "messageName": "PATRON_ENABLE",
-        "isSupported": "Y"
+        "isSupported": "N"
       },
       {
         "messageName": "HOLD",
-        "isSupported": "Y"
+        "isSupported": "N"
       },
       {
         "messageName": "RENEW",
-        "isSupported": "Y"
+        "isSupported": "N"
       },
       {
         "messageName": "RENEW_ALL",

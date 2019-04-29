@@ -13,10 +13,10 @@ import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.domain.messages.responses.CheckoutResponse;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
@@ -34,7 +34,7 @@ public class CheckoutHandlerTests {
       @Mock CirculationRepository mockCirculationRepository,
       Vertx vertx,
       VertxTestContext testContext) {
-    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final Clock clock = TestUtils.getUtcFixedClock();
     final ZonedDateTime nbDueDate = ZonedDateTime.now();
     final String institutionId = "diku";
     final String patronIdentifier = "0192837465";
@@ -94,7 +94,7 @@ public class CheckoutHandlerTests {
       @Mock CirculationRepository mockCirculationRepository,
       Vertx vertx,
       VertxTestContext testContext) {
-    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final Clock clock = TestUtils.getUtcFixedClock();
     final ZonedDateTime nbDueDate = ZonedDateTime.now();
     final String institutionId = "diku";
     final String patronIdentifier = "0192837465";
