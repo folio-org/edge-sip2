@@ -2,6 +2,7 @@ package org.folio.edge.sip2.modules;
 
 import static org.folio.edge.sip2.parser.Command.CHECKIN_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.CHECKOUT_RESPONSE;
+import static org.folio.edge.sip2.parser.Command.END_PATRON_SESSION;
 import static org.folio.edge.sip2.parser.Command.LOGIN_RESPONSE;
 
 import com.google.inject.AbstractModule;
@@ -49,5 +50,12 @@ public class ApplicationModule extends AbstractModule {
   @Named("loginResponse")
   Template provideLoginResponseTemplate() {
     return FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE);
+  }
+
+
+  @Provides
+  @Named("endSessionResponse")
+  Template provideEndSessionResponseTemplate() {
+    return FreemarkerRepository.getInstance().getFreemarkerTemplate(END_PATRON_SESSION);
   }
 }

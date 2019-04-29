@@ -3,6 +3,7 @@ package org.folio.edge.sip2;
 import static java.lang.Boolean.FALSE;
 import static org.folio.edge.sip2.parser.Command.CHECKIN;
 import static org.folio.edge.sip2.parser.Command.CHECKOUT;
+import static org.folio.edge.sip2.parser.Command.END_PATRON_SESSION;
 import static org.folio.edge.sip2.parser.Command.LOGIN;
 import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
@@ -26,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.handlers.CheckinHandler;
 import org.folio.edge.sip2.handlers.CheckoutHandler;
+import org.folio.edge.sip2.handlers.EndPatronSessionHandler;
 import org.folio.edge.sip2.handlers.HandlersFactory;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.handlers.LoginHandler;
@@ -68,6 +70,7 @@ public class MainVerticle extends AbstractVerticle {
       handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null, null));
       handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
       handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
+      handlers.put(END_PATRON_SESSION, injector.getInstance(EndPatronSessionHandler.class));
     }
 
     //set Config object's defaults

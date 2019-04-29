@@ -173,6 +173,36 @@ public class MainVerticleTests extends BaseTest {
       });
   }
 
+  @Test
+  public void canExecuteEndSessionCommand(
+      Vertx vertx, VertxTestContext testContext) {
+
+    final String institutionId = "fs00000001";
+    final String patronIdentifier = "patronId1234";
+    final String patronPassword = "patronPassword";
+    final String terminalPassword = "terminalPassword";
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final String delimeter = "|";
+
+    StringBuffer sipMessageBf = new StringBuffer();
+    sipMessageBf.append("35");
+    sipMessageBf.append(getFormattedLocalDateTime(ZonedDateTime.now(clock)));
+    sipMessageBf.append("AO" + institutionId + delimeter);
+    sipMessageBf.append("AA" + patronIdentifier + delimeter);
+    sipMessageBf.append("AC" + terminalPassword + delimeter);
+    sipMessageBf.append("AD" + patronPassword + delimeter);
+    sipMessageBf.append("\r");
+
+    final String expectedString = "36Y"
+        + ZonedDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
+        + "AO" + institutionId + "|AA" + patronIdentifier + '|' + '\r';
+
+    callService(sipMessageBf.toString(),
+        testContext, vertx, result -> {
+          assertEquals(expectedString, result);
+        });
+  }
+
   private String getFormattedDateString() {
     String pattern = "YYYYMMdd";
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
