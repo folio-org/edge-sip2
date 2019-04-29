@@ -98,7 +98,6 @@ public class ConfigurationRepositoryTests {
           assertEquals("SE10", status.getTerminalLocation());
 
           LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-
           assertEquals(currentDate.getYear(), status.getDateTimeSync().getYear());
           assertEquals(currentDate.getMonth(), status.getDateTimeSync().getMonth());
           assertEquals(currentDate.getDayOfMonth(), status.getDateTimeSync().getDayOfMonth());

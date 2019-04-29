@@ -46,7 +46,6 @@ public class ConfigurationRepository {
       ACSStatus acsStatus = null;
       if (acsConfiguration != null) {
         ACSStatus.ACSStatusBuilder builder = ACSStatus.builder();
-
         builder.checkinOk(acsConfiguration.getBoolean("onlineStatus"));
         builder.acsRenewalPolicy(acsConfiguration.getBoolean("acsRenewalPolicy"));
         builder.checkoutOk(acsConfiguration.getBoolean("checkoutOk"));
@@ -64,13 +63,10 @@ public class ConfigurationRepository {
         builder.timeoutPeriod(acsConfiguration.getInteger("timeoutPeriod"));
         builder.supportedMessages(getSupportedMessagesFromJson(
                 acsConfiguration.getJsonArray("supportedMessages")));
-
         acsStatus = builder.build();
-
       } else {
         log.error("The JsonConfig object is null");
       }
-
       return Future.succeededFuture(acsStatus);
     });
   }
@@ -99,7 +95,6 @@ public class ConfigurationRepository {
       if (tenantConfigObject.isPresent()) {
         configJson = (JsonObject) tenantConfigObject.get();
       }
-
       return Future.succeededFuture(configJson);
     });
   }

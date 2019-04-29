@@ -50,11 +50,9 @@ public class SCStatusHandlerTests {
               "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|"
               + "AFscreenMessages|AGline|";
           String expectedBlankSpaces = "    ";
-
           assertEquals(expectedPreLocalTime, sipMessage.substring(0, 18));
           assertEquals(expectedBlankSpaces, sipMessage.substring(18, 22));
           assertEquals(expectedPostLocalTime, sipMessage.substring(28));
-
           testContext.completeNow();
         })));
   }
