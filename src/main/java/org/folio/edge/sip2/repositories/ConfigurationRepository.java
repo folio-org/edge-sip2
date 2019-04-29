@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.lang.invoke.MethodHandles;
+import java.time.Clock;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Set;
@@ -45,11 +46,11 @@ public class ConfigurationRepository {
       ACSStatus acsStatus = null;
       if (acsConfiguration != null) {
         ACSStatus.ACSStatusBuilder builder = ACSStatus.builder();
-  
+
         builder.checkinOk(acsConfiguration.getBoolean("onlineStatus"));
         builder.acsRenewalPolicy(acsConfiguration.getBoolean("acsRenewalPolicy"));
         builder.checkoutOk(acsConfiguration.getBoolean("checkoutOk"));
-        builder.dateTimeSync(ZonedDateTime.now());
+        builder.dateTimeSync(ZonedDateTime.now(Clock.systemUTC()));
         builder.institutionId(acsConfiguration.getString("institutionId"));
         builder.libraryName(acsConfiguration.getString("libraryName"));
         builder.offLineOk(acsConfiguration.getBoolean("checkoutOk"));
@@ -62,14 +63,14 @@ public class ConfigurationRepository {
         builder.terminalLocation(acsConfiguration.getString("terminalLocation"));
         builder.timeoutPeriod(acsConfiguration.getInteger("timeoutPeriod"));
         builder.supportedMessages(getSupportedMessagesFromJson(
-                acsConfiguration.getJsonArray("supportedMessages")));
-  
+          acsConfiguration.getJsonArray("supportedMessages")));
+
         acsStatus = builder.build();
-  
+
       } else {
         log.error("The JsonConfig object is null");
       }
-  
+
       return Future.succeededFuture(acsStatus);
     });
   }
@@ -91,10 +92,10 @@ public class ConfigurationRepository {
 
       JsonArray tenantConfigurations = jsonFile.getJsonArray("tenantConfigurations");
       Optional<Object> tenantConfigObject = tenantConfigurations
-          .stream()
-          .filter(config -> ((JsonObject)config).getString("tenantId").equalsIgnoreCase(configKey))
-          .findFirst();
-  
+        .stream()
+        .filter(config -> ((JsonObject)config).getString("tenantId").equalsIgnoreCase(configKey))
+        .findFirst();
+
       if (tenantConfigObject.isPresent()) {
         configJson = (JsonObject) tenantConfigObject.get();
       }
@@ -112,16 +113,16 @@ public class ConfigurationRepository {
       if (fullConfiguration != null) {
         acsConfiguration = fullConfiguration.getJsonObject("acsConfiguration");
       }
-  
+
       return Future.succeededFuture(acsConfiguration);
     });
   }
 
   private Set<Messages> getSupportedMessagesFromJson(JsonArray supportedMessages) {
     return supportedMessages
-        .stream()
-        .filter(el -> ((JsonObject) el).getString("isSupported").equalsIgnoreCase("Y"))
-        .map(el -> Messages.valueOf(((JsonObject) el).getString("messageName")))
-        .collect(Collectors.toSet());
+      .stream()
+      .filter(el -> ((JsonObject) el).getString("isSupported").equalsIgnoreCase("Y"))
+      .map(el -> Messages.valueOf(((JsonObject) el).getString("messageName")))
+      .collect(Collectors.toSet());
   }
 }
