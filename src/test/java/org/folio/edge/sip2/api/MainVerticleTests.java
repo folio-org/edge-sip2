@@ -183,16 +183,16 @@ public class MainVerticleTests extends BaseTest {
 
     log.info("ACS response: " + acsResponse);
 
-    String expectedPreLocalTime = "98YYNYNN53" + getFormattedDateString();
+    String expectedPreLocalTime = "98YYNYNN005003" + getFormattedDateString();
     String expectedPostLocalTime =
         "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\r";
     String expectedBlankSpaces = "    ";
 
-    assertEquals(expectedPreLocalTime, acsResponse.substring(0, 18),
+    assertEquals(expectedPreLocalTime, acsResponse.substring(0, 22),
         "preLocalTime substring is not as expected");
-    assertEquals(expectedBlankSpaces, acsResponse.substring(18, 22),
+    assertEquals(expectedBlankSpaces, acsResponse.substring(22, 26),
         "blank spaces substring is not as expected");
-    assertEquals(expectedPostLocalTime, acsResponse.substring(28),
+    assertEquals(expectedPostLocalTime, acsResponse.substring(32),
         "postLocalTime substring is not as expected");
   }
 }
