@@ -1,0 +1,49 @@
+{
+  "loans" : [  {
+    "id" : "b1b12e6a-f7bf-4be0-9ddc-a20dece3e93b",
+    "userId" : "4f0e711c-d583-41e0-9555-b62f1725023f",
+    "itemId" : "4593bdb8-f056-4a75-9c75-7b04c3a1dd64",
+    "status" : {
+      "name" : "Open"
+    },
+    "loanDate" : "2019-04-30T13:44:41Z",
+    "dueDate" : "2019-05-31T03:59:59.000+0000",
+    "action" : "checkedout",
+    "loanPolicyId" : "d9cd0bed-1b49-4b5e-a7bd-064b8d177231",
+    "checkoutServicePointId" : "c4c90014-c8c9-4ade-8f24-b5e313319f4b",
+    "metadata" : {
+      "createdDate" : "2019-04-30T13:44:41.396+0000",
+      "createdByUserId" : "b85cda08-1c35-5844-8087-9da678eb79f4",
+      "updatedDate" : "2019-04-30T13:44:41.396+0000",
+      "updatedByUserId" : "b85cda08-1c35-5844-8087-9da678eb79f4"
+    },
+    "item" : {
+      "id" : "4593bdb8-f056-4a75-9c75-7b04c3a1dd64",
+      "holdingsRecordId" : "559706d6-5f0d-47c5-9e57-344a86bb1379",
+      "instanceId" : "45c2d059-ad8e-420b-ab6d-e201acf01fde",
+      "title" : "1990 to 2010",
+      "barcode" : "6214635593916",
+      "contributors" : [ {
+        "name" : "Otfinoski, Steven."
+      } ],
+      "status" : {
+        "name" : "Checked out"
+      },
+      "location" : {
+        "name" : "Main Library"
+      },
+      "materialType" : {
+        "name" : "book"
+      }
+    },
+    "checkoutServicePoint" : {
+      "name" : "Circ Desk 2",
+      "code" : "cd2",
+      "discoveryDisplayName" : "Circulation Desk -- Back Entrance",
+      "description" : null,
+      "shelvingLagTime" : null,
+      "pickupLocation" : true
+    }
+  } ],
+  "totalRecords" : 1
+}

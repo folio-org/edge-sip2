@@ -126,7 +126,7 @@ public class PatronInformationMessageParser extends MessageParser {
       return UNAVAILABLE_HOLDS;
     }
     
-    position += 3;
+    position += 4;
     return null; // consider adding Summary.NONE
   }
 }

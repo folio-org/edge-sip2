@@ -60,8 +60,7 @@ public class CirculationRepository {
             .withZone(ZoneOffset.UTC)
             .format(returnDate));
 
-    final Map<String, String> headers = new HashMap<>();
-    headers.put("accept", "application/json");
+    final Map<String, String> headers = getBaseHeaders();
 
     final CheckinRequestData checkinRequestData =
         new CheckinRequestData(body, headers, sessionData);
@@ -107,8 +106,7 @@ public class CirculationRepository {
         .put("userBarcode", patronIdentifier)
         .put("servicePointId", sessionData.getScLocation());
 
-    final Map<String, String> headers = new HashMap<>();
-    headers.put("accept", "application/json");
+    final Map<String, String> headers = getBaseHeaders();
 
     final CheckoutRequestData checkoutRequestData =
         new CheckoutRequestData(body, headers, sessionData);
@@ -155,14 +153,115 @@ public class CirculationRepository {
         });
   }
 
+  /**
+   * Get requests for the specified patron.
+   *
+   * @param userId the FOLIO ID of the patron
+   * @param requestType The request type to filter on
+   * @param startItem the first item to return
+   * @param endItem the last item to return
+   * @param sessionData session data
+   * @return the requests the patron has placed
+   */
+  public Future<JsonObject> getRequestsByUserId(String userId, String requestType,
+      Integer startItem, Integer endItem, SessionData sessionData) {
+    final Map<String, String> headers = getBaseHeaders();
+
+    final RequestsRequestData requestsRequestData = new RequestsRequestData("requesterId", userId,
+        requestType, startItem, endItem, headers, sessionData);
+    final Future<IResource> result = resourceProvider.retrieveResource(requestsRequestData);
+
+    return result.otherwise(() -> null).map(IResource::getResource);
+  }
+
+  /**
+   * Gets open requests for a specific item.
+   *
+   * @param itemId the UUID of the item
+   * @param requestType the request type (can be null)
+   * @param startItem the start item (can be null)
+   * @param endItem the end item (can be null)
+   * @param sessionData the session data
+   * @return a list of open requests for the specified item
+   */
+  public Future<JsonObject> getRequestsByItemId(String itemId, String requestType,
+      Integer startItem, Integer endItem, SessionData sessionData) {
+    final Map<String, String> headers = getBaseHeaders();
+
+    final RequestsRequestData requestsRequestData = new RequestsRequestData("itemId", itemId,
+        requestType, startItem, endItem, headers, sessionData);
+    final Future<IResource> result = resourceProvider.retrieveResource(requestsRequestData);
+
+    return result.otherwise(() -> null).map(IResource::getResource);
+  }
+
+  /**
+   * Get loans for the specified patron.
+   *
+   * @param userId the FOLIO ID of the patron
+   * @param startItem the first item to return
+   * @param endItem the last item to return
+   * @param sessionData session data
+   * @return the loans the patron has open
+   */
+  public Future<JsonObject> getLoansByUserId(String userId, Integer startItem, Integer endItem,
+      SessionData sessionData) {
+    final Map<String, String> headers = getBaseHeaders();
+
+    final LoansRequestData loansRequestData =
+        new LoansRequestData(userId, startItem, endItem, headers, sessionData);
+    final Future<IResource> result = resourceProvider.retrieveResource(loansRequestData);
+
+    return result
+        .otherwise(() -> null)
+        .map(IResource::getResource);
+  }
+
+  /**
+   * Returns a list of over due items that the patron has on loan.
+   *
+   * @param userId the patron's user ID
+   * @param dueDate the date and time (UTC) that items are considered over due
+   * @param startItem the first item to return
+   * @param endItem the last item to return
+   * @param sessionData session info
+   * @return the list of over due items for this patron
+   */
+  public Future<JsonObject> getOverdueLoansByUserId(String userId, ZonedDateTime dueDate,
+      Integer startItem, Integer endItem, SessionData sessionData) {
+    final Map<String, String> headers = getBaseHeaders();
+
+    final OverdueLoansRequestData loansRequestData =
+        new OverdueLoansRequestData(userId, dueDate, startItem, endItem, headers, sessionData);
+    final Future<IResource> result = resourceProvider.retrieveResource(loansRequestData);
+
+    return result
+        .otherwise(() -> null)
+        .map(IResource::getResource);
+  }
+
+  private Map<String, String> getBaseHeaders() {
+    final Map<String, String> headers = new HashMap<>();
+    headers.put("accept", "application/json");
+    return headers;
+  }
+
   private abstract class CirculationRequestData implements IRequestData {
     private final JsonObject body;
+    private final Integer startItem;
+    private final Integer endItem;
     private final Map<String, String> headers;
     private final SessionData sessionData;
 
-    private CirculationRequestData(JsonObject body, Map<String, String> headers,
+    private CirculationRequestData(
+        JsonObject body,
+        Integer startItem,
+        Integer endItem,
+        Map<String, String> headers,
         SessionData sessionData) {
       this.body = body;
+      this.startItem = startItem;
+      this.endItem = endItem;
       this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
       this.sessionData = sessionData;
     }
@@ -181,12 +280,27 @@ public class CirculationRepository {
     public SessionData getSessionData() {
       return sessionData;
     }
+
+    protected StringBuilder appendLimits(StringBuilder sb) {
+      if (startItem != null) {
+        final int offset = startItem.intValue() - 1; // expects a 1-based count, FOLIO is 0
+        sb.append("&offset=")
+          .append(offset);
+      }
+      if (endItem != null) {
+        final int limit = endItem.intValue() - (startItem != null ? startItem.intValue() - 1 : 0);
+        sb.append("&limit=")
+          .append(limit);
+      }
+
+      return sb;
+    }
   }
 
   private class CheckinRequestData extends CirculationRequestData {
     private CheckinRequestData(JsonObject body, Map<String, String> headers,
         SessionData sessionData) {
-      super(body, headers, sessionData);
+      super(body, null, null, headers, sessionData);
     }
 
     @Override
@@ -198,12 +312,97 @@ public class CirculationRepository {
   private class CheckoutRequestData extends CirculationRequestData {
     private CheckoutRequestData(JsonObject body, Map<String, String> headers,
         SessionData sessionData) {
-      super(body, headers, sessionData);
+      super(body, null, null, headers, sessionData);
     }
 
     @Override
     public String getPath() {
       return "/circulation/check-out-by-barcode";
+    }
+  }
+
+  private class RequestsRequestData extends CirculationRequestData {
+    private final String idField;
+    private final String idValue;
+    private final String requestType;
+
+    private RequestsRequestData(
+        String idField,
+        String idValue,
+        String requestType,
+        Integer startItem,
+        Integer endItem,
+        Map<String, String> headers,
+        SessionData sessionData) {
+      super(null, startItem, endItem, headers, sessionData);
+      this.idField = idField;
+      this.idValue = idValue;
+      this.requestType = requestType;
+    }
+
+    @Override
+    public String getPath() {
+      final StringBuilder sb = new StringBuilder()
+          .append("/circulation/requests?query=%28")
+          .append(idField)
+          .append("%3D%3D")
+          .append(idValue)
+          .append("%20and%20status%3DOpen");
+      if (requestType != null) {
+        sb.append("%20and%20requestType%3D%3D")
+          .append(requestType);
+      }
+      sb.append("%29");
+
+      return appendLimits(sb).toString();
+    }
+  }
+
+  private class LoansRequestData extends CirculationRequestData {
+    private final String userId;
+
+    private LoansRequestData(
+        String userId,
+        Integer startItem,
+        Integer endItem,
+        Map<String, String> headers,
+        SessionData sessionData) {
+      super(null, startItem, endItem, headers, sessionData);
+      this.userId = userId;
+    }
+
+    @Override
+    public String getPath() {
+      return "/circulation/loans?query=%28userId%3D%3D" + userId
+          + "%20and%20status.name%3DOpen%29";
+    }
+  }
+
+  private class OverdueLoansRequestData extends CirculationRequestData {
+    private final String userId;
+    private final ZonedDateTime dueDate;
+
+    private OverdueLoansRequestData(
+        String userId,
+        ZonedDateTime dueDate,
+        Integer startItem,
+        Integer endItem,
+        Map<String, String> headers,
+        SessionData sessionData) {
+      super(null, startItem, endItem, headers, sessionData);
+      this.userId = userId;
+      this.dueDate = dueDate;
+    }
+
+    @Override
+    public String getPath() {
+      final StringBuilder sb = new StringBuilder()
+          .append("/circulation/loans?query=%28userId%3D%3D")
+          .append(userId)
+          .append("%20and%20status.name%3DOpen%20and%20dueDate%3C")
+          .append(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(dueDate))
+          .append("%29");
+      return appendLimits(sb).toString();
     }
   }
 }

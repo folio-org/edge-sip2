@@ -48,10 +48,10 @@ public class UsersRepository {
     return result
         .otherwise(() -> null)
         .map(IResource::getResource)
-        .compose(this::getUserFromList);
+        .map(this::getUserFromList);
   }
 
-  private Future<JsonObject> getUserFromList(JsonObject userList) {
+  private JsonObject getUserFromList(JsonObject userList) {
     final JsonObject user;
 
     if (userList == null || userList.getInteger("totalRecords",
@@ -67,7 +67,7 @@ public class UsersRepository {
       }
     }
 
-    return Future.succeededFuture(user);
+    return user;
   }
 
   private class GetUserByBarcodeRequestData implements IRequestData {

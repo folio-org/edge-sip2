@@ -9,18 +9,18 @@
 -->
 <@lib.transactionDate value=patronInformationResponse.transactionDate/>
 <#-- hold items count: 4-char, fixed-length required field -->
-<@lib.holdItemsCount value=patronInformationResponse.holdItemsCount/>
+<@lib.holdItemsCount value=patronInformationResponse.holdItemsCount!""/>
 <#-- overdue items count: 4-char, fixed-length required field -->
-<@lib.overdueItemsCount value=patronInformationResponse.overdueItemsCount/>
+<@lib.overdueItemsCount value=patronInformationResponse.overdueItemsCount!""/>
 <#-- charged items count: 4-char, fixed-length required field -->
-<@lib.chargedItemsCount value=patronInformationResponse.chargedItemsCount/>
+<@lib.chargedItemsCount value=patronInformationResponse.chargedItemsCount!""/>
 <#-- fine items count: 4-char, fixed-length required field -->
-<@lib.fineItemsCount value=patronInformationResponse.fineItemsCount/>
+<@lib.fineItemsCount value=patronInformationResponse.fineItemsCount!""/>
 <#-- recall items count: 4-char, fixed-length required field -->
-<@lib.recallItemsCount value=patronInformationResponse.recallItemsCount/>
+<@lib.recallItemsCount value=patronInformationResponse.recallItemsCount!""/>
 <#-- unavailable items count: 4-char, fixed-length required field -->
 <@lib.unavailableHoldsCount
-    value=patronInformationResponse.unavailableHoldsCount/>
+    value=patronInformationResponse.unavailableHoldsCount!""/>
 <#-- institution id: variable-length required field -->
 <@lib.institutionId value=patronInformationResponse.institutionId/>
 <#-- patron identifier: variable-length required field -->

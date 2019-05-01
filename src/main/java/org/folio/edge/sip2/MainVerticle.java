@@ -90,12 +90,11 @@ public class MainVerticle extends AbstractVerticle {
       final String messageDelimiter = config().getString("messageDelimiter", "\r");
 
       socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
-        final String messageString = buffer.getString(0, buffer.length());
+        final String messageString = buffer.getString(0, buffer.length(), sessionData.getCharset());
         log.debug("Received message: {}", messageString);
 
         try {
-          // Create a parser with the default delimiter '|' and the default
-          // charset 'IMB850'. At some point we will need to have these be
+          // At some point we will need to have these be
           // tenant specific. This will be difficult considering that we need
           // to parse the login message before we know which tenant it is.
           // We may need another mechanism to obtain this configuration...
@@ -121,7 +120,7 @@ public class MainVerticle extends AbstractVerticle {
                 .getPreviousMessage()
                 .getPreviousMessageResponse();
             log.info("Sending previous Sip response {}", prvMessage);
-            socket.write(prvMessage);
+            socket.write(prvMessage, sessionData.getCharset());
             return;
           }
 
@@ -146,11 +145,12 @@ public class MainVerticle extends AbstractVerticle {
                   }
                   handler.writeHistory(message, responseMsg);
                   log.info("Sip response {}", responseMsg);
-                  socket.write(responseMsg);
+                  socket.write(responseMsg, sessionData.getCharset());
                 } else {
                   String errorMsg = "Failed to respond to request";
                   log.error(errorMsg, ar.cause());
-                  socket.write(ar.cause().getMessage() + messageDelimiter);
+                  socket.write(ar.cause().getMessage() + messageDelimiter,
+                      sessionData.getCharset());
                 }
               });
         } catch (Exception ex) {
@@ -158,7 +158,7 @@ public class MainVerticle extends AbstractVerticle {
           log.error(message, ex);
           // Return an error message for now for the sake of negative testing.
           // Will find a better way to handle negative test cases.
-          socket.write(message + messageDelimiter);
+          socket.write(message + messageDelimiter, sessionData.getCharset());
         }
       }));
 
@@ -204,13 +204,13 @@ public class MainVerticle extends AbstractVerticle {
           .setHandler(ar -> {
             if (ar.succeeded()) {
               socket.write(formatResponse(ar.result(), message, sessionData,
-                  messageDelimiter, true));
+                  messageDelimiter, true), sessionData.getCharset());
             } else {
               log.error("Failed to send SC resend", ar.cause());
             }
           });
     } else {
-      socket.write("Problems handling the request" + messageDelimiter);
+      socket.write("Problems handling the request" + messageDelimiter, sessionData.getCharset());
     }
   }
 
