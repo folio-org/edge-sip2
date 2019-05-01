@@ -199,18 +199,12 @@ public class PatronRepository {
       Integer startItem, Integer endItem, boolean details,
       PatronInformationResponseBuilder builder) {
     return CompositeFuture.all(new ArrayList<Future>(recalls)).map(result -> {
-      final int recallItemsCount;
+      final int recallItemsCount = Math.min(countRecallItems(recalls), 9999);
       final List<String> recallItems;
 
-      if (recalls != null) {
-        recallItemsCount = Math.min(countRecallItems(recalls), 9999);
-        if (details) {
-          recallItems = getRecallItems(recalls, startItem, endItem);
-        } else {
-          recallItems = null;
-        }
+      if (details) {
+        recallItems = getRecallItems(recalls, startItem, endItem);
       } else {
-        recallItemsCount = 0;
         recallItems = null;
       }
 

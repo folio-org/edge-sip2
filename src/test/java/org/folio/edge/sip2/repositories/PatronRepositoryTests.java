@@ -2,6 +2,7 @@ package org.folio.edge.sip2.repositories;
 
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.ENGLISH;
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.UNKNOWN;
+import static org.folio.edge.sip2.domain.messages.enumerations.Summary.RECALL_ITEMS;
 import static org.folio.edge.sip2.repositories.RepositoryTestUtils.getJsonFromFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -95,7 +96,7 @@ public class PatronRepositoryTests {
     final PatronInformation patronInformation = PatronInformation.builder()
         .language(ENGLISH)
         .transactionDate(ZonedDateTime.now())
-        .summary(null)
+        .summary(RECALL_ITEMS)
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
         .terminalPassword("1234")
@@ -164,7 +165,7 @@ public class PatronRepositoryTests {
           assertNotNull(patronInformationResponse.getFineItems());
           assertTrue(patronInformationResponse.getFineItems().isEmpty());
           assertNotNull(patronInformationResponse.getRecallItems());
-          assertTrue(patronInformationResponse.getRecallItems().isEmpty());
+          assertEquals(Arrays.asList("1990 to 2010"), patronInformationResponse.getRecallItems());
           assertNotNull(patronInformationResponse.getUnavailableHoldItems());
           assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
           assertEquals("00430 Denis Parks, Indianapolis, FL 14654-6001 US",
@@ -718,7 +719,7 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(new JsonObject().put("loans",
-            new JsonArray().add(new JsonObject().put("id", "1234")))));
+            new JsonArray().add(new JsonObject().put("itemId", "1234")))));
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
