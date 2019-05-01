@@ -174,15 +174,15 @@ public class PatronRepository {
     return builder.holdItemsCount(Integer.valueOf(holdItemsCount)).holdItems(holdItems);
   }
 
-  private PatronInformationResponseBuilder addOverdueItems(JsonObject holds, boolean details,
+  private PatronInformationResponseBuilder addOverdueItems(JsonObject overdues, boolean details,
       PatronInformationResponseBuilder builder) {
     final int overdueItemsCount;
     final List<String> overdueItems;
 
-    if (holds != null) {
-      overdueItemsCount = Math.min(countOverdueItems(holds), 9999);
+    if (overdues != null) {
+      overdueItemsCount = Math.min(countOverdueItems(overdues), 9999);
       if (details) {
-        overdueItems = getOverdueItems(holds);
+        overdueItems = getOverdueItems(overdues);
       } else {
         overdueItems = null;
       }
@@ -296,6 +296,7 @@ public class PatronRepository {
   private int countRecallItems(List<Future<JsonObject>> recallItems) {
     return (int) recallItems.stream()
         .map(Future::result)
+        .filter(Objects::nonNull)
         .filter(jo -> jo.getInteger(FIELD_TOTAL_RECORDS, Integer.valueOf(0)).intValue() > 0)
         .count();
   }
@@ -306,6 +307,7 @@ public class PatronRepository {
     final int maxSize = endItem == null ? 9999 : endItem.intValue() - skip;
     return recallItems.stream()
         .map(Future::result)
+        .filter(Objects::nonNull)
         .filter(jo -> jo.getInteger(FIELD_TOTAL_RECORDS, Integer.valueOf(0)).intValue() > 0)
         .map(jo -> jo.getJsonArray("requests", new JsonArray())
             .getJsonObject(0).getJsonObject("item", new JsonObject()).getString(FIELD_TITLE))
@@ -346,7 +348,8 @@ public class PatronRepository {
         circulationRepository.getLoansByUserId(userId, null, null, sessionData);
 
     return loansFuture.map(jo -> {
-      final JsonArray loans = jo.getJsonArray("loans", new JsonArray());
+      final JsonArray loans = jo == null ? new JsonArray()
+          : jo.getJsonArray("loans", new JsonArray());
       return loans.stream()
           .map(o -> (JsonObject) o)
           .map(loan -> circulationRepository.getRequestsByItemId(loan.getString("itemId"),

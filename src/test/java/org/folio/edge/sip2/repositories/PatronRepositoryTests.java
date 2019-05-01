@@ -1,8 +1,10 @@
 package org.folio.edge.sip2.repositories;
 
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.ENGLISH;
+import static org.folio.edge.sip2.domain.messages.enumerations.Language.UNKNOWN;
 import static org.folio.edge.sip2.repositories.RepositoryTestUtils.getJsonFromFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -23,8 +25,10 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Stream;
+import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
 import org.folio.edge.sip2.domain.messages.enumerations.Summary;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.folio.edge.sip2.session.SessionData;
@@ -96,8 +100,6 @@ public class PatronRepositoryTests {
         .patronIdentifier(patronIdentifier)
         .terminalPassword("1234")
         .patronPassword("0989")
-        .startItem(Integer.valueOf(1))
-        .endItem(Integer.valueOf(10))
         .build();
 
     final String userResponseJson = getJsonFromFile("json/user_response.json");
@@ -393,6 +395,372 @@ public class PatronRepositoryTests {
           assertNotNull(patronInformationResponse.getUnavailableHoldItems());
           assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
           assertEquals("00430 Denis Parks, Indianapolis, FL 14654-6001 US",
+              patronInformationResponse.getHomeAddress());
+          assertEquals("earnestine@sipes-stokes-and-durgan.so",
+              patronInformationResponse.getEmailAddress());
+          assertEquals("(916)599-0326",
+              patronInformationResponse.getHomePhoneNumber());
+          assertNull(patronInformationResponse.getScreenMessage());
+          assertNull(patronInformationResponse.getPrintLine());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void patronInformationContainsInvalidPatronWhenUserNotFound(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock CirculationRepository mockCirculationRepository) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final String patronIdentifier = "1234567890";
+    final PatronInformation patronInformation = PatronInformation.builder()
+        .language(ENGLISH)
+        .transactionDate(ZonedDateTime.now())
+        .summary(null)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .terminalPassword("1234")
+        .patronPassword("0989")
+        .build();
+
+    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(null));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final PatronRepository patronRepository =
+        new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
+    patronRepository.patronInformation(patronInformation, sessionData).setHandler(
+        testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
+          assertNotNull(patronInformationResponse);
+          assertEquals(EnumSet.noneOf(PatronStatus.class),
+              patronInformationResponse.getPatronStatus());
+          assertEquals(UNKNOWN, patronInformationResponse.getLanguage());
+          assertEquals(ZonedDateTime.now(clock), patronInformationResponse.getTransactionDate());
+          assertEquals(0, patronInformationResponse.getHoldItemsCount());
+          assertEquals(0, patronInformationResponse.getOverdueItemsCount());
+          assertEquals(0, patronInformationResponse.getChargedItemsCount());
+          assertEquals(0, patronInformationResponse.getFineItemsCount());
+          assertEquals(0, patronInformationResponse.getRecallItemsCount());
+          assertEquals(0, patronInformationResponse.getUnavailableHoldsCount());
+          assertEquals("diku", patronInformationResponse.getInstitutionId());
+          assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
+          assertNull(patronInformationResponse.getPersonalName());
+          assertFalse(patronInformationResponse.getValidPatron());
+          assertNull(patronInformationResponse.getValidPatronPassword());
+          assertNull(patronInformationResponse.getCurrencyType());
+          assertNull(patronInformationResponse.getFeeAmount());
+          assertNull(patronInformationResponse.getFeeLimit());
+          assertNotNull(patronInformationResponse.getHoldItems());
+          assertTrue(patronInformationResponse.getHoldItems().isEmpty());
+          assertNotNull(patronInformationResponse.getOverdueItems());
+          assertTrue(patronInformationResponse.getOverdueItems().isEmpty());
+          assertNotNull(patronInformationResponse.getChargedItems());
+          assertTrue(patronInformationResponse.getChargedItems().isEmpty());
+          assertNotNull(patronInformationResponse.getFineItems());
+          assertTrue(patronInformationResponse.getFineItems().isEmpty());
+          assertNotNull(patronInformationResponse.getRecallItems());
+          assertTrue(patronInformationResponse.getRecallItems().isEmpty());
+          assertNotNull(patronInformationResponse.getUnavailableHoldItems());
+          assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
+          assertNull(patronInformationResponse.getHomeAddress());
+          assertNull(patronInformationResponse.getEmailAddress());
+          assertNull(patronInformationResponse.getHomePhoneNumber());
+          assertNull(patronInformationResponse.getScreenMessage());
+          assertNull(patronInformationResponse.getPrintLine());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void patronInvalidWhenPatronInformationContainsInactiveUser(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock CirculationRepository mockCirculationRepository) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final String patronIdentifier = "1234567890";
+    final PatronInformation patronInformation = PatronInformation.builder()
+        .language(ENGLISH)
+        .transactionDate(ZonedDateTime.now())
+        .summary(null)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .terminalPassword("1234")
+        .patronPassword("0989")
+        .build();
+
+    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject().put("active", false)));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final PatronRepository patronRepository =
+        new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
+    patronRepository.patronInformation(patronInformation, sessionData).setHandler(
+        testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
+          assertNotNull(patronInformationResponse);
+          assertEquals(EnumSet.noneOf(PatronStatus.class),
+              patronInformationResponse.getPatronStatus());
+          assertEquals(UNKNOWN, patronInformationResponse.getLanguage());
+          assertEquals(ZonedDateTime.now(clock), patronInformationResponse.getTransactionDate());
+          assertEquals(0, patronInformationResponse.getHoldItemsCount());
+          assertEquals(0, patronInformationResponse.getOverdueItemsCount());
+          assertEquals(0, patronInformationResponse.getChargedItemsCount());
+          assertEquals(0, patronInformationResponse.getFineItemsCount());
+          assertEquals(0, patronInformationResponse.getRecallItemsCount());
+          assertEquals(0, patronInformationResponse.getUnavailableHoldsCount());
+          assertEquals("diku", patronInformationResponse.getInstitutionId());
+          assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
+          assertNull(patronInformationResponse.getPersonalName());
+          assertFalse(patronInformationResponse.getValidPatron());
+          assertNull(patronInformationResponse.getValidPatronPassword());
+          assertNull(patronInformationResponse.getCurrencyType());
+          assertNull(patronInformationResponse.getFeeAmount());
+          assertNull(patronInformationResponse.getFeeLimit());
+          assertNotNull(patronInformationResponse.getHoldItems());
+          assertTrue(patronInformationResponse.getHoldItems().isEmpty());
+          assertNotNull(patronInformationResponse.getOverdueItems());
+          assertTrue(patronInformationResponse.getOverdueItems().isEmpty());
+          assertNotNull(patronInformationResponse.getChargedItems());
+          assertTrue(patronInformationResponse.getChargedItems().isEmpty());
+          assertNotNull(patronInformationResponse.getFineItems());
+          assertTrue(patronInformationResponse.getFineItems().isEmpty());
+          assertNotNull(patronInformationResponse.getRecallItems());
+          assertTrue(patronInformationResponse.getRecallItems().isEmpty());
+          assertNotNull(patronInformationResponse.getUnavailableHoldItems());
+          assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
+          assertNull(patronInformationResponse.getHomeAddress());
+          assertNull(patronInformationResponse.getEmailAddress());
+          assertNull(patronInformationResponse.getHomePhoneNumber());
+          assertNull(patronInformationResponse.getScreenMessage());
+          assertNull(patronInformationResponse.getPrintLine());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void patronInvalidWhenPatronInformationContainsUserWithNoId(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock CirculationRepository mockCirculationRepository) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final String patronIdentifier = "1234567890";
+    final PatronInformation patronInformation = PatronInformation.builder()
+        .language(ENGLISH)
+        .transactionDate(ZonedDateTime.now())
+        .summary(null)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .terminalPassword("1234")
+        .patronPassword("0989")
+        .build();
+
+    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject().put("active", true)));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final PatronRepository patronRepository =
+        new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
+    patronRepository.patronInformation(patronInformation, sessionData).setHandler(
+        testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
+          assertNotNull(patronInformationResponse);
+          assertEquals(EnumSet.noneOf(PatronStatus.class),
+              patronInformationResponse.getPatronStatus());
+          assertEquals(UNKNOWN, patronInformationResponse.getLanguage());
+          assertEquals(ZonedDateTime.now(clock), patronInformationResponse.getTransactionDate());
+          assertEquals(0, patronInformationResponse.getHoldItemsCount());
+          assertEquals(0, patronInformationResponse.getOverdueItemsCount());
+          assertEquals(0, patronInformationResponse.getChargedItemsCount());
+          assertEquals(0, patronInformationResponse.getFineItemsCount());
+          assertEquals(0, patronInformationResponse.getRecallItemsCount());
+          assertEquals(0, patronInformationResponse.getUnavailableHoldsCount());
+          assertEquals("diku", patronInformationResponse.getInstitutionId());
+          assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
+          assertNull(patronInformationResponse.getPersonalName());
+          assertFalse(patronInformationResponse.getValidPatron());
+          assertNull(patronInformationResponse.getValidPatronPassword());
+          assertNull(patronInformationResponse.getCurrencyType());
+          assertNull(patronInformationResponse.getFeeAmount());
+          assertNull(patronInformationResponse.getFeeLimit());
+          assertNotNull(patronInformationResponse.getHoldItems());
+          assertTrue(patronInformationResponse.getHoldItems().isEmpty());
+          assertNotNull(patronInformationResponse.getOverdueItems());
+          assertTrue(patronInformationResponse.getOverdueItems().isEmpty());
+          assertNotNull(patronInformationResponse.getChargedItems());
+          assertTrue(patronInformationResponse.getChargedItems().isEmpty());
+          assertNotNull(patronInformationResponse.getFineItems());
+          assertTrue(patronInformationResponse.getFineItems().isEmpty());
+          assertNotNull(patronInformationResponse.getRecallItems());
+          assertTrue(patronInformationResponse.getRecallItems().isEmpty());
+          assertNotNull(patronInformationResponse.getUnavailableHoldItems());
+          assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
+          assertNull(patronInformationResponse.getHomeAddress());
+          assertNull(patronInformationResponse.getEmailAddress());
+          assertNull(patronInformationResponse.getHomePhoneNumber());
+          assertNull(patronInformationResponse.getScreenMessage());
+          assertNull(patronInformationResponse.getPrintLine());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void canPatronInformationWithNoSummaryDetails(Vertx vertx, VertxTestContext testContext,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock CirculationRepository mockCirculationRepository) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final String patronIdentifier = "1234567890";
+    final PatronInformation patronInformation = PatronInformation.builder()
+        .language(ENGLISH)
+        .transactionDate(ZonedDateTime.now())
+        .summary(Summary.RECALL_ITEMS)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .terminalPassword("1234")
+        .patronPassword("0989")
+        .startItem(Integer.valueOf(2))
+        .endItem(Integer.valueOf(2))
+        .build();
+
+    final String userResponseJson = getJsonFromFile("json/user_response2.json");
+    final JsonObject userResponse = new JsonObject(userResponseJson);
+    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(userResponse));
+    when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(null));
+    when(mockCirculationRepository.getRequestsByUserId(
+        any(), eq("Hold"), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(null));
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(null));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final PatronRepository patronRepository =
+        new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
+    patronRepository.patronInformation(patronInformation, sessionData).setHandler(
+        testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
+          assertNotNull(patronInformationResponse);
+          assertEquals(EnumSet.noneOf(PatronStatus.class),
+              patronInformationResponse.getPatronStatus());
+          assertEquals(ENGLISH, patronInformationResponse.getLanguage());
+          assertEquals(ZonedDateTime.now(clock), patronInformationResponse.getTransactionDate());
+          assertEquals(0, patronInformationResponse.getHoldItemsCount());
+          assertEquals(0, patronInformationResponse.getOverdueItemsCount());
+          assertNull(patronInformationResponse.getChargedItemsCount());
+          assertNull(patronInformationResponse.getFineItemsCount());
+          assertEquals(0, patronInformationResponse.getRecallItemsCount());
+          assertNull(patronInformationResponse.getUnavailableHoldsCount());
+          assertEquals("diku", patronInformationResponse.getInstitutionId());
+          assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
+          assertEquals("Darius Auer", patronInformationResponse.getPersonalName());
+          assertTrue(patronInformationResponse.getValidPatron());
+          assertNull(patronInformationResponse.getValidPatronPassword());
+          assertNull(patronInformationResponse.getCurrencyType());
+          assertNull(patronInformationResponse.getFeeAmount());
+          assertNull(patronInformationResponse.getFeeLimit());
+          assertNotNull(patronInformationResponse.getHoldItems());
+          assertTrue(patronInformationResponse.getHoldItems().isEmpty());
+          assertNotNull(patronInformationResponse.getOverdueItems());
+          assertTrue(patronInformationResponse.getOverdueItems().isEmpty());
+          assertNotNull(patronInformationResponse.getChargedItems());
+          assertTrue(patronInformationResponse.getChargedItems().isEmpty());
+          assertNotNull(patronInformationResponse.getFineItems());
+          assertTrue(patronInformationResponse.getFineItems().isEmpty());
+          assertNotNull(patronInformationResponse.getRecallItems());
+          assertTrue(patronInformationResponse.getRecallItems().isEmpty());
+          assertNotNull(patronInformationResponse.getUnavailableHoldItems());
+          assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
+          assertNull(patronInformationResponse.getHomeAddress());
+          assertEquals("earnestine@sipes-stokes-and-durgan.so",
+              patronInformationResponse.getEmailAddress());
+          assertEquals("(916)599-0326",
+              patronInformationResponse.getHomePhoneNumber());
+          assertNull(patronInformationResponse.getScreenMessage());
+          assertNull(patronInformationResponse.getPrintLine());
+
+          testContext.completeNow();
+        })));
+  }
+
+
+  @Test
+  public void canPatronInformationWithNoSummaryRecallDetails(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock CirculationRepository mockCirculationRepository) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final String patronIdentifier = "1234567890";
+    final PatronInformation patronInformation = PatronInformation.builder()
+        .language(ENGLISH)
+        .transactionDate(ZonedDateTime.now())
+        .summary(Summary.RECALL_ITEMS)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .terminalPassword("1234")
+        .patronPassword("0989")
+        .startItem(Integer.valueOf(2))
+        .endItem(Integer.valueOf(2))
+        .build();
+
+    final String userResponseJson = getJsonFromFile("json/user_response1.json");
+    final JsonObject userResponse = new JsonObject(userResponseJson);
+    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(userResponse));
+    when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(null));
+    when(mockCirculationRepository.getRequestsByUserId(
+        any(), eq("Hold"), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(null));
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject().put("loans",
+            new JsonArray().add(new JsonObject().put("id", "1234")))));
+    when(mockCirculationRepository.getRequestsByItemId(
+        any(), eq("Recall"), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(null));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final PatronRepository patronRepository =
+        new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
+    patronRepository.patronInformation(patronInformation, sessionData).setHandler(
+        testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
+          assertNotNull(patronInformationResponse);
+          assertEquals(EnumSet.noneOf(PatronStatus.class),
+              patronInformationResponse.getPatronStatus());
+          assertEquals(ENGLISH, patronInformationResponse.getLanguage());
+          assertEquals(ZonedDateTime.now(clock), patronInformationResponse.getTransactionDate());
+          assertEquals(0, patronInformationResponse.getHoldItemsCount());
+          assertEquals(0, patronInformationResponse.getOverdueItemsCount());
+          assertNull(patronInformationResponse.getChargedItemsCount());
+          assertNull(patronInformationResponse.getFineItemsCount());
+          assertEquals(0, patronInformationResponse.getRecallItemsCount());
+          assertNull(patronInformationResponse.getUnavailableHoldsCount());
+          assertEquals("diku", patronInformationResponse.getInstitutionId());
+          assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
+          assertEquals("Darius Auer", patronInformationResponse.getPersonalName());
+          assertTrue(patronInformationResponse.getValidPatron());
+          assertNull(patronInformationResponse.getValidPatronPassword());
+          assertNull(patronInformationResponse.getCurrencyType());
+          assertNull(patronInformationResponse.getFeeAmount());
+          assertNull(patronInformationResponse.getFeeLimit());
+          assertNotNull(patronInformationResponse.getHoldItems());
+          assertTrue(patronInformationResponse.getHoldItems().isEmpty());
+          assertNotNull(patronInformationResponse.getOverdueItems());
+          assertTrue(patronInformationResponse.getOverdueItems().isEmpty());
+          assertNotNull(patronInformationResponse.getChargedItems());
+          assertTrue(patronInformationResponse.getChargedItems().isEmpty());
+          assertNotNull(patronInformationResponse.getFineItems());
+          assertTrue(patronInformationResponse.getFineItems().isEmpty());
+          assertNotNull(patronInformationResponse.getRecallItems());
+          assertTrue(patronInformationResponse.getRecallItems().isEmpty());
+          assertNotNull(patronInformationResponse.getUnavailableHoldItems());
+          assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
+          assertEquals("2123 Blah Street, Boston, MA 12345-1234 US",
               patronInformationResponse.getHomeAddress());
           assertEquals("earnestine@sipes-stokes-and-durgan.so",
               patronInformationResponse.getEmailAddress());
