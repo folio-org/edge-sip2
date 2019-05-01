@@ -322,7 +322,7 @@ public class PatronRepositoryTests {
         .endItem(Integer.valueOf(2))
         .build();
 
-    final String userResponseJson = getJsonFromFile("json/user_response.json");
+    final String userResponseJson = getJsonFromFile("json/user_response3.json");
     final JsonObject userResponse = new JsonObject(userResponseJson);
     final String overdueResponseJson = getJsonFromFile("json/overdue_response.json");
     final JsonObject overdueResponse = new JsonObject(overdueResponseJson);
@@ -395,8 +395,7 @@ public class PatronRepositoryTests {
           assertEquals(Arrays.asList("Al Gore"), patronInformationResponse.getRecallItems());
           assertNotNull(patronInformationResponse.getUnavailableHoldItems());
           assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
-          assertEquals("00430 Denis Parks, Indianapolis, FL 14654-6001 US",
-              patronInformationResponse.getHomeAddress());
+          assertNull(patronInformationResponse.getHomeAddress());
           assertEquals("earnestine@sipes-stokes-and-durgan.so",
               patronInformationResponse.getEmailAddress());
           assertEquals("(916)599-0326",
