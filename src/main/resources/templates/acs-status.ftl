@@ -23,8 +23,8 @@ ${ACSStatus.checkoutOk}<#rt>
 ${ACSStatus.acsRenewalPolicy}<#rt>
 ${ACSStatus.statusUpdateOk}<#rt>
 ${ACSStatus.offLineOk}<#rt>
-${ACSStatus.timeoutPeriod}<#rt>
-${ACSStatus.retriesAllowed}<#rt>
+${ACSStatus.timeoutPeriod?string("000")}<#rt>
+${ACSStatus.retriesAllowed?string("000")}<#rt>
 ${formatDateTime(ACSStatus.dateTimeSync, "yyyyMMdd    HHmmss")}<#t>
 ${ACSStatus.protocolVersion}|<#rt>
 AO${ACSStatus.institutionId}|<#rt>

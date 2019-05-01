@@ -53,7 +53,7 @@ public class SCStatusHandlerTests {
           String expectedDateTimeString =
               TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock));
 
-          String expectedSipResponse = "98YYNYNN53"
+          String expectedSipResponse = "98YYNYNN005003"
               + expectedDateTimeString
               + "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|"
               + "AFscreenMessages|AGline|";
