@@ -1,5 +1,7 @@
 package org.folio.edge.sip2.session;
 
+import org.folio.edge.sip2.domain.PreviousMessage;
+
 public class SessionData {
   private final char fieldDelimiter;
   private final String tenant;
@@ -8,9 +10,10 @@ public class SessionData {
 
   private String scLocation;
   private String authenticationToken;
-  private int maxPrintWidth = -1; // since 0 is valid 
+  private int maxPrintWidth = -1; // since 0 is valid
   private String username;
   private String password; // should we really save this?
+  private PreviousMessage previousMessage;
 
   private SessionData(String tenant, char fieldDelimiter,
       boolean errorDetectionEnabled, String charset) {
@@ -74,6 +77,14 @@ public class SessionData {
 
   public String getCharset() {
     return charset;
+  }
+
+  public PreviousMessage getPreviousMessage() {
+    return previousMessage;
+  }
+
+  public void setPreviousMessage(PreviousMessage message) {
+    this.previousMessage = message;
   }
 
   public static SessionData createSession(String tenant, char fieldDelimiter,

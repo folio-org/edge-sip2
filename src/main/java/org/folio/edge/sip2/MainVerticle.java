@@ -3,6 +3,7 @@ package org.folio.edge.sip2;
 import static java.lang.Boolean.FALSE;
 import static org.folio.edge.sip2.parser.Command.CHECKIN;
 import static org.folio.edge.sip2.parser.Command.CHECKOUT;
+import static org.folio.edge.sip2.parser.Command.END_PATRON_SESSION;
 import static org.folio.edge.sip2.parser.Command.LOGIN;
 import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION;
 import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
@@ -27,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.handlers.CheckinHandler;
 import org.folio.edge.sip2.handlers.CheckoutHandler;
+import org.folio.edge.sip2.handlers.EndPatronSessionHandler;
 import org.folio.edge.sip2.handlers.HandlersFactory;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.handlers.LoginHandler;
@@ -36,7 +38,6 @@ import org.folio.edge.sip2.modules.FolioResourceProviderModule;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
-import org.folio.edge.sip2.repositories.HistoricalMessageRepository;
 import org.folio.edge.sip2.session.SessionData;
 
 public class MainVerticle extends AbstractVerticle {
@@ -67,11 +68,12 @@ public class MainVerticle extends AbstractVerticle {
       handlers = new EnumMap<>(Command.class);
       handlers.put(CHECKOUT, injector.getInstance(CheckoutHandler.class));
       handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
-      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null, null));
+      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null, null, null));
       handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
       handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
       handlers.put(PATRON_INFORMATION, injector.getInstance(PatronInformationHandler.class));
       handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
+      handlers.put(END_PATRON_SESSION, injector.getInstance(EndPatronSessionHandler.class));
     }
 
     //set Config object's defaults
@@ -115,8 +117,8 @@ public class MainVerticle extends AbstractVerticle {
           }
 
           //check if the previous message needs resending
-          if (requiredResending(message)) {
-            String prvMessage = HistoricalMessageRepository
+          if (requiredResending(sessionData, message)) {
+            String prvMessage = sessionData
                 .getPreviousMessage()
                 .getPreviousMessageResponse();
             log.info("Sending previous Sip response {}", prvMessage);
@@ -143,7 +145,7 @@ public class MainVerticle extends AbstractVerticle {
                     responseMsg = formatResponse(ar.result(), message, sessionData,
                         messageDelimiter);
                   }
-                  handler.writeHistory(message, responseMsg);
+                  handler.writeHistory(sessionData, message, responseMsg);
                   log.info("Sip response {}", responseMsg);
                   socket.write(responseMsg, sessionData.getCharset());
                 } else {
@@ -259,9 +261,9 @@ public class MainVerticle extends AbstractVerticle {
    * @param currentMessage current message to check against the previous message
    * @return boolean indicating whether the message needs to be resent.
    */
-  private boolean requiredResending(Message<Object> currentMessage) {
+  private boolean requiredResending(SessionData sessionData, Message<Object> currentMessage) {
 
-    PreviousMessage prevMessage = HistoricalMessageRepository.getPreviousMessage();
+    PreviousMessage prevMessage = sessionData.getPreviousMessage();
 
     if (prevMessage == null || !currentMessage.isErrorDetectionEnabled()) {
       log.debug("requiredResending is FALSE");

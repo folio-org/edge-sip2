@@ -2,7 +2,7 @@ package org.folio.edge.sip2.repositories;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -12,31 +12,34 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import java.time.LocalDate;
 
+import java.time.Clock;
+import java.time.ZonedDateTime;
+
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(VertxExtension.class)
+@ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class ConfigurationRepositoryTests {
 
   @Test
-  public void canCreateConfigurationRepo() {
-    @SuppressWarnings("unchecked")
-    IResourceProvider<Object> mockConfig = mock(IResourceProvider.class);
-    ConfigurationRepository configRepo = new ConfigurationRepository(mockConfig);
+  public void canCreateConfigurationRepo(@Mock IResourceProvider<Object> mockConfig,
+      @Mock Clock clock) {
+    ConfigurationRepository configRepo = new ConfigurationRepository(mockConfig, clock);
     assertNotNull(configRepo);
   }
 
   @Test
-  public void cannotCreateConfigurationRepoWhenConfigProviderIsNull() {
-    try {
-      new ConfigurationRepository(null);
-      fail("expected an exception to be thrown");
-    } catch (IllegalArgumentException ex) {
-      assertEquals("configGateway is null", ex.getMessage());
-    }
+  public void cannotCreateConfigurationRepoWhenConfigProviderIsNull(@Mock Clock clock) {
+
+    final NullPointerException thrown = assertThrows(
+        NullPointerException.class, () -> new ConfigurationRepository(null, clock));
+
+    assertEquals("ConfigGateway cannot be null", thrown.getMessage());
   }
 
   @Test
@@ -58,7 +61,6 @@ public class ConfigurationRepositoryTests {
     acsConfig.put("offlineOk", true);
     acsConfig.put("timeoutPeriod", 3);
     acsConfig.put("retriesAllowed", 2);
-    acsConfig.put("dateTimeSync", "2019-04-05 13:26:13");
     acsConfig.put("protocolVersion", "1.23");
     acsConfig.put("institutionId", "fs00000010");
     acsConfig.put("printLine", "testing");
@@ -75,8 +77,10 @@ public class ConfigurationRepositoryTests {
     when(mockConfigProvider.retrieveResource(null))
       .thenReturn(Future.succeededFuture(() -> defaultConfigurations));
 
+    Clock clock = TestUtils.getUtcFixedClock();
+
     ConfigurationRepository configurationRepository =
-        new ConfigurationRepository(mockConfigProvider);
+        new ConfigurationRepository(mockConfigProvider, clock);
     configurationRepository.getACSStatus().setHandler(
         testContext.succeeding(status -> testContext.verify(() -> {
 
@@ -94,11 +98,7 @@ public class ConfigurationRepositoryTests {
           assertEquals("Chalmers", status.getLibraryName());
           assertEquals("Hello, welcome", status.getScreenMessage());
           assertEquals("SE10", status.getTerminalLocation());
-
-          LocalDate currentDate = LocalDate.now();
-          assertEquals(currentDate.getYear(), status.getDateTimeSync().getYear());
-          assertEquals(currentDate.getMonth(), status.getDateTimeSync().getMonth());
-          assertEquals(currentDate.getDayOfMonth(), status.getDateTimeSync().getDayOfMonth());
+          assertEquals(ZonedDateTime.now(clock), status.getDateTimeSync());
 
           assertEquals(2, status.getSupportedMessages().size());
           Messages[] supportedMsgsArr = status.getSupportedMessages().toArray(new Messages[2]);
@@ -115,9 +115,9 @@ public class ConfigurationRepositoryTests {
   @Test
   public void canRetrieveTenantConfiguration(
       Vertx vertx,
-      VertxTestContext testContext) {
+      VertxTestContext testContext, @Mock Clock clock) {
     DefaultResourceProvider resourceProvider = new DefaultResourceProvider();
-    ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider);
+    ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider, clock);
 
     configRepo.retrieveTenantConfiguration("fs00000010test").setHandler(
         testContext.succeeding(testTenantConfig -> testContext.verify(() -> {

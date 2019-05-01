@@ -2,6 +2,10 @@ package org.folio.edge.sip2.handlers;
 
 import freemarker.template.Template;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.repositories.ConfigurationRepository;
@@ -27,11 +31,15 @@ public class HandlersFactory {
   public static ISip2RequestHandler getScStatusHandlerInstance(
       ConfigurationRepository configRepo,
       IResourceProvider<Object> resProvider,
-      Template freeMarkerTemplate) {
+      Template freeMarkerTemplate,
+      Clock clock) {
     resProvider = getResourceProvider(resProvider);
 
-    if (configRepo == null) {
-      configRepo = new ConfigurationRepository(resProvider);
+    if (configRepo == null && clock == null) {
+      configRepo = new ConfigurationRepository(resProvider,
+          Clock.fixed(Instant.now(), ZoneOffset.UTC));
+    } else if (configRepo == null && clock != null) {
+      configRepo = new ConfigurationRepository(resProvider, clock);
     }
 
     freeMarkerTemplate = getCommandTemplate(freeMarkerTemplate,
