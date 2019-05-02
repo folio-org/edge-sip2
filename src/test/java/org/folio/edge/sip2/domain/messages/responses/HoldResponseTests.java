@@ -2,6 +2,7 @@ package org.folio.edge.sip2.domain.messages.responses;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Arrays.asList;
 import static org.folio.edge.sip2.domain.messages.responses.HoldResponse.builder;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.ZonedDateTime;
-
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class HoldResponseTests {
@@ -24,8 +25,8 @@ class HoldResponseTests {
   final String patronIdentifier = "1234567890";
   final String itemIdentifier = "8675309";
   final String titleIdentifier = "5551212";
-  final String screenMessage = "Please rewind";
-  final String printLine = "Enjoy!";
+  final List<String> screenMessage = asList("Please rewind");
+  final List<String> printLine = asList("Enjoy!");
 
   @Test
   void testGetOk() {
@@ -334,8 +335,8 @@ class HoldResponseTests {
         .patronIdentifier("111111111")
         .itemIdentifier("222222222")
         .titleIdentifier("ou812")
-        .screenMessage("This is a test")
-        .printLine("This is a print test")
+        .screenMessage(asList("This is a test"))
+        .printLine(asList("This is a print test"))
         .build();
     assertFalse(hr1.equals(hr2));
     assertFalse(hr1.equals(hr2));

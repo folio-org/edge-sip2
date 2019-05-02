@@ -80,6 +80,14 @@
   </#if>
 </#macro>
 
+<#macro variableLengthListRepeatableField id value>
+  <#if value?has_content>
+    <#list value as i>
+      <@variableLengthRepeatableField id=id value=i/>
+    </#list>
+  </#if>
+</#macro>
+
 <#-- Command macros that are mapped directly to a field name -->
 
 <#macro alert value>
@@ -412,7 +420,7 @@
 
 <#macro printLine value>
   <#if value?has_content>
-    <@variableLengthRepeatableField id="AG" value=value/>
+    <@variableLengthListRepeatableField id="AG" value=value/>
   </#if>
 </#macro>
 
@@ -442,7 +450,7 @@
 
 <#macro screenMessage value>
   <#if value?has_content>
-    <@variableLengthRepeatableField id="AF" value=value/>
+    <@variableLengthListField id="AF" value=value/>
   </#if>
 </#macro>
 

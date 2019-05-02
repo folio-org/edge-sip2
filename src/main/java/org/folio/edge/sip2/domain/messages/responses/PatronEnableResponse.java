@@ -1,8 +1,10 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -43,9 +45,9 @@ public final class PatronEnableResponse {
    */
   private final Boolean validPatronPassword;
   /** A message to show to the patron on the SC screen. */
-  private final String screenMessage;
+  private final List<String> screenMessage;
   /** A message to print for the patron on the SC printer. */
-  private final String printLine;
+  private final List<String> printLine;
 
   /**
    * Construct a {@code PatronEnableResponse} based on a
@@ -63,8 +65,10 @@ public final class PatronEnableResponse {
     this.personalName = builder.personalName;
     this.validPatron = builder.validPatron;
     this.validPatronPassword = builder.validPatronPassword;
-    this.screenMessage = builder.screenMessage;
-    this.printLine = builder.printLine;
+    this.screenMessage = builder.screenMessage == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
+    this.printLine = builder.printLine == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
   }
 
   /**
@@ -107,11 +111,11 @@ public final class PatronEnableResponse {
     return validPatronPassword;
   }
 
-  public String getScreenMessage() {
+  public List<String> getScreenMessage() {
     return screenMessage;
   }
 
-  public String getPrintLine() {
+  public List<String> getPrintLine() {
     return printLine;
   }
 
@@ -174,8 +178,8 @@ public final class PatronEnableResponse {
     private String personalName;
     private Boolean validPatron;
     private Boolean validPatronPassword;
-    private String screenMessage;
-    private String printLine;
+    private List<String> screenMessage;
+    private List<String> printLine;
 
     private PatronEnableResponseBuilder() {
       super();
@@ -225,12 +229,12 @@ public final class PatronEnableResponse {
       return this;
     }
 
-    public PatronEnableResponseBuilder screenMessage(String screenMessage) {
+    public PatronEnableResponseBuilder screenMessage(List<String> screenMessage) {
       this.screenMessage = screenMessage;
       return this;
     }
 
-    public PatronEnableResponseBuilder printLine(String printLine) {
+    public PatronEnableResponseBuilder printLine(List<String> printLine) {
       this.printLine = printLine;
       return this;
     }

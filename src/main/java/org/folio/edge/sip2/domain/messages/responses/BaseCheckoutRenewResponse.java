@@ -1,6 +1,9 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
@@ -69,9 +72,9 @@ public abstract class BaseCheckoutRenewResponse {
   /** May be assigned by the ACS when checking out the item involves a fee. */
   private final String transactionId;
   /** A message to show the patron. */
-  private final String screenMessage;
+  private final List<String> screenMessage;
   /** A message to print via the SC's printer. */
-  private final String printLine;
+  private final List<String> printLine;
 
   /**
    * Construct a {@code BaseCheckoutRenewResponse} based on a
@@ -98,8 +101,10 @@ public abstract class BaseCheckoutRenewResponse {
     this.mediaType = builder.mediaType;
     this.itemProperties = builder.itemProperties;
     this.transactionId = builder.transactionId;
-    this.screenMessage = builder.screenMessage;
-    this.printLine = builder.printLine;
+    this.screenMessage = builder.screenMessage == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
+    this.printLine = builder.printLine == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
   }
 
   public Boolean getOk() {
@@ -170,11 +175,11 @@ public abstract class BaseCheckoutRenewResponse {
     return transactionId;
   }
 
-  public String getScreenMessage() {
+  public List<String> getScreenMessage() {
     return screenMessage;
   }
 
-  public String getPrintLine() {
+  public List<String> getPrintLine() {
     return printLine;
   }
 
@@ -266,8 +271,8 @@ public abstract class BaseCheckoutRenewResponse {
     private MediaType mediaType;
     private String itemProperties;
     private String transactionId;
-    private String screenMessage;
-    private String printLine;
+    private List<String> screenMessage;
+    private List<String> printLine;
 
     protected BaseCheckoutRenewResponseBuilder() {
       super();
@@ -362,12 +367,12 @@ public abstract class BaseCheckoutRenewResponse {
       return builder();
     }
 
-    public B screenMessage(String screenMessage) {
+    public B screenMessage(List<String> screenMessage) {
       this.screenMessage = screenMessage;
       return builder();
     }
 
-    public B printLine(String printLine) {
+    public B printLine(List<String> printLine) {
       this.printLine = printLine;
       return builder();
     }

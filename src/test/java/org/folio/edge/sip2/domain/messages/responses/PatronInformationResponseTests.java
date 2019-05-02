@@ -64,8 +64,8 @@ class PatronInformationResponseTests {
   final String homeAddress = "123 Fake St. Anytown, USA";
   final String emailAddress = "folio@example.com";
   final String homePhoneNumber = "555-1212";
-  final String screenMessage = "Hello, world!";
-  final String printLine = "Dot matrix";
+  final List<String> screenMessage = asList("Hello, world!");
+  final List<String> printLine = asList("Dot matrix");
 
   @Test
   void testGetPatronStatus() {
@@ -1449,8 +1449,8 @@ class PatronInformationResponseTests {
         .homeAddress("8672 Evergreen Terrace, Springfield USA")
         .emailAddress("admin@example.com")
         .homePhoneNumber("555-5555")
-        .screenMessage("Welcome to the jungle.")
-        .printLine("Print print print")
+        .screenMessage(asList("Welcome to the jungle."))
+        .printLine(asList("Print print print"))
         .build();
     assertFalse(pir1.equals(pir2));
     assertFalse(pir2.equals(pir1));

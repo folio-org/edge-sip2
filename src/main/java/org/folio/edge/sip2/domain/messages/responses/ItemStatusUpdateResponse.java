@@ -1,6 +1,9 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -16,7 +19,7 @@ import java.util.Objects;
  */
 public final class ItemStatusUpdateResponse {
   /**
-   * {@code TRUE} indicates thet the item properties have been stored on the
+   * {@code TRUE} indicates that the item properties have been stored on the
    * ACS database. {@code FALSE} indicates that item properties were not stored.
    */
   private final Boolean itemPropertiesOk;
@@ -29,9 +32,9 @@ public final class ItemStatusUpdateResponse {
   /** Specific item information that can be user for identification. */
   private final String itemProperties;
   /** A message to show the patron. */
-  private final String screenMessage;
+  private final List<String> screenMessage;
   /** A message to print via the SC's printer. */
-  private final String printLine;
+  private final List<String> printLine;
 
   /**
    * Construct a {@code ItemStatusUpdateResponse} based on a
@@ -44,8 +47,10 @@ public final class ItemStatusUpdateResponse {
     this.itemIdentifier = builder.itemIdentifier;
     this.titleIdentifier = builder.titleIdentifier;
     this.itemProperties = builder.itemProperties;
-    this.screenMessage = builder.screenMessage;
-    this.printLine = builder.printLine;
+    this.screenMessage = builder.screenMessage == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
+    this.printLine = builder.printLine == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
   }
 
   /**
@@ -76,11 +81,11 @@ public final class ItemStatusUpdateResponse {
     return itemProperties;
   }
 
-  public String getScreenMessage() {
+  public List<String> getScreenMessage() {
     return screenMessage;
   }
 
-  public String getPrintLine() {
+  public List<String> getPrintLine() {
     return printLine;
   }
 
@@ -134,8 +139,8 @@ public final class ItemStatusUpdateResponse {
     private String itemIdentifier;
     private String titleIdentifier;
     private String itemProperties;
-    private String screenMessage;
-    private String printLine;
+    private List<String> screenMessage;
+    private List<String> printLine;
 
     private ItemStatusUpdateResponseBuilder() {
       super();
@@ -167,12 +172,12 @@ public final class ItemStatusUpdateResponse {
       return this;
     }
 
-    public ItemStatusUpdateResponseBuilder screenMessage(String screenMessage) {
+    public ItemStatusUpdateResponseBuilder screenMessage(List<String> screenMessage) {
       this.screenMessage = screenMessage;
       return this;
     }
 
-    public ItemStatusUpdateResponseBuilder printLine(String printLine) {
+    public ItemStatusUpdateResponseBuilder printLine(List<String> printLine) {
       this.printLine = printLine;
       return this;
     }

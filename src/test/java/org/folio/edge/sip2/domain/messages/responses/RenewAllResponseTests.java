@@ -24,8 +24,8 @@ class RenewAllResponseTests {
   final List<String> renewedItems = asList("renewed_item1", "renewed_item2");
   final List<String> unrenewedItems =
       asList("unrenewed_item1 - renewal limit exceeded");
-  final String screenMessage = "Hello, world!";
-  final String printLine = "Dot matrix";
+  final List<String> screenMessage = asList("Hello, world!");
+  final List<String> printLine = asList("Dot matrix");
 
   @Test
   void testGetOk() {
@@ -239,8 +239,8 @@ class RenewAllResponseTests {
         .renewedItems(asList("renewed_item1"))
         .unrenewedItems(asList("unrenewed_item1 - item recalled",
             "unrenewed_item2 - overdue"))
-        .screenMessage("Welcome to the jungle.")
-        .printLine("Print print print")
+        .screenMessage(asList("Welcome to the jungle."))
+        .printLine(asList("Print print print"))
         .build();
     assertFalse(rar1.equals(rar2));
     assertFalse(rar2.equals(rar1));

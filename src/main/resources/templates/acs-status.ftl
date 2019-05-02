@@ -1,3 +1,4 @@
+<#import "lib.ftl" as lib>
 <#macro supportedMessages>
  ${PackagedSupportedMessages.patronStatusRequest}<#t>
  ${PackagedSupportedMessages.checkOut}<#t>
@@ -31,5 +32,7 @@ AO${ACSStatus.institutionId}|<#rt>
 AM${ACSStatus.libraryName}|<#rt>
 BX<@supportedMessages />|<#rt>
 AN${ACSStatus.terminalLocation}|<#rt>
-AF${ACSStatus.screenMessage}|<#rt>
-AG${ACSStatus.printLine}|<#rt>
+<#-- screen message: variable-length optional field -->
+<@lib.screenMessage value=ACSStatus.screenMessage!""/>
+<#-- screen message: variable-length optional field -->
+<@lib.printLine value=ACSStatus.printLine!""/>

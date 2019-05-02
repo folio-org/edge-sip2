@@ -1,6 +1,9 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -26,9 +29,9 @@ public final class EndSessionResponse {
   /** The ID of the patron making the request. */
   private final String patronIdentifier;
   /** A message to show to the patron on the SC screen. */
-  private final String screenMessage;
+  private final List<String> screenMessage;
   /** A message to print for the patron on the SC printer. */
-  private final String printLine;
+  private final List<String> printLine;
 
   /**
    * Construct a {@code EndSessionResponse} based on a
@@ -40,8 +43,10 @@ public final class EndSessionResponse {
     this.transactionDate = builder.transactionDate;
     this.institutionId = builder.institutionId;
     this.patronIdentifier = builder.patronIdentifier;
-    this.screenMessage = builder.screenMessage;
-    this.printLine = builder.printLine;
+    this.screenMessage = builder.screenMessage == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
+    this.printLine = builder.printLine == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
   }
 
   /**
@@ -68,11 +73,11 @@ public final class EndSessionResponse {
     return patronIdentifier;
   }
 
-  public String getScreenMessage() {
+  public List<String> getScreenMessage() {
     return screenMessage;
   }
 
-  public String getPrintLine() {
+  public List<String> getPrintLine() {
     return printLine;
   }
 
@@ -122,8 +127,8 @@ public final class EndSessionResponse {
     private ZonedDateTime transactionDate;
     private String institutionId;
     private String patronIdentifier;
-    private String screenMessage;
-    private String printLine;
+    private List<String> screenMessage;
+    private List<String> printLine;
 
     private EndSessionResponseBuilder() {
       super();
@@ -151,12 +156,12 @@ public final class EndSessionResponse {
       return this;
     }
 
-    public EndSessionResponseBuilder screenMessage(String screenMessage) {
+    public EndSessionResponseBuilder screenMessage(List<String> screenMessage) {
       this.screenMessage = screenMessage;
       return this;
     }
 
-    public EndSessionResponseBuilder printLine(String printLine) {
+    public EndSessionResponseBuilder printLine(List<String> printLine) {
       this.printLine = printLine;
       return this;
     }

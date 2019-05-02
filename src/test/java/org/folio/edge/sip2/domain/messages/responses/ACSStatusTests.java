@@ -2,6 +2,7 @@ package org.folio.edge.sip2.domain.messages.responses;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Arrays.asList;
 import static org.folio.edge.sip2.domain.messages.enumerations.Messages.BLOCK_PATRON;
 import static org.folio.edge.sip2.domain.messages.enumerations.Messages.CHECKIN;
 import static org.folio.edge.sip2.domain.messages.enumerations.Messages.CHECKOUT;
@@ -16,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.ZonedDateTime;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
@@ -36,8 +38,8 @@ class ACSStatusTests {
   final String libraryName = "Datalogisk Institut Københavns Universitet";
   private Set<Messages> supportedMessages = EnumSet.of(CHECKOUT, CHECKIN);
   private String terminalLocation = "circ_desk";
-  final String screenMessage = "Hello, world!";
-  final String printLine = "Dot matrix";
+  final List<String> screenMessage = asList("Hello, world!");
+  final List<String> printLine = asList("Dot matrix");
 
   @Test
   void testGetOnLineStatus() {
@@ -494,8 +496,8 @@ class ACSStatusTests {
         .libraryName("Test Library")
         .supportedMessages(EnumSet.of(BLOCK_PATRON, HOLD, LOGIN))
         .terminalLocation("circ_desk_basement")
-        .screenMessage("Welcome to the jungle.")
-        .printLine("Print print print")
+        .screenMessage(asList("Welcome to the jungle."))
+        .printLine(asList("Print print print"))
         .build();
     assertFalse(acss1.equals(acss2));
     assertFalse(acss2.equals(acss1));
