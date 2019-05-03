@@ -38,7 +38,7 @@ public class CheckoutHandler implements ISip2RequestHandler {
     log.debug("Checkout: {}", () -> checkout);
 
     final Future<CheckoutResponse> circulationFuture =
-        circulationRepository.checkout(checkout, sessionData);
+        circulationRepository.performCheckoutCommand(checkout, sessionData);
 
     return circulationFuture.compose(checkoutResponse -> {
       log.debug("CheckoutResponse: {}", () -> checkoutResponse);

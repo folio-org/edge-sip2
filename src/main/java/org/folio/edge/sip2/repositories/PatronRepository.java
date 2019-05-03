@@ -6,6 +6,7 @@ import static org.folio.edge.sip2.domain.messages.enumerations.Language.UNKNOWN;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.HOLD_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.OVERDUE_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.RECALL_ITEMS;
+import static org.folio.edge.sip2.utils.JsonUtils.getChildString;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -42,7 +43,6 @@ public class PatronRepository {
   private static final String FIELD_TITLE = "title";
   private static final String FIELD_TOTAL_RECORDS = "totalRecords";
   private static final Logger log = LogManager.getLogger();
-  private static final String FIELD_PERSONAL = "personal";
 
   private final UsersRepository usersRepository;
   private final CirculationRepository circulationRepository;
@@ -84,29 +84,35 @@ public class PatronRepository {
           log.error("User with barcode {} is missing the \"id\" field", barcode);
           return invalidPatron(patronInformation);
         }
-        return validPatron(userId, user, patronInformation, sessionData);
+        return validPatron(userId, user.getJsonObject("personal", new JsonObject()),
+            patronInformation, sessionData);
       }
     });
   }
 
-  private Future<PatronInformationResponse> validPatron(String userId, JsonObject user,
+  private Future<PatronInformationResponse> validPatron(String userId, JsonObject personal,
       PatronInformation patronInformation, SessionData sessionData) {
     // Now that we have a valid patron, we can retrieve data from circulation
     final PatronInformationResponseBuilder builder = PatronInformationResponse.builder();
-    addPersonalData(user, builder);
+    // Store patron data in the builder
+    addPersonalData(personal, builder);
     final Integer startItem = patronInformation.getStartItem();
     final Integer endItem = patronInformation.getEndItem();
+    // Get holds data (count and items) and store it in the builder
     final Future<PatronInformationResponseBuilder> holdsFuture = circulationRepository
         .getRequestsByUserId(userId, "Hold", startItem, endItem, sessionData).map(
             holds -> addHolds(holds, patronInformation.getSummary() == HOLD_ITEMS, builder));
+    // Get overdue loans data (count and items) and store it in the builder
     final Future<PatronInformationResponseBuilder> overdueFuture =
         circulationRepository.getOverdueLoansByUserId(userId, ZonedDateTime.now(clock),
             startItem, endItem, sessionData).map(
                 overdues -> addOverdueItems(overdues,
                     patronInformation.getSummary() == OVERDUE_ITEMS, builder));
+    // Get recalled items data (count and items) and store it in the builder
     final Future<PatronInformationResponseBuilder> recallsFuture =
         getRecalls(userId, sessionData).compose(recalls -> addRecalls(recalls, startItem, endItem,
             patronInformation.getSummary() == RECALL_ITEMS, builder));
+    // When all operations complete, build and return the final PatronInformationResponse
     return CompositeFuture.all(holdsFuture, overdueFuture, recallsFuture)
         .map(result -> builder
             .patronStatus(EnumSet.noneOf(PatronStatus.class))
@@ -118,6 +124,7 @@ public class PatronRepository {
             .unavailableHoldsCount(null)
             .institutionId(patronInformation.getInstitutionId())
             .patronIdentifier(patronInformation.getPatronIdentifier())
+            .validPatron(TRUE)
             .build()
         );
   }
@@ -140,15 +147,14 @@ public class PatronRepository {
         .build());
   }
 
-  private PatronInformationResponseBuilder addPersonalData(JsonObject user,
+  private PatronInformationResponseBuilder addPersonalData(JsonObject personal,
       PatronInformationResponseBuilder builder) {
-    final String personalName = getPatronPersonalName(user);
-    final String homeAddress = getPatronHomeAddress(user);
-    final String emailAddress = getPatronEmailAddress(user);
-    final String homePhoneNumber = getPatronHomePhoneNumber(user);
+    final String personalName = getPatronPersonalName(personal);
+    final String homeAddress = getPatronHomeAddress(personal);
+    final String emailAddress = personal.getString("email");
+    final String homePhoneNumber = personal.getString("phone");
 
     return builder.personalName(personalName)
-        .validPatron(TRUE)
         .homeAddress(homeAddress)
         .emailAddress(emailAddress)
         .homePhoneNumber(homePhoneNumber);
@@ -212,8 +218,7 @@ public class PatronRepository {
     });
   }
 
-  private String getPatronPersonalName(JsonObject user) {
-    final JsonObject personal = user.getJsonObject(FIELD_PERSONAL, new JsonObject());
+  private String getPatronPersonalName(JsonObject personal) {
     final Optional<String> firstName = Optional.ofNullable(personal.getString("firstName"));
     final Optional<String> middleName = Optional.ofNullable(personal.getString("middleName"));
     final Optional<String> lastName = Optional.ofNullable(personal.getString("lastName"));
@@ -224,8 +229,7 @@ public class PatronRepository {
         .collect(Collectors.joining(" "));
   }
 
-  private String getPatronHomeAddress(JsonObject user) {
-    final JsonObject personal = user.getJsonObject(FIELD_PERSONAL, new JsonObject());
+  private String getPatronHomeAddress(JsonObject personal) {
     final JsonArray addresses = personal.getJsonArray("addresses", new JsonArray());
     // For now, we will do the following:
     // 1. if the address list > 0, pick the "primaryAddress"
@@ -249,29 +253,21 @@ public class PatronRepository {
     return addressString.isPresent() ? addressString.get() : null;
   }
 
-  private String getPatronEmailAddress(JsonObject user) {
-    final JsonObject personal = user.getJsonObject(FIELD_PERSONAL, new JsonObject());
-
-    return personal.getString("email");
-  }
-
-  private String getPatronHomePhoneNumber(JsonObject user) {
-    final JsonObject personal = user.getJsonObject(FIELD_PERSONAL, new JsonObject());
-
-    return personal.getString("phone");
-  }
-
   private int countHoldItems(JsonObject requests) {
     return requests.getInteger(FIELD_TOTAL_RECORDS, Integer.valueOf(0)).intValue();
+  }
+
+  private List<String> getTitles(JsonArray items) {
+    return items.stream()
+        .map(o -> (JsonObject) o)
+        .map(jo -> getChildString(jo, "item", FIELD_TITLE))
+        .collect(Collectors.toList());
   }
 
   private List<String> getHoldItems(JsonObject requests) {
     // All items in the response are holds
     final JsonArray requestArray = requests.getJsonArray("requests", new JsonArray());
-    return requestArray.stream()
-        .map(o -> (JsonObject) o)
-        .map(jo -> jo.getJsonObject("item", new JsonObject()).getString(FIELD_TITLE))
-        .collect(Collectors.toList());
+    return getTitles(requestArray);
   }
 
   private int countOverdueItems(JsonObject loans) {
@@ -281,10 +277,7 @@ public class PatronRepository {
   private List<String> getOverdueItems(JsonObject loans) {
     // All items in the response are overdue loans
     final JsonArray requestArray = loans.getJsonArray("loans", new JsonArray());
-    return requestArray.stream()
-        .map(o -> (JsonObject) o)
-        .map(jo -> jo.getJsonObject("item", new JsonObject()).getString(FIELD_TITLE))
-        .collect(Collectors.toList());
+    return getTitles(requestArray);
   }
 
   private int countRecallItems(List<Future<JsonObject>> recallItems) {
@@ -303,8 +296,11 @@ public class PatronRepository {
         .map(Future::result)
         .filter(Objects::nonNull)
         .filter(jo -> jo.getInteger(FIELD_TOTAL_RECORDS, Integer.valueOf(0)).intValue() > 0)
-        .map(jo -> jo.getJsonArray("requests", new JsonArray())
-            .getJsonObject(0).getJsonObject("item", new JsonObject()).getString(FIELD_TITLE))
+        .map(jo -> jo.getJsonArray("requests", new JsonArray()).stream().findAny()
+            .map(o -> (JsonObject) o)
+            .map(jsonObject -> getChildString(jsonObject, "item", FIELD_TITLE)))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
         .sorted(Comparator.naturalOrder())
         .skip(skip)
         .limit(maxSize)

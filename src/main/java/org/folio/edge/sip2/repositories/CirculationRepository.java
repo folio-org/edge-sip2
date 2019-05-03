@@ -2,6 +2,8 @@ package org.folio.edge.sip2.repositories;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static org.folio.edge.sip2.utils.JsonUtils.getChildString;
+import static org.folio.edge.sip2.utils.JsonUtils.getSubChildString;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
@@ -9,6 +11,7 @@ import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +48,7 @@ public class CirculationRepository {
    * @param checkin the checkin domain object
    * @return the checkin response domain object
    */
-  public Future<CheckinResponse> checkin(Checkin checkin, SessionData sessionData) {
+  public Future<CheckinResponse> performCheckinCommand(Checkin checkin, SessionData sessionData) {
     // We'll need to convert this date properly. It is likely that it will not include timezone
     // information, so we'll need to use the tenant/SC timezone as the basis and convert to UTC.
     final ZonedDateTime returnDate = checkin.getReturnDate();
@@ -84,9 +87,8 @@ public class CirculationRepository {
               // this might require a call to inventory
               .permanentLocation(
                   resource.getResource() == null ? UNKNOWN
-                      : resource.getResource().getJsonObject("item",
-                          new JsonObject()).getJsonObject("location",
-                              new JsonObject()).getString("name", UNKNOWN))
+                      : getSubChildString(resource.getResource(),
+                          Arrays.asList("item", "location"), "name", UNKNOWN))
               .build()));
   }
 
@@ -96,7 +98,8 @@ public class CirculationRepository {
    * @param checkout the checkout domain object
    * @return the checkout response domain object
    */
-  public Future<CheckoutResponse> checkout(Checkout checkout, SessionData sessionData) {
+  public Future<CheckoutResponse> performCheckoutCommand(Checkout checkout,
+      SessionData sessionData) {
     final String institutionId = checkout.getInstitutionId();
     final String patronIdentifier = checkout.getPatronIdentifier();
     final String itemIdentifier = checkout.getItemIdentifier();
@@ -145,9 +148,8 @@ public class CirculationRepository {
               .institutionId(institutionId)
               .patronIdentifier(patronIdentifier)
               .itemIdentifier(itemIdentifier)
-              .titleIdentifier(resource.getResource() == null ? UNKNOWN :
-                resource.getResource().getJsonObject("item",
-                    new JsonObject()).getString("title", UNKNOWN))
+              .titleIdentifier(resource.getResource() == null ? UNKNOWN
+                  : getChildString(resource.getResource(), "item", "title", UNKNOWN))
               .dueDate(dueDate)
               .build());
         });
@@ -282,13 +284,17 @@ public class CirculationRepository {
     }
 
     protected StringBuilder appendLimits(StringBuilder sb) {
+      final int offset;
       if (startItem != null) {
-        final int offset = startItem.intValue() - 1; // expects a 1-based count, FOLIO is 0
+        offset = startItem.intValue() - 1; // expects a 1-based count, FOLIO is 0
         sb.append("&offset=")
           .append(offset);
+      } else {
+        offset = 0;
       }
+
       if (endItem != null) {
-        final int limit = endItem.intValue() - (startItem != null ? startItem.intValue() - 1 : 0);
+        final int limit = endItem.intValue() - offset;
         sb.append("&limit=")
           .append(limit);
       }
@@ -343,16 +349,16 @@ public class CirculationRepository {
     @Override
     public String getPath() {
       final StringBuilder sb = new StringBuilder()
-          .append("/circulation/requests?query=%28")
+          .append("/circulation/requests?query=(")
           .append(idField)
-          .append("%3D%3D")
+          .append("==")
           .append(idValue)
-          .append("%20and%20status%3DOpen");
+          .append(" and status=Open");
       if (requestType != null) {
-        sb.append("%20and%20requestType%3D%3D")
+        sb.append(" and requestType==")
           .append(requestType);
       }
-      sb.append("%29");
+      sb.append(')');
 
       return appendLimits(sb).toString();
     }
@@ -373,8 +379,8 @@ public class CirculationRepository {
 
     @Override
     public String getPath() {
-      return "/circulation/loans?query=%28userId%3D%3D" + userId
-          + "%20and%20status.name%3DOpen%29";
+      return "/circulation/loans?query=(userId==" + userId
+          + " and status.name=Open)";
     }
   }
 
@@ -397,11 +403,11 @@ public class CirculationRepository {
     @Override
     public String getPath() {
       final StringBuilder sb = new StringBuilder()
-          .append("/circulation/loans?query=%28userId%3D%3D")
+          .append("/circulation/loans?query=(userId==")
           .append(userId)
-          .append("%20and%20status.name%3DOpen%20and%20dueDate%3C")
+          .append(" and status.name=Open and dueDate<")
           .append(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(dueDate))
-          .append("%29");
+          .append(')');
       return appendLimits(sb).toString();
     }
   }
