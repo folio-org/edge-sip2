@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.handlers;
 
-import static org.folio.edge.sip2.parser.Command.END_PATRON_SESSION;
+import static org.folio.edge.sip2.parser.Command.END_SESSION_RESPONSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -41,7 +41,7 @@ public class EndPatronSessionHandlerTests {
 
     Template template = FreemarkerRepository
         .getInstance()
-        .getFreemarkerTemplate(END_PATRON_SESSION);
+        .getFreemarkerTemplate(END_SESSION_RESPONSE);
 
     final EndPatronSessionHandler handler = new EndPatronSessionHandler(template);
 

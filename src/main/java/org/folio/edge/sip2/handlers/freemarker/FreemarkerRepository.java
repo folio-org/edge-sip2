@@ -1,5 +1,13 @@
 package org.folio.edge.sip2.handlers.freemarker;
 
+import static org.folio.edge.sip2.parser.Command.ACS_STATUS;
+import static org.folio.edge.sip2.parser.Command.CHECKIN_RESPONSE;
+import static org.folio.edge.sip2.parser.Command.CHECKOUT_RESPONSE;
+import static org.folio.edge.sip2.parser.Command.END_SESSION_RESPONSE;
+import static org.folio.edge.sip2.parser.Command.LOGIN_RESPONSE;
+import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION_RESPONSE;
+import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
+
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
@@ -53,12 +61,13 @@ public class FreemarkerRepository {
     configuration.setLogTemplateExceptions(false);
     configuration.setWrapUncheckedExceptions(true);
 
-    addTemplate(Command.ACS_STATUS, "acs-status.ftl", configuration);
-    addTemplate(Command.LOGIN_RESPONSE, "LoginResponse.ftl", configuration);
-    addTemplate(Command.CHECKIN_RESPONSE, "CheckinResponse.ftl", configuration);
-    addTemplate(Command.CHECKOUT_RESPONSE, "CheckoutResponse.ftl", configuration);
-    addTemplate(Command.REQUEST_SC_RESEND, "RequestSCResend.ftl", configuration);
-    addTemplate(Command.END_PATRON_SESSION, "EndSessionResponse.ftl", configuration);
+    addTemplate(CHECKOUT_RESPONSE, "CheckoutResponse.ftl", configuration);
+    addTemplate(CHECKIN_RESPONSE, "CheckinResponse.ftl", configuration);
+    addTemplate(ACS_STATUS, "acs-status.ftl", configuration);
+    addTemplate(REQUEST_SC_RESEND, "RequestSCResend.ftl", configuration);
+    addTemplate(LOGIN_RESPONSE, "LoginResponse.ftl", configuration);
+    addTemplate(PATRON_INFORMATION_RESPONSE, "PatronInformationResponse.ftl", configuration);
+    addTemplate(END_SESSION_RESPONSE, "EndSessionResponse.ftl", configuration);
   }
 
   private void addTemplate(Command commmand, String templateName, Configuration configuration) {
