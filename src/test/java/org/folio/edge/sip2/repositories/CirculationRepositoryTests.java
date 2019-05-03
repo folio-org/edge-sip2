@@ -2,6 +2,7 @@ package org.folio.edge.sip2.repositories;
 
 import static java.lang.Boolean.FALSE;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -22,14 +23,18 @@ import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
-
+import java.util.stream.Stream;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -223,8 +228,29 @@ public class CirculationRepositoryTests {
         })));
   }
 
-  @Test
-  public void cannotCheckout(Vertx vertx,
+  private static Stream<Arguments> provideCirculationErrors() {
+    return Stream.of(
+        Arguments.of("{\n"
+            + "  \"errors\" : [ {\n"
+            + "    \"message\" : \"Item is already checked out\",\n"
+            + "    \"parameters\" : [ {\n"
+            + "      \"key\" : \"itemBarcode\",\n"
+            + "      \"value\" : \"12345\"\n"
+            + "    } ]\n"
+            + "  }, {\n"
+            + "    \"message\" : \"Item is lost\",\n"
+            + "    \"parameters\" : [ {\n"
+            + "      \"key\" : \"itemBarcode\",\n"
+            + "      \"value\" : \"12345\"\n"
+            + "    } ]\n"
+            + "  } ]\n"
+            + "}", asList("Item is already checked out", "Item is lost")),
+        Arguments.of("Not logged in", asList("Not logged in")));
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideCirculationErrors")
+  void cannotCheckout(String errorMessage, List<String> expectedErrors, Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
     final Clock clock = TestUtils.getUtcFixedClock();
@@ -247,7 +273,7 @@ public class CirculationRepositoryTests {
         .build();
 
     when(mockFolioProvider.createResource(any()))
-        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")));
+        .thenReturn(Future.failedFuture(new FolioRequestThrowable(errorMessage)));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
@@ -273,7 +299,7 @@ public class CirculationRepositoryTests {
           assertNull(checkoutResponse.getMediaType());
           assertNull(checkoutResponse.getItemProperties());
           assertNull(checkoutResponse.getTransactionId());
-          assertNull(checkoutResponse.getScreenMessage());
+          assertEquals(expectedErrors, checkoutResponse.getScreenMessage());
           assertNull(checkoutResponse.getPrintLine());
 
           testContext.completeNow();

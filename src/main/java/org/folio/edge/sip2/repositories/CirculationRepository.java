@@ -113,7 +113,7 @@ public class CirculationRepository {
     final Future<IResource> result = resourceProvider.createResource(checkoutRequestData);
 
     return result
-        .otherwise(() -> null)
+        .otherwise(Utils::handleErrors)
         .compose(resource -> {
           final ZonedDateTime dueDate;
           // This is a mess. Need to clean this up. The problem here is that the checkout has
@@ -149,6 +149,7 @@ public class CirculationRepository {
                 resource.getResource().getJsonObject("item",
                     new JsonObject()).getString("title", UNKNOWN))
               .dueDate(dueDate)
+              .screenMessage(resource.getResource() == null ? resource.getErrorMessages() : null)
               .build());
         });
   }

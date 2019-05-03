@@ -97,7 +97,7 @@ public class FolioResourceProviderTests {
     folioResourceProvider.retrieveResource((FolioRequestData)() -> "/test_retrieve_bad")
         .setHandler(testContext.failing(throwable -> testContext.verify(() -> {
           assertNotNull(throwable);
-          assertEquals("Response status code 500 is not equal to 200",
+          assertEquals("Unexpected call: /test_retrieve_bad",
               throwable.getMessage());
 
           testContext.completeNow();
@@ -131,7 +131,7 @@ public class FolioResourceProviderTests {
     folioResourceProvider.createResource((FolioRequestData)() -> "/test_create_bad")
         .setHandler(testContext.failing(throwable -> testContext.verify(() -> {
           assertNotNull(throwable);
-          assertEquals("Response status code 500 is not between 200 and 300",
+          assertEquals("Unexpected call: /test_create_bad",
               throwable.getMessage());
 
           testContext.completeNow();
