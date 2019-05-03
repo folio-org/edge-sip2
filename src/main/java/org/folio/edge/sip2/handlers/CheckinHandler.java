@@ -38,7 +38,7 @@ public class CheckinHandler implements ISip2RequestHandler {
     log.debug("Checkin: {}", () -> checkin);
 
     final Future<CheckinResponse> circulationFuture =
-        circulationRepository.checkin(checkin, sessionData);
+        circulationRepository.performCheckinCommand(checkin, sessionData);
 
     return circulationFuture.compose(checkinResponse -> {
       log.debug("CheckinResponse: {}", () -> checkinResponse);

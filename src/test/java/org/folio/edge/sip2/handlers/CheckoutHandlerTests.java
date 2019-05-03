@@ -14,7 +14,6 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
@@ -54,7 +53,7 @@ public class CheckoutHandlerTests {
         .cancel(FALSE)
         .build();
 
-    when(mockCirculationRepository.checkout(any(), any()))
+    when(mockCirculationRepository.performCheckoutCommand(any(), any()))
         .thenReturn(Future.succeededFuture(CheckoutResponse.builder()
             .ok(TRUE)
             .renewalOk(FALSE)
@@ -76,11 +75,10 @@ public class CheckoutHandlerTests {
     handler.execute(checkout, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "121NUY"
-              + ZonedDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
+              + TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock))
               + "AO" + institutionId + "|AA" + patronIdentifier + "|AB" + itemIdentifier
               + "|AJSome Book|AH"
-              + ZonedDateTime.now(clock).plusDays(30).format(
-                  DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
+              + TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock).plusDays(30))
               + '|';
 
           assertEquals(expectedString, sipMessage);
@@ -114,7 +112,7 @@ public class CheckoutHandlerTests {
         .cancel(FALSE)
         .build();
 
-    when(mockCirculationRepository.checkout(any(), any()))
+    when(mockCirculationRepository.performCheckoutCommand(any(), any()))
         .thenReturn(Future.succeededFuture(CheckoutResponse.builder()
             .ok(FALSE)
             .renewalOk(FALSE)
@@ -136,7 +134,7 @@ public class CheckoutHandlerTests {
     handler.execute(checkout, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "120NUN"
-              + ZonedDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
+              + TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock))
               + "AO" + institutionId + "|AA" + patronIdentifier + "|AB" + itemIdentifier
               + "|AJ|AH|";
 
