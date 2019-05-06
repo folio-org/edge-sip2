@@ -39,7 +39,7 @@ public class SCStatusHandler implements ISip2RequestHandler {
 
   @Override
   public Future<String> execute(Object message, SessionData sessionData)  {
-    Future<ACSStatus> future = configurationRepository.getACSStatus();
+    Future<ACSStatus> future = configurationRepository.getACSStatus(sessionData);
 
     return future.compose(acsStatus -> {
       Map<String, Object> root = new HashMap<>();

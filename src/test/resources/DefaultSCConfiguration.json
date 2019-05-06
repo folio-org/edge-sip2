@@ -1,0 +1,15 @@
+
+{
+  "id": "acd6dae1-b1ae-4780-8e06-993fbed00061",
+  "module": "edge-sip2",
+  "configName": "selfCheckoutConfig",
+  "code":"fs00000010test.TL01.conf",
+  "enabled": true,
+  "value": "{\"terminalDelimeter\" : \"\\r\",\"fieldDelimeter\" : \"|\",\"errorDetectionEnabled\" : true,\"charset\" : \"IBM850\",\"SCtimeZone\" : \"CEST\",\"checkinOk\": true,\"checkoutOk\": false,\"acsRenewalPolicy\": true,\"maxPrintWidth\" : 200,\"libraryName\": \"Chalmers\",\"terminalLocation\": \"TL01\"}",
+  "metadata": {
+    "createdDate": "2019-04-05T17:27:55.943+0000",
+    "createdByUserId": "ef676db9-d231-479a-aa91-f65eb4b17872",
+    "updatedDate": "2019-04-05T17:27:55.943+0000",
+    "updatedByUserId": "ef676db9-d231-479a-aa91-f65eb4b17872"
+  }
+}

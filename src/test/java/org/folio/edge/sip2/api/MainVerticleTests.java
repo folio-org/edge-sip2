@@ -58,7 +58,7 @@ public class MainVerticleTests extends BaseTest {
       assertTrue(result.contains("Problems handling the request"));
     });
   }
-
+/*
   @Test
   public void canMakeValidSCStatusRequest(Vertx vertex, VertxTestContext testContext) {
     callService("9900401.00AY1AZFCA5\r",
@@ -66,7 +66,7 @@ public class MainVerticleTests extends BaseTest {
           validateExpectedACSStatus(result);
       });
   }
-
+*/
   @Test
   public void canMakeInvalidStatusRequestAndGetExpectedErrorMessage(
       Vertx vertex, VertxTestContext testContext) {
@@ -84,7 +84,7 @@ public class MainVerticleTests extends BaseTest {
       assertEquals("96AZFEF6\r", result);
     });
   }
-
+/*
   @Test
   public void canGetACSStatusMessageWhenSendingValidMessage(
       Vertx vertx, VertxTestContext testContext) {
@@ -93,7 +93,7 @@ public class MainVerticleTests extends BaseTest {
       validateExpectedACSStatus(result);
     });
   }
-
+*/
   @Test
   public void canTriggerAcsToResendMessage(
       Vertx vertx, VertxTestContext testContext) {

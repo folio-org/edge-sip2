@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class DefaultResourceProvider implements IResourceProvider<Object> {
+public class DefaultResourceProvider implements IResourceProvider<IRequestData> {
 
   private final Logger log;
 
@@ -22,16 +22,24 @@ public class DefaultResourceProvider implements IResourceProvider<Object> {
   }
 
   @Override
-  public Future<IResource> createResource(Object fromData) {
+  public Future<IResource> createResource(IRequestData fromData) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Future<IResource> retrieveResource(Object key) {
+  public Future<IResource> retrieveResource(IRequestData key) {
 
     JsonObject jsonFile = null;
 
-    URL configurationResource = ClassLoader.getSystemResource("DefaultACSConfiguration.json");
+    String path = key.getPath();
+    String fileName;
+    if (path.contains(ConfigurationRepository.TENANT_CONFIG_NAME)) {
+      fileName = "DefaultTenantConfiguration.json";
+    } else {
+      fileName = "DefaultSCConfiguration.json";
+    }
+
+    URL configurationResource = ClassLoader.getSystemResource(fileName);
 
     try (InputStream inputStream = configurationResource.openStream();
          InputStreamReader isr = new InputStreamReader(inputStream);
@@ -52,12 +60,12 @@ public class DefaultResourceProvider implements IResourceProvider<Object> {
   }
 
   @Override
-  public Future<IResource> editResource(Object fromData) {
+  public Future<IResource> editResource(IRequestData fromData) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Future<IResource> deleteResource(Object resource) {
+  public Future<IResource> deleteResource(IRequestData resource) {
     throw new UnsupportedOperationException();
   }
 }
