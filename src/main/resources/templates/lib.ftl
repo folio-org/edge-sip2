@@ -56,6 +56,14 @@
   </#if>
 </#macro>
 
+<#macro limitNumberToRangeOrSpaces value min max length>
+  <#if value?has_content>
+    <@limitNumberToRange value=value min=min max=max length=length/><#t>
+  <#else><#rt>
+    ${value?right_pad(length)}<#lt><#rt>
+  </#if>
+</#macro>
+
 <#macro fixedLengthNumberToRangeField value id min max length>
   <#if value?has_content>
     ${id}<#t>
@@ -83,7 +91,7 @@
 </#macro>
 
 <#macro chargedItemsCount value>
-  <@limitNumberToRange value=value min=0 max=9999 length=4/>
+  <@limitNumberToRangeOrSpaces value=value min=0 max=9999 length=4/>
 </#macro>
 
 <#macro chargedItemsLimit value>
@@ -173,7 +181,7 @@
 </#macro>
 
 <#macro fineItemsCount value>
-  <@limitNumberToRange value=value min=0 max=9999 length=4/>
+  <@limitNumberToRangeOrSpaces value=value min=0 max=9999 length=4/>
 </#macro>
 
 <#macro holdItems value>
@@ -181,7 +189,7 @@
 </#macro>
 
 <#macro holdItemsCount value>
-  <@limitNumberToRange value=value min=0 max=9999 length=4/>
+  <@limitNumberToRangeOrSpaces value=value min=0 max=9999 length=4/>
 </#macro>
 
 <#macro holdItemsLimit value>
@@ -189,11 +197,15 @@
 </#macro>
 
 <#macro homeAddress value>
-  <@variableLengthField id="BD" value=value/>
+  <#if value?has_content>
+    <@variableLengthField id="BD" value=value/>
+  </#if>
 </#macro>
 
 <#macro homePhoneNumber value>
-  <@variableLengthField id="BF" value=value/>
+  <#if value?has_content>
+    <@variableLengthField id="BF" value=value/>
+  </#if>
 </#macro>
 
 <#macro institutionId value>
@@ -361,7 +373,7 @@
 </#macro>
 
 <#macro overdueItemsCount value>
-  <@limitNumberToRange value=value min=0 max=9999 length=4/>
+  <@limitNumberToRangeOrSpaces value=value min=0 max=9999 length=4/>
 </#macro>
 
 <#macro overdueItemsLimit value>
@@ -409,7 +421,7 @@
 </#macro>
 
 <#macro recallItemsCount value>
-  <@limitNumberToRange value=value min=0 max=9999 length=4/>
+  <@limitNumberToRangeOrSpaces value=value min=0 max=9999 length=4/>
 </#macro>
 
 <#macro renewalOk value>
@@ -467,7 +479,7 @@
 </#macro>
 
 <#macro unavailableHoldsCount value>
-  <@limitNumberToRange value=value min=0 max=9999 length=4/>
+  <@limitNumberToRangeOrSpaces value=value min=0 max=9999 length=4/>
 </#macro>
 
 <#macro unrenewedCount value>

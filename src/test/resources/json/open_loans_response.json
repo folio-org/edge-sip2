@@ -1,0 +1,141 @@
+{
+  "loans" : [ {
+    "id" : "b1b12e6a-f7bf-4be0-9ddc-a20dece3e93b",
+    "userId" : "4f0e711c-d583-41e0-9555-b62f1725023f",
+    "itemId" : "4593bdb8-f056-4a75-9c75-7b04c3a1dd64",
+    "status" : {
+      "name" : "Open"
+    },
+    "loanDate" : "2019-04-30T13:44:41Z",
+    "dueDate" : "2019-05-31T03:59:59.000+0000",
+    "action" : "checkedout",
+    "loanPolicyId" : "d9cd0bed-1b49-4b5e-a7bd-064b8d177231",
+    "checkoutServicePointId" : "c4c90014-c8c9-4ade-8f24-b5e313319f4b",
+    "metadata" : {
+      "createdDate" : "2019-04-30T13:44:41.396+0000",
+      "createdByUserId" : "b85cda08-1c35-5844-8087-9da678eb79f4",
+      "updatedDate" : "2019-04-30T13:44:41.396+0000",
+      "updatedByUserId" : "b85cda08-1c35-5844-8087-9da678eb79f4"
+    },
+    "item" : {
+      "id" : "4593bdb8-f056-4a75-9c75-7b04c3a1dd64",
+      "holdingsRecordId" : "559706d6-5f0d-47c5-9e57-344a86bb1379",
+      "instanceId" : "45c2d059-ad8e-420b-ab6d-e201acf01fde",
+      "title" : "1990 to 2010",
+      "barcode" : "6214635593916",
+      "contributors" : [ {
+        "name" : "Otfinoski, Steven."
+      } ],
+      "status" : {
+        "name" : "Checked out"
+      },
+      "location" : {
+        "name" : "Main Library"
+      },
+      "materialType" : {
+        "name" : "book"
+      }
+    },
+    "checkoutServicePoint" : {
+      "name" : "Circ Desk 2",
+      "code" : "cd2",
+      "discoveryDisplayName" : "Circulation Desk -- Back Entrance",
+      "description" : null,
+      "shelvingLagTime" : null,
+      "pickupLocation" : true
+    }
+  }, {
+    "id" : "0bf2af5e-4eca-4f22-adaa-0b9f960ab071",
+    "userId" : "4f0e711c-d583-41e0-9555-b62f1725023f",
+    "itemId" : "c70f966b-435f-4879-a7d1-3f66e6699191",
+    "status" : {
+      "name" : "Open"
+    },
+    "loanDate" : "2019-04-30T13:45:52Z",
+    "dueDate" : "2019-05-31T03:59:59.000+0000",
+    "action" : "checkedout",
+    "loanPolicyId" : "d9cd0bed-1b49-4b5e-a7bd-064b8d177231",
+    "checkoutServicePointId" : "c4c90014-c8c9-4ade-8f24-b5e313319f4b",
+    "metadata" : {
+      "createdDate" : "2019-04-30T13:45:53.200+0000",
+      "createdByUserId" : "b85cda08-1c35-5844-8087-9da678eb79f4",
+      "updatedDate" : "2019-04-30T13:45:53.200+0000",
+      "updatedByUserId" : "b85cda08-1c35-5844-8087-9da678eb79f4"
+    },
+    "item" : {
+      "id" : "c70f966b-435f-4879-a7d1-3f66e6699191",
+      "holdingsRecordId" : "1e5968e8-748a-4484-8282-7d4a1fb1b484",
+      "instanceId" : "cd752fca-fc52-46be-a905-c563d35ddd42",
+      "title" : "Al Gore",
+      "barcode" : "9546958212529",
+      "contributors" : [ {
+        "name" : "Baptiste, Tracey."
+      } ],
+      "status" : {
+        "name" : "Checked out"
+      },
+      "location" : {
+        "name" : "Main Library"
+      },
+      "materialType" : {
+        "name" : "book"
+      }
+    },
+    "checkoutServicePoint" : {
+      "name" : "Circ Desk 2",
+      "code" : "cd2",
+      "discoveryDisplayName" : "Circulation Desk -- Back Entrance",
+      "description" : null,
+      "shelvingLagTime" : null,
+      "pickupLocation" : true
+    }
+  }, {
+    "id" : "7af39fec-468e-4402-a586-ece4f90e27ec",
+    "userId" : "4f0e711c-d583-41e0-9555-b62f1725023f",
+    "itemId" : "02114831-1c8f-4594-beb9-1bf23f65054c",
+    "status" : {
+      "name" : "Open"
+    },
+    "loanDate" : "2019-04-30T13:47:00Z",
+    "dueDate" : "2019-05-31T03:59:59.000+0000",
+    "action" : "checkedout",
+    "loanPolicyId" : "d9cd0bed-1b49-4b5e-a7bd-064b8d177231",
+    "checkoutServicePointId" : "c4c90014-c8c9-4ade-8f24-b5e313319f4b",
+    "metadata" : {
+      "createdDate" : "2019-04-30T13:47:00.714+0000",
+      "createdByUserId" : "b85cda08-1c35-5844-8087-9da678eb79f4",
+      "updatedDate" : "2019-04-30T13:47:00.714+0000",
+      "updatedByUserId" : "b85cda08-1c35-5844-8087-9da678eb79f4"
+    },
+    "item" : {
+      "id" : "02114831-1c8f-4594-beb9-1bf23f65054c",
+      "holdingsRecordId" : "3353e300-b654-4bba-8d0d-a230b18e6f4d",
+      "instanceId" : "a3ac89f4-67b9-452f-92f8-c1bfd81f6932",
+      "title" : "In defense of our country",
+      "barcode" : "7041345600523",
+      "contributors" : [ {
+        "name" : "Stewart, Sheila"
+      }, {
+        "name" : "Zoldak, Joyce."
+      } ],
+      "status" : {
+        "name" : "Checked out"
+      },
+      "location" : {
+        "name" : "Main Library"
+      },
+      "materialType" : {
+        "name" : "book"
+      }
+    },
+    "checkoutServicePoint" : {
+      "name" : "Circ Desk 2",
+      "code" : "cd2",
+      "discoveryDisplayName" : "Circulation Desk -- Back Entrance",
+      "description" : null,
+      "shelvingLagTime" : null,
+      "pickupLocation" : true
+    }
+  } ],
+  "totalRecords" : 3
+}

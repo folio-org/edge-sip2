@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.repositories;
 
 import static java.lang.Boolean.FALSE;
+import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -14,6 +15,7 @@ import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.NoStackTraceThrowable;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -84,7 +86,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
-    circulationRepository.checkin(checkin, sessionData).setHandler(
+    circulationRepository.performCheckinCommand(checkin, sessionData).setHandler(
         testContext.succeeding(checkinResponse -> testContext.verify(() -> {
           assertNotNull(checkinResponse);
           assertTrue(checkinResponse.getOk());
@@ -134,7 +136,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
-    circulationRepository.checkin(checkin, sessionData).setHandler(
+    circulationRepository.performCheckinCommand(checkin, sessionData).setHandler(
         testContext.succeeding(checkinResponse -> testContext.verify(() -> {
           assertNotNull(checkinResponse);
           assertFalse(checkinResponse.getOk());
@@ -193,7 +195,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
-    circulationRepository.checkout(checkout, sessionData).setHandler(
+    circulationRepository.performCheckoutCommand(checkout, sessionData).setHandler(
         testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
           assertTrue(checkoutResponse.getOk());
@@ -251,7 +253,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
-    circulationRepository.checkout(checkout, sessionData).setHandler(
+    circulationRepository.performCheckoutCommand(checkout, sessionData).setHandler(
         testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
           assertFalse(checkoutResponse.getOk());
@@ -276,5 +278,254 @@ public class CirculationRepositoryTests {
 
           testContext.completeNow();
         })));
+  }
+
+  @Test
+  public void canGetLoansByUserId(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final String userId = UUID.randomUUID().toString();
+    final String itemId = UUID.randomUUID().toString();
+
+    final JsonObject response = new JsonObject()
+        .put("loans", new JsonArray()
+            .add(new JsonObject()
+                .put("userId", userId)
+                .put("itemId", itemId)
+                .put("loanDate", ZonedDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
+                .put("action", "checkedout")))
+        .put("totalRecords", 1);
+    when(mockFolioProvider.retrieveResource(any()))
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final CirculationRepository circulationRepository =
+        new CirculationRepository(mockFolioProvider, clock);
+    circulationRepository.getLoansByUserId(userId, null, null, sessionData).setHandler(
+        testContext.succeeding(loansResponse -> testContext.verify(() -> {
+          assertNotNull(loansResponse);
+          assertEquals(1, loansResponse.getInteger("totalRecords"));
+          final JsonArray loans = loansResponse.getJsonArray("loans");
+          assertNotNull(loans);
+          final JsonObject loan = loans.getJsonObject(0);
+          assertNotNull(loan);
+          assertEquals(userId, loan.getString("userId"));
+          assertEquals(itemId, loan.getString("itemId"));
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void cannotGetLoansByUserId(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final String userId = UUID.randomUUID().toString();
+
+    when(mockFolioProvider.retrieveResource(any()))
+        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("cannotGetLoansByUserId")));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final CirculationRepository circulationRepository =
+        new CirculationRepository(mockFolioProvider, clock);
+    circulationRepository.getLoansByUserId(userId, null, null, sessionData).setHandler(
+        testContext.succeeding(loansResponse -> testContext.verify(() -> {
+          assertNull(loansResponse);
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void canGetOverdueLoansByUserId(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final String userId = UUID.randomUUID().toString();
+    final String itemId = UUID.randomUUID().toString();
+
+    final JsonObject response = new JsonObject()
+        .put("loans", new JsonArray()
+            .add(new JsonObject()
+                .put("userId", userId)
+                .put("itemId", itemId)
+                .put("loanDate", ZonedDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
+                .put("action", "checkedout")))
+        .put("totalRecords", 1);
+    when(mockFolioProvider.retrieveResource(any()))
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final CirculationRepository circulationRepository =
+        new CirculationRepository(mockFolioProvider, clock);
+    circulationRepository.getOverdueLoansByUserId(userId, ZonedDateTime.now(clock), null, null,
+        sessionData).setHandler(testContext.succeeding(loansResponse -> testContext.verify(() -> {
+          assertNotNull(loansResponse);
+          assertEquals(1, loansResponse.getInteger("totalRecords"));
+          final JsonArray loans = loansResponse.getJsonArray("loans");
+          assertNotNull(loans);
+          final JsonObject loan = loans.getJsonObject(0);
+          assertNotNull(loan);
+          assertEquals(userId, loan.getString("userId"));
+          assertEquals(itemId, loan.getString("itemId"));
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void cannotGetOverdueLoansByUserId(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final String userId = UUID.randomUUID().toString();
+
+    when(mockFolioProvider.retrieveResource(any()))
+        .thenReturn(Future.failedFuture(
+            new NoStackTraceThrowable("cannotGetOverdueLoansByUserId")));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final CirculationRepository circulationRepository =
+        new CirculationRepository(mockFolioProvider, clock);
+    circulationRepository.getOverdueLoansByUserId(userId, ZonedDateTime.now(clock), null, null,
+        sessionData).setHandler(testContext.succeeding(loansResponse -> testContext.verify(() -> {
+          assertNull(loansResponse);
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void canGetRequestsByItemId(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final String userId = UUID.randomUUID().toString();
+    final String itemId = UUID.randomUUID().toString();
+
+    final JsonObject response = new JsonObject()
+        .put("requests", new JsonArray()
+            .add(new JsonObject()
+                .put("requesterId", userId)
+                .put("itemId", itemId)
+                .put("requestType", "Recall")
+                .put("requestDate", ZonedDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
+                .put("fulfilmentPreference", "Hold Shelf")))
+        .put("totalRecords", 1);
+    when(mockFolioProvider.retrieveResource(any()))
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final CirculationRepository circulationRepository =
+        new CirculationRepository(mockFolioProvider, clock);
+    circulationRepository.getRequestsByItemId(itemId, "Recall", null, null, sessionData)
+        .setHandler(testContext.succeeding(requestsResponse -> testContext.verify(() -> {
+          assertNotNull(requestsResponse);
+          assertEquals(1, requestsResponse.getInteger("totalRecords"));
+          final JsonArray requests = requestsResponse.getJsonArray("requests");
+          assertNotNull(requests);
+          final JsonObject request = requests.getJsonObject(0);
+          assertNotNull(request);
+          assertEquals(userId, request.getString("requesterId"));
+          assertEquals(itemId, request.getString("itemId"));
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void cannotGetRequestsByItemId(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final String itemId = UUID.randomUUID().toString();
+
+    when(mockFolioProvider.retrieveResource(any()))
+        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("cannotGetRequestsByItemId")));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final CirculationRepository circulationRepository =
+        new CirculationRepository(mockFolioProvider, clock);
+    circulationRepository.getRequestsByItemId(itemId, "Recall", null, null,
+        sessionData).setHandler(testContext.succeeding(
+            requestsResponse -> testContext.verify(() -> {
+              assertNull(requestsResponse);
+
+              testContext.completeNow();
+            })));
+  }
+
+  @Test
+  public void canGetRequestsByUserId(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final String userId = UUID.randomUUID().toString();
+    final String itemId = UUID.randomUUID().toString();
+
+    final JsonObject response = new JsonObject()
+        .put("requests", new JsonArray()
+            .add(new JsonObject()
+                .put("requesterId", userId)
+                .put("itemId", itemId)
+                .put("requestType", "Hold")
+                .put("requestDate", ZonedDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
+                .put("fulfilmentPreference", "Hold Shelf")))
+        .put("totalRecords", 1);
+    when(mockFolioProvider.retrieveResource(any()))
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final CirculationRepository circulationRepository =
+        new CirculationRepository(mockFolioProvider, clock);
+    circulationRepository.getRequestsByItemId(itemId, "Hold", null, null, sessionData)
+        .setHandler(testContext.succeeding(requestsResponse -> testContext.verify(() -> {
+          assertNotNull(requestsResponse);
+          assertEquals(1, requestsResponse.getInteger("totalRecords"));
+          final JsonArray requests = requestsResponse.getJsonArray("requests");
+          assertNotNull(requests);
+          final JsonObject request = requests.getJsonObject(0);
+          assertNotNull(request);
+          assertEquals(userId, request.getString("requesterId"));
+          assertEquals(itemId, request.getString("itemId"));
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void cannotGetRequestsByUserId(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final String userId = UUID.randomUUID().toString();
+
+    when(mockFolioProvider.retrieveResource(any()))
+        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("cannotGetRequestsByUserId")));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final CirculationRepository circulationRepository =
+        new CirculationRepository(mockFolioProvider, clock);
+    circulationRepository.getRequestsByItemId(userId, "Hold", null, null,
+        sessionData).setHandler(testContext.succeeding(
+            requestsResponse -> testContext.verify(() -> {
+              assertNull(requestsResponse);
+
+              testContext.completeNow();
+            })));
   }
 }

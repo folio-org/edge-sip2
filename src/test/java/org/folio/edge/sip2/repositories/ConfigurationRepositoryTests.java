@@ -30,8 +30,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class ConfigurationRepositoryTests {
 
   @Test
-  public void canCreateConfigurationRepo(@Mock IResourceProvider mockConfig, @Mock Clock clock) {
-    @SuppressWarnings("unchecked")
+  public void canCreateConfigurationRepo(@Mock IResourceProvider<Object> mockConfig,
+      @Mock Clock clock) {
     ConfigurationRepository configRepo = new ConfigurationRepository(mockConfig, clock);
     assertNotNull(configRepo);
   }

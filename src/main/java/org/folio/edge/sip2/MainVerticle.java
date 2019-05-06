@@ -5,6 +5,7 @@ import static org.folio.edge.sip2.parser.Command.CHECKIN;
 import static org.folio.edge.sip2.parser.Command.CHECKOUT;
 import static org.folio.edge.sip2.parser.Command.END_PATRON_SESSION;
 import static org.folio.edge.sip2.parser.Command.LOGIN;
+import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION;
 import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
@@ -13,6 +14,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.NetSocket;
@@ -31,6 +33,7 @@ import org.folio.edge.sip2.handlers.EndPatronSessionHandler;
 import org.folio.edge.sip2.handlers.HandlersFactory;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.handlers.LoginHandler;
+import org.folio.edge.sip2.handlers.PatronInformationHandler;
 import org.folio.edge.sip2.modules.ApplicationModule;
 import org.folio.edge.sip2.modules.FolioResourceProviderModule;
 import org.folio.edge.sip2.parser.Command;
@@ -60,17 +63,20 @@ public class MainVerticle extends AbstractVerticle {
   public void start(Future<Void> startFuture) {
     // We need to reduce the complexity of this method...
     if (handlers == null) {
+      String okapiUrl = config().getString("okapiUrl");
+
       final Injector injector = Guice.createInjector(
-          new FolioResourceProviderModule(config().getString("okapiUrl"), vertx),
+          new FolioResourceProviderModule(okapiUrl, vertx),
           new ApplicationModule());
       handlers = new EnumMap<>(Command.class);
-      handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
-      handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
       handlers.put(CHECKOUT, injector.getInstance(CheckoutHandler.class));
-      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null, null,
-                                            null, config().getString("okapiUrl"), vertx));
-      handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
+      handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
+      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null,
+                null, null, okapiUrl, vertx));
       handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
+      handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
+      handlers.put(PATRON_INFORMATION, injector.getInstance(PatronInformationHandler.class));
+      handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
       handlers.put(END_PATRON_SESSION, injector.getInstance(EndPatronSessionHandler.class));
     }
 
@@ -90,12 +96,11 @@ public class MainVerticle extends AbstractVerticle {
       final String messageDelimiter = config().getString("messageDelimiter", "\r");
 
       socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
-        final String messageString = buffer.getString(0, buffer.length());
+        final String messageString = buffer.getString(0, buffer.length(), sessionData.getCharset());
         log.debug("Received message: {}", messageString);
 
         try {
-          // Create a parser with the default delimiter '|' and the default
-          // charset 'IMB850'. At some point we will need to have these be
+          // At some point we will need to have these be
           // tenant specific. This will be difficult considering that we need
           // to parse the login message before we know which tenant it is.
           // We may need another mechanism to obtain this configuration...
@@ -121,7 +126,7 @@ public class MainVerticle extends AbstractVerticle {
                 .getPreviousMessage()
                 .getPreviousMessageResponse();
             log.info("Sending previous Sip response {}", prvMessage);
-            socket.write(prvMessage);
+            socket.write(prvMessage, sessionData.getCharset());
             return;
           }
 
@@ -146,11 +151,12 @@ public class MainVerticle extends AbstractVerticle {
                   }
                   handler.writeHistory(sessionData, message, responseMsg);
                   log.info("Sip response {}", responseMsg);
-                  socket.write(responseMsg);
+                  socket.write(responseMsg, sessionData.getCharset());
                 } else {
                   String errorMsg = "Failed to respond to request";
                   log.error(errorMsg, ar.cause());
-                  socket.write(ar.cause().getMessage() + messageDelimiter);
+                  socket.write(ar.cause().getMessage() + messageDelimiter,
+                      sessionData.getCharset());
                 }
               });
         } catch (Exception ex) {
@@ -158,7 +164,7 @@ public class MainVerticle extends AbstractVerticle {
           log.error(message, ex);
           // Return an error message for now for the sake of negative testing.
           // Will find a better way to handle negative test cases.
-          socket.write(message + messageDelimiter);
+          socket.write(message + messageDelimiter, sessionData.getCharset());
         }
       }));
 
@@ -204,13 +210,13 @@ public class MainVerticle extends AbstractVerticle {
           .setHandler(ar -> {
             if (ar.succeeded()) {
               socket.write(formatResponse(ar.result(), message, sessionData,
-                  messageDelimiter, true));
+                  messageDelimiter, true), sessionData.getCharset());
             } else {
               log.error("Failed to send SC resend", ar.cause());
             }
           });
     } else {
-      socket.write("Problems handling the request" + messageDelimiter);
+      socket.write("Problems handling the request" + messageDelimiter, sessionData.getCharset());
     }
   }
 
