@@ -116,7 +116,7 @@ public class ConfigurationRepository {
       builder.protocolVersion(config.getString("protocolVersion"));
       builder.institutionId(config.getString("institutionId"));
       builder.supportedMessages(getSupportedMessagesFromJson(
-        config.getJsonArray("supportedMessages")));
+          config.getJsonArray("supportedMessages")));
     }
     return builder;
   }
