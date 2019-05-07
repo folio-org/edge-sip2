@@ -5,6 +5,7 @@ import static java.util.Collections.unmodifiableList;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,9 +43,9 @@ public final class RenewAllResponse {
    */
   private final List<String> unrenewedItems;
   /** A message to show to the patron on the SC screen. */
-  private final String screenMessage;
+  private final List<String> screenMessage;
   /** A message to print for the patron on the SC printer. */
-  private final String printLine;
+  private final List<String> printLine;
 
   /**
    * Construct a {@code RenewAllResponse} based on a
@@ -63,8 +64,10 @@ public final class RenewAllResponse {
     this.unrenewedItems = builder.unrenewedItems == null
         ? emptyList()
         : unmodifiableList(new ArrayList<>(builder.unrenewedItems));
-    this.screenMessage = builder.screenMessage;
-    this.printLine = builder.printLine;
+    this.screenMessage = builder.screenMessage == null ? null
+            : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
+    this.printLine = builder.printLine == null ? null
+            : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
   }
 
   /**
@@ -103,11 +106,11 @@ public final class RenewAllResponse {
     return unrenewedItems;
   }
 
-  public String getScreenMessage() {
+  public List<String> getScreenMessage() {
     return screenMessage;
   }
 
-  public String getPrintLine() {
+  public List<String> getPrintLine() {
     return printLine;
   }
 
@@ -167,8 +170,8 @@ public final class RenewAllResponse {
     private String institutionId;
     private List<String> renewedItems;
     private List<String> unrenewedItems;
-    private String screenMessage;
-    private String printLine;
+    private List<String> screenMessage;
+    private List<String> printLine;
 
     private RenewAllResponseBuilder() {
       super();
@@ -210,12 +213,12 @@ public final class RenewAllResponse {
       return this;
     }
 
-    public RenewAllResponseBuilder screenMessage(String screenMessage) {
+    public RenewAllResponseBuilder screenMessage(List<String> screenMessage) {
       this.screenMessage = screenMessage;
       return this;
     }
 
-    public RenewAllResponseBuilder printLine(String printLine) {
+    public RenewAllResponseBuilder printLine(List<String> printLine) {
       this.printLine = printLine;
       return this;
     }

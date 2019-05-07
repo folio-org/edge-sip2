@@ -1,5 +1,6 @@
 package org.folio.edge.sip2.repositories;
 
+import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -94,9 +95,9 @@ public class ConfigurationRepositoryTests {
           assertEquals(2, status.getRetriesAllowed());
           assertEquals("1.23", status.getProtocolVersion());
           assertEquals("fs00000010", status.getInstitutionId());
-          assertEquals("testing", status.getPrintLine());
+          assertEquals(asList("testing"), status.getPrintLine());
           assertEquals("Chalmers", status.getLibraryName());
-          assertEquals("Hello, welcome", status.getScreenMessage());
+          assertEquals(asList("Hello, welcome"), status.getScreenMessage());
           assertEquals("SE10", status.getTerminalLocation());
           assertEquals(ZonedDateTime.now(clock), status.getDateTimeSync());
 

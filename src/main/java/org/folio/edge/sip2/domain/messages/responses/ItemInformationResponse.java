@@ -1,6 +1,9 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import org.folio.edge.sip2.domain.messages.enumerations.CirculationStatus;
@@ -56,9 +59,9 @@ public final class ItemInformationResponse {
   /** Specific item information that can be user for identification. */
   private final String itemProperties;
   /** A message to show the patron. */
-  private final String screenMessage;
+  private final List<String> screenMessage;
   /** A message to print via the SC's printer. */
-  private final String printLine;
+  private final List<String> printLine;
 
   /**
    * Construct a {@code ItemInformationResponse} based on a
@@ -83,8 +86,10 @@ public final class ItemInformationResponse {
     this.permanentLocation = builder.permanentLocation;
     this.currentLocation = builder.currentLocation;
     this.itemProperties = builder.itemProperties;
-    this.screenMessage = builder.screenMessage;
-    this.printLine = builder.printLine;
+    this.screenMessage = builder.screenMessage == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
+    this.printLine = builder.printLine == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
   }
 
   /**
@@ -163,11 +168,11 @@ public final class ItemInformationResponse {
     return itemProperties;
   }
 
-  public String getScreenMessage() {
+  public List<String> getScreenMessage() {
     return screenMessage;
   }
 
-  public String getPrintLine() {
+  public List<String> getPrintLine() {
     return printLine;
   }
 
@@ -259,8 +264,8 @@ public final class ItemInformationResponse {
     private String permanentLocation;
     private String currentLocation;
     private String itemProperties;
-    private String screenMessage;
-    private String printLine;
+    private List<String> screenMessage;
+    private List<String> printLine;
 
     private ItemInformationResponseBuilder() {
       super();
@@ -363,12 +368,12 @@ public final class ItemInformationResponse {
       return this;
     }
 
-    public ItemInformationResponseBuilder screenMessage(String screenMessage) {
+    public ItemInformationResponseBuilder screenMessage(List<String> screenMessage) {
       this.screenMessage = screenMessage;
       return this;
     }
 
-    public ItemInformationResponseBuilder printLine(String printLine) {
+    public ItemInformationResponseBuilder printLine(List<String> printLine) {
       this.printLine = printLine;
       return this;
     }

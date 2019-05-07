@@ -2,6 +2,7 @@ package org.folio.edge.sip2.domain.messages.responses;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Arrays.asList;
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.ENGLISH;
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.UNKNOWN;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.CARD_REPORTED_LOST;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.ZonedDateTime;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import org.folio.edge.sip2.domain.messages.enumerations.Language;
@@ -34,8 +36,8 @@ class PatronEnableResponseTests {
   final String personalName = "John Smith";
   final Boolean validPatron = TRUE;
   final Boolean validPatronPassword = TRUE;
-  final String screenMessage = "Hello, world!";
-  final String printLine = "Dot matrix";
+  final List<String> screenMessage = asList("Hello, world!");
+  final List<String> printLine = asList("Dot matrix");
 
   @Test
   void testGetPatronStatus() {
@@ -287,8 +289,8 @@ class PatronEnableResponseTests {
         .personalName("Jane Doe")
         .validPatron(FALSE)
         .validPatronPassword(FALSE)
-        .screenMessage("Welcome to the jungle.")
-        .printLine("Print print print")
+        .screenMessage(asList("Welcome to the jungle."))
+        .printLine(asList("Print print print"))
         .build();
     assertFalse(per1.equals(per2));
     assertFalse(per2.equals(per1));

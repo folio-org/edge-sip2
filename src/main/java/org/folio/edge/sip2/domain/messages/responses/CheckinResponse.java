@@ -1,6 +1,9 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import org.folio.edge.sip2.domain.messages.enumerations.MediaType;
@@ -61,9 +64,9 @@ public final class CheckinResponse {
   /** Specific item information that can be user for identification. */
   private final String itemProperties;
   /** A message to show the patron. */
-  private final String screenMessage;
+  private final List<String> screenMessage;
   /** A message to print via the SC's printer. */
-  private final String printLine;
+  private final List<String> printLine;
 
   /**
    * Construct a {@code CheckintResponse} based on a
@@ -84,8 +87,10 @@ public final class CheckinResponse {
     this.patronIdentifier = builder.patronIdentifier;
     this.mediaType = builder.mediaType;
     this.itemProperties = builder.itemProperties;
-    this.screenMessage = builder.screenMessage;
-    this.printLine = builder.printLine;
+    this.screenMessage = builder.screenMessage == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
+    this.printLine = builder.printLine == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
   }
 
   /**
@@ -148,11 +153,11 @@ public final class CheckinResponse {
     return itemProperties;
   }
 
-  public String getScreenMessage() {
+  public List<String> getScreenMessage() {
     return screenMessage;
   }
 
-  public String getPrintLine() {
+  public List<String> getPrintLine() {
     return printLine;
   }
 
@@ -231,8 +236,8 @@ public final class CheckinResponse {
     private String patronIdentifier;
     private MediaType mediaType;
     private String itemProperties;
-    private String screenMessage;
-    private String printLine;
+    private List<String> screenMessage;
+    private List<String> printLine;
 
     private CheckinResponseBuilder() {
       super();
@@ -303,12 +308,12 @@ public final class CheckinResponse {
       return this;
     }
 
-    public CheckinResponseBuilder screenMessage(String screenMessage) {
+    public CheckinResponseBuilder screenMessage(List<String> screenMessage) {
       this.screenMessage = screenMessage;
       return this;
     }
 
-    public CheckinResponseBuilder printLine(String printLine) {
+    public CheckinResponseBuilder printLine(List<String> printLine) {
       this.printLine = printLine;
       return this;
     }

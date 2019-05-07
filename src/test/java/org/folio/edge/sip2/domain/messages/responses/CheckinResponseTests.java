@@ -2,6 +2,7 @@ package org.folio.edge.sip2.domain.messages.responses;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Arrays.asList;
 import static org.folio.edge.sip2.domain.messages.enumerations.MediaType.OTHER;
 import static org.folio.edge.sip2.domain.messages.enumerations.MediaType.VIDEO_TAPE;
 import static org.folio.edge.sip2.domain.messages.responses.CheckinResponse.builder;
@@ -12,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.ZonedDateTime;
-
+import java.util.List;
 import org.folio.edge.sip2.domain.messages.enumerations.MediaType;
 import org.junit.jupiter.api.Test;
 
@@ -30,8 +31,8 @@ class CheckinResponseTests {
   final String patronIdentifier = "1234567890";
   final MediaType mediaType = VIDEO_TAPE;
   final String itemProperties = "Directors Cut";
-  final String screenMessage = "Please rewind";
-  final String printLine = "Enjoy!";
+  final List<String> screenMessage = asList("Please rewind");
+  final List<String> printLine = asList("Enjoy!");
 
   @Test
   void testGetOk() {
@@ -456,8 +457,8 @@ class CheckinResponseTests {
         .patronIdentifier("111111111")
         .mediaType(OTHER)
         .itemProperties("Testing")
-        .screenMessage("This is a test")
-        .printLine("This is a print test")
+        .screenMessage(asList("This is a test"))
+        .printLine(asList("This is a print test"))
         .build();
     assertFalse(cir1.equals(cir2));
     assertFalse(cir1.equals(cir2));

@@ -7,6 +7,7 @@ import io.vertx.core.json.JsonObject;
 import java.lang.invoke.MethodHandles;
 import java.time.Clock;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -56,10 +57,12 @@ public class ConfigurationRepository {
         builder.libraryName(acsConfiguration.getString("libraryName"));
         builder.offLineOk(acsConfiguration.getBoolean("checkoutOk"));
         builder.onLineStatus(acsConfiguration.getBoolean("onlineStatus"));
-        builder.printLine(acsConfiguration.getString("printLine"));
+        // Should probably make this an array of strings
+        builder.printLine(Arrays.asList(acsConfiguration.getString("printLine")));
         builder.protocolVersion(acsConfiguration.getString("protocolVersion"));
         builder.retriesAllowed(acsConfiguration.getInteger("retriesAllowed"));
-        builder.screenMessage(acsConfiguration.getString("screenMessage"));
+        // Should probably make this an array of strings
+        builder.screenMessage(Arrays.asList(acsConfiguration.getString("screenMessage")));
         builder.statusUpdateOk(acsConfiguration.getBoolean("statusUpdateOk"));
         builder.terminalLocation(acsConfiguration.getString("terminalLocation"));
         builder.timeoutPeriod(acsConfiguration.getInteger("timeoutPeriod"));

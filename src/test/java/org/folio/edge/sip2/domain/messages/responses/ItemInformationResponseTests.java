@@ -1,5 +1,6 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
+import static java.util.Arrays.asList;
 import static org.folio.edge.sip2.domain.messages.enumerations.CirculationStatus.AVAILABLE;
 import static org.folio.edge.sip2.domain.messages.enumerations.CirculationStatus.MISSING;
 import static org.folio.edge.sip2.domain.messages.enumerations.CurrencyType.GBP;
@@ -18,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.ZonedDateTime;
-
+import java.util.List;
 import org.folio.edge.sip2.domain.messages.enumerations.CirculationStatus;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.FeeType;
@@ -44,8 +45,8 @@ class ItemInformationResponseTests {
   final String permanentLocation = "circ_desk";
   final String currentLocation = "another_circ_desk";
   final String itemProperties = "Directors Cut";
-  final String screenMessage = "Please rewind";
-  final String printLine = "Enjoy!";
+  final List<String> screenMessage = asList("Please rewind");
+  final List<String> printLine = asList("Enjoy!");
 
   @Test
   void testGetCirculationStatus() {
@@ -662,8 +663,8 @@ class ItemInformationResponseTests {
         .permanentLocation("basement")
         .currentLocation("stolen")
         .itemProperties("Testing")
-        .screenMessage("This is a test")
-        .printLine("This is a print test")
+        .screenMessage(asList("This is a test"))
+        .printLine(asList("This is a print test"))
         .build();
     assertFalse(iir1.equals(iir2));
     assertFalse(iir1.equals(iir2));
