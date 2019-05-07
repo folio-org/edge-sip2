@@ -43,7 +43,8 @@ public class SCStatusHandlerTests {
     SCStatus status =  statusBuilder.build();
 
     SCStatusHandler handler = ((SCStatusHandler) HandlersFactory
-        .getScStatusHandlerInstance(null, defaultConfigurationProvider, null, clock, "abcdefg.com", vertx));
+        .getScStatusHandlerInstance(null, defaultConfigurationProvider, null,
+          clock, "abcdefg.com", vertx));
 
     handler.execute(status, TestUtils.getMockedSessionData()).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
@@ -56,8 +57,7 @@ public class SCStatusHandlerTests {
 
           String expectedSipResponse = "98YYNYNN005003"
               + expectedDateTimeString
-              + "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|"
-              + "AFscreenMessages|AGline|";
+              + "1.23AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|";
 
           assertEquals(expectedSipResponse, sipMessage);
           testContext.completeNow();

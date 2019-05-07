@@ -4,17 +4,15 @@ import static io.vertx.core.Future.succeededFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.time.Clock;
 import java.time.ZonedDateTime;
@@ -49,7 +47,17 @@ public class ConfigurationRepositoryTests {
   public void canGetValidAcsStatus(Vertx vertx, VertxTestContext testContext) {
 
     JsonObject configObject = new JsonObject();
-    configObject.put("value", "{\"tenantId\":\"fs00000010\",\"supportedMessages\":[{\"messageName\": \"PATRON_INFORMATION\",\"isSupported\": \"Y\"},{\"messageName\": \"RENEW\",\"isSupported\": \"N\"},{\"messageName\": \"BLOCK_PATRON\",\"isSupported\": \"Y\"}],\"onlineStatus\": false,\"statusUpdateOk\": false,\"offlineOk\":true,\"timeoutPeriod\":3,\"retriesAllowed\":2,\"protocolVersion\":\"1.23\",\"institutionId\":\"fs00000010\",\"screenMessage\":\"Hello, welcome\",\"printLine\":\"testing\",\"checkinOk\":false,\"checkoutOk\":true,\"acsRenewalPolicy\":false,\"libraryName\":\"Chalmers\",\"terminalLocation\":\"SE10\"}");
+    configObject.put("value", "{\"tenantId\":\"fs00000010\",\"supportedMessages\":"
+          + "[{\"messageName\": \"PATRON_INFORMATION\",\"isSupported\": \"Y\"},"
+          + "{\"messageName\": \"RENEW\",\"isSupported\": \"N\"},"
+          + "{\"messageName\": \"BLOCK_PATRON\",\"isSupported\": \"Y\"}],"
+          +  "\"onlineStatus\": false,\"statusUpdateOk\": false,\"offlineOk\":true,"
+          +  "\"timeoutPeriod\":3,\"retriesAllowed\":2,"
+          +  "\"protocolVersion\":\"1.23\",\"institutionId\":\"fs00000010\","
+          +   "\"screenMessage\":\"Hello, welcome\","
+          +  "\"printLine\":\"testing\",\"checkinOk\":false,"
+          +   "\"checkoutOk\":true,\"acsRenewalPolicy\":false,"
+          +  "\"libraryName\":\"Chalmers\",\"terminalLocation\":\"SE10\"}");
 
     JsonArray configsArray = new JsonArray();
     configsArray.add(configObject);
@@ -60,7 +68,7 @@ public class ConfigurationRepositoryTests {
     IResourceProvider<Object> mockFolioProvider = mock(IResourceProvider.class);
 
     when(mockFolioProvider.retrieveResource(any()))
-     .thenReturn(succeededFuture(() -> resultsWrapper));
+      .thenReturn(succeededFuture(() -> resultsWrapper));
 
     Clock clock = TestUtils.getUtcFixedClock();
 
@@ -80,9 +88,7 @@ public class ConfigurationRepositoryTests {
           assertEquals(2, status.getRetriesAllowed());
           assertEquals("1.23", status.getProtocolVersion());
           assertEquals("fs00000010", status.getInstitutionId());
-          assertEquals("testing", status.getPrintLine());
           assertEquals("Chalmers", status.getLibraryName());
-          assertEquals("Hello, welcome", status.getScreenMessage());
           assertEquals("SE10", status.getTerminalLocation());
           assertEquals(ZonedDateTime.now(clock), status.getDateTimeSync());
 

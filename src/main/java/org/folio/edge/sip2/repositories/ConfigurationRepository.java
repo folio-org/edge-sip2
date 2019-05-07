@@ -77,7 +77,10 @@ public class ConfigurationRepository {
    * @param module module that the configuration was created for
    * @return JSON object containing tenant configuration
    */
-  public Future<JsonObject> retrieveConfiguration(SessionData sessionData, String module, String configName, String configCode) {
+  public Future<JsonObject> retrieveConfiguration(SessionData sessionData,
+                                                  String module,
+                                                  String configName,
+                                                  String configCode) {
     final Map<String, String> headers = new HashMap<>();
     headers.put("accept", "application/json");
 
@@ -110,7 +113,7 @@ public class ConfigurationRepository {
     builder.protocolVersion(config.getString("protocolVersion"));
     builder.institutionId(config.getString("institutionId"));
     builder.supportedMessages(getSupportedMessagesFromJson(
-      config.getJsonArray("supportedMessages")));
+        config.getJsonArray("supportedMessages")));
 
     return builder;
   }
@@ -174,7 +177,7 @@ public class ConfigurationRepository {
     public String getPath() {
       String path = String.format("/configurations/entries?query=module==%s "
           + "AND configName==%s AND code==%s",
-        module, configName, configCode);
+          module, configName, configCode);
 
       return path;
     }
