@@ -62,7 +62,7 @@ public class PatronInformationHandlerTests {
         .startItem(Integer.valueOf(2))
         .endItem(Integer.valueOf(4))
         .build();
-    when(mockPatronRepository.patronInformation(any(), any()))
+    when(mockPatronRepository.performPatronInformationCommand(any(), any()))
         .thenReturn(Future.succeededFuture(PatronInformationResponse.builder()
             .patronStatus(null)
             .language(ENGLISH)
