@@ -6,7 +6,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.time.Clock;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
@@ -98,34 +97,39 @@ public class ConfigurationRepository {
 
         String acsConfigurationString = firstConfig.getString("value");
         acsConfiguration = new JsonObject(acsConfigurationString);
+        return Future.succeededFuture(acsConfiguration);
+      } else {
+        log.info("Unable to find the configuration by the combination "
+            + "Module: {}; ConfigName: {}; ConfigCode {}", module, configName, configCode);
+        return Future.failedFuture("Unable to find the configuration");
       }
-
-      return Future.succeededFuture(acsConfiguration);
     });
   }
 
   private ACSStatusBuilder addTenantConfig(JsonObject config, ACSStatusBuilder builder) {
-    builder.onLineStatus(config.getBoolean("onlineStatus"));
-    builder.statusUpdateOk(config.getBoolean("statusUpdateOk"));
-    builder.offLineOk(config.getBoolean("offlineOk"));
-    builder.timeoutPeriod(config.getInteger("timeoutPeriod"));
-    builder.retriesAllowed(config.getInteger("retriesAllowed"));
-    builder.protocolVersion(config.getString("protocolVersion"));
-    builder.institutionId(config.getString("institutionId"));
-    builder.supportedMessages(getSupportedMessagesFromJson(
+    if (config != null) {
+      builder.onLineStatus(config.getBoolean("onlineStatus"));
+      builder.statusUpdateOk(config.getBoolean("statusUpdateOk"));
+      builder.offLineOk(config.getBoolean("offlineOk"));
+      builder.timeoutPeriod(config.getInteger("timeoutPeriod"));
+      builder.retriesAllowed(config.getInteger("retriesAllowed"));
+      builder.protocolVersion(config.getString("protocolVersion"));
+      builder.institutionId(config.getString("institutionId"));
+      builder.supportedMessages(getSupportedMessagesFromJson(
         config.getJsonArray("supportedMessages")));
-
+    }
     return builder;
   }
 
   private ACSStatusBuilder addSCStationConfig(JsonObject config, ACSStatusBuilder builder) {
-    builder.checkinOk(config.getBoolean("checkinOk"));
-    builder.acsRenewalPolicy(config.getBoolean("acsRenewalPolicy"));
-    builder.checkoutOk(config.getBoolean("checkoutOk"));
-    builder.dateTimeSync(ZonedDateTime.now(clock));
-    builder.libraryName(config.getString("libraryName"));
-    builder.terminalLocation(config.getString("terminalLocation"));
-
+    if (config != null) {
+      builder.checkinOk(config.getBoolean("checkinOk"));
+      builder.acsRenewalPolicy(config.getBoolean("acsRenewalPolicy"));
+      builder.checkoutOk(config.getBoolean("checkoutOk"));
+      builder.dateTimeSync(ZonedDateTime.now(clock));
+      builder.libraryName(config.getString("libraryName"));
+      builder.terminalLocation(config.getString("terminalLocation"));
+    }
     return builder;
   }
 
@@ -175,11 +179,9 @@ public class ConfigurationRepository {
 
     @Override
     public String getPath() {
-      String path = String.format("/configurations/entries?query=module==%s "
+      return String.format("/configurations/entries?query=module==%s "
           + "AND configName==%s AND code==%s",
           module, configName, configCode);
-
-      return path;
     }
   }
 }
