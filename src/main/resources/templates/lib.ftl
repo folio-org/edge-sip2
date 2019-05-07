@@ -320,7 +320,6 @@
       <#default>
         000<#t>
     </#switch>
-    ${delimiter}<#t>
   </#if>
 </#macro>
 
