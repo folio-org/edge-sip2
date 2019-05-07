@@ -51,6 +51,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
   @Override
   public Future<IResource> retrieveResource(IRequestData requestData) {
+    log.debug("retrieve resource {}", requestData::getPath);
+
     final HttpRequest<Buffer> request =
         client.getAbs(okapiUrl + requestData.getPath());
 
@@ -120,9 +122,11 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
     final String authenticationToken = sessionData.getAuthenticationToken();
     if (authenticationToken != null) {
+      log.info("x-okapi-token:" + authenticationToken);
       request.putHeader(HEADER_X_OKAPI_TOKEN, authenticationToken);
     }
     request.putHeader("x-okapi-tenant", sessionData.getTenant());
+    log.info("x-okapi-tenant:" + sessionData.getTenant());
   }
 
   private void handleResponse(

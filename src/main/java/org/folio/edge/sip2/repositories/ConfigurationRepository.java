@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.time.Clock;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
@@ -88,7 +89,11 @@ public class ConfigurationRepository {
       final JsonObject scConfiguration = resource.getResource();
       JsonObject acsConfiguration = null;
       if (scConfiguration != null) {
-        String acsConfigurationString = scConfiguration.getString("value");
+
+        JsonArray configs = scConfiguration.getJsonArray("configs");
+        JsonObject firstConfig = configs.getJsonObject(0);
+
+        String acsConfigurationString = firstConfig.getString("value");
         acsConfiguration = new JsonObject(acsConfigurationString);
       }
 
@@ -104,8 +109,6 @@ public class ConfigurationRepository {
     builder.retriesAllowed(config.getInteger("retriesAllowed"));
     builder.protocolVersion(config.getString("protocolVersion"));
     builder.institutionId(config.getString("institutionId"));
-    builder.screenMessage(config.getString("screenMessage"));
-    builder.printLine(config.getString("printLine"));
     builder.supportedMessages(getSupportedMessagesFromJson(
       config.getJsonArray("supportedMessages")));
 
@@ -169,7 +172,7 @@ public class ConfigurationRepository {
 
     @Override
     public String getPath() {
-      String path = String.format("/configuration/entries?query=module==%s "
+      String path = String.format("/configurations/entries?query=module==%s "
           + "AND configName==%s AND code==%s",
         module, configName, configCode);
 

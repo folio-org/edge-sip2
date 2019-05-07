@@ -37,7 +37,10 @@ public class DefaultResourceProviderTests {
           final JsonObject jsonConfig = resource.getResource();
           assertNotNull(jsonConfig);
 
-          String configString = jsonConfig.getString("value");
+          JsonArray configs = jsonConfig.getJsonArray("configs");
+          JsonObject firstConfig = configs.getJsonObject(0);
+
+          String configString = firstConfig.getString("value");
           JsonObject scConfig = new JsonObject(configString);
 
           assertFalse(scConfig.getBoolean("checkoutOk"));
@@ -61,7 +64,10 @@ public class DefaultResourceProviderTests {
           final JsonObject jsonConfig = resource.getResource();
           assertNotNull(jsonConfig);
 
-          String configString = jsonConfig.getString("value");
+          JsonArray configs = jsonConfig.getJsonArray("configs");
+          JsonObject firstConfig = configs.getJsonObject(0);
+
+          String configString = firstConfig.getString("value");
           JsonObject tenantConfig = new JsonObject(configString);
 
           assertEquals("fs00000010test", tenantConfig.getString("tenantId"));

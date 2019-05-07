@@ -1,14 +1,24 @@
 {
-  "id": "fb0ba4d3-6591-4a2c-99a7-d4009d711b4a",
-  "module": "edge-sip2",
-  "configName": "acsTenantConfig",
-  "code":"fs00000010test.conf",
-  "enabled": true,
-  "value":"{\"encoding\" : \"ASCII\",\"supportedMessages\": [{\"messageName\": \"PATRON_STATUS_REQUEST\",\"isSupported\": \"N\"},{\"messageName\": \"CHECKOUT\",\"isSupported\": \"Y\"},{\"messageName\": \"CHECKIN\",\"isSupported\": \"Y\"},{\"messageName\": \"BLOCK_PATRON\",\"isSupported\": \"N\"},{\"messageName\": \"SC_ACS_STATUS\",\"isSupported\": \"Y\"},{\"messageName\": \"LOGIN\",\"isSupported\": \"Y\"},{\"messageName\": \"PATRON_INFORMATION\",\"isSupported\": \"Y\"},{\"messageName\": \"END_PATRON_SESSION\",\"isSupported\": \"Y\"},{\"messageName\": \"FEE_PAID\",\"isSupported\": \"N\"},{\"messageName\": \"ITEM_INFORMATION\",\"isSupported\": \"N\"},{\"messageName\": \"ITEM_STATUS_UPDATE\",\"isSupported\": \"N\"},{\"messageName\": \"PATRON_ENABLE\",\"isSupported\": \"N\"},{\"messageName\": \"HOLD\",\"isSupported\": \"N\"},{\"messageName\": \"RENEW\",\"isSupported\": \"N\"},{\"messageName\": \"RENEW_ALL\",\"isSupported\": \"N\"}],\"onlineStatus\": true,\"statusUpdateOk\": false,\"offlineOk\": false,\"timeoutPeriod\": 5,\"retriesAllowed\": 3,\"protocolVersion\": \"2.00\",\"institutionId\": \"fs00000010\",\"screenMessage\": \"screenMessages\",\"printLine\": \"line\",\"localTimeZone\" : \"CEST\",\"holdItemsLimit\" : 25,\"overdueItemsLimit\" : 5,\"feeLimit\" : 100,\"currencyType\" : \"Krona\",\"language\" : \"en\"}",
-  "metadata": {
-    "createdDate": "2019-04-05T17:27:55.943+0000",
-    "createdByUserId": "ef676db9-d231-479a-aa91-f65eb4b17872",
-    "updatedDate": "2019-04-05T17:27:55.943+0000",
-    "updatedByUserId": "ef676db9-d231-479a-aa91-f65eb4b17872"
+  "configs": [
+    {
+      "id": "fb0ba4d3-6591-4a2c-99a7-d4009d711b4a",
+      "module": "edge-sip2",
+      "configName": "acsTenantConfig",
+      "code":"fs00001000.conf",
+      "enabled": true,
+      "value":"{\"encoding\" : \"ASCII\",\"supportedMessages\": [{\"messageName\": \"PATRON_STATUS_REQUEST\",\"isSupported\": \"N\"},{\"messageName\": \"CHECKOUT\",\"isSupported\": \"Y\"},{\"messageName\": \"CHECKIN\",\"isSupported\": \"Y\"},{\"messageName\": \"BLOCK_PATRON\",\"isSupported\": \"N\"},{\"messageName\": \"SC_ACS_STATUS\",\"isSupported\": \"Y\"},{\"messageName\": \"LOGIN\",\"isSupported\": \"Y\"},{\"messageName\": \"PATRON_INFORMATION\",\"isSupported\": \"Y\"},{\"messageName\": \"END_PATRON_SESSION\",\"isSupported\": \"Y\"},{\"messageName\": \"FEE_PAID\",\"isSupported\": \"N\"},{\"messageName\": \"ITEM_INFORMATION\",\"isSupported\": \"N\"},{\"messageName\": \"ITEM_STATUS_UPDATE\",\"isSupported\": \"N\"},{\"messageName\": \"PATRON_ENABLE\",\"isSupported\": \"N\"},{\"messageName\": \"HOLD\",\"isSupported\": \"N\"},{\"messageName\": \"RENEW\",\"isSupported\": \"N\"},{\"messageName\": \"RENEW_ALL\",\"isSupported\": \"N\"}],\"onlineStatus\": true,\"statusUpdateOk\": false,\"offlineOk\": false,\"timeoutPeriod\": 5,\"retriesAllowed\": 3,\"protocolVersion\": \"2.00\",\"institutionId\": \"fs00001000\",\"localTimeZone\" : \"CEST\",\"holdItemsLimit\" : 25,\"overdueItemsLimit\" : 5,\"feeLimit\" : 100,\"currencyType\" : \"Krona\",\"language\" : \"en\"}",
+      "metadata": {
+        "createdDate": "2019-04-05T17:27:55.943+0000",
+        "createdByUserId": "ef676db9-d231-479a-aa91-f65eb4b17872",
+        "updatedDate": "2019-04-05T17:27:55.943+0000",
+        "updatedByUserId": "ef676db9-d231-479a-aa91-f65eb4b17872"
+      }
+    }
+  ],
+  "totalRecords": 1,
+  "resultInfo": {
+    "totalRecords": 1,
+    "facets": [],
+    "diagnostics": []
   }
 }

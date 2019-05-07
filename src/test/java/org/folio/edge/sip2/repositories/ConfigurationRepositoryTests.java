@@ -48,13 +48,19 @@ public class ConfigurationRepositoryTests {
   @Test
   public void canGetValidAcsStatus(Vertx vertx, VertxTestContext testContext) {
 
-    JsonObject wrapper = new JsonObject();
-    wrapper.put("value", "{\"tenantId\":\"fs00000010\",\"supportedMessages\":[{\"messageName\": \"PATRON_INFORMATION\",\"isSupported\": \"Y\"},{\"messageName\": \"RENEW\",\"isSupported\": \"N\"},{\"messageName\": \"BLOCK_PATRON\",\"isSupported\": \"Y\"}],\"onlineStatus\": false,\"statusUpdateOk\": false,\"offlineOk\":true,\"timeoutPeriod\":3,\"retriesAllowed\":2,\"protocolVersion\":\"1.23\",\"institutionId\":\"fs00000010\",\"screenMessage\":\"Hello, welcome\",\"printLine\":\"testing\",\"checkinOk\":false,\"checkoutOk\":true,\"acsRenewalPolicy\":false,\"libraryName\":\"Chalmers\",\"terminalLocation\":\"SE10\"}");
+    JsonObject configObject = new JsonObject();
+    configObject.put("value", "{\"tenantId\":\"fs00000010\",\"supportedMessages\":[{\"messageName\": \"PATRON_INFORMATION\",\"isSupported\": \"Y\"},{\"messageName\": \"RENEW\",\"isSupported\": \"N\"},{\"messageName\": \"BLOCK_PATRON\",\"isSupported\": \"Y\"}],\"onlineStatus\": false,\"statusUpdateOk\": false,\"offlineOk\":true,\"timeoutPeriod\":3,\"retriesAllowed\":2,\"protocolVersion\":\"1.23\",\"institutionId\":\"fs00000010\",\"screenMessage\":\"Hello, welcome\",\"printLine\":\"testing\",\"checkinOk\":false,\"checkoutOk\":true,\"acsRenewalPolicy\":false,\"libraryName\":\"Chalmers\",\"terminalLocation\":\"SE10\"}");
+
+    JsonArray configsArray = new JsonArray();
+    configsArray.add(configObject);
+
+    JsonObject resultsWrapper = new JsonObject();
+    resultsWrapper.put("configs", configsArray);
 
     IResourceProvider<Object> mockFolioProvider = mock(IResourceProvider.class);
 
     when(mockFolioProvider.retrieveResource(any()))
-     .thenReturn(succeededFuture(() -> wrapper));
+     .thenReturn(succeededFuture(() -> resultsWrapper));
 
     Clock clock = TestUtils.getUtcFixedClock();
 
