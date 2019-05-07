@@ -17,10 +17,10 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
@@ -105,8 +105,7 @@ public class PatronInformationHandlerTests {
     handler.execute(patronInformation, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "64              001|"
-              + ZonedDateTime.now(clock).plusSeconds(5)
-                  .format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
+              + TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock).plusSeconds(5))
               + String.format("%04d%04d        %04d    ",
                   holdItemsCount, overdueItemsCount, recallItemsCount)
               + String.format("AO%s|AA%s|AE%s|BLY|", institutionId, patronIdentifier, personalName)

@@ -91,7 +91,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
-    circulationRepository.checkin(checkin, sessionData).setHandler(
+    circulationRepository.performCheckinCommand(checkin, sessionData).setHandler(
         testContext.succeeding(checkinResponse -> testContext.verify(() -> {
           assertNotNull(checkinResponse);
           assertTrue(checkinResponse.getOk());
@@ -141,7 +141,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
-    circulationRepository.checkin(checkin, sessionData).setHandler(
+    circulationRepository.performCheckinCommand(checkin, sessionData).setHandler(
         testContext.succeeding(checkinResponse -> testContext.verify(() -> {
           assertNotNull(checkinResponse);
           assertFalse(checkinResponse.getOk());
@@ -200,7 +200,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
-    circulationRepository.checkout(checkout, sessionData).setHandler(
+    circulationRepository.performCheckoutCommand(checkout, sessionData).setHandler(
         testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
           assertTrue(checkoutResponse.getOk());
@@ -279,7 +279,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
-    circulationRepository.checkout(checkout, sessionData).setHandler(
+    circulationRepository.performCheckoutCommand(checkout, sessionData).setHandler(
         testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
           assertFalse(checkoutResponse.getOk());

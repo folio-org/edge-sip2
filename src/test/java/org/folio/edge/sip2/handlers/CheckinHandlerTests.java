@@ -14,7 +14,6 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 import org.folio.edge.sip2.api.support.TestUtils;
@@ -52,7 +51,7 @@ public class CheckinHandlerTests {
         .cancel(FALSE)
         .build();
 
-    when(mockCirculationRepository.checkin(any(), any()))
+    when(mockCirculationRepository.performCheckinCommand(any(), any()))
         .thenReturn(Future.succeededFuture(CheckinResponse.builder()
             .ok(TRUE)
             .resensitize(TRUE)
@@ -72,7 +71,7 @@ public class CheckinHandlerTests {
     handler.execute(checkin, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "101YUN"
-              + ZonedDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
+              + TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock))
               + "AO" + institutionId + "|AB" + itemIdentifier + "|AQMain Library|";
 
           assertEquals(expectedString, sipMessage);
@@ -103,7 +102,7 @@ public class CheckinHandlerTests {
         .cancel(FALSE)
         .build();
 
-    when(mockCirculationRepository.checkin(any(), any()))
+    when(mockCirculationRepository.performCheckinCommand(any(), any()))
         .thenReturn(Future.succeededFuture(CheckinResponse.builder()
             .ok(FALSE)
             .resensitize(TRUE)
@@ -123,7 +122,7 @@ public class CheckinHandlerTests {
     handler.execute(checkin, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "100YUN"
-              + ZonedDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
+              + TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock))
               + "AO" + institutionId + "|AB" + itemIdentifier + "|AQ|";
 
           assertEquals(expectedString, sipMessage);

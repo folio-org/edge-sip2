@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.repositories;
 
-import static org.folio.edge.sip2.repositories.RepositoryTestUtils.getJsonFromFile;
+import static org.folio.edge.sip2.api.support.TestUtils.getJsonFromFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
