@@ -42,7 +42,7 @@ public class PatronInformationHandler implements ISip2RequestHandler {
     // - mod-circulation
     // - mod-feefines
     final Future<PatronInformationResponse> patronFuture =
-        patronRepository.patronInformation(patronInformation, sessionData);
+        patronRepository.performPatronInformationCommand(patronInformation, sessionData);
 
     return patronFuture.compose(patronInformationResponse -> {
       log.debug("PatronInformationResponse: {}", () -> patronInformationResponse);

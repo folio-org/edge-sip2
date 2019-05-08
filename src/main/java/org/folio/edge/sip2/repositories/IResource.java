@@ -2,6 +2,8 @@ package org.folio.edge.sip2.repositories;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Represents resource data retrieved by an {@code IResourceProvider}.
@@ -32,5 +34,14 @@ public interface IResource {
    */
   default String getAuthenticationToken() {
     return "";
+  }
+
+  /**
+   * Returns a list of errors when something goes wrong with the request.
+   *
+   * @return a list of error strings
+   */
+  default List<String> getErrorMessages() {
+    return Collections.emptyList();
   }
 }

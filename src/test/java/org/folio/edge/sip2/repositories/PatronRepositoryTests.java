@@ -132,7 +132,7 @@ public class PatronRepositoryTests {
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
-    patronRepository.patronInformation(patronInformation, sessionData).setHandler(
+    patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
           assertNotNull(patronInformationResponse.getPatronStatus());
@@ -255,7 +255,7 @@ public class PatronRepositoryTests {
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
-    patronRepository.patronInformation(patronInformation, sessionData).setHandler(
+    patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
           assertNotNull(patronInformationResponse.getPatronStatus());
@@ -359,7 +359,7 @@ public class PatronRepositoryTests {
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
-    patronRepository.patronInformation(patronInformation, sessionData).setHandler(
+    patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
           assertNotNull(patronInformationResponse.getPatronStatus());
@@ -431,7 +431,7 @@ public class PatronRepositoryTests {
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
-    patronRepository.patronInformation(patronInformation, sessionData).setHandler(
+    patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
           assertEquals(EnumSet.noneOf(PatronStatus.class),
@@ -498,7 +498,7 @@ public class PatronRepositoryTests {
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
-    patronRepository.patronInformation(patronInformation, sessionData).setHandler(
+    patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
           assertEquals(EnumSet.noneOf(PatronStatus.class),
@@ -565,7 +565,7 @@ public class PatronRepositoryTests {
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
-    patronRepository.patronInformation(patronInformation, sessionData).setHandler(
+    patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
           assertEquals(EnumSet.noneOf(PatronStatus.class),
@@ -642,7 +642,7 @@ public class PatronRepositoryTests {
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
-    patronRepository.patronInformation(patronInformation, sessionData).setHandler(
+    patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
           assertEquals(EnumSet.noneOf(PatronStatus.class),
@@ -727,7 +727,7 @@ public class PatronRepositoryTests {
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
-    patronRepository.patronInformation(patronInformation, sessionData).setHandler(
+    patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
           assertEquals(EnumSet.noneOf(PatronStatus.class),

@@ -4,7 +4,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
@@ -134,7 +133,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
       future.complete(new FolioResource(ar.result().body(), ar.result().headers()));
     } else {
-      log.error("Creation failed", ar.cause());
+      log.error("Request failed", ar.cause());
       future.fail(ar.cause());
     }
   }
@@ -142,7 +141,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   private ErrorConverter getErrorConverter() {
     return ErrorConverter.createFullBody(result -> {
       log.error("Error communicating with FOLIO: {}", result.response().bodyAsString());
-      return new NoStackTraceThrowable(result.message());
+      return new FolioRequestThrowable(result.response().bodyAsString());
     });
   }
 }

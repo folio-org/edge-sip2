@@ -62,7 +62,7 @@ public class PatronInformationHandlerTests {
         .startItem(Integer.valueOf(2))
         .endItem(Integer.valueOf(4))
         .build();
-    when(mockPatronRepository.patronInformation(any(), any()))
+    when(mockPatronRepository.performPatronInformationCommand(any(), any()))
         .thenReturn(Future.succeededFuture(PatronInformationResponse.builder()
             .patronStatus(null)
             .language(ENGLISH)
@@ -104,7 +104,7 @@ public class PatronInformationHandlerTests {
 
     handler.execute(patronInformation, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
-          final String expectedString = "64              001|"
+          final String expectedString = "64              001"
               + TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock).plusSeconds(5))
               + String.format("%04d%04d        %04d    ",
                   holdItemsCount, overdueItemsCount, recallItemsCount)
