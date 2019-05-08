@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import org.folio.edge.sip2.domain.messages.enumerations.MediaType;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ class CheckinResponseTests {
   final Boolean resensitize = TRUE;
   final Boolean magneticMedia = FALSE;
   final Boolean alert = TRUE;
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
   final String institutionId = "diku";
   final String itemIdentifier = "8675309";
   final String permanentLocation = "circ_desk";
@@ -448,7 +448,7 @@ class CheckinResponseTests {
         .resensitize(FALSE)
         .magneticMedia(TRUE)
         .alert(FALSE)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .institutionId("xyzzy")
         .itemIdentifier("222222222")
         .permanentLocation("circ_desk_basement")

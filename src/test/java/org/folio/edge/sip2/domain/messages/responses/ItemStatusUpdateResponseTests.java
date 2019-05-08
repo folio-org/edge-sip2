@@ -10,13 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class ItemStatusUpdateResponseTests {
   final Boolean itemPropertiesOk = TRUE;
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
   final String itemIdentifier = "8675309";
   final String titleIdentifier = "5551212";
   final String itemProperties = "Directors Cut";
@@ -180,7 +180,7 @@ class ItemStatusUpdateResponseTests {
         .build();
     final ItemStatusUpdateResponse isur2 = builder()
         .itemPropertiesOk(FALSE)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .itemIdentifier("222222222")
         .titleIdentifier("ou812")
         .itemProperties("Testing")

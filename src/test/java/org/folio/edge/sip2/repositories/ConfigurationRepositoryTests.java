@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.vertx.core.Vertx;
@@ -15,7 +14,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
 import java.time.Clock;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
@@ -28,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class ConfigurationRepositoryTests {
 
   @Test
-  public void canCreateConfigurationRepo(@Mock IResourceProvider<Object> mockConfig,
+  public void canCreateConfigurationRepo(@Mock IResourceProvider<IRequestData> mockConfig,
       @Mock Clock clock) {
     ConfigurationRepository configRepo = new ConfigurationRepository(mockConfig, clock);
     assertNotNull(configRepo);
@@ -44,7 +43,8 @@ public class ConfigurationRepositoryTests {
   }
 
   @Test
-  public void canGetValidAcsStatus(Vertx vertx, VertxTestContext testContext) {
+  public void canGetValidAcsStatus(Vertx vertx, VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
 
     JsonObject configObject = new JsonObject();
     configObject.put("value", "{\"tenantId\":\"diku\",\"supportedMessages\":"
@@ -64,8 +64,6 @@ public class ConfigurationRepositoryTests {
 
     JsonObject resultsWrapper = new JsonObject();
     resultsWrapper.put("configs", configsArray);
-
-    IResourceProvider<Object> mockFolioProvider = mock(IResourceProvider.class);
 
     when(mockFolioProvider.retrieveResource(any()))
       .thenReturn(succeededFuture(() -> resultsWrapper));
@@ -90,7 +88,7 @@ public class ConfigurationRepositoryTests {
           assertEquals("diku", status.getInstitutionId());
           assertEquals("diku", status.getLibraryName());
           assertEquals("SE10", status.getTerminalLocation());
-          assertEquals(ZonedDateTime.now(clock), status.getDateTimeSync());
+          assertEquals(OffsetDateTime.now(clock), status.getDateTimeSync());
 
           assertEquals(2, status.getSupportedMessages().size());
           Messages[] supportedMsgsArr = status.getSupportedMessages().toArray(new Messages[2]);
@@ -108,7 +106,7 @@ public class ConfigurationRepositoryTests {
   public void canRetrieveTenantConfiguration(
       Vertx vertx,
       VertxTestContext testContext, @Mock Clock clock) {
-    IResourceProvider resourceProvider = new DefaultResourceProvider();
+    IResourceProvider<IRequestData> resourceProvider = new DefaultResourceProvider();
     ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider, clock);
 
     configRepo.retrieveConfiguration(TestUtils.getMockedSessionData(),

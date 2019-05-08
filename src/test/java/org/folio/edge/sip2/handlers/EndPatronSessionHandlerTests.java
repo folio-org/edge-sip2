@@ -10,7 +10,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
 import java.time.Clock;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.folio.edge.sip2.api.support.TestUtils;
@@ -36,7 +36,7 @@ public class EndPatronSessionHandlerTests {
         .patronPassword(patronPassword)
         .institutionId(institutionId)
         .terminalPassword("12345")
-        .transactionDate(ZonedDateTime.now(clock))
+        .transactionDate(OffsetDateTime.now(clock))
         .build();
 
     Template template = FreemarkerRepository
@@ -57,7 +57,7 @@ public class EndPatronSessionHandlerTests {
     handler.execute(endPatronSessionRequest, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "36Y"
-              + ZonedDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
+              + OffsetDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
               + "AO" + institutionId + "|AA" + patronIdentifier + '|';
 
           assertEquals(expectedString, sipMessage);

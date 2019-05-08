@@ -8,7 +8,7 @@ import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 import java.text.SimpleDateFormat;
 import java.time.Clock;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.TimeZone;
@@ -60,7 +60,7 @@ public class MainVerticleTests extends BaseTest {
     });
   }
 
-  @Disabled
+  @Disabled("Need mock Okapi")
   @Test
   public void canMakeValidSCStatusRequest(Vertx vertex, VertxTestContext testContext) {
     callService("9900401.00AY1AZFCA5\r",
@@ -87,7 +87,7 @@ public class MainVerticleTests extends BaseTest {
     });
   }
 
-  @Disabled
+  @Disabled("Need mock Okapi")
   @Test
   public void canGetACSStatusMessageWhenSendingValidMessage(
       Vertx vertx, VertxTestContext testContext) {
@@ -158,7 +158,7 @@ public class MainVerticleTests extends BaseTest {
 
     StringBuffer sipMessageBf = new StringBuffer();
     sipMessageBf.append("35");
-    sipMessageBf.append(TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock)));
+    sipMessageBf.append(TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock)));
     sipMessageBf.append("AO" + institutionId + delimeter);
     sipMessageBf.append("AA" + patronIdentifier + delimeter);
     sipMessageBf.append("AC" + terminalPassword + delimeter);
@@ -166,7 +166,7 @@ public class MainVerticleTests extends BaseTest {
     sipMessageBf.append("\r");
 
     final String expectedString = "36Y"
-        + ZonedDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
+        + OffsetDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
         + "AO" + institutionId + "|AA" + patronIdentifier + '|' + '\r';
 
     callService(sipMessageBf.toString(),

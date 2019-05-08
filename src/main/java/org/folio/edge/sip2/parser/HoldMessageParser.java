@@ -9,7 +9,7 @@ import static org.folio.edge.sip2.domain.messages.enumerations.HoldType.OTHER;
 import static org.folio.edge.sip2.domain.messages.enumerations.HoldType.SPECIFIC_COPY_TITLE;
 import static org.folio.edge.sip2.domain.messages.requests.Hold.builder;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +45,7 @@ public class HoldMessageParser extends MessageParser {
     hBuilder.holdMode(parseHoldMode(messageChars));
 
     // transaction date: 18-char, fixed-length required field
-    final ZonedDateTime transactionDate = parseDateTime(messageChars);
+    final OffsetDateTime transactionDate = parseDateTime(messageChars);
     hBuilder.transactionDate(transactionDate);
 
     // Variable length fields

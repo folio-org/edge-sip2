@@ -36,8 +36,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.Charset;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
@@ -145,8 +145,8 @@ class ParserTests {
   @Test
   void testPatronStatusRequestParsingWithoutErrorDetection() {
     final Parser parser = Parser.builder().build();
-    final ZonedDateTime now =
-        ZonedDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime now =
+        OffsetDateTime.now().truncatedTo(SECONDS);
     final String date = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss")
         .format(now);
@@ -171,9 +171,9 @@ class ParserTests {
   @Test
   void testCheckoutParsingWithoutErrorDetection() {
     final Parser parser = Parser.builder().build();
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
-    final ZonedDateTime nbDueDate = transactionDate.plusDays(30);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime nbDueDate = transactionDate.plusDays(30);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
@@ -207,9 +207,9 @@ class ParserTests {
   @Test
   void testCheckinParsingWithoutErrorDetection() {
     final Parser parser = Parser.builder().build();
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
-    final ZonedDateTime returnDate = transactionDate.plusMinutes(5);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime returnDate = transactionDate.plusMinutes(5);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
@@ -240,8 +240,8 @@ class ParserTests {
   @Test
   void testBlockPatronParsingWithoutErrorDetection() {
     final Parser parser = Parser.builder().build();
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
@@ -298,8 +298,8 @@ class ParserTests {
   @Test
   void testPatronInformationParsingWithoutErrorDetection() {
     final Parser parser = Parser.builder().build();
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss")
         .format(transactionDate);
@@ -329,8 +329,8 @@ class ParserTests {
   @Test
   void testEndPatronSessionParsingWithoutErrorDetection() {
     final Parser parser = Parser.builder().build();
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss")
         .format(transactionDate);
@@ -355,8 +355,8 @@ class ParserTests {
   @Test
   void testFeePaidParsingWithoutErrorDetection() {
     final Parser parser = Parser.builder().build();
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss")
         .format(transactionDate);
@@ -387,8 +387,8 @@ class ParserTests {
   @Test
   void testItemInformationParsingWithoutErrorDetection() {
     final Parser parser = Parser.builder().build();
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss")
         .format(transactionDate);
@@ -411,8 +411,8 @@ class ParserTests {
   @Test
   void testItemStatusUpdateParsingWithoutErrorDetection() {
     final Parser parser = Parser.builder().build();
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss")
         .format(transactionDate);
@@ -438,8 +438,8 @@ class ParserTests {
   @Test
   void testPatronEnableParsingWithoutErrorDetection() {
     final Parser parser = Parser.builder().build();
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss")
         .format(transactionDate);
@@ -463,9 +463,9 @@ class ParserTests {
   @Test
   void testHoldParsingWithoutErrorDetection() {
     final Parser parser = Parser.builder().build();
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
-    final ZonedDateTime expirationDate = transactionDate.plusDays(30);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime expirationDate = transactionDate.plusDays(30);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
@@ -502,9 +502,9 @@ class ParserTests {
   void testRenewParsingWithoutErrorDetection() {
     final Parser parser = Parser.builder().build();
 
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
-    final ZonedDateTime nbDueDate = transactionDate.plusDays(30);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime nbDueDate = transactionDate.plusDays(30);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
@@ -539,8 +539,8 @@ class ParserTests {
   void testRenewAllParsingWithoutErrorDetection() {
     final Parser parser = Parser.builder().build();
 
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
@@ -566,8 +566,8 @@ class ParserTests {
   void testRenewAllParsingWithErrorDetection() {
     final Parser parser = Parser.builder().errorDetectionEnaled(TRUE).build();
 
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
@@ -596,8 +596,8 @@ class ParserTests {
     final Parser parser = Parser.builder().errorDetectionEnaled(TRUE).build();
 
     final int sequenceNumber = 1;
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.of(2019, 5, 1, 10, 30, 15, 0, ZoneOffset.UTC);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.of(2019, 5, 1, 10, 30, 15, 0, ZoneOffset.UTC);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd   'Z'HHmmss");
     final String transactionDateString = formatter.format(transactionDate);

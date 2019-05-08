@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.requests;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 /**
@@ -17,7 +17,7 @@ import java.util.Objects;
  */
 public final class RenewAll {
   /** The date and time the patron renewed all checked out items at the SC. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** The ID of the institution making the request. */
   private final String institutionId;
   /** The ID of the patron making the request. */
@@ -57,7 +57,7 @@ public final class RenewAll {
     return new RenewAllBuilder();
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
@@ -123,7 +123,7 @@ public final class RenewAll {
    * Builder for {@code RenewAll}.
    */
   public static class RenewAllBuilder {
-    private ZonedDateTime transactionDate;
+    private OffsetDateTime transactionDate;
     private String institutionId;
     private String patronIdentifier;
     private String terminalPassword;
@@ -134,7 +134,7 @@ public final class RenewAll {
       super();
     }
 
-    public RenewAllBuilder transactionDate(ZonedDateTime transactionDate) {
+    public RenewAllBuilder transactionDate(OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }

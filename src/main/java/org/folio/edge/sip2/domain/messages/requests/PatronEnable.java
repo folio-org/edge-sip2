@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.requests;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 /**
@@ -18,7 +18,7 @@ import java.util.Objects;
  */
 public final class PatronEnable {
   /** The date of this transaction. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** The ID of the institution making the request. */
   private final String institutionId;
   /** The ID of the patron making the request. */
@@ -49,7 +49,7 @@ public final class PatronEnable {
     return new PatronEnableBuilder();
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
@@ -109,7 +109,7 @@ public final class PatronEnable {
    * Builder for {@code PatronEnableRequest}.
    */
   public static class PatronEnableBuilder {
-    private ZonedDateTime transactionDate;
+    private OffsetDateTime transactionDate;
     private String institutionId;
     private String patronIdentifier;
     private String terminalPassword;
@@ -119,7 +119,7 @@ public final class PatronEnable {
       super();
     }
 
-    public PatronEnableBuilder transactionDate(ZonedDateTime transactionDate) {
+    public PatronEnableBuilder transactionDate(OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }

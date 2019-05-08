@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.FeeType;
@@ -21,7 +21,7 @@ import org.folio.edge.sip2.domain.messages.enumerations.PaymentType;
 import org.junit.jupiter.api.Test;
 
 class FeePaidTests {
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
   final FeeType feeType = OVERDUE;
   final PaymentType paymentType = CASH;
   final CurrencyType currencyType = USD;
@@ -289,7 +289,7 @@ class FeePaidTests {
         .transactionId(transactionId)
         .build();
     final FeePaid fp2 = builder()
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .feeType(ADMINISTRATIVE)
         .paymentType(CREDIT_CARD)
         .currencyType(CAD)

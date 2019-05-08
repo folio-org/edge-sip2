@@ -10,13 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class FeePaidResponseTests {
   final Boolean paymentAccepted = TRUE;
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
   final String institutionId = "diku";
   final String patronIdentifier = "1234567890";
   final String transactionId = "029282747585";
@@ -174,7 +174,7 @@ class FeePaidResponseTests {
         .build();
     final FeePaidResponse fpr2 = builder()
         .paymentAccepted(FALSE)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .institutionId("test")
         .patronIdentifier("0987654321")
         .transactionId("893457893475893475")

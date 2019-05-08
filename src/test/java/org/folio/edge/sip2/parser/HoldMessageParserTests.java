@@ -7,7 +7,7 @@ import static org.folio.edge.sip2.domain.messages.enumerations.HoldMode.ADD;
 import static org.folio.edge.sip2.domain.messages.enumerations.HoldType.SPECIFIC_COPY_TITLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.folio.edge.sip2.domain.messages.requests.Hold;
@@ -17,9 +17,9 @@ class HoldMessageParserTests {
   @Test
   void testParse() {
     HoldMessageParser parser = new HoldMessageParser(valueOf('|'));
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
-    final ZonedDateTime expirationDate = transactionDate.plusDays(30);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime expirationDate = transactionDate.plusDays(30);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);

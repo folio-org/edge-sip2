@@ -5,7 +5,7 @@ import static java.lang.Character.valueOf;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.folio.edge.sip2.domain.messages.requests.RenewAll;
@@ -15,8 +15,8 @@ class RenewAllMessageParserTests {
   @Test
   void testParse() {
     RenewAllMessageParser parser = new RenewAllMessageParser(valueOf('|'));
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);

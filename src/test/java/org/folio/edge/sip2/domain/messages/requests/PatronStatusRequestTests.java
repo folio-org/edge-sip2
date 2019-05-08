@@ -9,14 +9,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.folio.edge.sip2.domain.messages.enumerations.Language;
 import org.junit.jupiter.api.Test;
 
 class PatronStatusRequestTests {
   final Language language = ENGLISH;
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
   final String institutionId = "diku";
   final String patronIdentifier = "1234567890";
   final String terminalPassword = "12345";
@@ -150,7 +150,7 @@ class PatronStatusRequestTests {
         .build();
     final PatronStatusRequest psr2 = builder()
         .language(UNKNOWN)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .institutionId("test")
         .patronIdentifier("0987654321")
         .terminalPassword("0000")

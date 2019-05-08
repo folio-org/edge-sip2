@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -56,7 +56,7 @@ public final class ACSStatus {
    * Date and time used to synchronize clocks. {@code null} indicates an
    * unsupported function.
    */
-  private final ZonedDateTime dateTimeSync;
+  private final OffsetDateTime dateTimeSync;
   /** Supported version of the SIP protocol. */
   private final String protocolVersion;
   /** The ID of the institution making the request. */
@@ -140,7 +140,7 @@ public final class ACSStatus {
     return retriesAllowed;
   }
 
-  public ZonedDateTime getDateTimeSync() {
+  public OffsetDateTime getDateTimeSync() {
     return dateTimeSync;
   }
 
@@ -243,7 +243,7 @@ public final class ACSStatus {
     private Boolean offLineOk;
     private Integer timeoutPeriod;
     private Integer retriesAllowed;
-    private ZonedDateTime dateTimeSync;
+    private OffsetDateTime dateTimeSync;
     private String protocolVersion;
     private String institutionId;
     private String libraryName;
@@ -296,7 +296,7 @@ public final class ACSStatus {
       return this;
     }
 
-    public ACSStatusBuilder dateTimeSync(ZonedDateTime dateTimeSync) {
+    public ACSStatusBuilder dateTimeSync(OffsetDateTime dateTimeSync) {
       this.dateTimeSync = dateTimeSync;
       return this;
     }

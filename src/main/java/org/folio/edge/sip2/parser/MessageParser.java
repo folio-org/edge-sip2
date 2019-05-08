@@ -4,7 +4,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.folio.edge.sip2.parser.Field.UNKNOWN;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,7 +56,7 @@ public abstract class MessageParser {
     return new String(messageChars, startPosition, position - startPosition);
   }
 
-  protected ZonedDateTime parseDateTime(char [] messageChars) {
+  protected OffsetDateTime parseDateTime(char [] messageChars) {
     final String dateTimeString = new String(messageChars, position, 18);
     position += 18;
 
@@ -77,9 +77,9 @@ public abstract class MessageParser {
     return result;
   }
 
-  protected ZonedDateTime convertFieldToDateTime(String dateTimeString) {
+  protected OffsetDateTime convertFieldToDateTime(String dateTimeString) {
     // TIMEZONE: We'll need to get the correct TZ from somewhere
-    ZonedDateTime now = ZonedDateTime.now();
+    OffsetDateTime now = OffsetDateTime.now();
     DateTimeMapper dtMapper = new DateTimeMapper(now.getOffset());
     return dtMapper.mapDateTime(dateTimeString);
   }

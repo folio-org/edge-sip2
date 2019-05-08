@@ -2,7 +2,7 @@ package org.folio.edge.sip2.parser;
 
 import static org.folio.edge.sip2.domain.messages.requests.Checkin.builder;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,11 +36,11 @@ public class CheckinMessageParser extends MessageParser {
     builder.noBlock(parseBoolean(messageChars));
 
     // transaction date: 18-char, fixed-length required field
-    final ZonedDateTime transactionDate = parseDateTime(messageChars);
+    final OffsetDateTime transactionDate = parseDateTime(messageChars);
     builder.transactionDate(transactionDate);
 
     // return date: 18-char, fixed-length required field
-    final ZonedDateTime returnDate = parseDateTime(messageChars);
+    final OffsetDateTime returnDate = parseDateTime(messageChars);
     builder.returnDate(returnDate);
 
     // Variable length fields

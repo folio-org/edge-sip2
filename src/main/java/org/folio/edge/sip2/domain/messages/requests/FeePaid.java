@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.requests;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
@@ -22,7 +22,7 @@ import org.folio.edge.sip2.domain.messages.enumerations.PaymentType;
  */
 public final class FeePaid {
   /** The date of this transaction. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** The type of the fee. */
   private final FeeType feeType;
   /** The type of payment. */
@@ -73,7 +73,7 @@ public final class FeePaid {
     return new FeePaidBuilder();
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
@@ -170,7 +170,7 @@ public final class FeePaid {
    * Builder for {@code FeePaid}.
    */
   public static class FeePaidBuilder {
-    private ZonedDateTime transactionDate;
+    private OffsetDateTime transactionDate;
     private FeeType feeType;
     private PaymentType paymentType;
     private CurrencyType currencyType;
@@ -186,7 +186,7 @@ public final class FeePaid {
       super();
     }
 
-    public FeePaidBuilder transactionDate(ZonedDateTime transactionDate) {
+    public FeePaidBuilder transactionDate(OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }

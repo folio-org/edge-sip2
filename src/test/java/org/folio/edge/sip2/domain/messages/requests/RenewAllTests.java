@@ -9,12 +9,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.junit.jupiter.api.Test;
 
 class RenewAllTests {
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
   final String institutionId = "diku";
   final String patronIdentifier = "1234567890";
   final String patronPassword = "2112";

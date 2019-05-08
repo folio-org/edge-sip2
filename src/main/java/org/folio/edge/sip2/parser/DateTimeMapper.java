@@ -1,7 +1,7 @@
 package org.folio.edge.sip2.parser;
 
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
@@ -69,7 +69,7 @@ public final class DateTimeMapper {
    * @param scDateTime the SIP formatted date and time.
    * @return the domain date and time.
    */
-  public ZonedDateTime mapDateTime(String scDateTime) {
+  public OffsetDateTime mapDateTime(String scDateTime) {
     final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
         .appendPattern(DATE_FORMAT_STRING)
         // These optional sections are because there will be an overlap
@@ -85,6 +85,6 @@ public final class DateTimeMapper {
         .appendPattern(TIME_FORMAT_STRING)
         .toFormatter();
 
-    return ZonedDateTime.parse(scDateTime, formatter);
+    return OffsetDateTime.parse(scDateTime, formatter);
   }
 }

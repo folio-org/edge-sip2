@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.requests;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 /**
@@ -29,9 +29,9 @@ public final class Renew {
    */
   private final Boolean noBlock;
   /** The date and time the patron renewed the item at the SC. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** The no block due date given to items during off-line operation. */
-  private final ZonedDateTime nbDueDate;
+  private final OffsetDateTime nbDueDate;
   /** The ID of the institution making the request. */
   private final String institutionId;
   /** The ID of the patron making the request. */
@@ -91,11 +91,11 @@ public final class Renew {
     return noBlock;
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
-  public ZonedDateTime getNbDueDate() {
+  public OffsetDateTime getNbDueDate() {
     return nbDueDate;
   }
 
@@ -188,8 +188,8 @@ public final class Renew {
   public static class RenewBuilder {
     private Boolean thirdPartyAllowed;
     private Boolean noBlock;
-    private ZonedDateTime transactionDate;
-    private ZonedDateTime nbDueDate;
+    private OffsetDateTime transactionDate;
+    private OffsetDateTime nbDueDate;
     private String institutionId;
     private String patronIdentifier;
     private String itemIdentifier;
@@ -213,12 +213,12 @@ public final class Renew {
       return this;
     }
 
-    public RenewBuilder transactionDate(ZonedDateTime transactionDate) {
+    public RenewBuilder transactionDate(OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }
 
-    public RenewBuilder nbDueDate(ZonedDateTime nbDueDate) {
+    public RenewBuilder nbDueDate(OffsetDateTime nbDueDate) {
       this.nbDueDate = nbDueDate;
       return this;
     }

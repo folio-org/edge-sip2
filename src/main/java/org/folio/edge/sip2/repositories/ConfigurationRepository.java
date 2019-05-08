@@ -6,7 +6,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.time.Clock;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +23,7 @@ import org.folio.edge.sip2.session.SessionData;
 
 public class ConfigurationRepository {
 
-  private IResourceProvider<Object> resourceProvider;
+  private IResourceProvider<IRequestData> resourceProvider;
   private final Logger log;
   private Clock clock;
 
@@ -37,7 +37,7 @@ public class ConfigurationRepository {
    * @param resourceProvider This can be DefaultResourceProvider or any provider in the future.
    */
 
-  public ConfigurationRepository(IResourceProvider<Object> resourceProvider, Clock clock) {
+  public ConfigurationRepository(IResourceProvider<IRequestData> resourceProvider, Clock clock) {
     this.resourceProvider = Objects.requireNonNull(resourceProvider,
         "ConfigGateway cannot be null");
     this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
@@ -99,21 +99,27 @@ public class ConfigurationRepository {
             JsonObject acsConfiguration = new JsonObject(acsConfigurationString);
             return Future.succeededFuture(acsConfiguration);
           } else {
-            log.error("Getting no value from config store for "
-                + "Module: {}; ConfigName: {}; ConfigCode {}", module, configName, configCode);
+            logWithConfigDetails("Getting no value from config store for", module,
+                configName, configCode);
             return Future.failedFuture("Getting no value from config store");
           }
         } else {
-          log.error("Unable to find the configuration by the combination "
-              + "Module: {}; ConfigName: {}; ConfigCode {}", module, configName, configCode);
+          logWithConfigDetails("Unable to find the configuration by the combination", module,
+              configName, configCode);
           return Future.failedFuture("Unable to find the configuration");
         }
       } else {
-        log.error("Unable to find the configuration by the combination "
-            + "Module: {}; ConfigName: {}; ConfigCode {}", module, configName, configCode);
+        logWithConfigDetails("Unable to find the configuration by the combination", module,
+            configName, configCode);
         return Future.failedFuture("Unable to find the configuration");
       }
     });
+  }
+
+  private void logWithConfigDetails(String message, String module, String configName,
+      String configCode) {
+    log.error("{} Module: {}; ConfigName: {}; ConfigCode {}", message, module, configName,
+        configCode);
   }
 
   private ACSStatusBuilder addTenantConfig(JsonObject config, ACSStatusBuilder builder) {
@@ -136,7 +142,7 @@ public class ConfigurationRepository {
       builder.checkinOk(config.getBoolean("checkinOk"));
       builder.acsRenewalPolicy(config.getBoolean("acsRenewalPolicy"));
       builder.checkoutOk(config.getBoolean("checkoutOk"));
-      builder.dateTimeSync(ZonedDateTime.now(clock));
+      builder.dateTimeSync(OffsetDateTime.now(clock));
       builder.libraryName(config.getString("libraryName"));
       builder.terminalLocation(config.getString("terminalLocation"));
     }

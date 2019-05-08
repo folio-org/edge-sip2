@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.requests;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 import org.folio.edge.sip2.domain.messages.enumerations.HoldMode;
@@ -24,9 +24,9 @@ public final class Hold {
   /** Indicates the mode of the hold operation to perform. */
   private final HoldMode holdMode;
   /** The date and time the patron placed the hold on the item at the SC. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** The date and time the request will expire. */
-  private final ZonedDateTime expirationDate;
+  private final OffsetDateTime expirationDate;
   /** The location where the item will be picked up. */
   private final String pickupLocation;
   /** The type of the hold. */
@@ -84,11 +84,11 @@ public final class Hold {
     return holdMode;
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
-  public ZonedDateTime getExpirationDate() {
+  public OffsetDateTime getExpirationDate() {
     return expirationDate;
   }
 
@@ -184,8 +184,8 @@ public final class Hold {
    */
   public static class HoldBuilder {
     private HoldMode holdMode;
-    private ZonedDateTime transactionDate;
-    private ZonedDateTime expirationDate;
+    private OffsetDateTime transactionDate;
+    private OffsetDateTime expirationDate;
     private String pickupLocation;
     private HoldType holdType;
     private String institutionId;
@@ -205,12 +205,12 @@ public final class Hold {
       return this;
     }
 
-    public HoldBuilder transactionDate(ZonedDateTime transactionDate) {
+    public HoldBuilder transactionDate(OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }
 
-    public HoldBuilder expirationDate(ZonedDateTime expirationDate) {
+    public HoldBuilder expirationDate(OffsetDateTime expirationDate) {
       this.expirationDate = expirationDate;
       return this;
     }

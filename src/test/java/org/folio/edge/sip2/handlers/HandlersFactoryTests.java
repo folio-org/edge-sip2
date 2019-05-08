@@ -11,6 +11,7 @@ import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.DefaultResourceProvider;
+import org.folio.edge.sip2.repositories.IRequestData;
 import org.folio.edge.sip2.repositories.IResourceProvider;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +26,7 @@ public class HandlersFactoryTests {
 
   @Test
   public void canGetAcsStatusHandlerWithNonNullArguments() {
-    IResourceProvider resourceProvider = new DefaultResourceProvider();
+    IResourceProvider<IRequestData> resourceProvider = new DefaultResourceProvider();
     ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider,
         TestUtils.getUtcFixedClock());
     Template freemarkerTemplate = FreemarkerRepository.getInstance()

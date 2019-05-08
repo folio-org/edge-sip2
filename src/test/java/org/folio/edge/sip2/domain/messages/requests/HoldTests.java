@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.folio.edge.sip2.domain.messages.enumerations.HoldMode;
 import org.folio.edge.sip2.domain.messages.enumerations.HoldType;
@@ -21,8 +21,8 @@ import org.junit.jupiter.api.Test;
 
 class HoldTests {
   final HoldMode holdMode = ADD;
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
-  final ZonedDateTime expirationDate = transactionDate.plusDays(30);
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
+  final OffsetDateTime expirationDate = transactionDate.plusDays(30);
   final String pickupLocation = "circ_desk";
   final HoldType holdType = SPECIFIC_COPY_TITLE;
   final String institutionId = "diku";

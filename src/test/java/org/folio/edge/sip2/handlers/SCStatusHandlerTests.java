@@ -9,8 +9,8 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,6 +20,7 @@ import org.folio.edge.sip2.domain.messages.enumerations.StatusCode;
 import org.folio.edge.sip2.domain.messages.requests.SCStatus;
 import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.DefaultResourceProvider;
+import org.folio.edge.sip2.repositories.IRequestData;
 import org.folio.edge.sip2.repositories.IResourceProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +33,7 @@ public class SCStatusHandlerTests {
       Vertx vertx,
       VertxTestContext testContext) {
 
-    IResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
+    IResourceProvider<IRequestData> defaultConfigurationProvider = new DefaultResourceProvider();
     Clock clock = TestUtils.getUtcFixedClock();
 
 
@@ -53,7 +54,7 @@ public class SCStatusHandlerTests {
           // have to break it up into pieces.
 
           String expectedDateTimeString =
-              TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock));
+              TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock));
 
           String expectedSipResponse = "98YYNYNN005003"
               + expectedDateTimeString
@@ -68,7 +69,7 @@ public class SCStatusHandlerTests {
   public void cannotGetAValidResponseDueToMissingTemplate(
       Vertx vertx,
       VertxTestContext testContext) {
-    IResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
+    IResourceProvider<IRequestData> defaultConfigurationProvider = new DefaultResourceProvider();
     ConfigurationRepository configurationRepository =
         new ConfigurationRepository(defaultConfigurationProvider,
             Clock.fixed(Instant.now(), ZoneOffset.UTC));

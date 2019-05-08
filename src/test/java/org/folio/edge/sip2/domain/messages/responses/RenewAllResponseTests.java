@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ class RenewAllResponseTests {
   final Boolean ok = TRUE;
   final Integer renewedCount = Integer.valueOf(2);
   final Integer unrenewedCount = Integer.valueOf(1);
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
   final String institutionId = "diku";
   final List<String> renewedItems = asList("renewed_item1", "renewed_item2");
   final List<String> unrenewedItems =
@@ -234,7 +234,7 @@ class RenewAllResponseTests {
         .ok(FALSE)
         .renewedCount(Integer.valueOf(1))
         .unrenewedCount(Integer.valueOf(2))
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .institutionId("test")
         .renewedItems(asList("renewed_item1"))
         .unrenewedItems(asList("unrenewed_item1 - item recalled",

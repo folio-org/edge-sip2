@@ -13,7 +13,7 @@ import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import org.folio.edge.sip2.api.support.TestUtils;
@@ -35,13 +35,13 @@ public class CheckinHandlerTests {
       Vertx vertx,
       VertxTestContext testContext) {
     final Clock clock = TestUtils.getUtcFixedClock();
-    final ZonedDateTime returnDate = ZonedDateTime.now();
+    final OffsetDateTime returnDate = OffsetDateTime.now();
     final String institutionId = "diku";
     final String itemIdentifier = "1234567890";
     final String currentLocation = UUID.randomUUID().toString();
     final Checkin checkin = Checkin.builder()
         .noBlock(FALSE)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .returnDate(returnDate)
         .currentLocation(currentLocation)
         .institutionId(institutionId)
@@ -57,7 +57,7 @@ public class CheckinHandlerTests {
             .resensitize(TRUE)
             .magneticMedia(null)
             .alert(FALSE)
-            .transactionDate(ZonedDateTime.now(clock))
+            .transactionDate(OffsetDateTime.now(clock))
             .institutionId(institutionId)
             .itemIdentifier(itemIdentifier)
             .permanentLocation("Main Library")
@@ -71,7 +71,7 @@ public class CheckinHandlerTests {
     handler.execute(checkin, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "101YUN"
-              + TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock))
+              + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
               + "AO" + institutionId + "|AB" + itemIdentifier + "|AQMain Library|";
 
           assertEquals(expectedString, sipMessage);
@@ -86,13 +86,13 @@ public class CheckinHandlerTests {
       Vertx vertx,
       VertxTestContext testContext) {
     final Clock clock = TestUtils.getUtcFixedClock();
-    final ZonedDateTime returnDate = ZonedDateTime.now();
+    final OffsetDateTime returnDate = OffsetDateTime.now();
     final String institutionId = "diku";
     final String itemIdentifier = "1234567890";
     final String currentLocation = UUID.randomUUID().toString();
     final Checkin checkin = Checkin.builder()
         .noBlock(FALSE)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .returnDate(returnDate)
         .currentLocation(currentLocation)
         .institutionId(institutionId)
@@ -108,7 +108,7 @@ public class CheckinHandlerTests {
             .resensitize(TRUE)
             .magneticMedia(null)
             .alert(FALSE)
-            .transactionDate(ZonedDateTime.now(clock))
+            .transactionDate(OffsetDateTime.now(clock))
             .institutionId(institutionId)
             .itemIdentifier(itemIdentifier)
             .permanentLocation("")
@@ -122,7 +122,7 @@ public class CheckinHandlerTests {
     handler.execute(checkin, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "100YUN"
-              + TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock))
+              + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
               + "AO" + institutionId + "|AB" + itemIdentifier + "|AQ|";
 
           assertEquals(expectedString, sipMessage);

@@ -22,7 +22,7 @@ import static org.folio.edge.sip2.domain.messages.enumerations.PaymentType.CREDI
 import static org.folio.edge.sip2.domain.messages.enumerations.PaymentType.VISA;
 import static org.folio.edge.sip2.domain.messages.requests.FeePaid.builder;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,7 +56,7 @@ public class FeePaidMessageParser extends MessageParser {
     final char [] messageChars = message.toCharArray();
 
     // transaction date: 18-char, fixed-length required field
-    final ZonedDateTime transactionDate = parseDateTime(messageChars);
+    final OffsetDateTime transactionDate = parseDateTime(messageChars);
     builder.transactionDate(transactionDate);
 
     // fee type: 2-char, fixed-length required field

@@ -15,8 +15,8 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -53,7 +53,7 @@ public class PatronInformationHandlerTests {
     final String printLine = "This is a print line";
     final PatronInformation patronInformation = PatronInformation.builder()
         .language(ENGLISH)
-        .transactionDate(ZonedDateTime.now(clock))
+        .transactionDate(OffsetDateTime.now(clock))
         .summary(HOLD_ITEMS)
         .institutionId(institutionId)
         .patronIdentifier(patronIdentifier)
@@ -66,7 +66,7 @@ public class PatronInformationHandlerTests {
         .thenReturn(Future.succeededFuture(PatronInformationResponse.builder()
             .patronStatus(null)
             .language(ENGLISH)
-            .transactionDate(ZonedDateTime.now(clock).plusSeconds(5))
+            .transactionDate(OffsetDateTime.now(clock).plusSeconds(5))
             .holdItemsCount(holdItemsCount)
             .overdueItemsCount(overdueItemsCount)
             .chargedItemsCount(null)
@@ -105,7 +105,7 @@ public class PatronInformationHandlerTests {
     handler.execute(patronInformation, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "64              001"
-              + TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock).plusSeconds(5))
+              + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock).plusSeconds(5))
               + String.format("%04d%04d        %04d    ",
                   holdItemsCount, overdueItemsCount, recallItemsCount)
               + String.format("AO%s|AA%s|AE%s|BLY|", institutionId, patronIdentifier, personalName)

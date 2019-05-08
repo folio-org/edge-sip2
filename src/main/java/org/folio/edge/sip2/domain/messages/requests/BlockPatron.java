@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.requests;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 /**
@@ -24,7 +24,7 @@ public final class BlockPatron {
    */
   private final Boolean cardRetained;
   /** The date and time the patron checked out the item at the SC. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** The ID of the institution making the request. */
   private final String institutionId;
   /** Indicates the reason why the patron's card was blocked. */
@@ -59,7 +59,7 @@ public final class BlockPatron {
     return cardRetained;
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
@@ -122,7 +122,7 @@ public final class BlockPatron {
    */
   public static class BlockPatronBuilder {
     private Boolean cardRetained;
-    private ZonedDateTime transactionDate;
+    private OffsetDateTime transactionDate;
     private String institutionId;
     private String blockedCardMsg;
     private String patronIdentifier;
@@ -137,7 +137,7 @@ public final class BlockPatron {
       return this;
     }
 
-    public BlockPatronBuilder transactionDate(ZonedDateTime transactionDate) {
+    public BlockPatronBuilder transactionDate(OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }

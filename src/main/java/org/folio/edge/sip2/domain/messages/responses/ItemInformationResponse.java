@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,15 +31,15 @@ public final class ItemInformationResponse {
   /** The type of fee associated with checking out this item. */
   private final FeeType feeType;
   /** The date and time the patron checked out the item at the SC. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** Number of patrons requesting this item. */
   private final Integer holdQueueLength;
   /** The due date given to item. */
-  private final ZonedDateTime dueDate;
+  private final OffsetDateTime dueDate;
   /** The date that the recall was issued. */
-  private final ZonedDateTime recallDate;
+  private final OffsetDateTime recallDate;
   /** The date the hold expires. */
-  private final ZonedDateTime holdPickupDate;
+  private final OffsetDateTime holdPickupDate;
   /** The ID of the item being checked out. */
   private final String itemIdentifier;
   /** The ID of the title being checked out. */
@@ -112,7 +112,7 @@ public final class ItemInformationResponse {
     return feeType;
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
@@ -120,15 +120,15 @@ public final class ItemInformationResponse {
     return holdQueueLength;
   }
 
-  public ZonedDateTime getDueDate() {
+  public OffsetDateTime getDueDate() {
     return dueDate;
   }
 
-  public ZonedDateTime getRecallDate() {
+  public OffsetDateTime getRecallDate() {
     return recallDate;
   }
 
-  public ZonedDateTime getHoldPickupDate() {
+  public OffsetDateTime getHoldPickupDate() {
     return holdPickupDate;
   }
 
@@ -250,11 +250,11 @@ public final class ItemInformationResponse {
     private CirculationStatus circulationStatus;
     private SecurityMarker securityMarker;
     private FeeType feeType;
-    private ZonedDateTime transactionDate;
+    private OffsetDateTime transactionDate;
     private Integer holdQueueLength;
-    private ZonedDateTime dueDate;
-    private ZonedDateTime recallDate;
-    private ZonedDateTime holdPickupDate;
+    private OffsetDateTime dueDate;
+    private OffsetDateTime recallDate;
+    private OffsetDateTime holdPickupDate;
     private String itemIdentifier;
     private String titleIdentifier;
     private String owner;
@@ -289,7 +289,7 @@ public final class ItemInformationResponse {
     }
 
     public ItemInformationResponseBuilder transactionDate(
-        ZonedDateTime transactionDate) {
+        OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }
@@ -300,19 +300,19 @@ public final class ItemInformationResponse {
       return this;
     }
 
-    public ItemInformationResponseBuilder dueDate(ZonedDateTime dueDate) {
+    public ItemInformationResponseBuilder dueDate(OffsetDateTime dueDate) {
       this.dueDate = dueDate;
       return this;
     }
 
     public ItemInformationResponseBuilder recallDate(
-        ZonedDateTime recallDate) {
+        OffsetDateTime recallDate) {
       this.recallDate = recallDate;
       return this;
     }
 
     public ItemInformationResponseBuilder holdPickupDate(
-        ZonedDateTime holdPickupDate) {
+        OffsetDateTime holdPickupDate) {
       this.holdPickupDate = holdPickupDate;
       return this;
     }

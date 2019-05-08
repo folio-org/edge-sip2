@@ -9,15 +9,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.junit.jupiter.api.Test;
 
 class CheckoutTests {
   final Boolean scRenewalPolicy = TRUE;
   final Boolean noBlock = TRUE;
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
-  final ZonedDateTime nbDueDate = transactionDate.plusDays(30);
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
+  final OffsetDateTime nbDueDate = transactionDate.plusDays(30);
   final String institutionId = "diku";
   final String patronIdentifier = "1234567890";
   final String itemIdentifier = "8675309";

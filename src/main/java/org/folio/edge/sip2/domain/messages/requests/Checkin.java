@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.requests;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 /**
@@ -25,9 +25,9 @@ public final class Checkin {
    */
   private final Boolean noBlock;
   /** The date and time the patron checked in the item at the SC. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** The date the item was returned to the library. */
-  private final ZonedDateTime returnDate;
+  private final OffsetDateTime returnDate;
   /** The location of the SC terminal. */
   private final String currentLocation;
   /** The ID of the institution making the request. */
@@ -72,11 +72,11 @@ public final class Checkin {
     return noBlock;
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
-  public ZonedDateTime getReturnDate() {
+  public OffsetDateTime getReturnDate() {
     return returnDate;
   }
 
@@ -154,8 +154,8 @@ public final class Checkin {
    */
   public static class CheckinBuilder {
     private Boolean noBlock;
-    private ZonedDateTime transactionDate;
-    private ZonedDateTime returnDate;
+    private OffsetDateTime transactionDate;
+    private OffsetDateTime returnDate;
     private String currentLocation;
     private String institutionId;
     private String itemIdentifier;
@@ -172,12 +172,12 @@ public final class Checkin {
       return this;
     }
 
-    public CheckinBuilder transactionDate(ZonedDateTime transactionDate) {
+    public CheckinBuilder transactionDate(OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }
 
-    public CheckinBuilder returnDate(ZonedDateTime returnDate) {
+    public CheckinBuilder returnDate(OffsetDateTime returnDate) {
       this.returnDate = returnDate;
       return this;
     }

@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,9 +29,9 @@ public final class HoldResponse {
    */
   private final Boolean available;
   /** The date and time of the ACS response. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** The date and time that the hold will expire. */
-  private final ZonedDateTime expirationDate;
+  private final OffsetDateTime expirationDate;
   /** The position the patron in the hold queue for this item. */
   private final Integer queuePosition;
   /** The location where the item will be picked up. */
@@ -87,11 +87,11 @@ public final class HoldResponse {
     return available;
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
-  public ZonedDateTime getExpirationDate() {
+  public OffsetDateTime getExpirationDate() {
     return expirationDate;
   }
 
@@ -184,8 +184,8 @@ public final class HoldResponse {
   public static class HoldResponseBuilder {
     private Boolean ok;
     private Boolean available;
-    private ZonedDateTime transactionDate;
-    private ZonedDateTime expirationDate;
+    private OffsetDateTime transactionDate;
+    private OffsetDateTime expirationDate;
     private Integer queuePosition;
     private String pickupLocation;
     private String institutionId;
@@ -209,12 +209,12 @@ public final class HoldResponse {
       return this;
     }
 
-    public HoldResponseBuilder transactionDate(ZonedDateTime transactionDate) {
+    public HoldResponseBuilder transactionDate(OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }
 
-    public HoldResponseBuilder expirationDate(ZonedDateTime expirationDate) {
+    public HoldResponseBuilder expirationDate(OffsetDateTime expirationDate) {
       this.expirationDate = expirationDate;
       return this;
     }

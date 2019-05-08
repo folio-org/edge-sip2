@@ -12,6 +12,7 @@ import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.FolioResourceProvider;
+import org.folio.edge.sip2.repositories.IRequestData;
 import org.folio.edge.sip2.repositories.IResourceProvider;
 
 /**
@@ -32,7 +33,7 @@ public class HandlersFactory {
    */
   public static ISip2RequestHandler getScStatusHandlerInstance(
       ConfigurationRepository configRepo,
-      IResourceProvider<Object> resProvider,
+      IResourceProvider<IRequestData> resProvider,
       Template freeMarkerTemplate,
       Clock clock,
       String okapiUrl,

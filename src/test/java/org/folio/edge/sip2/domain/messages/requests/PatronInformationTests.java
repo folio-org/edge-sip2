@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.folio.edge.sip2.domain.messages.enumerations.Language;
 import org.folio.edge.sip2.domain.messages.enumerations.Summary;
@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 
 class PatronInformationTests {
   final Language language = ENGLISH;
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
   final Summary summary = FINE_ITEMS;
   final String institutionId = "diku";
   final String patronIdentifier = "1234567890";
@@ -235,7 +235,7 @@ class PatronInformationTests {
         .build();
     final PatronInformation pi2 = builder()
         .language(UNKNOWN)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .summary(RECALL_ITEMS)
         .institutionId("test")
         .patronIdentifier("0987654321")

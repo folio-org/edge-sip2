@@ -7,12 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.junit.jupiter.api.Test;
 
 class EndPatronSessionTests {
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
   final String institutionId = "diku";
   final String patronIdentifier = "1234567890";
   final String terminalPassword = "12345";
@@ -126,7 +126,7 @@ class EndPatronSessionTests {
         .patronPassword(patronPassword)
         .build();
     final EndPatronSession eps2 = builder()
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .institutionId("test")
         .patronIdentifier("0987654321")
         .terminalPassword("0000")
