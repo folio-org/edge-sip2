@@ -39,7 +39,9 @@ public class TestUtils {
   }
 
   public static SessionData getMockedSessionData() {
-    return SessionData.createSession("diku", '|', false, "");
+    SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    sessionData.setTimeZone("Etc/UTC");
+    return sessionData;
   }
 
   /**

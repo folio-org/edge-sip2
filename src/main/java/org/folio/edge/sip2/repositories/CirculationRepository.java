@@ -9,7 +9,7 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import java.time.Clock;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,17 +29,16 @@ import org.folio.edge.sip2.session.SessionData;
  * @author mreno-EBSCO
  *
  */
-public class CirculationRepository {
+public class CirculationRepository extends AbstractRepository {
   // Should consider letting the template take care of required fields with missing values
   private static final String UNKNOWN = "";
   private final IResourceProvider<IRequestData> resourceProvider;
-  private final Clock clock;
 
   @Inject
   CirculationRepository(IResourceProvider<IRequestData> resourceProvider, Clock clock) {
+    super(clock);
     this.resourceProvider = Objects.requireNonNull(resourceProvider,
         "Resource provider cannot be null");
-    this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
   }
 
   /**
@@ -60,7 +59,7 @@ public class CirculationRepository {
         .put("itemBarcode", itemIdentifier)
         .put("servicePointId", scLocation)
         .put("checkInDate", DateTimeFormatter.ISO_DATE_TIME
-            .withZone(ZoneOffset.UTC)
+            .withZone(ZoneId.of(sessionData.getTimeZone()))
             .format(returnDate));
 
     final Map<String, String> headers = getBaseHeaders();
@@ -78,9 +77,7 @@ public class CirculationRepository {
               .resensitize(resource.getResource() == null ? FALSE : TRUE)
               .magneticMedia(null)
               .alert(FALSE)
-              // Need to get the "local" time zone from somewhere
-              // Using UTC for now
-              .transactionDate(OffsetDateTime.now(clock))
+              .transactionDate(getTransactionTimestamp(sessionData.getTimeZone()))
               .institutionId(institutionId)
               .itemIdentifier(itemIdentifier)
               // this is probably not the permanent location
@@ -131,7 +128,7 @@ public class CirculationRepository {
               dueDate = null;
             } else {
               // Need to convert to the tenant local timezone
-              dueDate = OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(dueDateString));
+              dueDate = Utils.convertDateTime(OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(dueDateString)), sessionData.getTimeZone());
             }
           } else {
             dueDate = null;
@@ -142,9 +139,7 @@ public class CirculationRepository {
               .renewalOk(FALSE)
               .magneticMedia(null)
               .desensitize(resource.getResource() == null ? FALSE : TRUE)
-              // Need to get the "local" time zone from somewhere
-              // Using UTC for now
-              .transactionDate(OffsetDateTime.now(clock))
+              .transactionDate(getTransactionTimestamp(sessionData.getTimeZone()))
               .institutionId(institutionId)
               .patronIdentifier(patronIdentifier)
               .itemIdentifier(itemIdentifier)

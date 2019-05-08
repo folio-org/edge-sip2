@@ -39,7 +39,7 @@ import org.folio.edge.sip2.session.SessionData;
  * @author mreno-EBSCO
  *
  */
-public class PatronRepository {
+public class PatronRepository extends AbstractRepository {
   private static final String FIELD_TITLE = "title";
   private static final String FIELD_TOTAL_RECORDS = "totalRecords";
   private static final Logger log = LogManager.getLogger();
@@ -51,11 +51,12 @@ public class PatronRepository {
   @Inject
   PatronRepository(UsersRepository usersRepository, CirculationRepository circulationRepository,
       Clock clock) {
+    super(clock);
     this.usersRepository = Objects.requireNonNull(usersRepository,
         "Users repository cannot be null");
     this.circulationRepository = Objects.requireNonNull(circulationRepository,
         "Circulation repository cannot be null");
-    this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
+    this.clock = clock;
   }
 
   /**
@@ -76,13 +77,13 @@ public class PatronRepository {
     final Future<JsonObject> result = usersRepository.getUserByBarcode(barcode, sessionData);
     return result.compose(user -> {
       if (user == null || !user.getBoolean("active", FALSE).booleanValue()) {
-        return invalidPatron(patronInformation);
+        return invalidPatron(patronInformation, sessionData.getTimeZone());
       } else {
         final String userId = user.getString("id");
         if (userId == null) {
           // Something is really messed up if the id is missing
           log.error("User with barcode {} is missing the \"id\" field", barcode);
-          return invalidPatron(patronInformation);
+          return invalidPatron(patronInformation, sessionData.getTimeZone());
         }
         return validPatron(userId, user.getJsonObject("personal", new JsonObject()),
             patronInformation, sessionData);
@@ -118,7 +119,7 @@ public class PatronRepository {
             .patronStatus(EnumSet.noneOf(PatronStatus.class))
             // Get tenant language from config along with the timezone
             .language(patronInformation.getLanguage())
-            .transactionDate(OffsetDateTime.now(clock))
+            .transactionDate(getTransactionTimestamp(sessionData.getTimeZone()))
             .chargedItemsCount(null)
             .fineItemsCount(null)
             .unavailableHoldsCount(null)
@@ -129,11 +130,11 @@ public class PatronRepository {
         );
   }
 
-  private Future<PatronInformationResponse> invalidPatron(PatronInformation patronInformation) {
+  private Future<PatronInformationResponse> invalidPatron(PatronInformation patronInformation, String timeZone) {
     return Future.succeededFuture(PatronInformationResponse.builder()
         .patronStatus(EnumSet.noneOf(PatronStatus.class))
         .language(UNKNOWN)
-        .transactionDate(OffsetDateTime.now(clock)) // need tenant timezone
+        .transactionDate(getTransactionTimestamp(timeZone))
         .holdItemsCount(Integer.valueOf(0))
         .overdueItemsCount(Integer.valueOf(0))
         .chargedItemsCount(Integer.valueOf(0))

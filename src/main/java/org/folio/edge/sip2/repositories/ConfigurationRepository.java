@@ -21,7 +21,7 @@ import org.folio.edge.sip2.domain.messages.responses.ACSStatus;
 import org.folio.edge.sip2.domain.messages.responses.ACSStatus.ACSStatusBuilder;
 import org.folio.edge.sip2.session.SessionData;
 
-public class ConfigurationRepository {
+public class ConfigurationRepository extends AbstractRepository {
 
   private IResourceProvider<IRequestData> resourceProvider;
   private final Logger log;
@@ -38,9 +38,9 @@ public class ConfigurationRepository {
    */
 
   public ConfigurationRepository(IResourceProvider<IRequestData> resourceProvider, Clock clock) {
+    super(clock);
     this.resourceProvider = Objects.requireNonNull(resourceProvider,
         "ConfigGateway cannot be null");
-    this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
     log = LogManager.getLogger();
   }
 
@@ -60,7 +60,7 @@ public class ConfigurationRepository {
     final Future<ACSStatusBuilder> selfCheckoutConfigFuture =
         retrieveConfiguration(sessionData, CONFIG_MODULE,
             SC_STATION_CONFIG_NAME + "." + sessionData.getScLocation(), "")
-        .map(config -> addSCStationConfig(config, builder));
+        .map(config -> addSCStationConfig(config, builder, sessionData.getTimeZone()));
 
     return CompositeFuture.all(tenantConfigfuture, selfCheckoutConfigFuture)
         .map(result -> builder.build());
@@ -137,12 +137,12 @@ public class ConfigurationRepository {
     return builder;
   }
 
-  private ACSStatusBuilder addSCStationConfig(JsonObject config, ACSStatusBuilder builder) {
+  private ACSStatusBuilder addSCStationConfig(JsonObject config, ACSStatusBuilder builder, String timeZone) {
     if (config != null) {
       builder.checkinOk(config.getBoolean("checkinOk"));
       builder.acsRenewalPolicy(config.getBoolean("acsRenewalPolicy"));
       builder.checkoutOk(config.getBoolean("checkoutOk"));
-      builder.dateTimeSync(OffsetDateTime.now(clock));
+      builder.dateTimeSync(getTransactionTimestamp(timeZone));
       builder.libraryName(config.getString("libraryName"));
       builder.terminalLocation(config.getString("terminalLocation"));
     }

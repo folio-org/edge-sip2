@@ -14,6 +14,7 @@ public class SessionData {
   private String username;
   private String password; // should we really save this?
   private PreviousMessage previousMessage;
+  private String timeZone;
 
   private SessionData(String tenant, char fieldDelimiter,
       boolean errorDetectionEnabled, String charset) {
@@ -86,6 +87,10 @@ public class SessionData {
   public void setPreviousMessage(PreviousMessage message) {
     this.previousMessage = message;
   }
+
+  public String getTimeZone() { return timeZone; }
+
+  public void setTimeZone(String timeZone) { this.timeZone = timeZone; }
 
   public static SessionData createSession(String tenant, char fieldDelimiter,
       boolean errorDetectionEnabled, String charset) {

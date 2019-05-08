@@ -2,6 +2,8 @@ package org.folio.edge.sip2.repositories;
 
 import io.vertx.core.json.JsonObject;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.Arrays;
@@ -46,5 +48,13 @@ final class Utils {
 
   public static boolean isStringNullOrEmpty(String aString) {
     return aString == null ? true : aString == "";
+  }
+
+  public static OffsetDateTime getOffsetDateTimeNow(String timeZone) {
+    return OffsetDateTime.now(ZoneId.of(timeZone));
+  }
+
+  public static OffsetDateTime convertDateTime(OffsetDateTime instance, String timeZone) {
+    return OffsetDateTime.ofInstant(instance.toInstant(), ZoneId.of(timeZone));
   }
 }

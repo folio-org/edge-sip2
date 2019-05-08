@@ -87,7 +87,7 @@ public class CirculationRepositoryTests {
         .thenReturn(Future.succeededFuture(new FolioResource(response,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
@@ -137,7 +137,7 @@ public class CirculationRepositoryTests {
     when(mockFolioProvider.createResource(any()))
         .thenReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
@@ -196,7 +196,7 @@ public class CirculationRepositoryTests {
         .thenReturn(Future.succeededFuture(new FolioResource(response,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
@@ -274,7 +274,7 @@ public class CirculationRepositoryTests {
     when(mockFolioProvider.createResource(any()))
         .thenReturn(Future.failedFuture(new FolioRequestThrowable(errorMessage)));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
@@ -325,7 +325,7 @@ public class CirculationRepositoryTests {
         .thenReturn(Future.succeededFuture(new FolioResource(response,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
@@ -354,7 +354,7 @@ public class CirculationRepositoryTests {
     when(mockFolioProvider.retrieveResource(any()))
         .thenReturn(Future.failedFuture(new NoStackTraceThrowable("cannotGetLoansByUserId")));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
@@ -386,7 +386,7 @@ public class CirculationRepositoryTests {
         .thenReturn(Future.succeededFuture(new FolioResource(response,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
@@ -416,7 +416,7 @@ public class CirculationRepositoryTests {
         .thenReturn(Future.failedFuture(
             new NoStackTraceThrowable("cannotGetOverdueLoansByUserId")));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
@@ -449,7 +449,7 @@ public class CirculationRepositoryTests {
         .thenReturn(Future.succeededFuture(new FolioResource(response,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
@@ -478,7 +478,7 @@ public class CirculationRepositoryTests {
     when(mockFolioProvider.retrieveResource(any()))
         .thenReturn(Future.failedFuture(new NoStackTraceThrowable("cannotGetRequestsByItemId")));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
@@ -512,7 +512,7 @@ public class CirculationRepositoryTests {
         .thenReturn(Future.succeededFuture(new FolioResource(response,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
@@ -541,7 +541,7 @@ public class CirculationRepositoryTests {
     when(mockFolioProvider.retrieveResource(any()))
         .thenReturn(Future.failedFuture(new NoStackTraceThrowable("cannotGetRequestsByUserId")));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
