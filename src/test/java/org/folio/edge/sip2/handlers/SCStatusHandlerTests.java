@@ -57,7 +57,7 @@ public class SCStatusHandlerTests {
 
           String expectedSipResponse = "98YYNYNN005003"
               + expectedDateTimeString
-              + "1.23AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|";
+              + "1.23AOfs00000010test|AMdiku|BXYNNNYNYNNNNNNNYN|ANTL01|";
 
           assertEquals(expectedSipResponse, sipMessage);
           testContext.completeNow();

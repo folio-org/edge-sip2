@@ -57,7 +57,7 @@ public class ConfigurationRepositoryTests {
           +   "\"screenMessage\":\"Hello, welcome\","
           +  "\"printLine\":\"testing\",\"checkinOk\":false,"
           +   "\"checkoutOk\":true,\"acsRenewalPolicy\":false,"
-          +  "\"libraryName\":\"Chalmers\",\"terminalLocation\":\"SE10\"}");
+          +  "\"libraryName\":\"diku\",\"terminalLocation\":\"SE10\"}");
 
     JsonArray configsArray = new JsonArray();
     configsArray.add(configObject);
@@ -88,7 +88,7 @@ public class ConfigurationRepositoryTests {
           assertEquals(2, status.getRetriesAllowed());
           assertEquals("1.23", status.getProtocolVersion());
           assertEquals("fs00000010", status.getInstitutionId());
-          assertEquals("Chalmers", status.getLibraryName());
+          assertEquals("diku", status.getLibraryName());
           assertEquals("SE10", status.getTerminalLocation());
           assertEquals(ZonedDateTime.now(clock), status.getDateTimeSync());
 

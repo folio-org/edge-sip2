@@ -91,15 +91,26 @@ public class ConfigurationRepository {
       final JsonObject scConfiguration = resource.getResource();
       JsonObject acsConfiguration = null;
       if (scConfiguration != null) {
-
         JsonArray configs = scConfiguration.getJsonArray("configs");
-        JsonObject firstConfig = configs.getJsonObject(0);
+        if (configs.size() > 0) {
+          JsonObject firstConfig = configs.getJsonObject(0);
 
-        String acsConfigurationString = firstConfig.getString("value");
-        acsConfiguration = new JsonObject(acsConfigurationString);
-        return Future.succeededFuture(acsConfiguration);
+          String acsConfigurationString = firstConfig.getString("value");
+          if (acsConfigurationString != null && !acsConfigurationString.isEmpty()) {
+            acsConfiguration = new JsonObject(acsConfigurationString);
+            return Future.succeededFuture(acsConfiguration);
+          } else {
+            log.error("Getting no value from config store for "
+              + "Module: {}; ConfigName: {}; ConfigCode {}", module, configName, configCode);
+            return Future.failedFuture("Getting no value from config store");
+          }
+        } else {
+          log.error("Unable to find the configuration by the combination "
+            + "Module: {}; ConfigName: {}; ConfigCode {}", module, configName, configCode);
+          return Future.failedFuture("Unable to find the configuration");
+        }
       } else {
-        log.info("Unable to find the configuration by the combination "
+        log.error("Unable to find the configuration by the combination "
             + "Module: {}; ConfigName: {}; ConfigCode {}", module, configName, configCode);
         return Future.failedFuture("Unable to find the configuration");
       }

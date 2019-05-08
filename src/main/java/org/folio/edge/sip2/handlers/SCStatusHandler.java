@@ -12,6 +12,8 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
+import org.folio.edge.sip2.domain.messages.enumerations.StatusCode;
+import org.folio.edge.sip2.domain.messages.requests.SCStatus;
 import org.folio.edge.sip2.domain.messages.responses.ACSStatus;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
@@ -39,27 +41,38 @@ public class SCStatusHandler implements ISip2RequestHandler {
 
   @Override
   public Future<String> execute(Object message, SessionData sessionData)  {
-    Future<ACSStatus> future = configurationRepository.getACSStatus(sessionData);
 
-    return future.compose(acsStatus -> {
-      Map<String, Object> root = new HashMap<>();
-      root.put("PackagedSupportedMessages",
-          new PackagedSupportedMessages(acsStatus.getSupportedMessages()));
-      root.put("ACSStatus",acsStatus);
-      root.put("formatDateTime", new FormatDateTimeMethodModel());
-      root.put("delimiter", sessionData.getFieldDelimiter());
-      root.put("maxLength", 100); // should come from the sc status command
+    SCStatus scStatus = (SCStatus)message;
+    sessionData.setMaxPrintWidth(scStatus.getMaxPrintWidth());
 
-      if (template == null) {
-        log.error("Unable to locate Freemarker template for the command: " + ACS_STATUS.name());
-        return Future.failedFuture("");
-      }
+    StatusCode scStatusCode = scStatus.getStatusCode();
+    if (scStatusCode == StatusCode.SC_OK) {
 
-      String acsSipStatusMessage = FreemarkerUtils.executeFreemarkerTemplate(root, template);
-      log.debug("Sip2 ACSStatus message: " + acsSipStatusMessage);
+      Future<ACSStatus> future = configurationRepository.getACSStatus(sessionData);
 
-      return Future.succeededFuture(acsSipStatusMessage);
-    });
+      return future.compose(acsStatus -> {
+        Map<String, Object> root = new HashMap<>();
+        root.put("PackagedSupportedMessages",
+            new PackagedSupportedMessages(acsStatus.getSupportedMessages()));
+        root.put("ACSStatus",acsStatus);
+        root.put("formatDateTime", new FormatDateTimeMethodModel());
+        root.put("delimiter", sessionData.getFieldDelimiter());
+        root.put("maxLength", 100); // should come from the sc status command
+
+        if (template == null) {
+          log.error("Unable to locate Freemarker template for the command: " + ACS_STATUS.name());
+          return Future.failedFuture("");
+        }
+
+        String acsSipStatusMessage = FreemarkerUtils.executeFreemarkerTemplate(root, template);
+        log.debug("Sip2 ACSStatus message: " + acsSipStatusMessage);
+
+        return Future.succeededFuture(acsSipStatusMessage);
+      });
+    } else {
+      log.error("SC at location {} status is {}", sessionData.getScLocation(), scStatusCode);
+      return Future.failedFuture("Cannot service this request because SC is " + scStatusCode);
+    }
   }
 
   /**

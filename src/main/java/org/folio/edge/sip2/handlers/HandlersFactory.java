@@ -46,7 +46,7 @@ public class HandlersFactory {
     if (configRepo == null && clock == null) {
       configRepo = new ConfigurationRepository(resProvider,
           Clock.fixed(Instant.now(), ZoneOffset.UTC));
-    } else if (configRepo == null && clock != null) {
+    } else if (configRepo == null) {
       configRepo = new ConfigurationRepository(resProvider, clock);
     }
 

@@ -122,11 +122,11 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
     final String authenticationToken = sessionData.getAuthenticationToken();
     if (authenticationToken != null) {
-      log.info(HEADER_X_OKAPI_TOKEN + ": {}", authenticationToken);
+      log.debug(HEADER_X_OKAPI_TOKEN + ": {}", authenticationToken);
       request.putHeader(HEADER_X_OKAPI_TOKEN, authenticationToken);
     }
 
-    log.info(HEADER_X_OKAPI_TENANT + ": {}", sessionData.getTenant());
+    log.debug(HEADER_X_OKAPI_TENANT + ": {}", sessionData.getTenant());
     request.putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant());
   }
 

@@ -188,7 +188,7 @@ public class MainVerticleTests extends BaseTest {
 
     String expectedPreLocalTime = "98YYNYNN005003" + getFormattedDateString();
     String expectedPostLocalTime =
-        "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\r";
+        "1.23|AOfs00000010test|AMdiku|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\r";
     String expectedBlankSpaces = "    ";
 
     assertEquals(expectedPreLocalTime, acsResponse.substring(0, 22),
