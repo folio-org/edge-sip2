@@ -62,13 +62,16 @@ public class MainVerticle extends AbstractVerticle {
   public void start(Future<Void> startFuture) {
     // We need to reduce the complexity of this method...
     if (handlers == null) {
+      String okapiUrl = config().getString("okapiUrl");
+
       final Injector injector = Guice.createInjector(
-          new FolioResourceProviderModule(config().getString("okapiUrl"), vertx),
+          new FolioResourceProviderModule(okapiUrl, vertx),
           new ApplicationModule());
       handlers = new EnumMap<>(Command.class);
       handlers.put(CHECKOUT, injector.getInstance(CheckoutHandler.class));
       handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
-      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null, null, null));
+      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null,
+                null, null, okapiUrl, vertx));
       handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
       handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
       handlers.put(PATRON_INFORMATION, injector.getInstance(PatronInformationHandler.class));

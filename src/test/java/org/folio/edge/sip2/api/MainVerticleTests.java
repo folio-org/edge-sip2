@@ -15,6 +15,7 @@ import java.util.TimeZone;
 
 import org.folio.edge.sip2.api.support.BaseTest;
 import org.folio.edge.sip2.api.support.TestUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -59,6 +60,7 @@ public class MainVerticleTests extends BaseTest {
     });
   }
 
+  @Disabled("Need mock Okapi")
   @Test
   public void canMakeValidSCStatusRequest(Vertx vertex, VertxTestContext testContext) {
     callService("9900401.00AY1AZFCA5\r",
@@ -85,6 +87,7 @@ public class MainVerticleTests extends BaseTest {
     });
   }
 
+  @Disabled("Need mock Okapi")
   @Test
   public void canGetACSStatusMessageWhenSendingValidMessage(
       Vertx vertx, VertxTestContext testContext) {
@@ -185,7 +188,7 @@ public class MainVerticleTests extends BaseTest {
 
     String expectedPreLocalTime = "98YYNYNN005003" + getFormattedDateString();
     String expectedPostLocalTime =
-        "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\r";
+        "1.23|AOdikutest|AMdiku|BXYNNNYNYNNNNNNNYN|ANTL01|AFscreenMessages|AGline|\r";
     String expectedBlankSpaces = "    ";
 
     assertEquals(expectedPreLocalTime, acsResponse.substring(0, 22),

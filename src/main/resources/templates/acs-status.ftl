@@ -27,7 +27,7 @@ ${ACSStatus.offLineOk}<#rt>
 ${ACSStatus.timeoutPeriod?string("000")}<#rt>
 ${ACSStatus.retriesAllowed?string("000")}<#rt>
 ${formatDateTime(ACSStatus.dateTimeSync, "yyyyMMdd    HHmmss")}<#t>
-${ACSStatus.protocolVersion}|<#rt>
+${ACSStatus.protocolVersion}<#rt>
 AO${ACSStatus.institutionId}|<#rt>
 AM${ACSStatus.libraryName}|<#rt>
 BX<@supportedMessages />|<#rt>

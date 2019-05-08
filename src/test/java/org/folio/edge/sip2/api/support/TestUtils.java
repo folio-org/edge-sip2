@@ -11,6 +11,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import org.folio.edge.sip2.session.SessionData;
+
 public class TestUtils {
   private TestUtils() {
     super();
@@ -34,6 +36,10 @@ public class TestUtils {
    */
   public static Clock getUtcFixedClock() {
     return Clock.fixed(Instant.now(), ZoneOffset.UTC);
+  }
+
+  public static SessionData getMockedSessionData() {
+    return SessionData.createSession("diku", '|', false, "");
   }
 
   /**

@@ -45,7 +45,7 @@ public class LoginRepository {
     final JsonObject credentials = new JsonObject()
         .put("username", user)
         .put("password", password);
-    
+
     final Future<IResource> result = resourceProvider
         .createResource(new LoginRequestData(credentials, sessionData));
 

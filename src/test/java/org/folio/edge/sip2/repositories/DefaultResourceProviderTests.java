@@ -1,7 +1,10 @@
 package org.folio.edge.sip2.repositories;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -21,19 +24,27 @@ public class DefaultResourceProviderTests {
   }
 
   @Test
-  public void canRetrieveAcsConfiguration(
+  public void canRetrieveSCConfiguration(
       Vertx vertx,
       VertxTestContext testContext) {
+
+    IRequestData mockRequestData = mock(IRequestData.class);
+    when(mockRequestData.getPath()).thenReturn(ConfigurationRepository.SC_STATION_CONFIG_NAME);
+
     DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
-    defaultConfigurationProvider.retrieveResource(null).setHandler(
+    defaultConfigurationProvider.retrieveResource(mockRequestData).setHandler(
         testContext.succeeding(resource -> testContext.verify(() -> {
           final JsonObject jsonConfig = resource.getResource();
           assertNotNull(jsonConfig);
 
-          JsonObject acsConfig = jsonConfig.getJsonObject("acsConfiguration");
+          JsonArray configs = jsonConfig.getJsonArray("configs");
+          JsonObject firstConfig = configs.getJsonObject(0);
 
-          assertEquals("fs00000010test", acsConfig.getString("institutionId"));
-          assertEquals("1.23", acsConfig.getString("protocolVersion"));
+          String configString = firstConfig.getString("value");
+          JsonObject scConfig = new JsonObject(configString);
+
+          assertFalse(scConfig.getBoolean("checkoutOk"));
+          assertEquals("CEST", scConfig.getString("SCtimeZone"));
 
           testContext.completeNow();
         })));
@@ -44,17 +55,23 @@ public class DefaultResourceProviderTests {
       Vertx vertx,
       VertxTestContext testContext) {
 
+    IRequestData mockRequestData = mock(IRequestData.class);
+    when(mockRequestData.getPath()).thenReturn(ConfigurationRepository.TENANT_CONFIG_NAME);
+
     DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
-    defaultConfigurationProvider.retrieveResource(null).setHandler(
+    defaultConfigurationProvider.retrieveResource(mockRequestData).setHandler(
         testContext.succeeding(resource -> testContext.verify(() -> {
           final JsonObject jsonConfig = resource.getResource();
           assertNotNull(jsonConfig);
 
-          JsonArray tenantConfigs = jsonConfig.getJsonArray("tenantConfigurations");
-          JsonObject firstTenantConfig = tenantConfigs.getJsonObject(0);
+          JsonArray configs = jsonConfig.getJsonArray("configs");
+          JsonObject firstConfig = configs.getJsonObject(0);
 
-          assertEquals("fs00000010test", firstTenantConfig.getString("tenantId"));
-          assertEquals("ASCII", firstTenantConfig.getString("encoding"));
+          String configString = firstConfig.getString("value");
+          JsonObject tenantConfig = new JsonObject(configString);
+
+          assertEquals("dikutest", tenantConfig.getString("tenantId"));
+          assertEquals(5, tenantConfig.getInteger("overdueItemsLimit"));
 
           testContext.completeNow();
         })));
