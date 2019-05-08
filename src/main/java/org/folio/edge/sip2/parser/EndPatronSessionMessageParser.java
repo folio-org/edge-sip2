@@ -2,7 +2,7 @@ package org.folio.edge.sip2.parser;
 
 import static org.folio.edge.sip2.domain.messages.requests.EndPatronSession.builder;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,7 +33,7 @@ public class EndPatronSessionMessageParser extends MessageParser {
     final char [] messageChars = message.toCharArray();
 
     // transaction date: 18-char, fixed-length required field
-    final ZonedDateTime transactionDate = parseDateTime(messageChars);
+    final OffsetDateTime transactionDate = parseDateTime(messageChars);
     epsBuilder.transactionDate(transactionDate);
 
     // Variable length fields

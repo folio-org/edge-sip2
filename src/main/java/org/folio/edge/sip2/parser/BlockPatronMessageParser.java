@@ -2,7 +2,7 @@ package org.folio.edge.sip2.parser;
 
 import static org.folio.edge.sip2.domain.messages.requests.BlockPatron.builder;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,7 +36,7 @@ public class BlockPatronMessageParser extends MessageParser {
     builder.cardRetained(parseBoolean(messageChars));
 
     // transaction date: 18-char, fixed-length required field
-    final ZonedDateTime transactionDate = parseDateTime(messageChars);
+    final OffsetDateTime transactionDate = parseDateTime(messageChars);
     builder.transactionDate(transactionDate);
 
     // Variable length fields

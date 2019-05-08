@@ -10,7 +10,7 @@ import static org.folio.edge.sip2.domain.messages.requests.PatronInformation.bui
 import static org.folio.edge.sip2.parser.Field.BP;
 import static org.folio.edge.sip2.parser.Field.BQ;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,7 +47,7 @@ public class PatronInformationMessageParser extends MessageParser {
     piBuilder.language(LanguageMapper.find(languageString).getLanguage());
 
     // transaction date: 18-char, fixed-length required field
-    final ZonedDateTime transactionDate = parseDateTime(messageChars);
+    final OffsetDateTime transactionDate = parseDateTime(messageChars);
     piBuilder.transactionDate(transactionDate);
 
     // summary: 10-char, fixed-length required field

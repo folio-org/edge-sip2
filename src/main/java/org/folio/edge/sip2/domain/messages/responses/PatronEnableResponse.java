@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -29,7 +29,7 @@ public final class PatronEnableResponse {
   /** The language requested for visible messages. */
   private final Language language;
   /** The date of this transaction. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** The ID of the institution making the request. */
   private final String institutionId;
   /** The ID of the patron making the request. */
@@ -87,7 +87,7 @@ public final class PatronEnableResponse {
     return language;
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
@@ -172,7 +172,7 @@ public final class PatronEnableResponse {
   public static class PatronEnableResponseBuilder {
     private Set<PatronStatus> patronStatus;
     private Language language;
-    private ZonedDateTime transactionDate;
+    private OffsetDateTime transactionDate;
     private String institutionId;
     private String patronIdentifier;
     private String personalName;
@@ -197,7 +197,7 @@ public final class PatronEnableResponse {
     }
 
     public PatronEnableResponseBuilder transactionDate(
-        ZonedDateTime transactionDate) {
+        OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }

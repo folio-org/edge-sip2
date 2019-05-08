@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.FeeType;
@@ -28,12 +28,12 @@ class CheckoutResponseTests {
   final Boolean renewalOk = TRUE;
   final Boolean magneticMedia = FALSE;
   final Boolean desensitize = TRUE;
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
   final String institutionId = "diku";
   final String patronIdentifier = "1234567890";
   final String itemIdentifier = "8675309";
   final String titleIdentifier = "5551212";
-  final ZonedDateTime dueDate = transactionDate.plusDays(30);
+  final OffsetDateTime dueDate = transactionDate.plusDays(30);
   final FeeType feeType = RENTAL;
   final Boolean securityInhibit = FALSE;
   final CurrencyType currencyType = USD;
@@ -634,12 +634,12 @@ class CheckoutResponseTests {
         .renewalOk(FALSE)
         .magneticMedia(TRUE)
         .desensitize(FALSE)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .institutionId("xyzzy")
         .patronIdentifier("111111111")
         .itemIdentifier("222222222")
         .titleIdentifier("ou812")
-        .dueDate(ZonedDateTime.now().plusDays(5))
+        .dueDate(OffsetDateTime.now().plusDays(5))
         .feeType(DAMAGE)
         .securityInhibit(TRUE)
         .currencyType(GBP)

@@ -5,7 +5,7 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,7 +33,7 @@ public final class PatronInformationResponse {
   /** The language requested for visible messages. */
   private final Language language;
   /** The date of this transaction. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** The ID of the institution making the request. */
   private final String institutionId;
   /**
@@ -205,7 +205,7 @@ public final class PatronInformationResponse {
     return language;
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
@@ -421,7 +421,7 @@ public final class PatronInformationResponse {
   public static class PatronInformationResponseBuilder {
     private Set<PatronStatus> patronStatus;
     private Language language;
-    private ZonedDateTime transactionDate;
+    private OffsetDateTime transactionDate;
     private String institutionId;
     private Integer holdItemsCount;
     private Integer overdueItemsCount;
@@ -467,7 +467,7 @@ public final class PatronInformationResponse {
     }
 
     public PatronInformationResponseBuilder transactionDate(
-        ZonedDateTime transactionDate) {
+        OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }

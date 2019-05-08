@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,7 +44,7 @@ public abstract class BaseCheckoutRenewResponse {
    */
   private final Boolean desensitize;
   /** The date and time the patron checked out the item at the SC. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** The ID of the institution making the request. */
   private final String institutionId;
   /** The ID of the patron making the request. */
@@ -54,7 +54,7 @@ public abstract class BaseCheckoutRenewResponse {
   /** The ID of the title being checked out. */
   private final String titleIdentifier;
   /** The due date given to item. */
-  private final ZonedDateTime dueDate;
+  private final OffsetDateTime dueDate;
   /** The type of fee associated with checking out this item. */
   private final FeeType feeType;
   /**
@@ -123,7 +123,7 @@ public abstract class BaseCheckoutRenewResponse {
     return desensitize;
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
@@ -143,7 +143,7 @@ public abstract class BaseCheckoutRenewResponse {
     return titleIdentifier;
   }
 
-  public ZonedDateTime getDueDate() {
+  public OffsetDateTime getDueDate() {
     return dueDate;
   }
 
@@ -258,12 +258,12 @@ public abstract class BaseCheckoutRenewResponse {
     private Boolean renewalOk;
     private Boolean magneticMedia;
     private Boolean desensitize;
-    private ZonedDateTime transactionDate;
+    private OffsetDateTime transactionDate;
     private String institutionId;
     private String patronIdentifier;
     private String itemIdentifier;
     private String titleIdentifier;
-    private ZonedDateTime dueDate;
+    private OffsetDateTime dueDate;
     private FeeType feeType;
     private Boolean securityInhibit;
     private CurrencyType currencyType;
@@ -302,7 +302,7 @@ public abstract class BaseCheckoutRenewResponse {
       return builder();
     }
 
-    public B transactionDate(ZonedDateTime transactionDate) {
+    public B transactionDate(OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return builder();
     }
@@ -327,7 +327,7 @@ public abstract class BaseCheckoutRenewResponse {
       return builder();
     }
 
-    public B dueDate(ZonedDateTime dueDate) {
+    public B dueDate(OffsetDateTime dueDate) {
       this.dueDate = dueDate;
       return builder();
     }

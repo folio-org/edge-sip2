@@ -21,7 +21,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
@@ -64,12 +64,12 @@ public class CirculationRepositoryTests {
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
     final Clock clock = TestUtils.getUtcFixedClock();
-    final ZonedDateTime returnDate = ZonedDateTime.now();
+    final OffsetDateTime returnDate = OffsetDateTime.now();
     final String currentLocation = UUID.randomUUID().toString();
     final String itemIdentifier = "1234567890";
     final Checkin checkin = Checkin.builder()
         .noBlock(FALSE)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .returnDate(returnDate)
         .currentLocation(currentLocation)
         .institutionId("diku")
@@ -98,7 +98,7 @@ public class CirculationRepositoryTests {
           assertTrue(checkinResponse.getResensitize());
           assertNull(checkinResponse.getMagneticMedia());
           assertFalse(checkinResponse.getAlert());
-          assertEquals(ZonedDateTime.now(clock), checkinResponse.getTransactionDate());
+          assertEquals(OffsetDateTime.now(clock), checkinResponse.getTransactionDate());
           assertEquals("diku", checkinResponse.getInstitutionId());
           assertEquals(itemIdentifier, checkinResponse.getItemIdentifier());
           assertEquals("Main Library", checkinResponse.getPermanentLocation());
@@ -119,12 +119,12 @@ public class CirculationRepositoryTests {
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
     final Clock clock = TestUtils.getUtcFixedClock();
-    final ZonedDateTime returnDate = ZonedDateTime.now();
+    final OffsetDateTime returnDate = OffsetDateTime.now();
     final String currentLocation = UUID.randomUUID().toString();
     final String itemIdentifier = "1234567890";
     final Checkin checkin = Checkin.builder()
         .noBlock(FALSE)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .returnDate(returnDate)
         .currentLocation(currentLocation)
         .institutionId("diku")
@@ -148,7 +148,7 @@ public class CirculationRepositoryTests {
           assertFalse(checkinResponse.getResensitize());
           assertNull(checkinResponse.getMagneticMedia());
           assertFalse(checkinResponse.getAlert());
-          assertEquals(ZonedDateTime.now(clock), checkinResponse.getTransactionDate());
+          assertEquals(OffsetDateTime.now(clock), checkinResponse.getTransactionDate());
           assertEquals("diku", checkinResponse.getInstitutionId());
           assertEquals(itemIdentifier, checkinResponse.getItemIdentifier());
           assertEquals("", checkinResponse.getPermanentLocation());
@@ -169,14 +169,14 @@ public class CirculationRepositoryTests {
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
     final Clock clock = TestUtils.getUtcFixedClock();
-    final ZonedDateTime nbDueDate = ZonedDateTime.now().plusDays(30);
+    final OffsetDateTime nbDueDate = OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
     final String itemIdentifier = "1234567890";
     final String title = "Some book";
     final Checkout checkout = Checkout.builder()
         .scRenewalPolicy(FALSE)
         .noBlock(FALSE)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .nbDueDate(nbDueDate)
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
@@ -207,13 +207,12 @@ public class CirculationRepositoryTests {
           assertFalse(checkoutResponse.getRenewalOk());
           assertNull(checkoutResponse.getMagneticMedia());
           assertTrue(checkoutResponse.getDesensitize());
-          assertEquals(ZonedDateTime.now(clock), checkoutResponse.getTransactionDate());
+          assertEquals(OffsetDateTime.now(clock), checkoutResponse.getTransactionDate());
           assertEquals("diku", checkoutResponse.getInstitutionId());
           assertEquals(patronIdentifier, checkoutResponse.getPatronIdentifier());
           assertEquals(itemIdentifier, checkoutResponse.getItemIdentifier());
           assertEquals(title, checkoutResponse.getTitleIdentifier());
-          assertEquals(nbDueDate.toOffsetDateTime(),
-              checkoutResponse.getDueDate().toOffsetDateTime());
+          assertEquals(nbDueDate, checkoutResponse.getDueDate());
           assertNull(checkoutResponse.getFeeType());
           assertNull(checkoutResponse.getSecurityInhibit());
           assertNull(checkoutResponse.getCurrencyType());
@@ -254,13 +253,13 @@ public class CirculationRepositoryTests {
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
     final Clock clock = TestUtils.getUtcFixedClock();
-    final ZonedDateTime nbDueDate = ZonedDateTime.now().plusDays(30);
+    final OffsetDateTime nbDueDate = OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
     final String itemIdentifier = "1234567890";
     final Checkout checkout = Checkout.builder()
         .scRenewalPolicy(FALSE)
         .noBlock(FALSE)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .nbDueDate(nbDueDate)
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
@@ -286,7 +285,7 @@ public class CirculationRepositoryTests {
           assertFalse(checkoutResponse.getRenewalOk());
           assertNull(checkoutResponse.getMagneticMedia());
           assertFalse(checkoutResponse.getDesensitize());
-          assertEquals(ZonedDateTime.now(clock), checkoutResponse.getTransactionDate());
+          assertEquals(OffsetDateTime.now(clock), checkoutResponse.getTransactionDate());
           assertEquals("diku", checkoutResponse.getInstitutionId());
           assertEquals(patronIdentifier, checkoutResponse.getPatronIdentifier());
           assertEquals(itemIdentifier, checkoutResponse.getItemIdentifier());
@@ -319,7 +318,7 @@ public class CirculationRepositoryTests {
             .add(new JsonObject()
                 .put("userId", userId)
                 .put("itemId", itemId)
-                .put("loanDate", ZonedDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
+                .put("loanDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
                 .put("action", "checkedout")))
         .put("totalRecords", 1);
     when(mockFolioProvider.retrieveResource(any()))
@@ -380,7 +379,7 @@ public class CirculationRepositoryTests {
             .add(new JsonObject()
                 .put("userId", userId)
                 .put("itemId", itemId)
-                .put("loanDate", ZonedDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
+                .put("loanDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
                 .put("action", "checkedout")))
         .put("totalRecords", 1);
     when(mockFolioProvider.retrieveResource(any()))
@@ -391,7 +390,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
-    circulationRepository.getOverdueLoansByUserId(userId, ZonedDateTime.now(clock), null, null,
+    circulationRepository.getOverdueLoansByUserId(userId, OffsetDateTime.now(clock), null, null,
         sessionData).setHandler(testContext.succeeding(loansResponse -> testContext.verify(() -> {
           assertNotNull(loansResponse);
           assertEquals(1, loansResponse.getInteger("totalRecords"));
@@ -421,7 +420,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository =
         new CirculationRepository(mockFolioProvider, clock);
-    circulationRepository.getOverdueLoansByUserId(userId, ZonedDateTime.now(clock), null, null,
+    circulationRepository.getOverdueLoansByUserId(userId, OffsetDateTime.now(clock), null, null,
         sessionData).setHandler(testContext.succeeding(loansResponse -> testContext.verify(() -> {
           assertNull(loansResponse);
 
@@ -443,7 +442,7 @@ public class CirculationRepositoryTests {
                 .put("requesterId", userId)
                 .put("itemId", itemId)
                 .put("requestType", "Recall")
-                .put("requestDate", ZonedDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
+                .put("requestDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
                 .put("fulfilmentPreference", "Hold Shelf")))
         .put("totalRecords", 1);
     when(mockFolioProvider.retrieveResource(any()))
@@ -506,7 +505,7 @@ public class CirculationRepositoryTests {
                 .put("requesterId", userId)
                 .put("itemId", itemId)
                 .put("requestType", "Hold")
-                .put("requestDate", ZonedDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
+                .put("requestDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
                 .put("fulfilmentPreference", "Hold Shelf")))
         .put("totalRecords", 1);
     when(mockFolioProvider.retrieveResource(any()))

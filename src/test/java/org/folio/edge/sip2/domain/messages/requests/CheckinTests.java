@@ -9,14 +9,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.junit.jupiter.api.Test;
 
 class CheckinTests {
   final Boolean noBlock = TRUE;
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
-  final ZonedDateTime returnDate = transactionDate.plusSeconds(30);
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
+  final OffsetDateTime returnDate = transactionDate.plusSeconds(30);
   final String currentLocation = "circ_desk1";
   final String institutionId = "diku";
   final String itemIdentifier = "8675309";

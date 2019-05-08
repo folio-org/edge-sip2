@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +24,7 @@ public final class FeePaidResponse {
    */
   private final Boolean paymentAccepted;
   /** The date of this transaction. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** The ID of the institution making the request. */
   private final String institutionId;
   /** The ID of the patron making the request. */
@@ -65,7 +65,7 @@ public final class FeePaidResponse {
     return paymentAccepted;
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
@@ -134,7 +134,7 @@ public final class FeePaidResponse {
    */
   public static class FeePaidResponseBuilder {
     private Boolean paymentAccepted;
-    private ZonedDateTime transactionDate;
+    private OffsetDateTime transactionDate;
     private String institutionId;
     private String patronIdentifier;
     private String transactionId;
@@ -151,7 +151,7 @@ public final class FeePaidResponse {
     }
 
     public FeePaidResponseBuilder transactionDate(
-        ZonedDateTime transactionDate) {
+        OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }

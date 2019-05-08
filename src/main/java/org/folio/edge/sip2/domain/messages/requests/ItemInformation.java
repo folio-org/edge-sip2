@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.requests;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 /**
@@ -17,7 +17,7 @@ import java.util.Objects;
  */
 public final class ItemInformation {
   /** The date of this transaction. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** The ID of the institution making the request. */
   private final String institutionId;
   /** The ID of the requested item. */
@@ -45,7 +45,7 @@ public final class ItemInformation {
     return new ItemInformationBuilder();
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
@@ -99,7 +99,7 @@ public final class ItemInformation {
    * Builder for {@code ItemInformation}.
    */
   public static class ItemInformationBuilder {
-    private ZonedDateTime transactionDate;
+    private OffsetDateTime transactionDate;
     private String institutionId;
     private String itemIdentifier;
     private String terminalPassword;
@@ -108,7 +108,7 @@ public final class ItemInformation {
       super();
     }
 
-    public ItemInformationBuilder transactionDate(ZonedDateTime transactionDate) {
+    public ItemInformationBuilder transactionDate(OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }

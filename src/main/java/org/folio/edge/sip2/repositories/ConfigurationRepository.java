@@ -6,7 +6,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.lang.invoke.MethodHandles;
 import java.time.Clock;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
@@ -52,7 +52,7 @@ public class ConfigurationRepository {
         builder.checkinOk(acsConfiguration.getBoolean("onlineStatus"));
         builder.acsRenewalPolicy(acsConfiguration.getBoolean("acsRenewalPolicy"));
         builder.checkoutOk(acsConfiguration.getBoolean("checkoutOk"));
-        builder.dateTimeSync(ZonedDateTime.now(clock));
+        builder.dateTimeSync(OffsetDateTime.now(clock));
         builder.institutionId(acsConfiguration.getString("institutionId"));
         builder.libraryName(acsConfiguration.getString("libraryName"));
         builder.offLineOk(acsConfiguration.getBoolean("checkoutOk"));

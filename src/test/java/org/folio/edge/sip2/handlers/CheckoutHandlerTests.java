@@ -13,7 +13,7 @@ import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
@@ -34,14 +34,14 @@ public class CheckoutHandlerTests {
       Vertx vertx,
       VertxTestContext testContext) {
     final Clock clock = TestUtils.getUtcFixedClock();
-    final ZonedDateTime nbDueDate = ZonedDateTime.now();
+    final OffsetDateTime nbDueDate = OffsetDateTime.now();
     final String institutionId = "diku";
     final String patronIdentifier = "0192837465";
     final String itemIdentifier = "1234567890";
     final Checkout checkout = Checkout.builder()
         .scRenewalPolicy(FALSE)
         .noBlock(FALSE)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .nbDueDate(nbDueDate)
         .institutionId(institutionId)
         .patronIdentifier(patronIdentifier)
@@ -59,12 +59,12 @@ public class CheckoutHandlerTests {
             .renewalOk(FALSE)
             .magneticMedia(null)
             .desensitize(TRUE)
-            .transactionDate(ZonedDateTime.now(clock))
+            .transactionDate(OffsetDateTime.now(clock))
             .institutionId(institutionId)
             .patronIdentifier(patronIdentifier)
             .itemIdentifier(itemIdentifier)
             .titleIdentifier("Some Book")
-            .dueDate(ZonedDateTime.now(clock).plusDays(30))
+            .dueDate(OffsetDateTime.now(clock).plusDays(30))
             .build()));
 
     final CheckoutHandler handler = new CheckoutHandler(mockCirculationRepository,
@@ -75,10 +75,10 @@ public class CheckoutHandlerTests {
     handler.execute(checkout, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "121NUY"
-              + TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock))
+              + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
               + "AO" + institutionId + "|AA" + patronIdentifier + "|AB" + itemIdentifier
               + "|AJSome Book|AH"
-              + TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock).plusDays(30))
+              + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock).plusDays(30))
               + '|';
 
           assertEquals(expectedString, sipMessage);
@@ -93,14 +93,14 @@ public class CheckoutHandlerTests {
       Vertx vertx,
       VertxTestContext testContext) {
     final Clock clock = TestUtils.getUtcFixedClock();
-    final ZonedDateTime nbDueDate = ZonedDateTime.now();
+    final OffsetDateTime nbDueDate = OffsetDateTime.now();
     final String institutionId = "diku";
     final String patronIdentifier = "0192837465";
     final String itemIdentifier = "1234567890";
     final Checkout checkout = Checkout.builder()
         .scRenewalPolicy(FALSE)
         .noBlock(FALSE)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .nbDueDate(nbDueDate)
         .institutionId(institutionId)
         .patronIdentifier(patronIdentifier)
@@ -118,7 +118,7 @@ public class CheckoutHandlerTests {
             .renewalOk(FALSE)
             .magneticMedia(null)
             .desensitize(FALSE)
-            .transactionDate(ZonedDateTime.now(clock))
+            .transactionDate(OffsetDateTime.now(clock))
             .institutionId(institutionId)
             .patronIdentifier(patronIdentifier)
             .itemIdentifier(itemIdentifier)
@@ -134,7 +134,7 @@ public class CheckoutHandlerTests {
     handler.execute(checkout, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "120NUN"
-              + TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock))
+              + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
               + "AO" + institutionId + "|AA" + patronIdentifier + "|AB" + itemIdentifier
               + "|AJ|AH|";
 

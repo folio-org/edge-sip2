@@ -7,8 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class TestUtils {
@@ -21,8 +21,8 @@ public class TestUtils {
    * @param dateTime Local datetime instance
    * @return formatted into "yyyyMMdd    HHmmss"
    */
-  public static String getFormattedLocalDateTime(ZonedDateTime dateTime) {
-    final ZonedDateTime d =  dateTime.truncatedTo(SECONDS);
+  public static String getFormattedLocalDateTime(OffsetDateTime dateTime) {
+    final OffsetDateTime d =  dateTime.truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     return formatter.format(d);

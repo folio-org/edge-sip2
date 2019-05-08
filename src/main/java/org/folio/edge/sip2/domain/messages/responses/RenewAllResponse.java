@@ -3,7 +3,7 @@ package org.folio.edge.sip2.domain.messages.responses;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,7 +32,7 @@ public final class RenewAllResponse {
   /** A count of the number of items that were not renewed. */
   private final Integer unrenewedCount;
   /** The date of this transaction. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** The ID of the institution making the request. */
   private final String institutionId;
   /** List of items that were renewed. */
@@ -90,7 +90,7 @@ public final class RenewAllResponse {
     return unrenewedCount;
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
@@ -166,7 +166,7 @@ public final class RenewAllResponse {
     private Boolean ok;
     private Integer renewedCount;
     private Integer unrenewedCount;
-    private ZonedDateTime transactionDate;
+    private OffsetDateTime transactionDate;
     private String institutionId;
     private List<String> renewedItems;
     private List<String> unrenewedItems;
@@ -193,7 +193,7 @@ public final class RenewAllResponse {
     }
 
     public RenewAllResponseBuilder transactionDate(
-        ZonedDateTime transactionDate) {
+        OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }

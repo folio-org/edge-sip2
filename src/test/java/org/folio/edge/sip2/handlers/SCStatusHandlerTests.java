@@ -9,8 +9,8 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -54,7 +54,7 @@ public class SCStatusHandlerTests {
           // have to break it up into pieces.
 
           String expectedDateTimeString =
-              TestUtils.getFormattedLocalDateTime(ZonedDateTime.now(clock));
+              TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock));
 
           String expectedSipResponse = "98YYNYNN005003"
               + expectedDateTimeString

@@ -13,7 +13,7 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.time.Clock;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -104,7 +104,7 @@ public class PatronRepository {
             holds -> addHolds(holds, patronInformation.getSummary() == HOLD_ITEMS, builder));
     // Get overdue loans data (count and items) and store it in the builder
     final Future<PatronInformationResponseBuilder> overdueFuture =
-        circulationRepository.getOverdueLoansByUserId(userId, ZonedDateTime.now(clock),
+        circulationRepository.getOverdueLoansByUserId(userId, OffsetDateTime.now(clock),
             startItem, endItem, sessionData).map(
                 overdues -> addOverdueItems(overdues,
                     patronInformation.getSummary() == OVERDUE_ITEMS, builder));
@@ -118,7 +118,7 @@ public class PatronRepository {
             .patronStatus(EnumSet.noneOf(PatronStatus.class))
             // Get tenant language from config along with the timezone
             .language(patronInformation.getLanguage())
-            .transactionDate(ZonedDateTime.now(clock))
+            .transactionDate(OffsetDateTime.now(clock))
             .chargedItemsCount(null)
             .fineItemsCount(null)
             .unavailableHoldsCount(null)
@@ -133,7 +133,7 @@ public class PatronRepository {
     return Future.succeededFuture(PatronInformationResponse.builder()
         .patronStatus(EnumSet.noneOf(PatronStatus.class))
         .language(UNKNOWN)
-        .transactionDate(ZonedDateTime.now(clock)) // need tenant timezone
+        .transactionDate(OffsetDateTime.now(clock)) // need tenant timezone
         .holdItemsCount(Integer.valueOf(0))
         .overdueItemsCount(Integer.valueOf(0))
         .chargedItemsCount(Integer.valueOf(0))

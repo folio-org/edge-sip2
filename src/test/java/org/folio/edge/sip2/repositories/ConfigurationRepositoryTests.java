@@ -15,7 +15,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
 import java.time.Clock;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
@@ -99,7 +99,7 @@ public class ConfigurationRepositoryTests {
           assertEquals("Chalmers", status.getLibraryName());
           assertEquals(asList("Hello, welcome"), status.getScreenMessage());
           assertEquals("SE10", status.getTerminalLocation());
-          assertEquals(ZonedDateTime.now(clock), status.getDateTimeSync());
+          assertEquals(OffsetDateTime.now(clock), status.getDateTimeSync());
 
           assertEquals(2, status.getSupportedMessages().size());
           Messages[] supportedMsgsArr = status.getSupportedMessages().toArray(new Messages[2]);

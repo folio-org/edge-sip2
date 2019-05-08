@@ -8,8 +8,8 @@ import static org.folio.edge.sip2.utils.JsonUtils.getSubChildString;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import java.time.Clock;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,7 +51,7 @@ public class CirculationRepository {
   public Future<CheckinResponse> performCheckinCommand(Checkin checkin, SessionData sessionData) {
     // We'll need to convert this date properly. It is likely that it will not include timezone
     // information, so we'll need to use the tenant/SC timezone as the basis and convert to UTC.
-    final ZonedDateTime returnDate = checkin.getReturnDate();
+    final OffsetDateTime returnDate = checkin.getReturnDate();
     final String scLocation = sessionData.getScLocation();
     final String institutionId = checkin.getInstitutionId();
     final String itemIdentifier = checkin.getItemIdentifier();
@@ -80,7 +80,7 @@ public class CirculationRepository {
               .alert(FALSE)
               // Need to get the "local" time zone from somewhere
               // Using UTC for now
-              .transactionDate(ZonedDateTime.now(clock))
+              .transactionDate(OffsetDateTime.now(clock))
               .institutionId(institutionId)
               .itemIdentifier(itemIdentifier)
               // this is probably not the permanent location
@@ -118,7 +118,7 @@ public class CirculationRepository {
     return result
         .otherwise(Utils::handleErrors)
         .compose(resource -> {
-          final ZonedDateTime dueDate;
+          final OffsetDateTime dueDate;
           // This is a mess. Need to clean this up. The problem here is that the checkout has
           // already succeeded, but something could be wrong with the returned data. The odds of
           // this are low, so we should be able to simplify this logic. The "dueDate" field is not
@@ -131,7 +131,7 @@ public class CirculationRepository {
               dueDate = null;
             } else {
               // Need to convert to the tenant local timezone
-              dueDate = ZonedDateTime.from(Utils.getFolioDateTimeFormatter().parse(dueDateString));
+              dueDate = OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(dueDateString));
             }
           } else {
             dueDate = null;
@@ -144,7 +144,7 @@ public class CirculationRepository {
               .desensitize(resource.getResource() == null ? FALSE : TRUE)
               // Need to get the "local" time zone from somewhere
               // Using UTC for now
-              .transactionDate(ZonedDateTime.now(clock))
+              .transactionDate(OffsetDateTime.now(clock))
               .institutionId(institutionId)
               .patronIdentifier(patronIdentifier)
               .itemIdentifier(itemIdentifier)
@@ -230,7 +230,7 @@ public class CirculationRepository {
    * @param sessionData session info
    * @return the list of over due items for this patron
    */
-  public Future<JsonObject> getOverdueLoansByUserId(String userId, ZonedDateTime dueDate,
+  public Future<JsonObject> getOverdueLoansByUserId(String userId, OffsetDateTime dueDate,
       Integer startItem, Integer endItem, SessionData sessionData) {
     final Map<String, String> headers = getBaseHeaders();
 
@@ -387,11 +387,11 @@ public class CirculationRepository {
 
   private class OverdueLoansRequestData extends CirculationRequestData {
     private final String userId;
-    private final ZonedDateTime dueDate;
+    private final OffsetDateTime dueDate;
 
     private OverdueLoansRequestData(
         String userId,
-        ZonedDateTime dueDate,
+        OffsetDateTime dueDate,
         Integer startItem,
         Integer endItem,
         Map<String, String> headers,

@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.requests;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 import org.folio.edge.sip2.domain.messages.enumerations.Language;
@@ -23,7 +23,7 @@ public final class PatronInformation {
   /** The language requested for visible messages. */
   private final Language language;
   /** The date of this transaction. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /**
    * Indicates that detailed as well as summary information about the
    * corresponding category of items can be sent in the response.
@@ -71,7 +71,7 @@ public final class PatronInformation {
     return language;
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
@@ -152,7 +152,7 @@ public final class PatronInformation {
    */
   public static class PatronInformationBuilder {
     private Language language;
-    private ZonedDateTime transactionDate;
+    private OffsetDateTime transactionDate;
     private Summary summary;
     private String institutionId;
     private String patronIdentifier;
@@ -170,7 +170,7 @@ public final class PatronInformation {
       return this;
     }
 
-    public PatronInformationBuilder transactionDate(ZonedDateTime transactionDate) {
+    public PatronInformationBuilder transactionDate(OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }

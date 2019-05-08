@@ -2,7 +2,7 @@ package org.folio.edge.sip2.parser;
 
 import static org.folio.edge.sip2.domain.messages.requests.Checkout.builder;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,11 +39,11 @@ public class CheckoutMessageParser extends MessageParser {
     coBuilder.noBlock(parseBoolean(messageChars));
 
     // transaction date: 18-char, fixed-length required field
-    final ZonedDateTime transactionDate = parseDateTime(messageChars);
+    final OffsetDateTime transactionDate = parseDateTime(messageChars);
     coBuilder.transactionDate(transactionDate);
 
     // nb due date: 18-char, fixed-length required field
-    final ZonedDateTime nbDueDate = parseDateTime(messageChars);
+    final OffsetDateTime nbDueDate = parseDateTime(messageChars);
     coBuilder.nbDueDate(nbDueDate);
 
     // Variable length fields

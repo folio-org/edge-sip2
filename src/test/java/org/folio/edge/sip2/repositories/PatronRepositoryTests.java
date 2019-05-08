@@ -22,8 +22,8 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -95,7 +95,7 @@ public class PatronRepositoryTests {
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
         .language(ENGLISH)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .summary(RECALL_ITEMS)
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
@@ -138,7 +138,7 @@ public class PatronRepositoryTests {
           assertNotNull(patronInformationResponse.getPatronStatus());
           assertTrue(patronInformationResponse.getPatronStatus().isEmpty());
           assertEquals(ENGLISH, patronInformationResponse.getLanguage());
-          assertEquals(ZonedDateTime.now(clock), patronInformationResponse.getTransactionDate());
+          assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(2, patronInformationResponse.getHoldItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
           assertNull(patronInformationResponse.getChargedItemsCount());
@@ -216,7 +216,7 @@ public class PatronRepositoryTests {
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
         .language(ENGLISH)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .summary(summary)
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
@@ -261,7 +261,7 @@ public class PatronRepositoryTests {
           assertNotNull(patronInformationResponse.getPatronStatus());
           assertTrue(patronInformationResponse.getPatronStatus().isEmpty());
           assertEquals(ENGLISH, patronInformationResponse.getLanguage());
-          assertEquals(ZonedDateTime.now(clock), patronInformationResponse.getTransactionDate());
+          assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(2, patronInformationResponse.getHoldItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
           assertNull(patronInformationResponse.getChargedItemsCount());
@@ -312,7 +312,7 @@ public class PatronRepositoryTests {
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
         .language(ENGLISH)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .summary(Summary.RECALL_ITEMS)
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
@@ -365,7 +365,7 @@ public class PatronRepositoryTests {
           assertNotNull(patronInformationResponse.getPatronStatus());
           assertTrue(patronInformationResponse.getPatronStatus().isEmpty());
           assertEquals(ENGLISH, patronInformationResponse.getLanguage());
-          assertEquals(ZonedDateTime.now(clock), patronInformationResponse.getTransactionDate());
+          assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(2, patronInformationResponse.getHoldItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
           assertNull(patronInformationResponse.getChargedItemsCount());
@@ -416,7 +416,7 @@ public class PatronRepositoryTests {
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
         .language(ENGLISH)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .summary(null)
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
@@ -437,7 +437,7 @@ public class PatronRepositoryTests {
           assertEquals(EnumSet.noneOf(PatronStatus.class),
               patronInformationResponse.getPatronStatus());
           assertEquals(UNKNOWN, patronInformationResponse.getLanguage());
-          assertEquals(ZonedDateTime.now(clock), patronInformationResponse.getTransactionDate());
+          assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(0, patronInformationResponse.getHoldItemsCount());
           assertEquals(0, patronInformationResponse.getOverdueItemsCount());
           assertEquals(0, patronInformationResponse.getChargedItemsCount());
@@ -483,7 +483,7 @@ public class PatronRepositoryTests {
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
         .language(ENGLISH)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .summary(null)
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
@@ -504,7 +504,7 @@ public class PatronRepositoryTests {
           assertEquals(EnumSet.noneOf(PatronStatus.class),
               patronInformationResponse.getPatronStatus());
           assertEquals(UNKNOWN, patronInformationResponse.getLanguage());
-          assertEquals(ZonedDateTime.now(clock), patronInformationResponse.getTransactionDate());
+          assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(0, patronInformationResponse.getHoldItemsCount());
           assertEquals(0, patronInformationResponse.getOverdueItemsCount());
           assertEquals(0, patronInformationResponse.getChargedItemsCount());
@@ -550,7 +550,7 @@ public class PatronRepositoryTests {
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
         .language(ENGLISH)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .summary(null)
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
@@ -571,7 +571,7 @@ public class PatronRepositoryTests {
           assertEquals(EnumSet.noneOf(PatronStatus.class),
               patronInformationResponse.getPatronStatus());
           assertEquals(UNKNOWN, patronInformationResponse.getLanguage());
-          assertEquals(ZonedDateTime.now(clock), patronInformationResponse.getTransactionDate());
+          assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(0, patronInformationResponse.getHoldItemsCount());
           assertEquals(0, patronInformationResponse.getOverdueItemsCount());
           assertEquals(0, patronInformationResponse.getChargedItemsCount());
@@ -616,7 +616,7 @@ public class PatronRepositoryTests {
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
         .language(ENGLISH)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .summary(Summary.RECALL_ITEMS)
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
@@ -648,7 +648,7 @@ public class PatronRepositoryTests {
           assertEquals(EnumSet.noneOf(PatronStatus.class),
               patronInformationResponse.getPatronStatus());
           assertEquals(ENGLISH, patronInformationResponse.getLanguage());
-          assertEquals(ZonedDateTime.now(clock), patronInformationResponse.getTransactionDate());
+          assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(0, patronInformationResponse.getHoldItemsCount());
           assertEquals(0, patronInformationResponse.getOverdueItemsCount());
           assertNull(patronInformationResponse.getChargedItemsCount());
@@ -697,7 +697,7 @@ public class PatronRepositoryTests {
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
         .language(ENGLISH)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .summary(Summary.RECALL_ITEMS)
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
@@ -733,7 +733,7 @@ public class PatronRepositoryTests {
           assertEquals(EnumSet.noneOf(PatronStatus.class),
               patronInformationResponse.getPatronStatus());
           assertEquals(ENGLISH, patronInformationResponse.getLanguage());
-          assertEquals(ZonedDateTime.now(clock), patronInformationResponse.getTransactionDate());
+          assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(0, patronInformationResponse.getHoldItemsCount());
           assertEquals(0, patronInformationResponse.getOverdueItemsCount());
           assertNull(patronInformationResponse.getChargedItemsCount());

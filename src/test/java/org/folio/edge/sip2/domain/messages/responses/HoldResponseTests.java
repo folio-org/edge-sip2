@@ -10,15 +10,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class HoldResponseTests {
   final Boolean ok = TRUE;
   final Boolean available = TRUE;
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
-  final ZonedDateTime expirationDate = transactionDate.plusDays(30);
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
+  final OffsetDateTime expirationDate = transactionDate.plusDays(30);
   final Integer queuePosition = Integer.valueOf(2);
   final String pickupLocation = "lobby";
   final String institutionId = "diku";
@@ -327,8 +327,8 @@ class HoldResponseTests {
     final HoldResponse hr2 = builder()
         .ok(FALSE)
         .available(FALSE)
-        .transactionDate(ZonedDateTime.now())
-        .expirationDate(ZonedDateTime.now().plusDays(5))
+        .transactionDate(OffsetDateTime.now())
+        .expirationDate(OffsetDateTime.now().plusDays(5))
         .queuePosition(10)
         .pickupLocation("mars")
         .institutionId("xyzzy")

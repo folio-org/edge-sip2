@@ -6,7 +6,7 @@ import static java.lang.Character.valueOf;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
@@ -16,9 +16,9 @@ class CheckoutMessageParserTests {
   @Test
   void testParse() {
     CheckoutMessageParser parser = new CheckoutMessageParser(valueOf('|'));
-    final ZonedDateTime transactionDate =
-        ZonedDateTime.now().truncatedTo(SECONDS);
-    final ZonedDateTime nbDueDate = transactionDate.plusDays(30);
+    final OffsetDateTime transactionDate =
+        OffsetDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime nbDueDate = transactionDate.plusDays(30);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);

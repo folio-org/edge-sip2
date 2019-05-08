@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import org.folio.edge.sip2.domain.messages.enumerations.CirculationStatus;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
@@ -31,11 +31,11 @@ class ItemInformationResponseTests {
   final CirculationStatus circulationStatus = AVAILABLE;
   final SecurityMarker securityMarker = NONE;
   final FeeType feeType = RENTAL;
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
   final Integer holdQueueLength = Integer.valueOf(3);
-  final ZonedDateTime dueDate = transactionDate.plusDays(30);
-  final ZonedDateTime recallDate = transactionDate.plusDays(60);
-  final ZonedDateTime holdPickupDate = transactionDate.plusDays(90);
+  final OffsetDateTime dueDate = transactionDate.plusDays(30);
+  final OffsetDateTime recallDate = transactionDate.plusDays(60);
+  final OffsetDateTime holdPickupDate = transactionDate.plusDays(90);
   final String itemIdentifier = "8675309";
   final String titleIdentifier = "5551212";
   final String owner = "University Library";
@@ -649,11 +649,11 @@ class ItemInformationResponseTests {
         .circulationStatus(MISSING)
         .securityMarker(WHISPER_TAPE)
         .feeType(DAMAGE)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .holdQueueLength(Integer.valueOf(10))
-        .dueDate(ZonedDateTime.now().plusDays(5))
-        .recallDate(ZonedDateTime.now().plusDays(6))
-        .holdPickupDate(ZonedDateTime.now().plusDays(7))
+        .dueDate(OffsetDateTime.now().plusDays(5))
+        .recallDate(OffsetDateTime.now().plusDays(6))
+        .holdPickupDate(OffsetDateTime.now().plusDays(7))
         .itemIdentifier("222222222")
         .titleIdentifier("ou812")
         .owner("Some Other Library")

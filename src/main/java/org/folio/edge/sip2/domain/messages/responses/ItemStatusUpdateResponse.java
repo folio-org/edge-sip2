@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +24,7 @@ public final class ItemStatusUpdateResponse {
    */
   private final Boolean itemPropertiesOk;
   /** The date and time the response was sent. */
-  private final ZonedDateTime transactionDate;
+  private final OffsetDateTime transactionDate;
   /** The ID of the item being checked out. */
   private final String itemIdentifier;
   /** The ID of the title being checked out. */
@@ -65,7 +65,7 @@ public final class ItemStatusUpdateResponse {
     return itemPropertiesOk;
   }
 
-  public ZonedDateTime getTransactionDate() {
+  public OffsetDateTime getTransactionDate() {
     return transactionDate;
   }
 
@@ -135,7 +135,7 @@ public final class ItemStatusUpdateResponse {
    */
   public static class ItemStatusUpdateResponseBuilder {
     private Boolean itemPropertiesOk;
-    private ZonedDateTime transactionDate;
+    private OffsetDateTime transactionDate;
     private String itemIdentifier;
     private String titleIdentifier;
     private String itemProperties;
@@ -152,7 +152,7 @@ public final class ItemStatusUpdateResponse {
       return this;
     }
 
-    public ItemStatusUpdateResponseBuilder transactionDate(ZonedDateTime transactionDate) {
+    public ItemStatusUpdateResponseBuilder transactionDate(OffsetDateTime transactionDate) {
       this.transactionDate = transactionDate;
       return this;
     }

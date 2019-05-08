@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +33,7 @@ class PatronStatusResponseTests {
   final Set<PatronStatus> patronStatus =
       EnumSet.of(TOO_MANY_ITEMS_BILLED, HOLD_PRIVILEGES_DENIED);
   final Language language = ENGLISH;
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
   final String institutionId = "diku";
   final String patronIdentifier = "1234567890";
   final String personalName = "John Smith";
@@ -354,7 +354,7 @@ class PatronStatusResponseTests {
             TOO_MANY_ITEMS_LOST,
             TOO_MANY_RENEWALS))
         .language(UNKNOWN)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .institutionId("test")
         .patronIdentifier("0987654321")
         .personalName("Jane Doe")

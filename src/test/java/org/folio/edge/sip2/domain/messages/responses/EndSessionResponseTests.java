@@ -10,13 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class EndSessionResponseTests {
   final Boolean endSession = TRUE;
-  final ZonedDateTime transactionDate = ZonedDateTime.now();
+  final OffsetDateTime transactionDate = OffsetDateTime.now();
   final String institutionId = "diku";
   final String patronIdentifier = "1234567890";
   final List<String> screenMessage = asList("Hello, world!");
@@ -150,7 +150,7 @@ class EndSessionResponseTests {
         .build();
     final EndSessionResponse esr2 = builder()
         .endSession(FALSE)
-        .transactionDate(ZonedDateTime.now())
+        .transactionDate(OffsetDateTime.now())
         .institutionId("test")
         .patronIdentifier("0987654321")
         .screenMessage(asList("Welcome to the jungle."))
