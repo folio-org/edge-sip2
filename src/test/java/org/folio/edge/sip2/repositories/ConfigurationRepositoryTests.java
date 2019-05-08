@@ -1,13 +1,13 @@
 package org.folio.edge.sip2.repositories;
 
-import static java.util.Arrays.asList;
+import static io.vertx.core.Future.succeededFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -45,44 +45,37 @@ public class ConfigurationRepositoryTests {
 
   @Test
   public void canGetValidAcsStatus(Vertx vertx, VertxTestContext testContext) {
-    JsonArray supportedMsgs = new JsonArray();
-    supportedMsgs.add(new JsonObject().put("messageName", "PATRON_INFORMATION")
-                            .put("isSupported","Y"));
-    supportedMsgs.add(new JsonObject().put("messageName", "RENEW")
-                            .put("isSupported","N"));
-    supportedMsgs.add(new JsonObject().put("messageName", "BLOCK_PATRON")
-                            .put("isSupported","Y"));
 
-    JsonObject acsConfig = new JsonObject();
-    acsConfig.put("onlineStatus", false);
-    acsConfig.put("checkinOk", false);
-    acsConfig.put("checkoutOk", true);
-    acsConfig.put("acsRenewalPolicy", false);
-    acsConfig.put("statusUpdateOk", false);
-    acsConfig.put("offlineOk", true);
-    acsConfig.put("timeoutPeriod", 3);
-    acsConfig.put("retriesAllowed", 2);
-    acsConfig.put("protocolVersion", "1.23");
-    acsConfig.put("institutionId", "fs00000010");
-    acsConfig.put("printLine", "testing");
-    acsConfig.put("libraryName", "Chalmers");
-    acsConfig.put("screenMessage", "Hello, welcome");
-    acsConfig.put("terminalLocation", "SE10");
-    acsConfig.put("supportedMessages", supportedMsgs);
+    JsonObject configObject = new JsonObject();
+    configObject.put("value", "{\"tenantId\":\"diku\",\"supportedMessages\":"
+          + "[{\"messageName\": \"PATRON_INFORMATION\",\"isSupported\": \"Y\"},"
+          + "{\"messageName\": \"RENEW\",\"isSupported\": \"N\"},"
+          + "{\"messageName\": \"BLOCK_PATRON\",\"isSupported\": \"Y\"}],"
+          +  "\"onlineStatus\": false,\"statusUpdateOk\": false,\"offlineOk\":true,"
+          +  "\"timeoutPeriod\":3,\"retriesAllowed\":2,"
+          +  "\"protocolVersion\":\"1.23\",\"institutionId\":\"diku\","
+          +   "\"screenMessage\":\"Hello, welcome\","
+          +  "\"printLine\":\"testing\",\"checkinOk\":false,"
+          +   "\"checkoutOk\":true,\"acsRenewalPolicy\":false,"
+          +  "\"libraryName\":\"diku\",\"terminalLocation\":\"SE10\"}");
 
-    JsonObject defaultConfigurations = new JsonObject();
-    defaultConfigurations.put("acsConfiguration", acsConfig);
+    JsonArray configsArray = new JsonArray();
+    configsArray.add(configObject);
 
-    @SuppressWarnings("unchecked")
-    IResourceProvider<Object> mockConfigProvider = mock(IResourceProvider.class);
-    when(mockConfigProvider.retrieveResource(null))
-      .thenReturn(Future.succeededFuture(() -> defaultConfigurations));
+    JsonObject resultsWrapper = new JsonObject();
+    resultsWrapper.put("configs", configsArray);
+
+    IResourceProvider<Object> mockFolioProvider = mock(IResourceProvider.class);
+
+    when(mockFolioProvider.retrieveResource(any()))
+      .thenReturn(succeededFuture(() -> resultsWrapper));
 
     Clock clock = TestUtils.getUtcFixedClock();
 
     ConfigurationRepository configurationRepository =
-        new ConfigurationRepository(mockConfigProvider, clock);
-    configurationRepository.getACSStatus().setHandler(
+        new ConfigurationRepository(mockFolioProvider, clock);
+
+    configurationRepository.getACSStatus(TestUtils.getMockedSessionData()).setHandler(
         testContext.succeeding(status -> testContext.verify(() -> {
 
           assertNotNull(status);
@@ -94,10 +87,8 @@ public class ConfigurationRepositoryTests {
           assertEquals(3, status.getTimeoutPeriod());
           assertEquals(2, status.getRetriesAllowed());
           assertEquals("1.23", status.getProtocolVersion());
-          assertEquals("fs00000010", status.getInstitutionId());
-          assertEquals(asList("testing"), status.getPrintLine());
-          assertEquals("Chalmers", status.getLibraryName());
-          assertEquals(asList("Hello, welcome"), status.getScreenMessage());
+          assertEquals("diku", status.getInstitutionId());
+          assertEquals("diku", status.getLibraryName());
           assertEquals("SE10", status.getTerminalLocation());
           assertEquals(ZonedDateTime.now(clock), status.getDateTimeSync());
 
@@ -117,17 +108,19 @@ public class ConfigurationRepositoryTests {
   public void canRetrieveTenantConfiguration(
       Vertx vertx,
       VertxTestContext testContext, @Mock Clock clock) {
-    DefaultResourceProvider resourceProvider = new DefaultResourceProvider();
+    IResourceProvider resourceProvider = new DefaultResourceProvider();
     ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider, clock);
 
-    configRepo.retrieveTenantConfiguration("fs00000010test").setHandler(
-        testContext.succeeding(testTenantConfig -> testContext.verify(() -> {
-          assertNotNull(testTenantConfig);
-          assertEquals("fs00000010test",
-              testTenantConfig.getString("tenantId"));
-          assertEquals("ASCII", testTenantConfig.getString("encoding"));
+    configRepo.retrieveConfiguration(TestUtils.getMockedSessionData(),
+        ConfigurationRepository.CONFIG_MODULE,
+        ConfigurationRepository.TENANT_CONFIG_NAME, "").setHandler(
+          testContext.succeeding(testTenantConfig -> testContext.verify(() -> {
+            assertNotNull(testTenantConfig);
+            assertEquals("dikutest",
+                testTenantConfig.getString("tenantId"));
+            assertEquals("Krona", testTenantConfig.getString("currencyType"));
 
-          testContext.completeNow();
-        })));
+            testContext.completeNow();
+          })));
   }
 }

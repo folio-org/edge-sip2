@@ -1,15 +1,17 @@
 package org.folio.edge.sip2.handlers;
 
 import freemarker.template.Template;
+import io.vertx.core.Vertx;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Objects;
 
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.repositories.ConfigurationRepository;
-import org.folio.edge.sip2.repositories.DefaultResourceProvider;
+import org.folio.edge.sip2.repositories.FolioResourceProvider;
 import org.folio.edge.sip2.repositories.IResourceProvider;
 
 /**
@@ -32,13 +34,19 @@ public class HandlersFactory {
       ConfigurationRepository configRepo,
       IResourceProvider<Object> resProvider,
       Template freeMarkerTemplate,
-      Clock clock) {
-    resProvider = getResourceProvider(resProvider);
+      Clock clock,
+      String okapiUrl,
+      Vertx vertx) {
+
+    Objects.requireNonNull(okapiUrl, "okapiUrl is required");
+    Objects.requireNonNull(vertx, "vertx is required");
+
+    resProvider = getResourceProvider(resProvider, okapiUrl, vertx);
 
     if (configRepo == null && clock == null) {
       configRepo = new ConfigurationRepository(resProvider,
           Clock.fixed(Instant.now(), ZoneOffset.UTC));
-    } else if (configRepo == null && clock != null) {
+    } else if (configRepo == null) {
       configRepo = new ConfigurationRepository(resProvider, clock);
     }
 
@@ -54,9 +62,9 @@ public class HandlersFactory {
 
   @SuppressWarnings("unchecked")
   private static <T> IResourceProvider<T> getResourceProvider(
-      IResourceProvider<T> resourceProvider) {
+      IResourceProvider<T> resourceProvider, String okapiUrl, Vertx vertx) {
     if (resourceProvider == null) {
-      return (IResourceProvider<T>) new DefaultResourceProvider();
+      return (IResourceProvider<T>) new FolioResourceProvider(okapiUrl, vertx);
     }
 
     return resourceProvider;

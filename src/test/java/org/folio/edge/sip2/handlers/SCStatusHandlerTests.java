@@ -20,7 +20,7 @@ import org.folio.edge.sip2.domain.messages.enumerations.StatusCode;
 import org.folio.edge.sip2.domain.messages.requests.SCStatus;
 import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.DefaultResourceProvider;
-import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.repositories.IResourceProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -32,7 +32,7 @@ public class SCStatusHandlerTests {
       Vertx vertx,
       VertxTestContext testContext) {
 
-    DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
+    IResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
     Clock clock = TestUtils.getUtcFixedClock();
 
 
@@ -43,11 +43,10 @@ public class SCStatusHandlerTests {
     SCStatus status =  statusBuilder.build();
 
     SCStatusHandler handler = ((SCStatusHandler) HandlersFactory
-        .getScStatusHandlerInstance(null, defaultConfigurationProvider, null, clock));
+        .getScStatusHandlerInstance(null, defaultConfigurationProvider, null,
+          clock, "abcdefg.com", vertx));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
-
-    handler.execute(status, sessionData).setHandler(
+    handler.execute(status, TestUtils.getMockedSessionData()).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           // Because the sipMessage has a dateTime component that's supposed
           // to be current, we can't assert on the entirety of the string,
@@ -58,8 +57,7 @@ public class SCStatusHandlerTests {
 
           String expectedSipResponse = "98YYNYNN005003"
               + expectedDateTimeString
-              + "1.23|AOfs00000010test|AMChalmers|BXYNNNYNYNNNNNNNYN|ANTL01|"
-              + "AFscreenMessages|AGline|";
+              + "1.23AOdikutest|AMdiku|BXYNNNYNYNNNNNNNYN|ANTL01|";
 
           assertEquals(expectedSipResponse, sipMessage);
           testContext.completeNow();
@@ -70,7 +68,7 @@ public class SCStatusHandlerTests {
   public void cannotGetAValidResponseDueToMissingTemplate(
       Vertx vertx,
       VertxTestContext testContext) {
-    DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
+    IResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
     ConfigurationRepository configurationRepository =
         new ConfigurationRepository(defaultConfigurationProvider,
             Clock.fixed(Instant.now(), ZoneOffset.UTC));
@@ -83,9 +81,7 @@ public class SCStatusHandlerTests {
 
     SCStatusHandler handler = new SCStatusHandler(configurationRepository, null);
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
-
-    handler.execute(status, sessionData).setHandler(
+    handler.execute(status, TestUtils.getMockedSessionData()).setHandler(
         testContext.failing(throwable -> testContext.verify(() -> {
           assertEquals("", throwable.getMessage());
           testContext.completeNow();

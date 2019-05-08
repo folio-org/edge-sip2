@@ -30,6 +30,7 @@ import org.folio.edge.sip2.session.SessionData;
  */
 public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   private static final String HEADER_X_OKAPI_TOKEN = "x-okapi-token";
+  private static final String HEADER_X_OKAPI_TENANT = "x-okapi-tenant";
   private static final Logger log = LogManager.getLogger();
 
   private final String okapiUrl;
@@ -50,6 +51,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
   @Override
   public Future<IResource> retrieveResource(IRequestData requestData) {
+    log.debug("retrieve resource {}", requestData::getPath);
+
     final HttpRequest<Buffer> request =
         client.getAbs(okapiUrl + requestData.getPath());
 
@@ -119,9 +122,12 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
     final String authenticationToken = sessionData.getAuthenticationToken();
     if (authenticationToken != null) {
+      log.debug(HEADER_X_OKAPI_TOKEN + ": {}", authenticationToken);
       request.putHeader(HEADER_X_OKAPI_TOKEN, authenticationToken);
     }
-    request.putHeader("x-okapi-tenant", sessionData.getTenant());
+
+    log.debug(HEADER_X_OKAPI_TENANT + ": {}", sessionData.getTenant());
+    request.putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant());
   }
 
   private void handleResponse(

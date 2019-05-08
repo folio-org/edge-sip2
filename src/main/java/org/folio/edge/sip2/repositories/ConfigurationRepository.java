@@ -1,15 +1,16 @@
 package org.folio.edge.sip2.repositories;
 
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.lang.invoke.MethodHandles;
 import java.time.Clock;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,24 +18,30 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
 import org.folio.edge.sip2.domain.messages.responses.ACSStatus;
+import org.folio.edge.sip2.domain.messages.responses.ACSStatus.ACSStatusBuilder;
+import org.folio.edge.sip2.session.SessionData;
 
 public class ConfigurationRepository {
 
   private IResourceProvider<Object> resourceProvider;
   private final Logger log;
   private Clock clock;
+
+  static final String TENANT_CONFIG_NAME = "acsTenantConfig";
+  static final String SC_STATION_CONFIG_NAME = "selfCheckoutConfig";
+  static final String CONFIG_MODULE = "edge-sip2";
+
   /**
    * Constructor that takes an IResourceProvider.
    *
    * @param resourceProvider This can be DefaultResourceProvider or any provider in the future.
    */
 
-  public ConfigurationRepository(IResourceProvider<Object> resourceProvider,
-                                 Clock clock) {
+  public ConfigurationRepository(IResourceProvider<Object> resourceProvider, Clock clock) {
     this.resourceProvider = Objects.requireNonNull(resourceProvider,
         "ConfigGateway cannot be null");
     this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
-    log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+    log = LogManager.getLogger();
   }
 
   /**
@@ -42,80 +49,98 @@ public class ConfigurationRepository {
    *
    * @return ACSStatus object
    */
-  public Future<ACSStatus> getACSStatus() {
-    Future<JsonObject> future = retrieveAcsConfiguration();
+  public Future<ACSStatus> getACSStatus(SessionData sessionData) {
 
-    return future.compose(acsConfiguration -> {
-      ACSStatus acsStatus = null;
-      if (acsConfiguration != null) {
-        ACSStatus.ACSStatusBuilder builder = ACSStatus.builder();
-        builder.checkinOk(acsConfiguration.getBoolean("onlineStatus"));
-        builder.acsRenewalPolicy(acsConfiguration.getBoolean("acsRenewalPolicy"));
-        builder.checkoutOk(acsConfiguration.getBoolean("checkoutOk"));
-        builder.dateTimeSync(ZonedDateTime.now(clock));
-        builder.institutionId(acsConfiguration.getString("institutionId"));
-        builder.libraryName(acsConfiguration.getString("libraryName"));
-        builder.offLineOk(acsConfiguration.getBoolean("checkoutOk"));
-        builder.onLineStatus(acsConfiguration.getBoolean("onlineStatus"));
-        // Should probably make this an array of strings
-        builder.printLine(Arrays.asList(acsConfiguration.getString("printLine")));
-        builder.protocolVersion(acsConfiguration.getString("protocolVersion"));
-        builder.retriesAllowed(acsConfiguration.getInteger("retriesAllowed"));
-        // Should probably make this an array of strings
-        builder.screenMessage(Arrays.asList(acsConfiguration.getString("screenMessage")));
-        builder.statusUpdateOk(acsConfiguration.getBoolean("statusUpdateOk"));
-        builder.terminalLocation(acsConfiguration.getString("terminalLocation"));
-        builder.timeoutPeriod(acsConfiguration.getInteger("timeoutPeriod"));
-        builder.supportedMessages(getSupportedMessagesFromJson(
-                acsConfiguration.getJsonArray("supportedMessages")));
-        acsStatus = builder.build();
-      } else {
-        log.error("The JsonConfig object is null");
-      }
-      return Future.succeededFuture(acsStatus);
-    });
+    ACSStatus.ACSStatusBuilder builder = ACSStatus.builder();
+
+    final Future<ACSStatusBuilder> tenantConfigfuture =
+        retrieveConfiguration(sessionData, CONFIG_MODULE, TENANT_CONFIG_NAME, "")
+        .map(config -> addTenantConfig(config, builder));
+
+    final Future<ACSStatusBuilder> selfCheckoutConfigFuture =
+        retrieveConfiguration(sessionData, CONFIG_MODULE,
+            SC_STATION_CONFIG_NAME + "." + sessionData.getScLocation(), "")
+        .map(config -> addSCStationConfig(config, builder));
+
+    return CompositeFuture.all(tenantConfigfuture, selfCheckoutConfigFuture)
+        .map(result -> builder.build());
   }
-
 
   /**
-   * Method that retrieves the tenant configuration with the tenantID as configKey.
+   * Method that retrieves the configuration from a resource provider.
    *
-   * @param configKey key to retrieving the desired tenant configuration. It is tenantId.
+   * @param sessionData sessionData containing tenant ID to retrieve desired tenant configuration.
+   * @param configCode config code to identify the configuration
+   * @param configName name of the configuration
+   * @param module module that the configuration was created for
    * @return JSON object containing tenant configuration
    */
-  public Future<JsonObject> retrieveTenantConfiguration(String configKey) {
+  public Future<JsonObject> retrieveConfiguration(SessionData sessionData,
+                                                  String module,
+                                                  String configName,
+                                                  String configCode) {
+    final Map<String, String> headers = new HashMap<>();
+    headers.put("accept", "application/json");
 
-    Future<IResource> future = resourceProvider.retrieveResource(null);
+    ConfigurationRequestData requestData = new ConfigurationRequestData(null,
+        headers, sessionData, module, configName, configCode);
 
+    Future<IResource> future = resourceProvider.retrieveResource(requestData);
     return future.compose(resource -> {
-      final JsonObject jsonFile = resource.getResource();
-      JsonObject configJson = null;
+      final JsonObject scConfiguration = resource.getResource();
 
-      JsonArray tenantConfigurations = jsonFile.getJsonArray("tenantConfigurations");
-      Optional<Object> tenantConfigObject = tenantConfigurations
-          .stream()
-          .filter(config -> ((JsonObject)config).getString("tenantId").equalsIgnoreCase(configKey))
-          .findFirst();
+      if (scConfiguration != null) {
+        JsonArray configs = scConfiguration.getJsonArray("configs");
+        if (configs.size() > 0) {
+          JsonObject firstConfig = configs.getJsonObject(0);
 
-      if (tenantConfigObject.isPresent()) {
-        configJson = (JsonObject) tenantConfigObject.get();
+          String acsConfigurationString = firstConfig.getString("value");
+          if (acsConfigurationString != null && !acsConfigurationString.isEmpty()) {
+            JsonObject acsConfiguration = new JsonObject(acsConfigurationString);
+            return Future.succeededFuture(acsConfiguration);
+          } else {
+            log.error("Getting no value from config store for "
+                + "Module: {}; ConfigName: {}; ConfigCode {}", module, configName, configCode);
+            return Future.failedFuture("Getting no value from config store");
+          }
+        } else {
+          log.error("Unable to find the configuration by the combination "
+              + "Module: {}; ConfigName: {}; ConfigCode {}", module, configName, configCode);
+          return Future.failedFuture("Unable to find the configuration");
+        }
+      } else {
+        log.error("Unable to find the configuration by the combination "
+            + "Module: {}; ConfigName: {}; ConfigCode {}", module, configName, configCode);
+        return Future.failedFuture("Unable to find the configuration");
       }
-      return Future.succeededFuture(configJson);
     });
   }
 
-  private Future<JsonObject> retrieveAcsConfiguration() {
+  private ACSStatusBuilder addTenantConfig(JsonObject config, ACSStatusBuilder builder) {
+    if (config != null) {
+      builder.onLineStatus(config.getBoolean("onlineStatus"));
+      builder.statusUpdateOk(config.getBoolean("statusUpdateOk"));
+      builder.offLineOk(config.getBoolean("offlineOk"));
+      builder.timeoutPeriod(config.getInteger("timeoutPeriod"));
+      builder.retriesAllowed(config.getInteger("retriesAllowed"));
+      builder.protocolVersion(config.getString("protocolVersion"));
+      builder.institutionId(config.getString("institutionId"));
+      builder.supportedMessages(getSupportedMessagesFromJson(
+          config.getJsonArray("supportedMessages")));
+    }
+    return builder;
+  }
 
-    Future<IResource> future = resourceProvider.retrieveResource(null);
-    return future.compose(resource -> {
-      final JsonObject fullConfiguration = resource.getResource();
-      JsonObject acsConfiguration = null;
-      if (fullConfiguration != null) {
-        acsConfiguration = fullConfiguration.getJsonObject("acsConfiguration");
-      }
-
-      return Future.succeededFuture(acsConfiguration);
-    });
+  private ACSStatusBuilder addSCStationConfig(JsonObject config, ACSStatusBuilder builder) {
+    if (config != null) {
+      builder.checkinOk(config.getBoolean("checkinOk"));
+      builder.acsRenewalPolicy(config.getBoolean("acsRenewalPolicy"));
+      builder.checkoutOk(config.getBoolean("checkoutOk"));
+      builder.dateTimeSync(ZonedDateTime.now(clock));
+      builder.libraryName(config.getString("libraryName"));
+      builder.terminalLocation(config.getString("terminalLocation"));
+    }
+    return builder;
   }
 
   private Set<Messages> getSupportedMessagesFromJson(JsonArray supportedMessages) {
@@ -124,5 +149,49 @@ public class ConfigurationRepository {
         .filter(el -> ((JsonObject) el).getString("isSupported").equalsIgnoreCase("Y"))
         .map(el -> Messages.valueOf(((JsonObject) el).getString("messageName")))
         .collect(Collectors.toSet());
+  }
+
+  private class ConfigurationRequestData implements IRequestData {
+
+    private final String module;
+    private final String configCode;
+    private final String configName;
+
+    private final JsonObject body;
+    private final Map<String, String> headers;
+    private final SessionData sessionData;
+
+    private ConfigurationRequestData(JsonObject body, Map<String, String> headers,
+                                     SessionData sessionData, String module,
+                                     String configName,  String configCode) {
+      this.body = body;
+      this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
+      this.sessionData = sessionData;
+      this.configCode = configCode;
+      this.configName = configName;
+      this.module = module;
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return headers;
+    }
+
+    @Override
+    public JsonObject getBody() {
+      return body;
+    }
+
+    @Override
+    public SessionData getSessionData() {
+      return sessionData;
+    }
+
+    @Override
+    public String getPath() {
+      return String.format("/configurations/entries?query=module==%s "
+          + "AND configName==%s AND code==%s",
+          module, configName, configCode);
+    }
   }
 }
