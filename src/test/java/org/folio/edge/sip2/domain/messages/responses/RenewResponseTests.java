@@ -2,6 +2,7 @@ package org.folio.edge.sip2.domain.messages.responses;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Arrays.asList;
 import static org.folio.edge.sip2.domain.messages.enumerations.CurrencyType.GBP;
 import static org.folio.edge.sip2.domain.messages.enumerations.CurrencyType.USD;
 import static org.folio.edge.sip2.domain.messages.enumerations.FeeType.DAMAGE;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.ZonedDateTime;
-
+import java.util.List;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.FeeType;
 import org.folio.edge.sip2.domain.messages.enumerations.MediaType;
@@ -40,8 +41,8 @@ class RenewResponseTests {
   final MediaType mediaType = VIDEO_TAPE;
   final String itemProperties = "Directors Cut";
   final String transactionId = "01928374675";
-  final String screenMessage = "Please rewind";
-  final String printLine = "Enjoy!";
+  final List<String> screenMessage = asList("Please rewind");
+  final List<String> printLine = asList("Enjoy!");
 
   @Test
   void testGetOk() {
@@ -646,8 +647,8 @@ class RenewResponseTests {
         .mediaType(OTHER)
         .itemProperties("Testing")
         .transactionId("000000000000000000000")
-        .screenMessage("This is a test")
-        .printLine("This is a print test")
+        .screenMessage(asList("This is a test"))
+        .printLine(asList("This is a print test"))
         .build();
     assertFalse(rr1.equals(rr2));
     assertFalse(rr1.equals(rr2));

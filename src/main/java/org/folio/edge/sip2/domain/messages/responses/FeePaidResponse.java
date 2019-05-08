@@ -1,6 +1,9 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -29,9 +32,9 @@ public final class FeePaidResponse {
   /** May be assigned by the ACS to acknowledge that payment was received. */
   private final String transactionId;
   /** A message to show to the patron on the SC screen. */
-  private final String screenMessage;
+  private final List<String> screenMessage;
   /** A message to print for the patron on the SC printer. */
-  private final String printLine;
+  private final List<String> printLine;
 
   /**
    * Construct a {@code FeePaidResponse} based on a
@@ -44,8 +47,10 @@ public final class FeePaidResponse {
     this.institutionId = builder.institutionId;
     this.patronIdentifier = builder.patronIdentifier;
     this.transactionId = builder.transactionId;
-    this.screenMessage = builder.screenMessage;
-    this.printLine = builder.printLine;
+    this.screenMessage = builder.screenMessage == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
+    this.printLine = builder.printLine == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
   }
 
   /**
@@ -76,11 +81,11 @@ public final class FeePaidResponse {
     return transactionId;
   }
 
-  public String getScreenMessage() {
+  public List<String> getScreenMessage() {
     return screenMessage;
   }
 
-  public String getPrintLine() {
+  public List<String> getPrintLine() {
     return printLine;
   }
 
@@ -133,8 +138,8 @@ public final class FeePaidResponse {
     private String institutionId;
     private String patronIdentifier;
     private String transactionId;
-    private String screenMessage;
-    private String printLine;
+    private List<String> screenMessage;
+    private List<String> printLine;
 
     private FeePaidResponseBuilder() {
       super();
@@ -166,12 +171,12 @@ public final class FeePaidResponse {
       return this;
     }
 
-    public FeePaidResponseBuilder screenMessage(String screenMessage) {
+    public FeePaidResponseBuilder screenMessage(List<String> screenMessage) {
       this.screenMessage = screenMessage;
       return this;
     }
 
-    public FeePaidResponseBuilder printLine(String printLine) {
+    public FeePaidResponseBuilder printLine(List<String> printLine) {
       this.printLine = printLine;
       return this;
     }

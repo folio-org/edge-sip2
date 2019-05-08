@@ -1,8 +1,10 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -66,9 +68,9 @@ public final class ACSStatus {
   /** The location of the SC. */
   private final String terminalLocation;
   /** A message to show to the patron on the SC screen. */
-  private final String screenMessage;
+  private final List<String> screenMessage;
   /** A message to print for the patron on the SC printer. */
-  private final String printLine;
+  private final List<String> printLine;
 
   /**
    * Construct a {@code ACSStatus} based on a
@@ -92,8 +94,10 @@ public final class ACSStatus {
         builder.supportedMessages == null ? EnumSet.noneOf(Messages.class)
             : EnumSet.copyOf(builder.supportedMessages));
     this.terminalLocation = builder.terminalLocation;
-    this.screenMessage = builder.screenMessage;
-    this.printLine = builder.printLine;
+    this.screenMessage = builder.screenMessage == null ? null
+            : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
+    this.printLine = builder.printLine == null ? null
+            : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
   }
 
   /**
@@ -160,20 +164,19 @@ public final class ACSStatus {
     return terminalLocation;
   }
 
-  public String getScreenMessage() {
+  public List<String> getScreenMessage() {
     return screenMessage;
   }
 
-  public String getPrintLine() {
+  public List<String> getPrintLine() {
     return printLine;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(acsRenewalPolicy, checkinOk, checkoutOk, dateTimeSync,
-        institutionId, libraryName, offLineOk, onLineStatus, printLine,
-        protocolVersion, retriesAllowed, screenMessage, statusUpdateOk,
-        supportedMessages, terminalLocation, timeoutPeriod);
+    return Objects.hash(acsRenewalPolicy, checkinOk, checkoutOk, dateTimeSync, institutionId,
+        libraryName, offLineOk, onLineStatus, printLine, protocolVersion, retriesAllowed,
+        screenMessage, statusUpdateOk, supportedMessages, terminalLocation, timeoutPeriod);
   }
 
   @Override
@@ -246,8 +249,8 @@ public final class ACSStatus {
     private String libraryName;
     private Set<Messages>  supportedMessages;
     private String terminalLocation;
-    private String screenMessage;
-    private String printLine;
+    private List<String> screenMessage;
+    private List<String> printLine;
 
     private ACSStatusBuilder() {
       super();
@@ -323,12 +326,12 @@ public final class ACSStatus {
       return this;
     }
 
-    public ACSStatusBuilder screenMessage(String screenMessage) {
+    public ACSStatusBuilder screenMessage(List<String> screenMessage) {
       this.screenMessage = screenMessage;
       return this;
     }
 
-    public ACSStatusBuilder printLine(String printLine) {
+    public ACSStatusBuilder printLine(List<String> printLine) {
       this.printLine = printLine;
       return this;
     }

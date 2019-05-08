@@ -1,6 +1,9 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -42,9 +45,9 @@ public final class HoldResponse {
   /** The ID of the title being checked out. */
   private final String titleIdentifier;
   /** A message to show the patron. */
-  private final String screenMessage;
+  private final List<String> screenMessage;
   /** A message to print via the SC's printer. */
-  private final String printLine;
+  private final List<String> printLine;
 
   /**
    * Construct a {@code HoldResponse} based on a
@@ -62,8 +65,10 @@ public final class HoldResponse {
     this.patronIdentifier = builder.patronIdentifier;
     this.itemIdentifier = builder.itemIdentifier;
     this.titleIdentifier = builder.titleIdentifier;
-    this.screenMessage = builder.screenMessage;
-    this.printLine = builder.printLine;
+    this.screenMessage = builder.screenMessage == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
+    this.printLine = builder.printLine == null ? null
+        : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
   }
 
   /**
@@ -114,11 +119,11 @@ public final class HoldResponse {
     return titleIdentifier;
   }
 
-  public String getScreenMessage() {
+  public List<String> getScreenMessage() {
     return screenMessage;
   }
 
-  public String getPrintLine() {
+  public List<String> getPrintLine() {
     return printLine;
   }
 
@@ -187,8 +192,8 @@ public final class HoldResponse {
     private String patronIdentifier;
     private String itemIdentifier;
     private String titleIdentifier;
-    private String screenMessage;
-    private String printLine;
+    private List<String> screenMessage;
+    private List<String> printLine;
 
     private HoldResponseBuilder() {
       super();
@@ -244,12 +249,12 @@ public final class HoldResponse {
       return this;
     }
 
-    public HoldResponseBuilder screenMessage(String screenMessage) {
+    public HoldResponseBuilder screenMessage(List<String> screenMessage) {
       this.screenMessage = screenMessage;
       return this;
     }
 
-    public HoldResponseBuilder printLine(String printLine) {
+    public HoldResponseBuilder printLine(List<String> printLine) {
       this.printLine = printLine;
       return this;
     }

@@ -32,8 +32,8 @@
   ${id}${value[0..*255]?replace(delimiter, " ")}${delimiter}<#t>
 </#macro>
 
-<#macro variableLengthRepeatableField id value>
-  <#list value?matches('.{1,${maxLength}}', 's') as chunk>
+<#macro variableLengthRepeatableField id value length>
+  <#list value?matches('.{1,${length}}', 's') as chunk>
     ${id}${chunk?replace(delimiter, " ")}${delimiter}<#t>
   </#list>
 </#macro>
@@ -76,6 +76,14 @@
   <#if value?has_content>
     <#list value as i>
       <@variableLengthField id=id value=i/>
+    </#list>
+  </#if>
+</#macro>
+
+<#macro variableLengthListRepeatableField id value length>
+  <#if value?has_content>
+    <#list value as i>
+      <@variableLengthRepeatableField id=id value=i length=length/>
     </#list>
   </#if>
 </#macro>
@@ -412,7 +420,7 @@
 
 <#macro printLine value>
   <#if value?has_content>
-    <@variableLengthRepeatableField id="AG" value=value/>
+    <@variableLengthListRepeatableField id="AG" value=value length="${maxLength!255}"/>
   </#if>
 </#macro>
 
@@ -442,7 +450,7 @@
 
 <#macro screenMessage value>
   <#if value?has_content>
-    <@variableLengthRepeatableField id="AF" value=value/>
+    <@variableLengthListRepeatableField id="AF" value=value length=255/>
   </#if>
 </#macro>
 

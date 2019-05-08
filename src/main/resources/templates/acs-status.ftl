@@ -32,9 +32,7 @@ AO${ACSStatus.institutionId}|<#rt>
 AM${ACSStatus.libraryName}|<#rt>
 BX<@supportedMessages />|<#rt>
 AN${ACSStatus.terminalLocation}|<#rt>
-<#if ACSStatus.screenMessage?has_content>
-    AF${ACSSatus.screenMessage}|<#rt>
-</#if>
-<#if ACSStatus.printLine?has_content>
-    AF${ACSSatus.printLine}|<#rt>
-</#if>
+<#-- screen message: variable-length optional field -->
+<@lib.screenMessage value=ACSStatus.screenMessage!""/>
+<#-- screen message: variable-length optional field -->
+<@lib.printLine value=ACSStatus.printLine!""/>

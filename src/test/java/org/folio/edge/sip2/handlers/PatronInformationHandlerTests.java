@@ -93,8 +93,8 @@ public class PatronInformationHandlerTests {
             .homeAddress(homeAddress)
             .emailAddress(emailAddress)
             .homePhoneNumber(homePhoneNumber)
-            .screenMessage(screenMessage)
-            .printLine(printLine)
+            .screenMessage(Arrays.asList(screenMessage))
+            .printLine(Arrays.asList(printLine))
             .build()));
 
     final PatronInformationHandler handler = new PatronInformationHandler(mockPatronRepository,

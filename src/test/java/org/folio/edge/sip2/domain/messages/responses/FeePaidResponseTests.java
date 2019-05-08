@@ -2,6 +2,7 @@ package org.folio.edge.sip2.domain.messages.responses;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Arrays.asList;
 import static org.folio.edge.sip2.domain.messages.responses.FeePaidResponse.builder;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.ZonedDateTime;
-
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class FeePaidResponseTests {
@@ -19,8 +20,8 @@ class FeePaidResponseTests {
   final String institutionId = "diku";
   final String patronIdentifier = "1234567890";
   final String transactionId = "029282747585";
-  final String screenMessage = "Hello, world!";
-  final String printLine = "Dot matrix";
+  final List<String> screenMessage = asList("Hello, world!");
+  final List<String> printLine = asList("Dot matrix");
 
   @Test
   void testGetPaymentAccepted() {
@@ -177,8 +178,8 @@ class FeePaidResponseTests {
         .institutionId("test")
         .patronIdentifier("0987654321")
         .transactionId("893457893475893475")
-        .screenMessage("Welcome to the jungle.")
-        .printLine("Print print print")
+        .screenMessage(asList("Welcome to the jungle."))
+        .printLine(asList("Print print print"))
         .build();
     assertFalse(fpr1.equals(fpr2));
     assertFalse(fpr2.equals(fpr1));
