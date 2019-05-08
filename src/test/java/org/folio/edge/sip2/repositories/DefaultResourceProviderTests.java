@@ -70,7 +70,7 @@ public class DefaultResourceProviderTests {
           String configString = firstConfig.getString("value");
           JsonObject tenantConfig = new JsonObject(configString);
 
-          assertEquals("fs00000010test", tenantConfig.getString("tenantId"));
+          assertEquals("dikutest", tenantConfig.getString("tenantId"));
           assertEquals(5, tenantConfig.getInteger("overdueItemsLimit"));
 
           testContext.completeNow();

@@ -54,13 +54,12 @@ public class ConfigurationRepository {
     ACSStatus.ACSStatusBuilder builder = ACSStatus.builder();
 
     final Future<ACSStatusBuilder> tenantConfigfuture =
-        retrieveConfiguration(sessionData, CONFIG_MODULE, TENANT_CONFIG_NAME,
-          String.format("%s.conf", sessionData.getTenant()))
+        retrieveConfiguration(sessionData, CONFIG_MODULE, TENANT_CONFIG_NAME, "")
         .map(config -> addTenantConfig(config, builder));
 
     final Future<ACSStatusBuilder> selfCheckoutConfigFuture =
-        retrieveConfiguration(sessionData, CONFIG_MODULE,SC_STATION_CONFIG_NAME,
-          String.format("%s.%s.conf", sessionData.getTenant(), sessionData.getScLocation()))
+        retrieveConfiguration(sessionData, CONFIG_MODULE,
+            SC_STATION_CONFIG_NAME + "." + sessionData.getScLocation(), "")
         .map(config -> addSCStationConfig(config, builder));
 
     return CompositeFuture.all(tenantConfigfuture, selfCheckoutConfigFuture)
@@ -89,7 +88,7 @@ public class ConfigurationRepository {
     Future<IResource> future = resourceProvider.retrieveResource(requestData);
     return future.compose(resource -> {
       final JsonObject scConfiguration = resource.getResource();
-      JsonObject acsConfiguration = null;
+
       if (scConfiguration != null) {
         JsonArray configs = scConfiguration.getJsonArray("configs");
         if (configs.size() > 0) {
@@ -97,7 +96,7 @@ public class ConfigurationRepository {
 
           String acsConfigurationString = firstConfig.getString("value");
           if (acsConfigurationString != null && !acsConfigurationString.isEmpty()) {
-            acsConfiguration = new JsonObject(acsConfigurationString);
+            JsonObject acsConfiguration = new JsonObject(acsConfigurationString);
             return Future.succeededFuture(acsConfiguration);
           } else {
             log.error("Getting no value from config store for "

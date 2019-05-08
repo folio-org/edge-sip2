@@ -3,8 +3,7 @@
     {
       "id": "acd6dae1-b1ae-4780-8e06-993fbed00061",
       "module": "edge-sip2",
-      "configName": "selfCheckoutConfig",
-      "code":"fs00000010test.TL01.conf",
+      "configName": "selfCheckoutConfig.TL01",
       "enabled": true,
       "value": "{\"terminalDelimeter\" : \"\\r\",\"fieldDelimeter\" : \"|\",\"errorDetectionEnabled\" : true,\"charset\" : \"IBM850\",\"SCtimeZone\" : \"CEST\",\"checkinOk\": true,\"checkoutOk\": false,\"acsRenewalPolicy\": true,\"maxPrintWidth\" : 200,\"libraryName\": \"diku\",\"terminalLocation\": \"TL01\"}",
       "metadata": {

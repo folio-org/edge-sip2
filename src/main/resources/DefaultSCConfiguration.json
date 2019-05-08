@@ -3,8 +3,7 @@
     {
       "id": "acd6dae1-b1ae-4780-8e06-993fbed00061",
       "module": "edge-sip2",
-      "configName": "selfCheckoutConfig",
-      "code":"fs00001000.bf042bfd-a0ad-420c-8188-8e2ae01d9c0c.conf",
+      "configName": "selfCheckoutConfig.bf042bfd-a0ad-420c-8188-8e2ae01d9c0c",
       "enabled": true,
       "value": "{\"terminalDelimeter\" : \"\\r\",\"fieldDelimeter\" : \"|\",\"errorDetectionEnabled\" : true,\"charset\" : \"IBM850\",\"SCtimeZone\" : \"CEST\",\"checkinOk\": true,\"checkoutOk\": true,\"acsRenewalPolicy\": false,\"maxPrintWidth\" : 200,\"libraryName\": \"Chalmers\",\"terminalLocation\": \"bf042bfd-a0ad-420c-8188-8e2ae01d9c0c\"}",
       "metadata": {

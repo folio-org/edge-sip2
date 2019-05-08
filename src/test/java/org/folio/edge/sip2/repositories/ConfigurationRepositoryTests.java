@@ -47,13 +47,13 @@ public class ConfigurationRepositoryTests {
   public void canGetValidAcsStatus(Vertx vertx, VertxTestContext testContext) {
 
     JsonObject configObject = new JsonObject();
-    configObject.put("value", "{\"tenantId\":\"fs00000010\",\"supportedMessages\":"
+    configObject.put("value", "{\"tenantId\":\"diku\",\"supportedMessages\":"
           + "[{\"messageName\": \"PATRON_INFORMATION\",\"isSupported\": \"Y\"},"
           + "{\"messageName\": \"RENEW\",\"isSupported\": \"N\"},"
           + "{\"messageName\": \"BLOCK_PATRON\",\"isSupported\": \"Y\"}],"
           +  "\"onlineStatus\": false,\"statusUpdateOk\": false,\"offlineOk\":true,"
           +  "\"timeoutPeriod\":3,\"retriesAllowed\":2,"
-          +  "\"protocolVersion\":\"1.23\",\"institutionId\":\"fs00000010\","
+          +  "\"protocolVersion\":\"1.23\",\"institutionId\":\"diku\","
           +   "\"screenMessage\":\"Hello, welcome\","
           +  "\"printLine\":\"testing\",\"checkinOk\":false,"
           +   "\"checkoutOk\":true,\"acsRenewalPolicy\":false,"
@@ -87,7 +87,7 @@ public class ConfigurationRepositoryTests {
           assertEquals(3, status.getTimeoutPeriod());
           assertEquals(2, status.getRetriesAllowed());
           assertEquals("1.23", status.getProtocolVersion());
-          assertEquals("fs00000010", status.getInstitutionId());
+          assertEquals("diku", status.getInstitutionId());
           assertEquals("diku", status.getLibraryName());
           assertEquals("SE10", status.getTerminalLocation());
           assertEquals(ZonedDateTime.now(clock), status.getDateTimeSync());
@@ -116,7 +116,7 @@ public class ConfigurationRepositoryTests {
         ConfigurationRepository.TENANT_CONFIG_NAME, "").setHandler(
           testContext.succeeding(testTenantConfig -> testContext.verify(() -> {
             assertNotNull(testTenantConfig);
-            assertEquals("fs00000010test",
+            assertEquals("dikutest",
                 testTenantConfig.getString("tenantId"));
             assertEquals("Krona", testTenantConfig.getString("currencyType"));
 

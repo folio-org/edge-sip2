@@ -39,7 +39,7 @@ public class TestUtils {
   }
 
   public static SessionData getMockedSessionData() {
-    return SessionData.createSession("fs00000010test", '|', false, "");
+    return SessionData.createSession("diku", '|', false, "");
   }
 
   /**
