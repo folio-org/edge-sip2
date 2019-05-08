@@ -50,22 +50,4 @@ final class Utils {
       }
     };
   }
-  /*
-  public static String getCurrentTime() {
-
-    DateTimeFormatter format = getFolioDateTimeFormatter();
-
-    //Convert String to LocalDateTime
-    String date = "2016-08-22 14:30";
-    LocalDateTime ldt = LocalDateTime.parse(ZonedDateTime.now().toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-    System.out.println("LocalDateTime : " + format.format(ldt));
-
-    //Paris, 2016 Apr-Oct = DST, UTC+2, other months UTC+1
-    //UTC+2
-    ZonedDateTime parisDateTime;
-    parisDateTime = ldt.atZone(ZoneId.of("Europe/Paris"));
-    System.out.println("Depart : " + format.format(parisDateTime));
-
-
-  }*/
 }

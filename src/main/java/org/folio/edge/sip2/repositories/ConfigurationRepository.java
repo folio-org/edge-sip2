@@ -101,12 +101,12 @@ public class ConfigurationRepository {
             return Future.succeededFuture(acsConfiguration);
           } else {
             log.error("Getting no value from config store for "
-              + "Module: {}; ConfigName: {}; ConfigCode {}", module, configName, configCode);
+                + "Module: {}; ConfigName: {}; ConfigCode {}", module, configName, configCode);
             return Future.failedFuture("Getting no value from config store");
           }
         } else {
           log.error("Unable to find the configuration by the combination "
-            + "Module: {}; ConfigName: {}; ConfigCode {}", module, configName, configCode);
+              + "Module: {}; ConfigName: {}; ConfigCode {}", module, configName, configCode);
           return Future.failedFuture("Unable to find the configuration");
         }
       } else {
