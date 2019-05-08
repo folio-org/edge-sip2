@@ -64,7 +64,7 @@ public class PatronRepository {
    * @param patronInformation the patron information domain object
    * @return the patron information response domain object
    */
-  public Future<PatronInformationResponse> patronInformation(
+  public Future<PatronInformationResponse> performPatronInformationCommand(
       PatronInformation patronInformation,
       SessionData sessionData) {
     Objects.requireNonNull(patronInformation, "patronInformation cannot be null");
