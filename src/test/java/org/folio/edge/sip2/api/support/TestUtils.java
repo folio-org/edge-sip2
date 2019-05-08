@@ -51,7 +51,7 @@ public class TestUtils {
   public static String getJsonFromFile(String fileName) {
     try {
       return String.join("\n", Files.readAllLines(
-          Paths.get(TestUtils.class.getClassLoader().getResource(fileName).toURI())));
+        Paths.get(TestUtils.class.getClassLoader().getResource(fileName).toURI())));
     } catch (Exception e) {
       fail(e);
       return null;

@@ -94,9 +94,9 @@ public class ConfigurationRepository {
         if (configs.size() > 0) {
           JsonObject firstConfig = configs.getJsonObject(0);
 
-          String acsConfigurationString = firstConfig.getString("value");
-          if (acsConfigurationString != null && !acsConfigurationString.isEmpty()) {
-            JsonObject acsConfiguration = new JsonObject(acsConfigurationString);
+          String configurationString = firstConfig.getString("value");
+          if (configurationString != null && !configurationString.isEmpty()) {
+            JsonObject acsConfiguration = new JsonObject(configurationString);
             return Future.succeededFuture(acsConfiguration);
           } else {
             logWithConfigDetails("Getting no value from config store for", module,
@@ -157,7 +157,7 @@ public class ConfigurationRepository {
         .collect(Collectors.toSet());
   }
 
-  private class ConfigurationRequestData implements IRequestData {
+  class ConfigurationRequestData implements IRequestData {
 
     private final String module;
     private final String configCode;
@@ -195,9 +195,38 @@ public class ConfigurationRepository {
 
     @Override
     public String getPath() {
-      return String.format("/configurations/entries?query=module==%s "
-          + "AND configName==%s AND code==%s",
-          module, configName, configCode);
+
+      String configModuleFragment;
+      String configNameFragment;
+      String configCodeFragment;
+      Boolean previousEmpty = false;
+
+      if (!Utils.isStringNullOrEmpty(module)) {
+        configModuleFragment = "module==" + module;
+      } else {
+        configModuleFragment = "";
+        previousEmpty = true;
+      }
+
+      if (!Utils.isStringNullOrEmpty(configName)) {
+        configNameFragment = previousEmpty ? "configName==" + configName
+            : " AND configName==" + configName;
+      } else {
+        configNameFragment = "";
+        previousEmpty = true;
+      }
+
+      if (!Utils.isStringNullOrEmpty(configCode)) {
+        configCodeFragment = previousEmpty ? "code =="  + configCode
+            : " AND code==" + configCode;
+      } else {
+        configCodeFragment = "";
+      }
+
+      String path = String.format("/configurations/entries?query=%s%s%s",
+          configModuleFragment, configNameFragment, configCodeFragment);
+
+      return path.trim();
     }
   }
 }

@@ -43,4 +43,8 @@ final class Utils {
       }
     };
   }
+
+  public static boolean isStringNullOrEmpty(String aString) {
+    return aString == null ? true : aString == "";
+  }
 }
