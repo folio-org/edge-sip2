@@ -16,8 +16,7 @@ class BlockPatronMessageParserTests {
   void testParse() {
     BlockPatronMessageParser parser =
         new BlockPatronMessageParser(valueOf('|'));
-    final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime transactionDate = OffsetDateTime.now().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
@@ -27,8 +26,7 @@ class BlockPatronMessageParserTests {
         + "AApatron_id|AC|AOuniversity_id|");
 
     assertEquals(FALSE, blockPatron.getCardRetained());
-    assertEquals(transactionDate.getOffset(),
-        blockPatron.getTransactionDate().getOffset());
+    assertEquals(transactionDate,blockPatron.getTransactionDate());
     assertEquals("university_id", blockPatron.getInstitutionId());
     assertEquals("Card retained due to excessive fee violations",
         blockPatron.getBlockedCardMsg());

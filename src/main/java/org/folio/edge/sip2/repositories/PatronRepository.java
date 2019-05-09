@@ -31,7 +31,6 @@ import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse.PatronInformationResponseBuilder;
 import org.folio.edge.sip2.session.SessionData;
-import org.folio.edge.sip2.utils.Utils;
 
 /**
  * Provides interaction with the patron required services. This repository is a go-between for
@@ -77,13 +76,13 @@ public class PatronRepository {
     final Future<JsonObject> result = usersRepository.getUserByBarcode(barcode, sessionData);
     return result.compose(user -> {
       if (user == null || !user.getBoolean("active", FALSE).booleanValue()) {
-        return invalidPatron(patronInformation, sessionData.getTimeZone());
+        return invalidPatron(patronInformation);
       } else {
         final String userId = user.getString("id");
         if (userId == null) {
           // Something is really messed up if the id is missing
           log.error("User with barcode {} is missing the \"id\" field", barcode);
-          return invalidPatron(patronInformation, sessionData.getTimeZone());
+          return invalidPatron(patronInformation);
         }
         return validPatron(userId, user.getJsonObject("personal", new JsonObject()),
             patronInformation, sessionData);
@@ -120,7 +119,7 @@ public class PatronRepository {
             .patronStatus(EnumSet.noneOf(PatronStatus.class))
             // Get tenant language from config along with the timezone
             .language(patronInformation.getLanguage())
-            .transactionDate(Utils.getTransactionTimestamp(sessionData.getTimeZone(), clock))
+            .transactionDate(OffsetDateTime.now(clock))
             .chargedItemsCount(null)
             .fineItemsCount(null)
             .unavailableHoldsCount(null)
@@ -131,12 +130,11 @@ public class PatronRepository {
         );
   }
 
-  private Future<PatronInformationResponse> invalidPatron(PatronInformation patronInformation,
-                                                          String timeZone) {
+  private Future<PatronInformationResponse> invalidPatron(PatronInformation patronInformation) {
     return Future.succeededFuture(PatronInformationResponse.builder()
         .patronStatus(EnumSet.noneOf(PatronStatus.class))
         .language(UNKNOWN)
-        .transactionDate(Utils.getTransactionTimestamp(timeZone, clock))
+        .transactionDate(OffsetDateTime.now(clock))
         .holdItemsCount(Integer.valueOf(0))
         .overdueItemsCount(Integer.valueOf(0))
         .chargedItemsCount(Integer.valueOf(0))

@@ -170,7 +170,7 @@ public class CirculationRepositoryTests {
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
     final Clock clock = TestUtils.getUtcFixedClock();
-    final OffsetDateTime nbDueDate = Utils.getTransactionTimestamp("Etc/UTC", clock).plusDays(30);
+    final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
     final String itemIdentifier = "1234567890";
     final String title = "Some book";

@@ -5,7 +5,7 @@
 <#--
     transaction date: 18-char, fixed-length required field: YYYYMMDDZZZZHHMMSS
 -->
-<@lib.transactionDate value=endSessionResponse.transactionDate/>
+<@lib.transactionDate value=endSessionResponse.transactionDate tz=timezone/>
 <#-- institution id: variable-length required field -->
 <@lib.institutionId value=endSessionResponse.institutionId/>
 <#-- patron identifier: variable-length required field -->

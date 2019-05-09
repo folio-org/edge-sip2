@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.time.Clock;
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,7 +61,7 @@ public class ConfigurationRepository {
     final Future<ACSStatusBuilder> selfCheckoutConfigFuture =
         retrieveConfiguration(sessionData, CONFIG_MODULE,
             SC_STATION_CONFIG_NAME + "." + sessionData.getScLocation(), "")
-        .map(config -> addSCStationConfig(config, builder, sessionData.getTimeZone()));
+        .map(config -> addSCStationConfig(config, builder));
 
     return CompositeFuture.all(tenantConfigfuture, selfCheckoutConfigFuture)
         .map(result -> builder.build());
@@ -137,14 +138,12 @@ public class ConfigurationRepository {
     return builder;
   }
 
-  private ACSStatusBuilder addSCStationConfig(JsonObject config,
-                                              ACSStatusBuilder builder,
-                                              String timeZone) {
+  private ACSStatusBuilder addSCStationConfig(JsonObject config, ACSStatusBuilder builder) {
     if (config != null) {
       builder.checkinOk(config.getBoolean("checkinOk"));
       builder.acsRenewalPolicy(config.getBoolean("acsRenewalPolicy"));
       builder.checkoutOk(config.getBoolean("checkoutOk"));
-      builder.dateTimeSync(Utils.getTransactionTimestamp(timeZone, clock));
+      builder.dateTimeSync(OffsetDateTime.now(clock));
       builder.libraryName(config.getString("libraryName"));
       builder.terminalLocation(config.getString("terminalLocation"));
     }

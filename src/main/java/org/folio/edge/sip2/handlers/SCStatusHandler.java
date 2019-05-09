@@ -58,6 +58,7 @@ public class SCStatusHandler implements ISip2RequestHandler {
         root.put("formatDateTime", new FormatDateTimeMethodModel());
         root.put("delimiter", sessionData.getFieldDelimiter());
         root.put("maxLength", sessionData.getMaxPrintWidth());
+        root.put("timezone", sessionData.getTimeZone());
 
         if (template == null) {
           log.error("Unable to locate Freemarker template for the command: " + ACS_STATUS.name());

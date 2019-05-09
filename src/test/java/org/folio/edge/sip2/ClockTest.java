@@ -23,5 +23,7 @@ public class ClockTest {
 
     System.out.println(ZoneOffset.getAvailableZoneIds());
 
+    System.out.println(OffsetDateTime.now());
+
   }
 }

@@ -52,6 +52,7 @@ public class PatronInformationHandler implements ISip2RequestHandler {
       root.put("delimiter", sessionData.getFieldDelimiter());
       root.put("patronInformationResponse", patronInformationResponse);
       root.put("maxLength", sessionData.getMaxPrintWidth());
+      root.put("timezone", sessionData.getTimeZone());
 
       final String response = FreemarkerUtils.executeFreemarkerTemplate(root, commandTemplate);
 

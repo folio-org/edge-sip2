@@ -16,8 +16,7 @@ class CheckinMessageParserTests {
   @Test
   void testParse() {
     CheckinMessageParser parser = new CheckinMessageParser(valueOf('|'));
-    final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+    final OffsetDateTime transactionDate = OffsetDateTime.now().truncatedTo(SECONDS);
     final OffsetDateTime returnDate = transactionDate.plusMinutes(5);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
@@ -29,10 +28,8 @@ class CheckinMessageParserTests {
         + "AOuniversity_id|BIN|");
 
     assertEquals(TRUE, checkin.getNoBlock());
-    assertEquals(transactionDate.getOffset(),
-        checkin.getTransactionDate().getOffset());
-    assertEquals(returnDate.getOffset(),
-        checkin.getReturnDate().getOffset());
+    assertEquals(transactionDate.getOffset(), checkin.getTransactionDate().getOffset());
+    assertEquals(returnDate.getOffset(), checkin.getReturnDate().getOffset());
     assertEquals("circ_desk", checkin.getCurrentLocation());
     assertEquals("university_id", checkin.getInstitutionId());
     assertEquals("SomeBook", checkin.getItemIdentifier());

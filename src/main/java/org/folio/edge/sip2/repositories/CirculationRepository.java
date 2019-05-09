@@ -79,7 +79,7 @@ public class CirculationRepository {
               .resensitize(resource.getResource() == null ? FALSE : TRUE)
               .magneticMedia(null)
               .alert(FALSE)
-              .transactionDate(Utils.getTransactionTimestamp(sessionData.getTimeZone(), clock))
+              .transactionDate(OffsetDateTime.now(clock))
               .institutionId(institutionId)
               .itemIdentifier(itemIdentifier)
               // this is probably not the permanent location
@@ -130,9 +130,7 @@ public class CirculationRepository {
               dueDate = null;
             } else {
               // Need to convert to the tenant local timezone
-              dueDate = Utils.convertDateTime(
-                  OffsetDateTime.parse(dueDateString, Utils.getFolioDateTimeFormatter()),
-                  sessionData.getTimeZone());
+              dueDate = OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(dueDateString));
             }
           } else {
             dueDate = null;
@@ -143,7 +141,7 @@ public class CirculationRepository {
               .renewalOk(FALSE)
               .magneticMedia(null)
               .desensitize(resource.getResource() == null ? FALSE : TRUE)
-              .transactionDate(Utils.getTransactionTimestamp(sessionData.getTimeZone(), clock))
+              .transactionDate(OffsetDateTime.now(clock))
               .institutionId(institutionId)
               .patronIdentifier(patronIdentifier)
               .itemIdentifier(itemIdentifier)

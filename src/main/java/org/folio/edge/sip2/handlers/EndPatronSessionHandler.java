@@ -43,8 +43,7 @@ public class EndPatronSessionHandler implements ISip2RequestHandler {
 
     EndSessionResponse endSessionResponse = EndSessionResponse.builder()
                 .endSession(true)
-                .transactionDate(Utils.convertDateTime(endPatronSession.getTransactionDate(),
-                                                        sessionData.getTimeZone()))
+                .transactionDate(endPatronSession.getTransactionDate())
                 .institutionId(endPatronSession.getInstitutionId())
                 .patronIdentifier(endPatronSession.getPatronIdentifier())
                 .build();
@@ -53,6 +52,7 @@ public class EndPatronSessionHandler implements ISip2RequestHandler {
     root.put("formatDateTime", new FormatDateTimeMethodModel());
     root.put("delimiter", sessionData.getFieldDelimiter());
     root.put("endSessionResponse", endSessionResponse);
+    root.put("timezone", sessionData.getTimeZone());
 
     final String response = FreemarkerUtils
         .executeFreemarkerTemplate(root, commandTemplate);

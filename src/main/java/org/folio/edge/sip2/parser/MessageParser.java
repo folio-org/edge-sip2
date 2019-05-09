@@ -9,6 +9,7 @@ import java.time.OffsetDateTime;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.parser.exceptions.MissingDelimiterException;
+import org.folio.edge.sip2.utils.Utils;
 
 /**
  * Base class for message parsing. Contains some common parsing methods.
@@ -78,7 +79,6 @@ public abstract class MessageParser {
   }
 
   protected OffsetDateTime convertFieldToDateTime(String dateTimeString) {
-    // TIMEZONE: We'll need to get the correct TZ from somewhere
     OffsetDateTime now = OffsetDateTime.now();
     DateTimeMapper dtMapper = new DateTimeMapper(now.getOffset());
     return dtMapper.mapDateTime(dateTimeString);
