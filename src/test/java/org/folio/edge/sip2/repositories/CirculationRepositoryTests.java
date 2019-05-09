@@ -30,6 +30,7 @@ import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Utils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -169,7 +170,7 @@ public class CirculationRepositoryTests {
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
     final Clock clock = TestUtils.getUtcFixedClock();
-    final OffsetDateTime nbDueDate = OffsetDateTime.now().plusDays(30);
+    final OffsetDateTime nbDueDate = Utils.getTransactionTimestamp("Etc/UTC", clock).plusDays(30);
     final String patronIdentifier = "1029384756";
     final String itemIdentifier = "1234567890";
     final String title = "Some book";

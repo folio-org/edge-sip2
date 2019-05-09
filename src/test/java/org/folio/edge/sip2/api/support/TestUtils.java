@@ -38,9 +38,14 @@ public class TestUtils {
     return Clock.fixed(Instant.now(), ZoneOffset.UTC);
   }
 
+  /**
+   * Returns a mocked session data with UTC timezones.
+   * @return SessionData object
+   */
   public static SessionData getMockedSessionData() {
     SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
     sessionData.setTimeZone("Etc/UTC");
+    sessionData.setMaxPrintWidth(100);
     return sessionData;
   }
 

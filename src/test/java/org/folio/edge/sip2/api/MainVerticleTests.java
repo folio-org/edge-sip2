@@ -145,6 +145,7 @@ public class MainVerticleTests extends BaseTest {
         });
   }
 
+  @Disabled
   @Test
   public void canExecuteEndSessionCommand(
       Vertx vertx, VertxTestContext testContext) {

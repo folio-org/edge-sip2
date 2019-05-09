@@ -24,6 +24,10 @@ public final class Utils {
     super();
   }
 
+  /**
+   * Returns a FOLIO datetime formatter that conforms to SIP protocol.
+   * @return SIP-conformant datetime formatter.
+   */
   public static DateTimeFormatter getFolioDateTimeFormatter() {
     return new DateTimeFormatterBuilder()
         .parseCaseInsensitive()
@@ -32,6 +36,11 @@ public final class Utils {
         .toFormatter();
   }
 
+  /**
+   * Utility method to handle errors.
+   * @param t - a throwable object
+   * @return - List of error messages
+   */
   public static IResource handleErrors(Throwable t) {
     return new IResource() {
       @Override
