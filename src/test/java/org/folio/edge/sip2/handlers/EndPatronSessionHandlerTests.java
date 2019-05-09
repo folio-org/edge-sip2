@@ -45,11 +45,7 @@ public class EndPatronSessionHandlerTests {
 
     final EndPatronSessionHandler handler = new EndPatronSessionHandler(template);
 
-    final SessionData sessionData = SessionData.createSession(
-        institutionId,
-        '|',
-        false,
-        "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
     sessionData.setPassword("some random password");
     sessionData.setUsername("JoeSmith");
     sessionData.setAuthenticationToken("abcdefghijklmnop");

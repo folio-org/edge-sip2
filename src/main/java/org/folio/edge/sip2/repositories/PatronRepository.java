@@ -13,7 +13,6 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.time.Clock;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -46,7 +45,6 @@ public class PatronRepository extends AbstractRepository {
 
   private final UsersRepository usersRepository;
   private final CirculationRepository circulationRepository;
-  private final Clock clock;
 
   @Inject
   PatronRepository(UsersRepository usersRepository, CirculationRepository circulationRepository,
@@ -56,7 +54,6 @@ public class PatronRepository extends AbstractRepository {
         "Users repository cannot be null");
     this.circulationRepository = Objects.requireNonNull(circulationRepository,
         "Circulation repository cannot be null");
-    this.clock = clock;
   }
 
   /**
@@ -105,7 +102,7 @@ public class PatronRepository extends AbstractRepository {
             holds -> addHolds(holds, patronInformation.getSummary() == HOLD_ITEMS, builder));
     // Get overdue loans data (count and items) and store it in the builder
     final Future<PatronInformationResponseBuilder> overdueFuture =
-        circulationRepository.getOverdueLoansByUserId(userId, OffsetDateTime.now(clock),
+        circulationRepository.getOverdueLoansByUserId(userId, getTransactionTimestamp(sessionData.getTimeZone()),
             startItem, endItem, sessionData).map(
                 overdues -> addOverdueItems(overdues,
                     patronInformation.getSummary() == OVERDUE_ITEMS, builder));

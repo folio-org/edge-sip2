@@ -17,6 +17,7 @@ import org.folio.edge.sip2.domain.messages.responses.EndSessionResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.parser.Message;
+import org.folio.edge.sip2.repositories.Utils;
 import org.folio.edge.sip2.session.SessionData;
 
 public class EndPatronSessionHandler implements ISip2RequestHandler {
@@ -42,7 +43,8 @@ public class EndPatronSessionHandler implements ISip2RequestHandler {
 
     EndSessionResponse endSessionResponse = EndSessionResponse.builder()
                 .endSession(true)
-                .transactionDate(endPatronSession.getTransactionDate())
+                .transactionDate(Utils.convertDateTime(endPatronSession.getTransactionDate(),
+                                                        sessionData.getTimeZone()))
                 .institutionId(endPatronSession.getInstitutionId())
                 .patronIdentifier(endPatronSession.getPatronIdentifier())
                 .build();

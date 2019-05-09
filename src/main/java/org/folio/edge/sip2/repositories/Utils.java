@@ -15,7 +15,7 @@ import java.util.List;
  * @author mreno-EBSCO
  *
  */
-final class Utils {
+final public class Utils {
   private Utils() {
     super();
   }
@@ -47,7 +47,7 @@ final class Utils {
   }
 
   public static boolean isStringNullOrEmpty(String aString) {
-    return aString == null ? true : aString == "";
+    return aString == null ? true : aString.equals("");
   }
 
   public static OffsetDateTime getOffsetDateTimeNow(String timeZone) {

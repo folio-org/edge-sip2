@@ -128,7 +128,8 @@ public class CirculationRepository extends AbstractRepository {
               dueDate = null;
             } else {
               // Need to convert to the tenant local timezone
-              dueDate = Utils.convertDateTime(OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(dueDateString)), sessionData.getTimeZone());
+              dueDate = Utils.convertDateTime(OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(dueDateString)),
+                                              sessionData.getTimeZone());
             }
           } else {
             dueDate = null;
