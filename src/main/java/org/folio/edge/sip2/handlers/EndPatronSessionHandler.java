@@ -17,8 +17,8 @@ import org.folio.edge.sip2.domain.messages.responses.EndSessionResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.parser.Message;
-import org.folio.edge.sip2.repositories.Utils;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Utils;
 
 public class EndPatronSessionHandler implements ISip2RequestHandler {
 

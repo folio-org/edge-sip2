@@ -1,7 +1,8 @@
-package org.folio.edge.sip2.repositories;
+package org.folio.edge.sip2.utils;
 
 import io.vertx.core.json.JsonObject;
 
+import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -9,13 +10,16 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.util.Arrays;
 import java.util.List;
 
+import org.folio.edge.sip2.repositories.IResource;
+import org.folio.edge.sip2.repositories.RequestThrowable;
+
 /**
  * Utils for the repository implementations.
  *
  * @author mreno-EBSCO
  *
  */
-final public class Utils {
+public final class Utils {
   private Utils() {
     super();
   }
@@ -46,15 +50,15 @@ final public class Utils {
     };
   }
 
-  public static boolean isStringNullOrEmpty(String aString) {
-    return aString == null ? true : aString.equals("");
-  }
-
-  public static OffsetDateTime getOffsetDateTimeNow(String timeZone) {
-    return OffsetDateTime.now(ZoneId.of(timeZone));
+  public static boolean isStringNullOrEmpty(String someString) {
+    return someString == null ? true : someString.equals("");
   }
 
   public static OffsetDateTime convertDateTime(OffsetDateTime instance, String timeZone) {
     return OffsetDateTime.ofInstant(instance.toInstant(), ZoneId.of(timeZone));
+  }
+
+  public static OffsetDateTime getTransactionTimestamp(String timeZone, Clock clock) {
+    return convertDateTime(OffsetDateTime.now(clock), timeZone);
   }
 }

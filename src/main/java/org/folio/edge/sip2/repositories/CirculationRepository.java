@@ -22,6 +22,7 @@ import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.domain.messages.responses.CheckinResponse;
 import org.folio.edge.sip2.domain.messages.responses.CheckoutResponse;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Utils;
 
 /**
  * Provides interaction with the circulation service.
@@ -29,16 +30,17 @@ import org.folio.edge.sip2.session.SessionData;
  * @author mreno-EBSCO
  *
  */
-public class CirculationRepository extends AbstractRepository {
+public class CirculationRepository {
   // Should consider letting the template take care of required fields with missing values
   private static final String UNKNOWN = "";
   private final IResourceProvider<IRequestData> resourceProvider;
+  private final Clock clock;
 
   @Inject
   CirculationRepository(IResourceProvider<IRequestData> resourceProvider, Clock clock) {
-    super(clock);
     this.resourceProvider = Objects.requireNonNull(resourceProvider,
         "Resource provider cannot be null");
+    this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
   }
 
   /**
@@ -77,7 +79,7 @@ public class CirculationRepository extends AbstractRepository {
               .resensitize(resource.getResource() == null ? FALSE : TRUE)
               .magneticMedia(null)
               .alert(FALSE)
-              .transactionDate(getTransactionTimestamp(sessionData.getTimeZone()))
+              .transactionDate(Utils.getTransactionTimestamp(sessionData.getTimeZone(), clock))
               .institutionId(institutionId)
               .itemIdentifier(itemIdentifier)
               // this is probably not the permanent location
@@ -128,8 +130,9 @@ public class CirculationRepository extends AbstractRepository {
               dueDate = null;
             } else {
               // Need to convert to the tenant local timezone
-              dueDate = Utils.convertDateTime(OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(dueDateString)),
-                                              sessionData.getTimeZone());
+              dueDate = Utils.convertDateTime(
+                  OffsetDateTime.parse(dueDateString, Utils.getFolioDateTimeFormatter()),
+                  sessionData.getTimeZone());
             }
           } else {
             dueDate = null;
@@ -140,7 +143,7 @@ public class CirculationRepository extends AbstractRepository {
               .renewalOk(FALSE)
               .magneticMedia(null)
               .desensitize(resource.getResource() == null ? FALSE : TRUE)
-              .transactionDate(getTransactionTimestamp(sessionData.getTimeZone()))
+              .transactionDate(Utils.getTransactionTimestamp(sessionData.getTimeZone(), clock))
               .institutionId(institutionId)
               .patronIdentifier(patronIdentifier)
               .itemIdentifier(itemIdentifier)

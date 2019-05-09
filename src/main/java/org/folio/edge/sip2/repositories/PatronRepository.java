@@ -13,6 +13,7 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.time.Clock;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -30,6 +31,7 @@ import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse.PatronInformationResponseBuilder;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Utils;
 
 /**
  * Provides interaction with the patron required services. This repository is a go-between for
@@ -38,22 +40,23 @@ import org.folio.edge.sip2.session.SessionData;
  * @author mreno-EBSCO
  *
  */
-public class PatronRepository extends AbstractRepository {
+public class PatronRepository {
   private static final String FIELD_TITLE = "title";
   private static final String FIELD_TOTAL_RECORDS = "totalRecords";
   private static final Logger log = LogManager.getLogger();
 
   private final UsersRepository usersRepository;
   private final CirculationRepository circulationRepository;
+  private final Clock clock;
 
   @Inject
   PatronRepository(UsersRepository usersRepository, CirculationRepository circulationRepository,
       Clock clock) {
-    super(clock);
     this.usersRepository = Objects.requireNonNull(usersRepository,
         "Users repository cannot be null");
     this.circulationRepository = Objects.requireNonNull(circulationRepository,
         "Circulation repository cannot be null");
+    this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
   }
 
   /**
@@ -101,8 +104,9 @@ public class PatronRepository extends AbstractRepository {
         .getRequestsByUserId(userId, "Hold", startItem, endItem, sessionData).map(
             holds -> addHolds(holds, patronInformation.getSummary() == HOLD_ITEMS, builder));
     // Get overdue loans data (count and items) and store it in the builder
+    // Due date needs to be UTC since it is being used in CQL for time comparison in the DB.
     final Future<PatronInformationResponseBuilder> overdueFuture =
-        circulationRepository.getOverdueLoansByUserId(userId, getTransactionTimestamp(sessionData.getTimeZone()),
+        circulationRepository.getOverdueLoansByUserId(userId, OffsetDateTime.now(clock),
             startItem, endItem, sessionData).map(
                 overdues -> addOverdueItems(overdues,
                     patronInformation.getSummary() == OVERDUE_ITEMS, builder));
@@ -116,7 +120,7 @@ public class PatronRepository extends AbstractRepository {
             .patronStatus(EnumSet.noneOf(PatronStatus.class))
             // Get tenant language from config along with the timezone
             .language(patronInformation.getLanguage())
-            .transactionDate(getTransactionTimestamp(sessionData.getTimeZone()))
+            .transactionDate(Utils.getTransactionTimestamp(sessionData.getTimeZone(), clock))
             .chargedItemsCount(null)
             .fineItemsCount(null)
             .unavailableHoldsCount(null)
@@ -127,11 +131,12 @@ public class PatronRepository extends AbstractRepository {
         );
   }
 
-  private Future<PatronInformationResponse> invalidPatron(PatronInformation patronInformation, String timeZone) {
+  private Future<PatronInformationResponse> invalidPatron(PatronInformation patronInformation,
+                                                          String timeZone) {
     return Future.succeededFuture(PatronInformationResponse.builder()
         .patronStatus(EnumSet.noneOf(PatronStatus.class))
         .language(UNKNOWN)
-        .transactionDate(getTransactionTimestamp(timeZone))
+        .transactionDate(Utils.getTransactionTimestamp(timeZone, clock))
         .holdItemsCount(Integer.valueOf(0))
         .overdueItemsCount(Integer.valueOf(0))
         .chargedItemsCount(Integer.valueOf(0))

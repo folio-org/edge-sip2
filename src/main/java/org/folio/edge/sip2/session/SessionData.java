@@ -88,9 +88,13 @@ public class SessionData {
     this.previousMessage = message;
   }
 
-  public String getTimeZone() { return timeZone; }
+  public String getTimeZone() {
+    return timeZone;
+  }
 
-  public void setTimeZone(String timeZone) { this.timeZone = timeZone; }
+  public void setTimeZone(String timeZone) {
+    this.timeZone = timeZone;
+  }
 
   public static SessionData createSession(String tenant, char fieldDelimiter,
       boolean errorDetectionEnabled, String charset) {

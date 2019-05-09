@@ -44,7 +44,9 @@ public class HandlersFactory {
 
     resProvider = getResourceProvider(resProvider, okapiUrl, vertx);
 
-    if (configRepo == null ) {
+    if (configRepo == null && clock == null) {
+      configRepo = new ConfigurationRepository(resProvider, Clock.systemUTC());
+    } else if (configRepo == null) {
       configRepo = new ConfigurationRepository(resProvider, clock);
     }
 
