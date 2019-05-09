@@ -25,7 +25,8 @@ public class FormatDateTimeMethodModel implements TemplateMethodModelEx {
     }
 
     OffsetDateTime time = (OffsetDateTime) ((StringModel) args.get(0)).getWrappedObject();
-    OffsetDateTime convertedTime = Utils.convertDateTime(time,((SimpleScalar)args.get(2)).getAsString());
+    OffsetDateTime convertedTime =
+        Utils.convertDateTime(time,((SimpleScalar)args.get(2)).getAsString());
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
                                     ((SimpleScalar)args.get(1)).getAsString());
