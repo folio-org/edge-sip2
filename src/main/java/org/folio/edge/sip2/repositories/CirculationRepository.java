@@ -9,7 +9,7 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import java.time.Clock;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,9 +60,9 @@ public class CirculationRepository {
     final JsonObject body = new JsonObject()
         .put("itemBarcode", itemIdentifier)
         .put("servicePointId", scLocation)
-        .put("checkInDate", DateTimeFormatter.ISO_DATE_TIME
-            .withZone(ZoneId.of(sessionData.getTimeZone()))
-            .format(returnDate));
+        .put("checkInDate", returnDate
+            .withOffsetSameInstant(ZoneOffset.UTC)
+            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
 
     final Map<String, String> headers = getBaseHeaders();
 
