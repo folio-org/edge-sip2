@@ -82,6 +82,10 @@ $ java -jar edge-sip2-fat.jar -conf '{"port":1234,"okapiUrl":"https://folio-snap
 |`path`|string|File system path to JKS key store|
 |`password`|string|The password for the JKS key store|
 
+#### Security concerns for developers
+
+For local development, there is no requirement to encrypt communications from a SIP2 client to edge-sip2. Unencrypted TCP sockets are the default when launching edge-sip2 as described in the [Configuration](#configuration) section. Encrypted communication from a SIP2 client is only required when explicitly configured via the [above options](#security) and is up to the developer to provide that secure connection for edge-sip2.
+
 ## Additional information
 
 [SIP2 Specification](http://multimedia.3m.com/mws/media/355361O/sip2-protocol.pdf)
