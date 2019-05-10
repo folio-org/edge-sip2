@@ -14,11 +14,11 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
-import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
 import java.util.EnumMap;
 import java.util.Map;
@@ -44,22 +44,23 @@ public class MainVerticle extends AbstractVerticle {
 
   private Map<Command, ISip2RequestHandler> handlers;
   private NetServer server;
-  private final Logger log;
+  private final Logger log = LogManager.getLogger();
 
   /**
    * Construct the {@code MainVerticle}.
    */
   public MainVerticle() {
-    log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+    super();
   }
 
   public MainVerticle(Map<Command, ISip2RequestHandler> handlers) {
     this.handlers = handlers;
-    log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   }
 
   @Override
   public void start(Future<Void> startFuture) {
+    log.debug("Startup configuration: {}", () -> config().encodePrettily());
+
     // We need to reduce the complexity of this method...
     if (handlers == null) {
       String okapiUrl = config().getString("okapiUrl");
@@ -80,8 +81,11 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     //set Config object's defaults
-    int port = config().getInteger("port");
-    NetServerOptions options = new NetServerOptions().setPort(port);
+    int port = config().getInteger("port"); // move port to netServerOptions
+    NetServerOptions options = new NetServerOptions(
+        config().getJsonObject("netServerOptions", new JsonObject()))
+        .setPort(port);
+
     server = vertx.createNetServer(options);
 
     log.info("Deployed verticle at port {}", port);

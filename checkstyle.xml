@@ -196,7 +196,7 @@
             <property name="ignoreFinal" value="false"/>
             <property name="allowedAbbreviationLength" value="1"/>
             <!-- Begin modification mreno-EBSCO -->
-            <property name="allowedAbbreviations" value="PWD,UID,ACS,SC"/>
+            <property name="allowedAbbreviations" value="PWD,UID,ACS,SC,TLS"/>
             <!-- End modification mreno-EBSCO -->
         </module>
         <module name="OverloadMethodsDeclarationOrder"/>
