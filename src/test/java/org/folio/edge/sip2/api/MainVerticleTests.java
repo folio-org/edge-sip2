@@ -79,7 +79,7 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
-  @Tag("ErrorDetectionEnabled")
+  @Tag(ERROR_DETECTION_ENABLED)
   public void canGetCsResendMessageWhenSendingInvalidMessage(
       Vertx vertx, VertxTestContext testContext) {
     String scStatusMessage = "9900401.00AY1AZAAAA\r";
@@ -177,7 +177,7 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
-  @Tag("TLSEnabled")
+  @Tag(TLS_ENABLED)
   void canConnectWithTLS(Vertx vertx, VertxTestContext testContext, TestInfo testInfo) {
     callService("990231.23\r", testContext, vertx, testInfo, result -> {
       assertTrue(result.contains("Problems handling the request"));

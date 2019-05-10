@@ -39,6 +39,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public abstract class BaseTest {
+  protected static final String TLS_ENABLED = "TLSEnabled";
+  protected static final String ERROR_DETECTION_ENABLED = "ErrorDetectionEnabled";
+
   protected static Logger log = LogManager.getLogger();
 
   @Mock
@@ -64,12 +67,12 @@ public abstract class BaseTest {
 
     JsonObject sipConfig = new JsonObject();
     sipConfig.put("port", port);
-    if (testInfo.getTags().contains("ErrorDetectionEnabled")) {
+    if (testInfo.getTags().contains(ERROR_DETECTION_ENABLED)) {
       sipConfig.put("errorDetectionEnabled", true);
     }
     sipConfig.put("okapiUrl", "http://example.com");
     sipConfig.put("tenant", "diku");
-    if (testInfo.getTags().contains("TLSEnabled")) {
+    if (testInfo.getTags().contains(TLS_ENABLED)) {
       final SelfSignedCertificate certificate = SelfSignedCertificate.create();
       sipConfig.put("netServerOptions", new JsonObject()
           .put("ssl", true)
@@ -149,7 +152,7 @@ public abstract class BaseTest {
     options.setIdleTimeout(2);
     options.setIdleTimeoutUnit(TimeUnit.SECONDS);
 
-    if (testInfo != null && testInfo.getTags().contains("TLSEnabled")) {
+    if (testInfo != null && testInfo.getTags().contains(TLS_ENABLED)) {
       options.setSsl(true);
       options.setTrustAll(true);
     }
@@ -160,7 +163,7 @@ public abstract class BaseTest {
       if (res.succeeded()) {
         log.debug("Shaking hands...");
         NetSocket socket = res.result();
-        if (testInfo != null && testInfo.getTags().contains("TLSEnabled")) {
+        if (testInfo != null && testInfo.getTags().contains(TLS_ENABLED)) {
           assertTrue(socket.isSsl());
         } else {
           assertFalse(socket.isSsl());
