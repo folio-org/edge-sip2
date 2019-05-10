@@ -9,6 +9,7 @@ import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -197,35 +198,15 @@ public class ConfigurationRepository {
     @Override
     public String getPath() {
 
-      String configModuleFragment;
-      String configNameFragment;
-      String configCodeFragment;
-      Boolean previousEmpty = false;
+      LinkedHashMap queryStringHashMap = new LinkedHashMap();
+      queryStringHashMap.put("module", module);
+      queryStringHashMap.put("configName", configName);
+      queryStringHashMap.put("configCode", configCode);
 
-      if (!Utils.isStringNullOrEmpty(module)) {
-        configModuleFragment = "module==" + module;
-      } else {
-        configModuleFragment = "";
-        previousEmpty = true;
-      }
+      String path = String.format("/configurations/entries?query=%s",
+          Utils.parseQueryString(queryStringHashMap, " AND ", "=="));
 
-      if (!Utils.isStringNullOrEmpty(configName)) {
-        configNameFragment = previousEmpty ? "configName==" + configName
-            : " AND configName==" + configName;
-      } else {
-        configNameFragment = "";
-        previousEmpty = true;
-      }
-
-      if (!Utils.isStringNullOrEmpty(configCode)) {
-        configCodeFragment = previousEmpty ? "code =="  + configCode
-            : " AND code==" + configCode;
-      } else {
-        configCodeFragment = "";
-      }
-
-      String path = String.format("/configurations/entries?query=%s%s%s",
-          configModuleFragment, configNameFragment, configCodeFragment);
+      log.debug("Parsed mod-config path: " + path);
 
       return path.trim();
     }

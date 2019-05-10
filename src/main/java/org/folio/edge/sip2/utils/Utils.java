@@ -2,13 +2,13 @@ package org.folio.edge.sip2.utils;
 
 import io.vertx.core.json.JsonObject;
 
-import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.folio.edge.sip2.repositories.IResource;
 import org.folio.edge.sip2.repositories.RequestThrowable;
@@ -53,21 +53,56 @@ public final class Utils {
         if (t instanceof RequestThrowable) {
           return ((RequestThrowable) t).getErrorMessages();
         } else {
-          return Arrays.asList(t.getMessage());
+          return Collections.singletonList(t.getMessage());
         }
       }
     };
   }
 
+  /**
+   * Checks null or empty string.
+   * @param someString some string to check
+   * @return true if String is null or empty
+   */
   public static boolean isStringNullOrEmpty(String someString) {
-    return someString == null ? true : someString.equals("");
+    return someString == null || someString.isEmpty();
   }
 
+  /**
+   * Converts an OffsetDatetime instance from its default TZ to a specified TZ.
+   * @param instance a time instance with some default time zone
+   * @param timeZone e.g. "Etc/UTC" or "Europe/Stockholm"
+   * @return a converted OffsetDatetime instance in the desired TZ
+   */
   public static OffsetDateTime convertDateTime(OffsetDateTime instance, String timeZone) {
     return OffsetDateTime.ofInstant(instance.toInstant(), ZoneId.of(timeZone));
   }
 
-  public static OffsetDateTime getTransactionTimestamp(String timeZone, Clock clock) {
-    return convertDateTime(OffsetDateTime.now(clock), timeZone);
+  /**
+   * Constructs a query string given a list of KV pairs parameters
+   * a delimeter, and an "equal" delimeter.
+   * @param queryStringParameters an ordered list of query string parameters to parse
+   * @param delimiter e.g. "&"|" AND "; spaces included if that's how it's supposed to be formatted
+   * @param equalDelimeter e.g. "=" or "=="
+   * @return parsed query string
+   */
+  public static String parseQueryString(Map<String,String> queryStringParameters,
+                                        String delimiter,
+                                        String equalDelimeter) {
+
+    StringBuilder stringBuilder = new StringBuilder();
+    boolean firstParamEmtpy = true;
+
+    for (Map.Entry<String, String> entry: queryStringParameters.entrySet()) {
+      if (!Utils.isStringNullOrEmpty(entry.getValue())) {
+        stringBuilder.append(firstParamEmtpy ? "" : delimiter)
+                     .append(entry.getKey())
+                     .append(equalDelimeter)
+                     .append(entry.getValue());
+        firstParamEmtpy = false;
+      }
+    }
+
+    return stringBuilder.toString();
   }
 }

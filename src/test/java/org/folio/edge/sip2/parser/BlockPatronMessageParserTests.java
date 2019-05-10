@@ -6,9 +6,12 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import org.folio.edge.sip2.domain.messages.requests.BlockPatron;
+import org.folio.edge.sip2.utils.Utils;
 import org.junit.jupiter.api.Test;
 
 class BlockPatronMessageParserTests {
@@ -26,7 +29,8 @@ class BlockPatronMessageParserTests {
         + "AApatron_id|AC|AOuniversity_id|");
 
     assertEquals(FALSE, blockPatron.getCardRetained());
-    assertEquals(transactionDate,blockPatron.getTransactionDate());
+    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
+                 blockPatron.getTransactionDate());
     assertEquals("university_id", blockPatron.getInstitutionId());
     assertEquals("Card retained due to excessive fee violations",
         blockPatron.getBlockedCardMsg());

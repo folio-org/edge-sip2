@@ -7,6 +7,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import org.folio.edge.sip2.domain.messages.requests.Renew;
@@ -30,10 +31,10 @@ class RenewMessageParserTests {
 
     assertEquals(TRUE, renew.getThirdPartyAllowed());
     assertEquals(TRUE, renew.getNoBlock());
-    assertEquals(transactionDate.getOffset(),
-        renew.getTransactionDate().getOffset());
-    assertEquals(nbDueDate.getOffset(),
-        renew.getNbDueDate().getOffset());
+    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
+        renew.getTransactionDate());
+    assertEquals(nbDueDate.withOffsetSameInstant(ZoneOffset.UTC),
+        renew.getNbDueDate());
     assertEquals("university_id", renew.getInstitutionId());
     assertEquals("patron_id", renew.getPatronIdentifier());
     assertEquals("1234", renew.getPatronPassword());

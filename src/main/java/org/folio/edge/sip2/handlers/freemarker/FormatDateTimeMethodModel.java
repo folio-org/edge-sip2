@@ -7,10 +7,7 @@ import freemarker.template.TemplateModelException;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.List;
-
-import javax.swing.text.Utilities;
 
 import org.folio.edge.sip2.utils.Utils;
 

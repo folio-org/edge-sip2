@@ -8,6 +8,7 @@ import static org.folio.edge.sip2.domain.messages.enumerations.HoldType.SPECIFIC
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import org.folio.edge.sip2.domain.messages.requests.Hold;
@@ -30,10 +31,10 @@ class HoldMessageParserTests {
         + "AD1234|AOuniversity_id|ABSome Book|AJSome Title|BON|");
 
     assertEquals(ADD, hold.getHoldMode());
-    assertEquals(transactionDate.getOffset(),
-        hold.getTransactionDate().getOffset());
-    assertEquals(expirationDate.getOffset(),
-        hold.getExpirationDate().getOffset());
+    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
+        hold.getTransactionDate());
+    assertEquals(expirationDate.withOffsetSameInstant(ZoneOffset.UTC),
+        hold.getExpirationDate());
     assertEquals("circ_desk", hold.getPickupLocation());
     assertEquals(SPECIFIC_COPY_TITLE, hold.getHoldType());
     assertEquals("university_id", hold.getInstitutionId());

@@ -5,6 +5,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import org.folio.edge.sip2.domain.messages.requests.PatronEnable;
@@ -23,8 +24,8 @@ class PatronEnableMessageParserTests {
     final PatronEnable patronEnable = parser.parse(
         transactionDateString + "AApatron_id|AD1234|AC|AOuniversity_id|");
 
-    assertEquals(transactionDate.getOffset(),
-        patronEnable.getTransactionDate().getOffset());
+    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
+        patronEnable.getTransactionDate());
     assertEquals("university_id", patronEnable.getInstitutionId());
     assertEquals("patron_id", patronEnable.getPatronIdentifier());
     assertEquals("", patronEnable.getTerminalPassword());

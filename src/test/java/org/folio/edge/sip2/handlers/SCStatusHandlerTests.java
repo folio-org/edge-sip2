@@ -22,6 +22,7 @@ import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.DefaultResourceProvider;
 import org.folio.edge.sip2.repositories.IRequestData;
 import org.folio.edge.sip2.repositories.IResourceProvider;
+import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -35,7 +36,6 @@ public class SCStatusHandlerTests {
 
     IResourceProvider<IRequestData> defaultConfigurationProvider = new DefaultResourceProvider();
     Clock clock = TestUtils.getUtcFixedClock();
-
 
     SCStatus.SCStatusBuilder statusBuilder = SCStatus.builder();
     statusBuilder.maxPrintWidth(20);
@@ -55,6 +55,46 @@ public class SCStatusHandlerTests {
 
           String expectedDateTimeString =
               TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock));
+
+          String expectedSipResponse = "98YYNYNN005003"
+              + expectedDateTimeString
+              + "1.23AOdikutest|AMdiku|BXYNNNYNYNNNNNNNYN|ANTL01|";
+
+          assertEquals(expectedSipResponse, sipMessage);
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void canGetValidScStatusRequestWithNonDefaultTimezone(
+      Vertx vertx,
+      VertxTestContext testContext) {
+
+    IResourceProvider<IRequestData> defaultConfigurationProvider = new DefaultResourceProvider();
+    Clock clock = TestUtils.getUtcFixedClock();
+
+    SCStatus.SCStatusBuilder statusBuilder = SCStatus.builder();
+    statusBuilder.maxPrintWidth(20);
+    statusBuilder.protocolVersion("1.00");
+    statusBuilder.statusCode(StatusCode.SC_OK);
+    SCStatus status =  statusBuilder.build();
+
+    SCStatusHandler handler = ((SCStatusHandler) HandlersFactory
+        .getScStatusHandlerInstance(null, defaultConfigurationProvider, null,
+            clock, "abcdefg.com", vertx));
+
+    SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setTimeZone("Europe/Stockholm");
+
+    handler.execute(status, sessionData).setHandler(
+        testContext.succeeding(sipMessage -> testContext.verify(() -> {
+          // Because the sipMessage has a dateTime component that's supposed
+          // to be current, we can't assert on the entirety of the string,
+          // have to break it up into pieces.
+
+          String expectedDateTimeString =
+              TestUtils.getFormattedLocalDateTime(
+                OffsetDateTime.now(clock).plusHours(2)); //Europe/Stockholm is 2 hours ahead of UTC
 
           String expectedSipResponse = "98YYNYNN005003"
               + expectedDateTimeString

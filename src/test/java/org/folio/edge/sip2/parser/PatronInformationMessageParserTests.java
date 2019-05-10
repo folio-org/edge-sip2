@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Stream;
 import org.folio.edge.sip2.domain.messages.enumerations.Summary;
@@ -39,8 +40,8 @@ class PatronInformationMessageParserTests {
         + "AOuniversity_id|BP1|BQ10|");
 
     assertEquals(ENGLISH, patronInformation.getLanguage());
-    assertEquals(transactionDate.getOffset(),
-        patronInformation.getTransactionDate().getOffset());
+    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
+        patronInformation.getTransactionDate());
     assertEquals(summary, patronInformation.getSummary());
     assertEquals("university_id", patronInformation.getInstitutionId());
     assertEquals("patron_id", patronInformation.getPatronIdentifier());
@@ -65,8 +66,8 @@ class PatronInformationMessageParserTests {
         + "AOuniversity_id|BP1|BQ10|XXInvalid|");
 
     assertEquals(ENGLISH, patronInformation.getLanguage());
-    assertEquals(transactionDate.getOffset(),
-        patronInformation.getTransactionDate().getOffset());
+    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
+        patronInformation.getTransactionDate());
     assertNull(patronInformation.getSummary());
     assertEquals("university_id", patronInformation.getInstitutionId());
     assertEquals("patron_id", patronInformation.getPatronIdentifier());

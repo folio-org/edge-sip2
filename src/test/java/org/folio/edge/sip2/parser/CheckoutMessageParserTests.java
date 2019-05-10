@@ -7,6 +7,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
@@ -30,10 +31,10 @@ class CheckoutMessageParserTests {
 
     assertEquals(TRUE, checkout.getScRenewalPolicy());
     assertEquals(TRUE, checkout.getNoBlock());
-    assertEquals(transactionDate.getOffset(),
-        checkout.getTransactionDate().getOffset());
-    assertEquals(nbDueDate.getOffset(),
-        checkout.getNbDueDate().getOffset());
+    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
+        checkout.getTransactionDate());
+    assertEquals(nbDueDate.withOffsetSameInstant(ZoneOffset.UTC),
+        checkout.getNbDueDate());
     assertEquals("university_id", checkout.getInstitutionId());
     assertEquals("patron_id", checkout.getPatronIdentifier());
     assertEquals("SomeBook", checkout.getItemIdentifier());

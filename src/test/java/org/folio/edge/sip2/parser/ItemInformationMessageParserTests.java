@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import org.folio.edge.sip2.domain.messages.requests.ItemInformation;
@@ -24,8 +25,8 @@ class ItemInformationMessageParserTests {
     final ItemInformation itemInformation = parser.parse(
         transactionDateString + "ABSomeBook|AOuniversity_id|");
 
-    assertEquals(transactionDate.getOffset(),
-        itemInformation.getTransactionDate().getOffset());
+    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
+        itemInformation.getTransactionDate());
     assertEquals("university_id", itemInformation.getInstitutionId());
     assertEquals("SomeBook", itemInformation.getItemIdentifier());
     assertNull(itemInformation.getTerminalPassword());

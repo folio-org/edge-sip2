@@ -26,7 +26,7 @@ public class LoginRepository {
   private final IResourceProvider<IRequestData> resourceProvider;
 
   @Inject
-  LoginRepository(IResourceProvider<IRequestData> resourceProvider) {
+  public LoginRepository(IResourceProvider<IRequestData> resourceProvider) {
     this.resourceProvider = Objects.requireNonNull(resourceProvider,
         "Resource provider cannot be null");
   }
