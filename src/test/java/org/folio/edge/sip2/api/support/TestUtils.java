@@ -32,7 +32,7 @@ public class TestUtils {
 
   /**
    * Method to get a fixed UTC clock for unit testing.
-   * @return
+   * @return UTC fixed clock
    */
   public static Clock getUtcFixedClock() {
     return Clock.fixed(Instant.now(), ZoneOffset.UTC);
@@ -75,7 +75,7 @@ public class TestUtils {
   }
 
   /**
-   * Public constant for referring to UTC Timezone
+   * Public constant for referring to UTC Timezone.
    */
   public static final String UTCTimeZone = "Etc/UTC";
 }
