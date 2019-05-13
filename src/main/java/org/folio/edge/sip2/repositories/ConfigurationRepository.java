@@ -245,9 +245,11 @@ public class ConfigurationRepository {
         pathStringBuilder.append(")");
       }
 
-      log.debug("Parsed mod-config path: {}", pathStringBuilder.toString());
+      String path =  pathStringBuilder.toString();
 
-      return pathStringBuilder.toString();
+      log.debug("Parsed mod-config path: {}", path);
+
+      return path;
     }
   }
 }
