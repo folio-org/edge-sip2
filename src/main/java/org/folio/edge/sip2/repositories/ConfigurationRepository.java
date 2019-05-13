@@ -137,7 +137,7 @@ public class ConfigurationRepository {
 
       } else {
         log.error("Unable to find all necessary configuration(s). Found {} of {}",
-                      totalConfigs, configParameters.size() );
+                      totalConfigs, configParameters.size());
         return Future.failedFuture("Unable to find all necessary configuration(s). Found "
                       + totalConfigs + " of " + configParameters.size());
       }

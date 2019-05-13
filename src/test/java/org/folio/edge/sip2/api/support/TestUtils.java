@@ -13,8 +13,6 @@ import java.time.format.DateTimeFormatter;
 
 import org.folio.edge.sip2.session.SessionData;
 
-import com.sun.scenario.effect.Offset;
-
 public class TestUtils {
   private TestUtils() {
     super();
@@ -40,6 +38,11 @@ public class TestUtils {
     return Clock.fixed(Instant.now(), ZoneOffset.UTC);
   }
 
+  /**
+   * Util method that returns the current (now) OffsetDateTime
+   * instance in UTC for testing.
+   * @return current OffsetDateTime in UTC.
+   */
   public static OffsetDateTime getOffsetDateTimeUtc() {
     return OffsetDateTime.now(TestUtils.getUtcFixedClock());
   }
@@ -71,5 +74,8 @@ public class TestUtils {
     }
   }
 
+  /**
+   * Public constant for referring to UTC Timezone
+   */
   public static final String UTCTimeZone = "Etc/UTC";
 }

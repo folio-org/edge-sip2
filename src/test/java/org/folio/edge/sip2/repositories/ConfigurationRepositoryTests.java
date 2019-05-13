@@ -127,9 +127,6 @@ public class ConfigurationRepositoryTests {
   public void canRetrieveTenantConfiguration(
       Vertx vertx,
       VertxTestContext testContext, @Mock Clock clock) {
-    IResourceProvider<IRequestData> resourceProvider = new DefaultResourceProvider("json/ACSConfigurationWithMissingConfigs.json");
-    ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider, clock);
-
 
     List<LinkedHashMap<String, String>> configParamsList = new ArrayList();
     LinkedHashMap<String, String> configParamsSet = new LinkedHashMap<>();
@@ -139,16 +136,19 @@ public class ConfigurationRepositoryTests {
 
     configParamsList.add(configParamsSet);
 
+    IResourceProvider<IRequestData> resourceProvider =
+        new DefaultResourceProvider("json/ACSConfigurationWithMissingConfigs.json");
+    ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider, clock);
 
     configRepo.retrieveConfigurations(TestUtils.getMockedSessionData(),
-      configParamsList).setHandler(
+        configParamsList).setHandler(
           testContext.succeeding(testTenantConfig -> testContext.verify(() -> {
             assertNotNull(testTenantConfig);
 
             JsonObject config = testTenantConfig.get(configKey);
 
             assertEquals("dikutest",
-              config.getString("tenantId"));
+                config.getString("tenantId"));
             assertEquals("Krona", config.getString("currencyType"));
 
             testContext.completeNow();

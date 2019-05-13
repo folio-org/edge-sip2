@@ -21,7 +21,8 @@ class CheckinMessageParserTests {
     CheckinMessageParser parser = new CheckinMessageParser(valueOf('|'));
     parser.setTimezone(TestUtils.UTCTimeZone);
 
-    final OffsetDateTime transactionDate = TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
+    final OffsetDateTime transactionDate =
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime returnDate = transactionDate.plusMinutes(5);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
@@ -33,7 +34,8 @@ class CheckinMessageParserTests {
         + "AOuniversity_id|BIN|");
 
     assertEquals(TRUE, checkin.getNoBlock());
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),   checkin.getTransactionDate());
+    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
+        checkin.getTransactionDate());
     assertEquals(returnDate.withOffsetSameInstant(ZoneOffset.UTC), checkin.getReturnDate());
     assertEquals("circ_desk", checkin.getCurrentLocation());
     assertEquals("university_id", checkin.getInstitutionId());

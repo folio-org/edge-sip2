@@ -60,7 +60,7 @@ class PatronInformationMessageParserTests {
         new PatronInformationMessageParser(valueOf('|'));
     parser.setTimezone(TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
-       TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);

@@ -159,14 +159,14 @@ public final class Parser {
           break;
         case ITEM_STATUS_UPDATE:
           ItemStatusUpdateMessageParser itemStatusUpdateMessageParser =
-            new ItemStatusUpdateMessageParser(delimiter);
+              new ItemStatusUpdateMessageParser(delimiter);
           itemStatusUpdateMessageParser.setTimezone(timezone);
           final ItemStatusUpdate itemStatusUpdate = itemStatusUpdateMessageParser.parse(message);
           builder.request(itemStatusUpdate);
           break;
         case PATRON_ENABLE:
           final PatronEnableMessageParser patronEnableMessageParser =
-            new PatronEnableMessageParser(delimiter);
+              new PatronEnableMessageParser(delimiter);
           patronEnableMessageParser.setTimezone(timezone);
           final PatronEnable patronEnable = patronEnableMessageParser.parse(message);
           builder.request(patronEnable);
