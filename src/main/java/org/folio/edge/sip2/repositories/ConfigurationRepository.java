@@ -35,6 +35,9 @@ public class ConfigurationRepository {
   static final String CONFIG_MODULE = "edge-sip2";
   private static final String CONFIGURATION_TEMPLATE = "%s.%s.%s";
   private static final String EMPTY_CODE = "null";
+  private static final String KEY_CONFIG_NAME = "configName";
+  private static final String KEY_CONFIG_MODULE = "module";
+  private static final String KEY_CONFIG_CODE = "code";
 
   /**
    * Constructor that takes an IResourceProvider.
@@ -57,21 +60,21 @@ public class ConfigurationRepository {
   public Future<ACSStatus> getACSStatus(SessionData sessionData) {
 
     LinkedHashMap<String, String> tenantLevelQueryParams = new LinkedHashMap<>();
-    tenantLevelQueryParams.put("module", CONFIG_MODULE);
-    tenantLevelQueryParams.put("configName", TENANT_CONFIG_NAME);
+    tenantLevelQueryParams.put(KEY_CONFIG_MODULE, CONFIG_MODULE);
+    tenantLevelQueryParams.put(KEY_CONFIG_NAME, TENANT_CONFIG_NAME);
     final String configKeyTenant = String.format(CONFIGURATION_TEMPLATE,
                                           CONFIG_MODULE, TENANT_CONFIG_NAME, EMPTY_CODE);
 
     LinkedHashMap<String, String> scLevelQueryParams = new LinkedHashMap<>();
-    scLevelQueryParams.put("module", CONFIG_MODULE);
-    scLevelQueryParams.put("configName",
+    scLevelQueryParams.put(KEY_CONFIG_MODULE, CONFIG_MODULE);
+    scLevelQueryParams.put(KEY_CONFIG_NAME,
             SC_STATION_CONFIG_NAME + "." + sessionData.getScLocation());
     final String configKeySC = String.format(CONFIGURATION_TEMPLATE,
             CONFIG_MODULE, SC_STATION_CONFIG_NAME + "." + sessionData.getScLocation(), EMPTY_CODE);
 
     LinkedHashMap<String, String> tenantTimeZoneQueryParams = new LinkedHashMap<>();
-    tenantTimeZoneQueryParams.put("module", "ORG");
-    tenantTimeZoneQueryParams.put("configName", "localeSettings");
+    tenantTimeZoneQueryParams.put(KEY_CONFIG_MODULE, "ORG");
+    tenantTimeZoneQueryParams.put(KEY_CONFIG_NAME, "localeSettings");
     final String configKeyLocale = String.format(CONFIGURATION_TEMPLATE,
                                           "ORG", "localeSettings", EMPTY_CODE);
 
@@ -118,9 +121,9 @@ public class ConfigurationRepository {
 
         for (int i = 0; i < totalConfigs; i++) {
           JsonObject config = configs.getJsonObject(i);
-          String module = config.getString("module");
-          String configName = config.getString("configName");
-          String code = config.getString("code");
+          String module = config.getString(KEY_CONFIG_MODULE);
+          String configName = config.getString(KEY_CONFIG_NAME);
+          String code = config.getString(KEY_CONFIG_CODE);
 
           String configKey = String.format(CONFIGURATION_TEMPLATE, module, configName, code);
 
@@ -229,18 +232,22 @@ public class ConfigurationRepository {
 
     @Override
     public String getPath() {
-      String path = "/configurations/entries?query=";
+
+      StringBuilder pathStringBuilder = new StringBuilder();
+      pathStringBuilder.append("/configurations/entries?query=");
 
       for (int i = 0; i < configQueryParams.size(); i++) {
         if (i > 0) {
-          path = path + " OR ";
+          pathStringBuilder.append(" OR ");
         }
-        path = path + "(" + Utils.parseQueryString(configQueryParams.get(i), " AND ", "==") + ")";
+        pathStringBuilder.append("(");
+        pathStringBuilder.append(Utils.parseQueryString(configQueryParams.get(i), " AND ", "=="));
+        pathStringBuilder.append(")");
       }
 
-      log.debug("Parsed mod-config path: {}", path);
+      log.debug("Parsed mod-config path: {}", pathStringBuilder.toString());
 
-      return path.trim();
+      return pathStringBuilder.toString();
     }
   }
 }
