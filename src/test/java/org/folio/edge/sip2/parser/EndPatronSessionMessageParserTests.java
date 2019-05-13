@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
 import org.junit.jupiter.api.Test;
 
@@ -16,8 +17,8 @@ class EndPatronSessionMessageParserTests {
   void testParse() {
     EndPatronSessionMessageParser parser =
         new EndPatronSessionMessageParser(valueOf('|'));
-    final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+    parser.setTimezone(TestUtils.UTCTimeZone);
+    final OffsetDateTime transactionDate = TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);

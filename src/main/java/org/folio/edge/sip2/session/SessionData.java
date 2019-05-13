@@ -22,7 +22,7 @@ public class SessionData {
     this.fieldDelimiter = fieldDelimiter;
     this.errorDetectionEnabled = errorDetectionEnabled;
     this.charset = charset;
-    this.timeZone = "Europe/Stockholm";
+    //this.timeZone = "Europe/Stockholm";
   }
 
   public String getScLocation() {

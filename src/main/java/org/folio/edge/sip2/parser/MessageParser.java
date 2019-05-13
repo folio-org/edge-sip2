@@ -5,6 +5,7 @@ import static java.lang.Boolean.TRUE;
 import static org.folio.edge.sip2.parser.Field.UNKNOWN;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 import org.apache.logging.log4j.LogManager;
@@ -22,6 +23,7 @@ public abstract class MessageParser {
 
   protected int position;
   protected Character delimiter;
+  protected String timezone;
 
   protected MessageParser(Character delimiter) {
     this.delimiter = delimiter;
@@ -79,7 +81,7 @@ public abstract class MessageParser {
   }
 
   protected OffsetDateTime convertFieldToDateTime(String dateTimeString) {
-    OffsetDateTime now = OffsetDateTime.now();
+    OffsetDateTime now = OffsetDateTime.now(ZoneId.of(this.timezone));
     DateTimeMapper dtMapper = new DateTimeMapper(now.getOffset());
     return dtMapper.mapDateTime(dateTimeString).withOffsetSameInstant(ZoneOffset.UTC);
   }
@@ -95,5 +97,9 @@ public abstract class MessageParser {
       log.error("Field {} not an number: {}, ignoring", field, value);
       return null;
     }
+  }
+
+  protected void setTimezone(String timezone) {
+    this.timezone = timezone;
   }
 }

@@ -10,6 +10,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.junit.jupiter.api.Test;
 
@@ -17,8 +18,8 @@ class CheckoutMessageParserTests {
   @Test
   void testParse() {
     CheckoutMessageParser parser = new CheckoutMessageParser(valueOf('|'));
-    final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+    parser.setTimezone(TestUtils.UTCTimeZone);
+    final OffsetDateTime transactionDate = TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime nbDueDate = transactionDate.plusDays(30);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");

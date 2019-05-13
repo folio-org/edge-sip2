@@ -83,12 +83,12 @@ public final class Utils {
    * a delimeter, and an "equal" delimeter.
    * @param queryStringParameters an ordered list of query string parameters to parse
    * @param delimiter e.g. "&"|" AND "; spaces included if that's how it's supposed to be formatted
-   * @param equalDelimeter e.g. "=" or "=="
+   * @param operator e.g. "=" | "==" | "<" | ">""
    * @return parsed query string
    */
   public static String parseQueryString(Map<String,String> queryStringParameters,
                                         String delimiter,
-                                        String equalDelimeter) {
+                                        String operator) {
 
     StringBuilder stringBuilder = new StringBuilder();
     boolean firstParamEmtpy = true;
@@ -97,12 +97,11 @@ public final class Utils {
       if (!Utils.isStringNullOrEmpty(entry.getValue())) {
         stringBuilder.append(firstParamEmtpy ? "" : delimiter)
                      .append(entry.getKey())
-                     .append(equalDelimeter)
+                     .append(operator)
                      .append(entry.getValue());
         firstParamEmtpy = false;
       }
     }
-
     return stringBuilder.toString();
   }
 }

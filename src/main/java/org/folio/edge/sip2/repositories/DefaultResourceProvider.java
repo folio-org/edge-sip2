@@ -16,8 +16,14 @@ import org.apache.logging.log4j.Logger;
 public class DefaultResourceProvider implements IResourceProvider<IRequestData> {
 
   private final Logger log;
+  private String fileName = "DefaultACSConfiguration.json";
 
   public DefaultResourceProvider() {
+    log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+  }
+
+  public DefaultResourceProvider(String fileName) {
+    this.fileName = fileName;
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   }
 
@@ -30,14 +36,6 @@ public class DefaultResourceProvider implements IResourceProvider<IRequestData> 
   public Future<IResource> retrieveResource(IRequestData key) {
 
     JsonObject jsonFile = null;
-
-    String path = key.getPath();
-    String fileName;
-    if (path.contains(ConfigurationRepository.TENANT_CONFIG_NAME)) {
-      fileName = "DefaultTenantConfiguration.json";
-    } else {
-      fileName = "DefaultSCConfiguration.json";
-    }
 
     URL configurationResource = ClassLoader.getSystemResource(fileName);
 

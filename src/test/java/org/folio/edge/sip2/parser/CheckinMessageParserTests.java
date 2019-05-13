@@ -7,9 +7,11 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +19,9 @@ class CheckinMessageParserTests {
   @Test
   void testParse() {
     CheckinMessageParser parser = new CheckinMessageParser(valueOf('|'));
-    final OffsetDateTime transactionDate = OffsetDateTime.now().truncatedTo(SECONDS);
+    parser.setTimezone(TestUtils.UTCTimeZone);
+
+    final OffsetDateTime transactionDate = TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime returnDate = transactionDate.plusMinutes(5);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
@@ -29,8 +33,7 @@ class CheckinMessageParserTests {
         + "AOuniversity_id|BIN|");
 
     assertEquals(TRUE, checkin.getNoBlock());
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        checkin.getTransactionDate());
+    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),   checkin.getTransactionDate());
     assertEquals(returnDate.withOffsetSameInstant(ZoneOffset.UTC), checkin.getReturnDate());
     assertEquals("circ_desk", checkin.getCurrentLocation());
     assertEquals("university_id", checkin.getInstitutionId());

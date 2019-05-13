@@ -15,9 +15,13 @@ import io.vertx.junit5.VertxTestContext;
 
 import java.time.Clock;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
+import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -46,21 +50,35 @@ public class ConfigurationRepositoryTests {
   public void canGetValidAcsStatus(Vertx vertx, VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
 
-    JsonObject configObject = new JsonObject();
-    configObject.put("value", "{\"tenantId\":\"diku\",\"supportedMessages\":"
+    JsonObject tenantConfigObject = new JsonObject();
+    tenantConfigObject.put("value", "{\"tenantId\":\"diku\",\"supportedMessages\":"
           + "[{\"messageName\": \"PATRON_INFORMATION\",\"isSupported\": \"Y\"},"
           + "{\"messageName\": \"RENEW\",\"isSupported\": \"N\"},"
           + "{\"messageName\": \"BLOCK_PATRON\",\"isSupported\": \"Y\"}],"
           +  "\"onlineStatus\": false,\"statusUpdateOk\": false,\"offlineOk\":true,"
-          +  "\"timeoutPeriod\":3,\"retriesAllowed\":2,"
           +  "\"protocolVersion\":\"1.23\",\"institutionId\":\"diku\","
           +   "\"screenMessage\":\"Hello, welcome\","
-          +  "\"printLine\":\"testing\",\"checkinOk\":false,"
-          +   "\"checkoutOk\":true,\"acsRenewalPolicy\":false,"
-          +  "\"libraryName\":\"diku\",\"terminalLocation\":\"SE10\"}");
+          +  "\"printLine\":\"testing\"}");
+
+    tenantConfigObject.put("module", "edge-sip2");
+    tenantConfigObject.put("configName", "acsTenantConfig");
+
+
+    JsonObject scConfigObject = new JsonObject();
+    scConfigObject.put("value", "{\"checkinOk\": false,\"checkoutOk\": true,"
+          + "\"acsRenewalPolicy\": false,\"maxPrintWidth\" : 200,"
+          +  "\"timeoutPeriod\":3,\"retriesAllowed\":2,"
+          + "\"libraryName\": \"diku\",\"terminalLocation\": \"SE10\"}");
+    scConfigObject.put("module", "edge-sip2");
+    scConfigObject.put("configName", "selfCheckoutConfig.SE10");
 
     JsonArray configsArray = new JsonArray();
-    configsArray.add(configObject);
+    configsArray.add(tenantConfigObject);
+    configsArray.add(scConfigObject);
+
+    //Need to add another JSON object to make it 3 (required for ACS Status,
+    //but can get away with 2 now. The third one is to get timezone, not needed here.
+    configsArray.add(new JsonObject());
 
     JsonObject resultsWrapper = new JsonObject();
     resultsWrapper.put("configs", configsArray);
@@ -73,19 +91,22 @@ public class ConfigurationRepositoryTests {
     ConfigurationRepository configurationRepository =
         new ConfigurationRepository(mockFolioProvider, clock);
 
-    configurationRepository.getACSStatus(TestUtils.getMockedSessionData()).setHandler(
+    SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setScLocation("SE10");
+
+    configurationRepository.getACSStatus(sessionData).setHandler(
         testContext.succeeding(status -> testContext.verify(() -> {
 
           assertNotNull(status);
-          assertEquals(false, status.getOnLineStatus());
+          assertEquals(true, status.getOnLineStatus());
           assertEquals(false, status.getCheckinOk());
           assertEquals(true, status.getCheckoutOk());
           assertEquals(false, status.getAcsRenewalPolicy());
           assertEquals(true, status.getOffLineOk());
           assertEquals(3, status.getTimeoutPeriod());
           assertEquals(2, status.getRetriesAllowed());
-          assertEquals("1.23", status.getProtocolVersion());
-          assertEquals("diku", status.getInstitutionId());
+          assertEquals("2.00", status.getProtocolVersion());
+          assertEquals("dikutest", status.getInstitutionId());
           assertEquals("diku", status.getLibraryName());
           assertEquals("SE10", status.getTerminalLocation());
           assertEquals(OffsetDateTime.now(clock), status.getDateTimeSync());
@@ -106,19 +127,32 @@ public class ConfigurationRepositoryTests {
   public void canRetrieveTenantConfiguration(
       Vertx vertx,
       VertxTestContext testContext, @Mock Clock clock) {
-    IResourceProvider<IRequestData> resourceProvider = new DefaultResourceProvider();
+    IResourceProvider<IRequestData> resourceProvider = new DefaultResourceProvider("json/ACSConfigurationWithMissingConfigs.json");
     ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider, clock);
 
-    configRepo.retrieveConfiguration(TestUtils.getMockedSessionData(),
-        ConfigurationRepository.CONFIG_MODULE,
-        ConfigurationRepository.TENANT_CONFIG_NAME, "").setHandler(
+
+    List<LinkedHashMap<String, String>> configParamsList = new ArrayList();
+    LinkedHashMap<String, String> configParamsSet = new LinkedHashMap<>();
+    configParamsSet.put("module", "edge-sip2");
+    configParamsSet.put("configName", "acsTenantConfig");
+    String configKey = String.format("%s.%s.%s", "edge-sip2", "acsTenantConfig", "null");
+
+    configParamsList.add(configParamsSet);
+
+
+    configRepo.retrieveConfigurations(TestUtils.getMockedSessionData(),
+      configParamsList).setHandler(
           testContext.succeeding(testTenantConfig -> testContext.verify(() -> {
             assertNotNull(testTenantConfig);
+
+            JsonObject config = testTenantConfig.get(configKey);
+
             assertEquals("dikutest",
-                testTenantConfig.getString("tenantId"));
-            assertEquals("Krona", testTenantConfig.getString("currencyType"));
+              config.getString("tenantId"));
+            assertEquals("Krona", config.getString("currencyType"));
 
             testContext.completeNow();
           })));
   }
 }
+

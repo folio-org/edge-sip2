@@ -1,15 +1,16 @@
 package org.folio.edge.sip2.repositories;
 
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.time.Clock;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -32,6 +33,8 @@ public class ConfigurationRepository {
   static final String TENANT_CONFIG_NAME = "acsTenantConfig";
   static final String SC_STATION_CONFIG_NAME = "selfCheckoutConfig";
   static final String CONFIG_MODULE = "edge-sip2";
+  private static final String CONFIGURATION_TEMPLATE = "%s.%s.%s";
+  private static final String EMPTY_CODE = "null";
 
   /**
    * Constructor that takes an IResourceProvider.
@@ -53,94 +56,128 @@ public class ConfigurationRepository {
    */
   public Future<ACSStatus> getACSStatus(SessionData sessionData) {
 
+    LinkedHashMap<String, String> tenantLevelQueryParams = new LinkedHashMap<>();
+    tenantLevelQueryParams.put("module", CONFIG_MODULE);
+    tenantLevelQueryParams.put("configName", TENANT_CONFIG_NAME);
+    final String configKeyTenant = String.format(CONFIGURATION_TEMPLATE,
+                                          CONFIG_MODULE, TENANT_CONFIG_NAME, EMPTY_CODE);
+
+    LinkedHashMap<String, String> scLevelQueryParams = new LinkedHashMap<>();
+    scLevelQueryParams.put("module", CONFIG_MODULE);
+    scLevelQueryParams.put("configName",
+            SC_STATION_CONFIG_NAME + "." + sessionData.getScLocation());
+    final String configKeySC = String.format(CONFIGURATION_TEMPLATE,
+            CONFIG_MODULE, SC_STATION_CONFIG_NAME + "." + sessionData.getScLocation(), EMPTY_CODE);
+
+    LinkedHashMap<String, String> tenantTimeZoneQueryParams = new LinkedHashMap<>();
+    tenantTimeZoneQueryParams.put("module", "ORG");
+    tenantTimeZoneQueryParams.put("configName", "localeSettings");
+    final String configKeyLocale = String.format(CONFIGURATION_TEMPLATE,
+                                          "ORG", "localeSettings", EMPTY_CODE);
+
+    List<LinkedHashMap<String, String>> kvpQueryParamsList = new ArrayList<>();
+    kvpQueryParamsList.add(tenantLevelQueryParams);
+    kvpQueryParamsList.add(scLevelQueryParams);
+    kvpQueryParamsList.add(tenantTimeZoneQueryParams);
+
     ACSStatus.ACSStatusBuilder builder = ACSStatus.builder();
 
-    final Future<ACSStatusBuilder> tenantConfigfuture =
-        retrieveConfiguration(sessionData, CONFIG_MODULE, TENANT_CONFIG_NAME, "")
-        .map(config -> addTenantConfig(config, builder));
+    final Future<ACSStatusBuilder> acsStatusBuilderFuture =
+        retrieveConfigurations(sessionData, kvpQueryParamsList)
+        .map(configs -> setACSConfig(configs,
+                                     configKeyTenant, configKeySC,
+                                     configKeyLocale, builder,
+                                     sessionData));
 
-    final Future<ACSStatusBuilder> selfCheckoutConfigFuture =
-        retrieveConfiguration(sessionData, CONFIG_MODULE,
-            SC_STATION_CONFIG_NAME + "." + sessionData.getScLocation(), "")
-        .map(config -> addSCStationConfig(config, builder));
-
-    return CompositeFuture.all(tenantConfigfuture, selfCheckoutConfigFuture)
-        .map(result -> builder.build());
+    return acsStatusBuilderFuture.map(result -> builder.build());
   }
 
   /**
    * Method that retrieves the configuration from a resource provider.
    *
    * @param sessionData sessionData containing tenant ID to retrieve desired tenant configuration.
-   * @param configCode config code to identify the configuration
-   * @param configName name of the configuration
-   * @param module module that the configuration was created for
-   * @return JSON object containing tenant configuration
+   * @param configParameters different set of parameters to get values from config store
+   * @return A Map of keys and JSON config objects
    */
-  public Future<JsonObject> retrieveConfiguration(SessionData sessionData,
-                                                  String module,
-                                                  String configName,
-                                                  String configCode) {
+  public Future<LinkedHashMap<String, JsonObject>> retrieveConfigurations(SessionData sessionData,
+                                           List<LinkedHashMap<String, String>> configParameters) {
     final Map<String, String> headers = new HashMap<>();
     headers.put("accept", "application/json");
 
     ConfigurationRequestData requestData = new ConfigurationRequestData(null,
-        headers, sessionData, module, configName, configCode);
+        headers, sessionData, configParameters);
 
     Future<IResource> future = resourceProvider.retrieveResource(requestData);
     return future.compose(resource -> {
       final JsonObject scConfiguration = resource.getResource();
+      JsonArray configs = scConfiguration.getJsonArray("configs");
+      int totalConfigs = configs.size();
+      if (totalConfigs >= configParameters.size()) {
 
-      if (scConfiguration != null) {
-        JsonArray configs = scConfiguration.getJsonArray("configs");
-        if (configs.size() > 0) {
-          JsonObject firstConfig = configs.getJsonObject(0);
+        LinkedHashMap<String, JsonObject> resultJsonConfigs = new LinkedHashMap<>();
 
-          String configurationString = firstConfig.getString("value");
-          if (configurationString != null && !configurationString.isEmpty()) {
-            JsonObject acsConfiguration = new JsonObject(configurationString);
-            return Future.succeededFuture(acsConfiguration);
+        for (int i = 0; i < totalConfigs; i++) {
+          JsonObject config = configs.getJsonObject(i);
+          String module = config.getString("module");
+          String configName = config.getString("configName");
+          String code = config.getString("code");
+
+          String configKey = String.format(CONFIGURATION_TEMPLATE, module, configName, code);
+
+          String configurationString = config.getString("value");
+          if (!Utils.isStringNullOrEmpty(configurationString)) {
+            JsonObject jsonConfiguration = new JsonObject(configurationString);
+            resultJsonConfigs.put(configKey,jsonConfiguration);
           } else {
-            logWithConfigDetails("Getting no value from config store for", module,
-                configName, configCode);
-            return Future.failedFuture("Getting no value from config store");
+            log.error("Getting no value from config store for one of the result config records");
           }
-        } else {
-          logWithConfigDetails("Unable to find the configuration by the combination", module,
-              configName, configCode);
-          return Future.failedFuture("Unable to find the configuration");
         }
+
+        return Future.succeededFuture(resultJsonConfigs);
+
       } else {
-        logWithConfigDetails("Unable to find the configuration by the combination", module,
-            configName, configCode);
-        return Future.failedFuture("Unable to find the configuration");
+        log.error("Unable to find all necessary configuration(s). Found {} of {}",
+                      totalConfigs, configParameters.size() );
+        return Future.failedFuture("Unable to find all necessary configuration(s). Found "
+                      + totalConfigs + " of " + configParameters.size());
       }
     });
   }
 
-  private void logWithConfigDetails(String message, String module, String configName,
-      String configCode) {
-    log.error("{} Module: {}; ConfigName: {}; ConfigCode {}", message, module, configName,
-        configCode);
-  }
+  private ACSStatusBuilder setACSConfig(LinkedHashMap<String, JsonObject> sets,
+                                        String configKeyTenant, String configKeySC,
+                                        String configKeyLocale, ACSStatusBuilder builder,
+                                        SessionData sessionData) {
 
-  private ACSStatusBuilder addTenantConfig(JsonObject config, ACSStatusBuilder builder) {
-    if (config != null) {
-      builder.onLineStatus(config.getBoolean("onlineStatus"));
-      builder.statusUpdateOk(config.getBoolean("statusUpdateOk"));
-      builder.offLineOk(config.getBoolean("offlineOk"));
-      builder.timeoutPeriod(config.getInteger("timeoutPeriod"));
-      builder.retriesAllowed(config.getInteger("retriesAllowed"));
-      builder.protocolVersion(config.getString("protocolVersion"));
-      builder.institutionId(config.getString("institutionId"));
-      builder.supportedMessages(getSupportedMessagesFromJson(
-          config.getJsonArray("supportedMessages")));
-    }
+    addTenantConfig(sets.get(configKeyTenant), builder);
+    addSCStationConfig(sets.get(configKeySC), builder);
+    addLocaleConfig(sets.get(configKeyLocale), sessionData);
+    builder.institutionId(sessionData.getTenant());
+
     return builder;
   }
 
-  private ACSStatusBuilder addSCStationConfig(JsonObject config, ACSStatusBuilder builder) {
+  private void addLocaleConfig(JsonObject config, SessionData sessionData) {
     if (config != null) {
+      sessionData.setTimeZone(config.getString("timezone"));
+    }
+  }
+
+  private void addTenantConfig(JsonObject config, ACSStatusBuilder builder) {
+    if (config != null) {
+      builder.onLineStatus(true);
+      builder.statusUpdateOk(config.getBoolean("statusUpdateOk"));
+      builder.offLineOk(config.getBoolean("offlineOk"));
+      builder.protocolVersion("2.00");
+      builder.supportedMessages(getSupportedMessagesFromJson(
+          config.getJsonArray("supportedMessages")));
+    }
+  }
+
+  private void addSCStationConfig(JsonObject config, ACSStatusBuilder builder) {
+    if (config != null) {
+      builder.retriesAllowed(config.getInteger("retriesAllowed"));
+      builder.timeoutPeriod(config.getInteger("timeoutPeriod"));
       builder.checkinOk(config.getBoolean("checkinOk"));
       builder.acsRenewalPolicy(config.getBoolean("acsRenewalPolicy"));
       builder.checkoutOk(config.getBoolean("checkoutOk"));
@@ -148,7 +185,6 @@ public class ConfigurationRepository {
       builder.libraryName(config.getString("libraryName"));
       builder.terminalLocation(config.getString("terminalLocation"));
     }
-    return builder;
   }
 
   private Set<Messages> getSupportedMessagesFromJson(JsonArray supportedMessages) {
@@ -161,23 +197,19 @@ public class ConfigurationRepository {
 
   class ConfigurationRequestData implements IRequestData {
 
-    private final String module;
-    private final String configCode;
-    private final String configName;
+    List<LinkedHashMap<String, String>> configQueryParams;
 
     private final JsonObject body;
     private final Map<String, String> headers;
     private final SessionData sessionData;
 
     private ConfigurationRequestData(JsonObject body, Map<String, String> headers,
-                                     SessionData sessionData, String module,
-                                     String configName,  String configCode) {
+                                     SessionData sessionData,
+                                     List<LinkedHashMap<String, String>> configQueryParams) {
       this.body = body;
       this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
       this.sessionData = sessionData;
-      this.configCode = configCode;
-      this.configName = configName;
-      this.module = module;
+      this.configQueryParams = configQueryParams;
     }
 
     @Override
@@ -197,16 +229,16 @@ public class ConfigurationRepository {
 
     @Override
     public String getPath() {
+      String path = "/configurations/entries?query=";
 
-      LinkedHashMap queryStringHashMap = new LinkedHashMap();
-      queryStringHashMap.put("module", module);
-      queryStringHashMap.put("configName", configName);
-      queryStringHashMap.put("configCode", configCode);
+      for (int i = 0; i < configQueryParams.size(); i++) {
+        if (i > 0) {
+          path = path + " OR ";
+        }
+        path = path + "(" + Utils.parseQueryString(configQueryParams.get(i), " AND ", "==") + ")";
+      }
 
-      String path = String.format("/configurations/entries?query=%s",
-          Utils.parseQueryString(queryStringHashMap, " AND ", "=="));
-
-      log.debug("Parsed mod-config path: " + path);
+      log.debug("Parsed mod-config path: {}", path);
 
       return path.trim();
     }

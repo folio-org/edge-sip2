@@ -23,6 +23,7 @@ import org.folio.edge.sip2.domain.messages.requests.RenewAll;
 import org.folio.edge.sip2.domain.messages.requests.RequestACSResend;
 import org.folio.edge.sip2.domain.messages.requests.SCStatus;
 import org.folio.edge.sip2.parser.Message.MessageBuilder;
+import org.folio.edge.sip2.utils.Utils;
 
 /**
  * A SIP parser that supports v2 of the protocol.
@@ -40,6 +41,7 @@ public final class Parser {
   private final Charset charset;
   private final Character delimiter;
   private final Boolean errorDetectionEnabled;
+  private final String timezone;
 
   private Parser(ParserBuilder builder) {
     charset = builder.charset == null ? DEFAULT_CHARSET : builder.charset;
@@ -47,6 +49,7 @@ public final class Parser {
         ? DEFAULT_DELIMITER : builder.delimiter;
     errorDetectionEnabled = builder.errorDetectionEnabled == null
         ? DEFAULT_ERROR_DETECTION_ENABLED : builder.errorDetectionEnabled;
+    timezone = Utils.isStringNullOrEmpty(builder.timezone) ? "Etc/UTC" : builder.timezone;
   }
 
   public static ParserBuilder builder() {
@@ -82,87 +85,115 @@ public final class Parser {
 
       switch (command) {
         case PATRON_STATUS_REQUEST:
-          final PatronStatusRequest patronStatusRequest =
-              new PatronStatusRequestMessageParser(delimiter).parse(message);
+          PatronStatusRequestMessageParser messageParser =
+              new PatronStatusRequestMessageParser(delimiter);
+          messageParser.setTimezone(timezone);
+          final PatronStatusRequest patronStatusRequest = messageParser.parse(message);
           builder.request(patronStatusRequest);
           break;
         case CHECKOUT:
-          final Checkout checkout =
-              new CheckoutMessageParser(delimiter).parse(message);
+          CheckoutMessageParser checkoutMessageParser = new CheckoutMessageParser(delimiter);
+          checkoutMessageParser.setTimezone(timezone);
+          final Checkout checkout = checkoutMessageParser.parse(message);
           builder.request(checkout);
           break;
         case CHECKIN:
-          final Checkin checkin =
-              new CheckinMessageParser(delimiter).parse(message);
+          CheckinMessageParser checkinMessageParser = new CheckinMessageParser(delimiter);
+          checkinMessageParser.setTimezone(timezone);
+          final Checkin checkin = checkinMessageParser.parse(message);
           builder.request(checkin);
           break;
         case BLOCK_PATRON:
-          final BlockPatron blockPatron =
-              new BlockPatronMessageParser(delimiter).parse(message);
+          BlockPatronMessageParser blockPatronMessageParser =
+              new BlockPatronMessageParser(delimiter);
+          blockPatronMessageParser.setTimezone(timezone);
+          final BlockPatron blockPatron = blockPatronMessageParser.parse(message);
           builder.request(blockPatron);
           break;
         case SC_STATUS:
-          final SCStatus scStatus =
-              new SCStatusMessageParser(delimiter).parse(message);
+          SCStatusMessageParser scStatusMessageParser =
+              new SCStatusMessageParser(delimiter);
+          scStatusMessageParser.setTimezone(timezone);
+          final SCStatus scStatus = scStatusMessageParser.parse(message);
           builder.request(scStatus);
           break;
         case REQUEST_ACS_RESEND:
-          final RequestACSResend requestACSResend =
-              new RequestACSResendMessageParser(delimiter).parse(message);
+          RequestACSResendMessageParser requestAcsResendMsgParser =
+              new RequestACSResendMessageParser(delimiter);
+          requestAcsResendMsgParser.setTimezone(timezone);
+          final RequestACSResend requestACSResend = requestAcsResendMsgParser.parse(message);
           builder.request(requestACSResend);
           break;
         case LOGIN:
-          final Login login = new LoginMessageParser(delimiter).parse(message);
+          LoginMessageParser loginMessageParser = new LoginMessageParser(delimiter);
+          loginMessageParser.setTimezone(timezone);
+          final Login login = loginMessageParser.parse(message);
           builder.request(login);
           break;
         case PATRON_INFORMATION:
-          final PatronInformation patronInformation =
-              new PatronInformationMessageParser(delimiter).parse(message);
+          PatronInformationMessageParser patronInformationMessageParser =
+              new PatronInformationMessageParser(delimiter);
+          patronInformationMessageParser.setTimezone(timezone);
+          final PatronInformation patronInformation = patronInformationMessageParser.parse(message);
           builder.request(patronInformation);
           break;
         case END_PATRON_SESSION:
-          final EndPatronSession endPatronSession =
-              new EndPatronSessionMessageParser(delimiter).parse(message);
+          EndPatronSessionMessageParser endPatronSessionMessageParser =
+              new EndPatronSessionMessageParser(delimiter);
+          endPatronSessionMessageParser.setTimezone(timezone);
+          final EndPatronSession endPatronSession = endPatronSessionMessageParser.parse(message);
           builder.request(endPatronSession);
           break;
         case FEE_PAID:
-          final FeePaid feePaid =
-              new FeePaidMessageParser(delimiter).parse(message);
+          FeePaidMessageParser feePaidMessageParser = new FeePaidMessageParser(delimiter);
+          feePaidMessageParser.setTimezone(timezone);
+          final FeePaid feePaid = feePaidMessageParser.parse(message);
           builder.request(feePaid);
           break;
         case ITEM_INFORMATION:
-          final ItemInformation itemInformation =
-              new ItemInformationMessageParser(delimiter).parse(message);
+          ItemInformationMessageParser itemInformationMessageParser =
+              new ItemInformationMessageParser(delimiter);
+          itemInformationMessageParser.setTimezone(timezone);
+          final ItemInformation itemInformation = itemInformationMessageParser.parse(message);
           builder.request(itemInformation);
           break;
         case ITEM_STATUS_UPDATE:
-          final ItemStatusUpdate itemStatusUpdate =
-              new ItemStatusUpdateMessageParser(delimiter).parse(message);
+          ItemStatusUpdateMessageParser itemStatusUpdateMessageParser =
+            new ItemStatusUpdateMessageParser(delimiter);
+          itemStatusUpdateMessageParser.setTimezone(timezone);
+          final ItemStatusUpdate itemStatusUpdate = itemStatusUpdateMessageParser.parse(message);
           builder.request(itemStatusUpdate);
           break;
         case PATRON_ENABLE:
-          final PatronEnable patronEnable =
-              new PatronEnableMessageParser(delimiter).parse(message);
+          final PatronEnableMessageParser patronEnableMessageParser =
+            new PatronEnableMessageParser(delimiter);
+          patronEnableMessageParser.setTimezone(timezone);
+          final PatronEnable patronEnable = patronEnableMessageParser.parse(message);
           builder.request(patronEnable);
           break;
         case HOLD:
-          final Hold hold = new HoldMessageParser(delimiter).parse(message);
+          final HoldMessageParser holdMessageParser = new HoldMessageParser(delimiter);
+          holdMessageParser.setTimezone(timezone);
+          final Hold hold = holdMessageParser.parse(message);
           builder.request(hold);
           break;
         case RENEW:
-          final Renew renew = new RenewMessageParser(delimiter).parse(message);
+          final RenewMessageParser renewMessageParser = new RenewMessageParser(delimiter);
+          renewMessageParser.setTimezone(timezone);
+          final Renew renew = renewMessageParser.parse(message);
           builder.request(renew);
           break;
         case RENEW_ALL:
-          final RenewAll renewAll =
-              new RenewAllMessageParser(delimiter).parse(message);
+          final RenewAllMessageParser renewAllMessageParser = new RenewAllMessageParser(delimiter);
+          renewAllMessageParser.setTimezone(timezone);
+          final RenewAll renewAll = renewAllMessageParser.parse(message);
           builder.request(renewAll);
           break;
         default:
           log.info("Command not supported: {}", command);
           builder.valid(false);
       }
-
+      builder.timeZone(this.timezone);
       return builder.build();
     } else {
       return Message.builder()
@@ -255,6 +286,7 @@ public final class Parser {
     private Charset charset;
     private Character delimiter;
     private Boolean errorDetectionEnabled;
+    private String timezone;
 
     private ParserBuilder() {
       super();
@@ -272,6 +304,11 @@ public final class Parser {
 
     public ParserBuilder errorDetectionEnaled(Boolean errorDetectionEnabled) {
       this.errorDetectionEnabled = errorDetectionEnabled;
+      return this;
+    }
+
+    public ParserBuilder timeZone(String timezone) {
+      this.timezone = timezone;
       return this;
     }
 

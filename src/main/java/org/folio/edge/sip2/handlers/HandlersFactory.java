@@ -4,8 +4,6 @@ import freemarker.template.Template;
 import io.vertx.core.Vertx;
 
 import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.Objects;
 
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;

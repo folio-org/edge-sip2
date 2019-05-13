@@ -16,6 +16,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Stream;
+
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.enumerations.Summary;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.junit.jupiter.api.Test;
@@ -29,8 +31,9 @@ class PatronInformationMessageParserTests {
   void testParse(String summaryString, Summary summary) {
     PatronInformationMessageParser parser =
         new PatronInformationMessageParser(valueOf('|'));
+    parser.setTimezone(TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
@@ -55,8 +58,9 @@ class PatronInformationMessageParserTests {
   void testParseIgnoresUnknownField() {
     PatronInformationMessageParser parser =
         new PatronInformationMessageParser(valueOf('|'));
+    parser.setTimezone(TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+       TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);

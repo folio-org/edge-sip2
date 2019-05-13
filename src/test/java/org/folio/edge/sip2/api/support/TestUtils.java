@@ -13,6 +13,8 @@ import java.time.format.DateTimeFormatter;
 
 import org.folio.edge.sip2.session.SessionData;
 
+import com.sun.scenario.effect.Offset;
+
 public class TestUtils {
   private TestUtils() {
     super();
@@ -38,13 +40,17 @@ public class TestUtils {
     return Clock.fixed(Instant.now(), ZoneOffset.UTC);
   }
 
+  public static OffsetDateTime getOffsetDateTimeUtc() {
+    return OffsetDateTime.now(TestUtils.getUtcFixedClock());
+  }
+
   /**
    * Returns a mocked session data with UTC timezones.
    * @return SessionData object
    */
   public static SessionData getMockedSessionData() {
-    SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
-    sessionData.setTimeZone("Etc/UTC");
+    SessionData sessionData = SessionData.createSession("dikutest", '|', false, "IBM850");
+    sessionData.setTimeZone(UTCTimeZone);
     sessionData.setMaxPrintWidth(100);
     return sessionData;
   }
@@ -64,4 +70,6 @@ public class TestUtils {
       return null;
     }
   }
+
+  public static final String UTCTimeZone = "Etc/UTC";
 }

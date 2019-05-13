@@ -12,6 +12,7 @@ public class Message<R> {
   private final boolean valid;
   private final Integer sequenceNumber;
   private final String checksumString;
+  private final String timezone;
 
   /**
    * Constructor for a message.
@@ -23,6 +24,7 @@ public class Message<R> {
     this.valid = builder.valid;
     this.sequenceNumber = builder.sequenceNumber;
     this.checksumString = builder.checksumString;
+    this.timezone = builder.timezone;
   }
 
   public static <R> MessageBuilder<R> builder() {
@@ -53,12 +55,17 @@ public class Message<R> {
     return sequenceNumber != null;
   }
 
+  public String getTimezone() {
+    return timezone;
+  }
+
   public static class MessageBuilder<R> {
     private Command command;
     private R request;
     private boolean valid;
     private Integer sequenceNumber;
     private String checksumString;
+    private String timezone;
 
     private MessageBuilder() {
       super();
@@ -86,6 +93,11 @@ public class Message<R> {
 
     public MessageBuilder<R> checksumString(String checksumString) {
       this.checksumString = checksumString;
+      return this;
+    }
+
+    public MessageBuilder<R> timeZone(String timezone) {
+      this.timezone = timezone;
       return this;
     }
 

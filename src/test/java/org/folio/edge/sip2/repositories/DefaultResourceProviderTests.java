@@ -65,9 +65,9 @@ public class DefaultResourceProviderTests {
           assertNotNull(jsonConfig);
 
           JsonArray configs = jsonConfig.getJsonArray("configs");
-          JsonObject firstConfig = configs.getJsonObject(0);
+          JsonObject secondConfig = configs.getJsonObject(1);
 
-          String configString = firstConfig.getString("value");
+          String configString = secondConfig.getString("value");
           JsonObject tenantConfig = new JsonObject(configString);
 
           assertEquals("dikutest", tenantConfig.getString("tenantId"));
