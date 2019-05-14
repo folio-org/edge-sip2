@@ -33,9 +33,8 @@ class CheckinMessageParserTests {
         + "AOuniversity_id|BIN|");
 
     assertEquals(TRUE, checkin.getNoBlock());
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        checkin.getTransactionDate());
-    assertEquals(returnDate.withOffsetSameInstant(ZoneOffset.UTC), checkin.getReturnDate());
+    assertEquals(transactionDate, checkin.getTransactionDate());
+    assertEquals(returnDate, checkin.getReturnDate());
     assertEquals("circ_desk", checkin.getCurrentLocation());
     assertEquals("university_id", checkin.getInstitutionId());
     assertEquals("SomeBook", checkin.getItemIdentifier());

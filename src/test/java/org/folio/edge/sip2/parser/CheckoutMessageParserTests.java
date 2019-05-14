@@ -32,10 +32,8 @@ class CheckoutMessageParserTests {
 
     assertEquals(TRUE, checkout.getScRenewalPolicy());
     assertEquals(TRUE, checkout.getNoBlock());
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        checkout.getTransactionDate());
-    assertEquals(nbDueDate.withOffsetSameInstant(ZoneOffset.UTC),
-        checkout.getNbDueDate());
+    assertEquals(transactionDate, checkout.getTransactionDate());
+    assertEquals(nbDueDate, checkout.getNbDueDate());
     assertEquals("university_id", checkout.getInstitutionId());
     assertEquals("patron_id", checkout.getPatronIdentifier());
     assertEquals("SomeBook", checkout.getItemIdentifier());

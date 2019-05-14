@@ -161,8 +161,7 @@ class ParserTests {
         (PatronStatusRequest) message.getRequest();
 
     assertEquals(ENGLISH, patronStatusRequest.getLanguage());
-    assertEquals(now.withOffsetSameInstant(ZoneOffset.UTC),
-        patronStatusRequest.getTransactionDate());
+    assertEquals(now, patronStatusRequest.getTransactionDate());
     assertEquals("patron_id", patronStatusRequest.getPatronIdentifier());
     assertEquals("1234", patronStatusRequest.getPatronPassword());
     assertEquals("university_id", patronStatusRequest.getInstitutionId());
@@ -191,10 +190,8 @@ class ParserTests {
 
     assertEquals(TRUE, checkout.getScRenewalPolicy());
     assertEquals(TRUE, checkout.getNoBlock());
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        checkout.getTransactionDate());
-    assertEquals(nbDueDate.withOffsetSameInstant(ZoneOffset.UTC),
-        checkout.getNbDueDate());
+    assertEquals(transactionDate, checkout.getTransactionDate());
+    assertEquals(nbDueDate, checkout.getNbDueDate());
     assertEquals("university_id", checkout.getInstitutionId());
     assertEquals("patron_id", checkout.getPatronIdentifier());
     assertEquals("SomeBook", checkout.getItemIdentifier());
@@ -226,10 +223,8 @@ class ParserTests {
     final Checkin checkin = (Checkin) message.getRequest();
 
     assertEquals(TRUE, checkin.getNoBlock());
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        checkin.getTransactionDate());
-    assertEquals(returnDate.withOffsetSameInstant(ZoneOffset.UTC),
-        checkin.getReturnDate());
+    assertEquals(transactionDate, checkin.getTransactionDate());
+    assertEquals(returnDate, checkin.getReturnDate());
     assertEquals("circ_desk", checkin.getCurrentLocation());
     assertEquals("university_id", checkin.getInstitutionId());
     assertEquals("SomeBook", checkin.getItemIdentifier());
@@ -258,8 +253,7 @@ class ParserTests {
     final BlockPatron blockPatron = (BlockPatron) message.getRequest();
 
     assertEquals(FALSE, blockPatron.getCardRetained());
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        blockPatron.getTransactionDate());
+    assertEquals(transactionDate, blockPatron.getTransactionDate());
     assertEquals("university_id", blockPatron.getInstitutionId());
     assertEquals("Card retained due to excessive fee violations",
         blockPatron.getBlockedCardMsg());
@@ -316,8 +310,7 @@ class ParserTests {
         (PatronInformation) message.getRequest();
 
     assertEquals(ENGLISH, patronInformation.getLanguage());
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        patronInformation.getTransactionDate());
+    assertEquals(transactionDate, patronInformation.getTransactionDate());
     assertEquals(HOLD_ITEMS, patronInformation.getSummary());
     assertEquals("university_id", patronInformation.getInstitutionId());
     assertEquals("patron_id", patronInformation.getPatronIdentifier());
@@ -345,8 +338,7 @@ class ParserTests {
     final EndPatronSession endPatronSession =
         (EndPatronSession) message.getRequest();
 
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        endPatronSession.getTransactionDate());
+    assertEquals(transactionDate, endPatronSession.getTransactionDate());
     assertEquals("university_id", endPatronSession.getInstitutionId());
     assertEquals("patron_id", endPatronSession.getPatronIdentifier());
     assertEquals("", endPatronSession.getTerminalPassword());
@@ -371,8 +363,7 @@ class ParserTests {
 
     final FeePaid feePaid = (FeePaid) message.getRequest();
 
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        feePaid.getTransactionDate());
+    assertEquals(transactionDate, feePaid.getTransactionDate());
     assertEquals(DAMAGE, feePaid.getFeeType());
     assertEquals(CASH, feePaid.getPaymentType());
     assertEquals(USD, feePaid.getCurrencyType());
@@ -402,8 +393,7 @@ class ParserTests {
     final ItemInformation itemInformation =
         (ItemInformation) message.getRequest();
 
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        itemInformation.getTransactionDate());
+    assertEquals(transactionDate, itemInformation.getTransactionDate());
     assertEquals("university_id", itemInformation.getInstitutionId());
     assertEquals("SomeBook", itemInformation.getItemIdentifier());
     assertNull(itemInformation.getTerminalPassword());
@@ -427,8 +417,7 @@ class ParserTests {
     final ItemStatusUpdate itemStatusUpdate =
         (ItemStatusUpdate) message.getRequest();
 
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        itemStatusUpdate.getTransactionDate());
+    assertEquals(transactionDate, itemStatusUpdate.getTransactionDate());
     assertEquals("university_id", itemStatusUpdate.getInstitutionId());
     assertEquals("SomeBook", itemStatusUpdate.getItemIdentifier());
     assertNull(itemStatusUpdate.getTerminalPassword());
@@ -453,8 +442,7 @@ class ParserTests {
 
     final PatronEnable patronEnable = (PatronEnable) message.getRequest();
 
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        patronEnable.getTransactionDate());
+    assertEquals(transactionDate, patronEnable.getTransactionDate());
     assertEquals("university_id", patronEnable.getInstitutionId());
     assertEquals("patron_id", patronEnable.getPatronIdentifier());
     assertEquals("", patronEnable.getTerminalPassword());
@@ -484,10 +472,8 @@ class ParserTests {
     final Hold hold = (Hold) message.getRequest();
 
     assertEquals(ADD, hold.getHoldMode());
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        hold.getTransactionDate());
-    assertEquals(expirationDate.withOffsetSameInstant(ZoneOffset.UTC),
-        hold.getExpirationDate());
+    assertEquals(transactionDate, hold.getTransactionDate());
+    assertEquals(expirationDate, hold.getExpirationDate());
     assertEquals("circ_desk", hold.getPickupLocation());
     assertEquals(SPECIFIC_COPY_TITLE, hold.getHoldType());
     assertEquals("university_id", hold.getInstitutionId());
@@ -521,10 +507,8 @@ class ParserTests {
 
     assertEquals(TRUE, renew.getThirdPartyAllowed());
     assertEquals(TRUE, renew.getNoBlock());
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        renew.getTransactionDate());
-    assertEquals(nbDueDate.withOffsetSameInstant(ZoneOffset.UTC),
-        renew.getNbDueDate());
+    assertEquals(transactionDate, renew.getTransactionDate());
+    assertEquals(nbDueDate, renew.getNbDueDate());
     assertEquals("university_id", renew.getInstitutionId());
     assertEquals("patron_id", renew.getPatronIdentifier());
     assertEquals("1234", renew.getPatronPassword());
@@ -552,8 +536,7 @@ class ParserTests {
 
     final RenewAll renewAll = (RenewAll) message.getRequest();
 
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        renewAll.getTransactionDate());
+    assertEquals(transactionDate, renewAll.getTransactionDate());
     assertEquals("university_id", renewAll.getInstitutionId());
     assertEquals("patron_id", renewAll.getPatronIdentifier());
     assertEquals("1234", renewAll.getPatronPassword());
@@ -583,8 +566,7 @@ class ParserTests {
 
     final RenewAll renewAll = (RenewAll) message.getRequest();
 
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        renewAll.getTransactionDate());
+    assertEquals(transactionDate, renewAll.getTransactionDate());
     assertEquals("university_id", renewAll.getInstitutionId());
     assertEquals("patron_id", renewAll.getPatronIdentifier());
     assertEquals("1234", renewAll.getPatronPassword());

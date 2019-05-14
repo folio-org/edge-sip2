@@ -33,10 +33,8 @@ class HoldMessageParserTests {
         + "AD1234|AOuniversity_id|ABSome Book|AJSome Title|BON|");
 
     assertEquals(ADD, hold.getHoldMode());
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        hold.getTransactionDate());
-    assertEquals(expirationDate.withOffsetSameInstant(ZoneOffset.UTC),
-        hold.getExpirationDate());
+    assertEquals(transactionDate, hold.getTransactionDate());
+    assertEquals(expirationDate, hold.getExpirationDate());
     assertEquals("circ_desk", hold.getPickupLocation());
     assertEquals(SPECIFIC_COPY_TITLE, hold.getHoldType());
     assertEquals("university_id", hold.getInstitutionId());

@@ -33,10 +33,8 @@ class RenewMessageParserTests {
 
     assertEquals(TRUE, renew.getThirdPartyAllowed());
     assertEquals(TRUE, renew.getNoBlock());
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        renew.getTransactionDate());
-    assertEquals(nbDueDate.withOffsetSameInstant(ZoneOffset.UTC),
-        renew.getNbDueDate());
+    assertEquals(transactionDate, renew.getTransactionDate());
+    assertEquals(nbDueDate, renew.getNbDueDate());
     assertEquals("university_id", renew.getInstitutionId());
     assertEquals("patron_id", renew.getPatronIdentifier());
     assertEquals("1234", renew.getPatronPassword());

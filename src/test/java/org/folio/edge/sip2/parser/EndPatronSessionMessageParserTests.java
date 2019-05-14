@@ -24,8 +24,7 @@ class EndPatronSessionMessageParserTests {
     final EndPatronSession endPatronSession = parser.parse(
         transactionDateString + "AApatron_id|AD1234|AC|AOuniversity_id|");
 
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        endPatronSession.getTransactionDate());
+    assertEquals(transactionDate, endPatronSession.getTransactionDate());
     assertEquals("university_id", endPatronSession.getInstitutionId());
     assertEquals("patron_id", endPatronSession.getPatronIdentifier());
     assertEquals("", endPatronSession.getTerminalPassword());

@@ -26,8 +26,7 @@ class ItemInformationMessageParserTests {
     final ItemInformation itemInformation = parser.parse(
         transactionDateString + "ABSomeBook|AOuniversity_id|");
 
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        itemInformation.getTransactionDate());
+    assertEquals(transactionDate, itemInformation.getTransactionDate());
     assertEquals("university_id", itemInformation.getInstitutionId());
     assertEquals("SomeBook", itemInformation.getItemIdentifier());
     assertNull(itemInformation.getTerminalPassword());

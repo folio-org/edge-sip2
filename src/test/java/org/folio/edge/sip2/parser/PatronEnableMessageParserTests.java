@@ -25,8 +25,7 @@ class PatronEnableMessageParserTests {
     final PatronEnable patronEnable = parser.parse(
         transactionDateString + "AApatron_id|AD1234|AC|AOuniversity_id|");
 
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        patronEnable.getTransactionDate());
+    assertEquals(transactionDate, patronEnable.getTransactionDate());
     assertEquals("university_id", patronEnable.getInstitutionId());
     assertEquals("patron_id", patronEnable.getPatronIdentifier());
     assertEquals("", patronEnable.getTerminalPassword());

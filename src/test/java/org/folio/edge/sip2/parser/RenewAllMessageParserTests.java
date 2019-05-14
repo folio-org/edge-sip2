@@ -26,8 +26,7 @@ class RenewAllMessageParserTests {
     final RenewAll renewAll = parser.parse(
         transactionDateString + "AApatron_id|AC|AD1234|AOuniversity_id|BON|");
 
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        renewAll.getTransactionDate());
+    assertEquals(transactionDate, renewAll.getTransactionDate());
     assertEquals("university_id", renewAll.getInstitutionId());
     assertEquals("patron_id", renewAll.getPatronIdentifier());
     assertEquals("1234", renewAll.getPatronPassword());

@@ -30,8 +30,7 @@ class FeePaidMessageParserTests {
         + "BV100.25|AApatron_id|AD1234|AC|"
         + "AOuniversity_id|CGTorn page|BKa1b2c3d4e5|");
 
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        feePaid.getTransactionDate());
+    assertEquals(transactionDate, feePaid.getTransactionDate());
     assertEquals(DAMAGE, feePaid.getFeeType());
     assertEquals(CASH, feePaid.getPaymentType());
     assertEquals(USD, feePaid.getCurrencyType());

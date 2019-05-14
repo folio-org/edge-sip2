@@ -30,8 +30,7 @@ class BlockPatronMessageParserTests {
         + "AApatron_id|AC|AOuniversity_id|");
 
     assertEquals(FALSE, blockPatron.getCardRetained());
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-                 blockPatron.getTransactionDate());
+    assertEquals(transactionDate, blockPatron.getTransactionDate());
     assertEquals("university_id", blockPatron.getInstitutionId());
     assertEquals("Card retained due to excessive fee violations",
         blockPatron.getBlockedCardMsg());

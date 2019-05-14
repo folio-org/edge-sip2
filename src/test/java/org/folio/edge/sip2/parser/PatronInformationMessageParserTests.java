@@ -42,8 +42,7 @@ class PatronInformationMessageParserTests {
         + "AOuniversity_id|BP1|BQ10|");
 
     assertEquals(ENGLISH, patronInformation.getLanguage());
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        patronInformation.getTransactionDate());
+    assertEquals(transactionDate, patronInformation.getTransactionDate());
     assertEquals(summary, patronInformation.getSummary());
     assertEquals("university_id", patronInformation.getInstitutionId());
     assertEquals("patron_id", patronInformation.getPatronIdentifier());
@@ -68,8 +67,7 @@ class PatronInformationMessageParserTests {
         + "AOuniversity_id|BP1|BQ10|XXInvalid|");
 
     assertEquals(ENGLISH, patronInformation.getLanguage());
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        patronInformation.getTransactionDate());
+    assertEquals(transactionDate, patronInformation.getTransactionDate());
     assertNull(patronInformation.getSummary());
     assertEquals("university_id", patronInformation.getInstitutionId());
     assertEquals("patron_id", patronInformation.getPatronIdentifier());

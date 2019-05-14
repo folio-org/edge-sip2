@@ -27,8 +27,7 @@ class ItemStatusUpdateMessageParserTests {
         transactionDateString
         + "ABSomeBook|AOuniversity_id|CHSpilled coffee on the book|");
 
-    assertEquals(transactionDate.withOffsetSameInstant(ZoneOffset.UTC),
-        itemStatusUpdate.getTransactionDate());
+    assertEquals(transactionDate, itemStatusUpdate.getTransactionDate());
     assertEquals("university_id", itemStatusUpdate.getInstitutionId());
     assertEquals("SomeBook", itemStatusUpdate.getItemIdentifier());
     assertNull(itemStatusUpdate.getTerminalPassword());
