@@ -19,8 +19,7 @@ class BlockPatronMessageParserTests {
   @Test
   void testParse() {
     BlockPatronMessageParser parser =
-        new BlockPatronMessageParser(valueOf('|'));
-    parser.setTimezone(TestUtils.UTCTimeZone);
+        new BlockPatronMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate = TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");

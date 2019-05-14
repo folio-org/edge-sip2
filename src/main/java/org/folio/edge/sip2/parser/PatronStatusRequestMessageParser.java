@@ -18,8 +18,8 @@ import org.folio.edge.sip2.domain.messages.requests.PatronStatusRequest.PatronSt
 public class PatronStatusRequestMessageParser extends MessageParser {
   private static final Logger log = LogManager.getLogger();
 
-  public PatronStatusRequestMessageParser(Character delimiter) {
-    super(delimiter);
+  public PatronStatusRequestMessageParser(Character delimiter, String timezone) {
+    super(delimiter, timezone);
   }
 
   /**

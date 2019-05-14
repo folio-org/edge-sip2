@@ -16,8 +16,7 @@ class PatronEnableMessageParserTests {
   @Test
   void testParse() {
     PatronEnableMessageParser parser =
-        new PatronEnableMessageParser(valueOf('|'));
-    parser.setTimezone(TestUtils.UTCTimeZone);
+        new PatronEnableMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter

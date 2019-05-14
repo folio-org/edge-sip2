@@ -33,7 +33,7 @@ public class SCStatusHandlerTests {
       VertxTestContext testContext) {
 
     IResourceProvider<IRequestData> defaultConfigurationProvider =
-        new DefaultResourceProvider("DefaultACSConfiguration.json");
+        new DefaultResourceProvider("json/DefaultACSConfiguration.json");
     Clock clock = TestUtils.getUtcFixedClock();
 
     SCStatusHandler handler = ((SCStatusHandler) HandlersFactory
@@ -101,7 +101,8 @@ public class SCStatusHandlerTests {
   public void cannotGetAValidResponseDueToMissingTemplate(
       Vertx vertx,
       VertxTestContext testContext) {
-    IResourceProvider<IRequestData> defaultConfigurationProvider = new DefaultResourceProvider();
+    IResourceProvider<IRequestData> defaultConfigurationProvider =
+        new DefaultResourceProvider("json/DefaultACSConfiguration.json");
     ConfigurationRepository configurationRepository =
         new ConfigurationRepository(defaultConfigurationProvider, TestUtils.getUtcFixedClock());
 
@@ -114,7 +115,6 @@ public class SCStatusHandlerTests {
           testContext.completeNow();
         })));
   }
-
 
   @Test
   public void cannotGetAValidResponseDueToMissingConfig(
@@ -171,8 +171,6 @@ public class SCStatusHandlerTests {
     statusBuilder.maxPrintWidth(20);
     statusBuilder.protocolVersion("1.00");
     statusBuilder.statusCode(StatusCode.SC_OK);
-    SCStatus status =  statusBuilder.build();
-
-    return status;
+    return statusBuilder.build();
   }
 }

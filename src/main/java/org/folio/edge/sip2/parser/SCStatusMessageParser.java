@@ -22,8 +22,8 @@ public class SCStatusMessageParser extends MessageParser {
 
   public static final Integer DEFAULT_MAX_PRINT_WIDTH = Integer.valueOf(80);
 
-  public SCStatusMessageParser(Character delimiter) {
-    super(delimiter);
+  public SCStatusMessageParser(Character delimiter, String timzeone) {
+    super(delimiter, timzeone);
   }
 
   /**

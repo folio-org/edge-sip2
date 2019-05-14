@@ -16,11 +16,7 @@ import org.apache.logging.log4j.Logger;
 public class DefaultResourceProvider implements IResourceProvider<IRequestData> {
 
   private final Logger log;
-  private String fileName = "DefaultACSConfiguration.json";
-
-  public DefaultResourceProvider() {
-    log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
-  }
+  private String fileName;
 
   public DefaultResourceProvider(String fileName) {
     this.fileName = fileName;

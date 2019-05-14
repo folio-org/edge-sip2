@@ -18,8 +18,8 @@ import org.folio.edge.sip2.domain.messages.requests.Checkin.CheckinBuilder;
 public class CheckinMessageParser extends MessageParser {
   private static final Logger log = LogManager.getLogger();
 
-  public CheckinMessageParser(Character delimiter) {
-    super(delimiter);
+  public CheckinMessageParser(Character delimiter, String timezone) {
+    super(delimiter, timezone);
   }
 
   /**

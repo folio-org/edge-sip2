@@ -18,8 +18,8 @@ import org.folio.edge.sip2.domain.messages.requests.ItemInformation.ItemInformat
 public class ItemInformationMessageParser extends MessageParser {
   private static final Logger log = LogManager.getLogger();
 
-  public ItemInformationMessageParser(Character delimiter) {
-    super(delimiter);
+  public ItemInformationMessageParser(Character delimiter, String timezone) {
+    super(delimiter, timezone);
   }
 
   /**

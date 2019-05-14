@@ -18,8 +18,8 @@ import org.junit.jupiter.api.Test;
 class HoldMessageParserTests {
   @Test
   void testParse() {
-    HoldMessageParser parser = new HoldMessageParser(valueOf('|'));
-    parser.setTimezone(TestUtils.UTCTimeZone);
+    HoldMessageParser parser =
+        new HoldMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime expirationDate = transactionDate.plusDays(30);

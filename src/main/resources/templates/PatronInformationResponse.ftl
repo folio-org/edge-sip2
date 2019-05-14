@@ -7,7 +7,7 @@
 <#--
     transaction date: 18-char, fixed-length required field: YYYYMMDDZZZZHHMMSS
 -->
-<@lib.transactionDate value=patronInformationResponse.transactionDate tz=timezone/>
+<@lib.transactionDate value=patronInformationResponse.transactionDate/>
 <#-- hold items count: 4-char, fixed-length required field -->
 <@lib.holdItemsCount value=patronInformationResponse.holdItemsCount!""/>
 <#-- overdue items count: 4-char, fixed-length required field -->

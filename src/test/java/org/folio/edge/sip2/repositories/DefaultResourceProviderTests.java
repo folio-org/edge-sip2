@@ -17,9 +17,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(VertxExtension.class)
 public class DefaultResourceProviderTests {
 
+  private static final String DEFAULT_CONFIGURATION_FILE = "json/DefaultACSConfiguration.json";
+
   @Test
   public void canConstructDefaultConfigurationProvider() {
-    DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
+    DefaultResourceProvider defaultConfigurationProvider =
+        new DefaultResourceProvider(DEFAULT_CONFIGURATION_FILE);
     assertNotNull(defaultConfigurationProvider);
   }
 
@@ -31,7 +34,8 @@ public class DefaultResourceProviderTests {
     IRequestData mockRequestData = mock(IRequestData.class);
     when(mockRequestData.getPath()).thenReturn(ConfigurationRepository.SC_STATION_CONFIG_NAME);
 
-    DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
+    DefaultResourceProvider defaultConfigurationProvider =
+        new DefaultResourceProvider(DEFAULT_CONFIGURATION_FILE);
     defaultConfigurationProvider.retrieveResource(mockRequestData).setHandler(
         testContext.succeeding(resource -> testContext.verify(() -> {
           final JsonObject jsonConfig = resource.getResource();
@@ -58,7 +62,8 @@ public class DefaultResourceProviderTests {
     IRequestData mockRequestData = mock(IRequestData.class);
     when(mockRequestData.getPath()).thenReturn(ConfigurationRepository.TENANT_CONFIG_NAME);
 
-    DefaultResourceProvider defaultConfigurationProvider = new DefaultResourceProvider();
+    DefaultResourceProvider defaultConfigurationProvider =
+        new DefaultResourceProvider(DEFAULT_CONFIGURATION_FILE);
     defaultConfigurationProvider.retrieveResource(mockRequestData).setHandler(
         testContext.succeeding(resource -> testContext.verify(() -> {
           final JsonObject jsonConfig = resource.getResource();

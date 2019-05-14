@@ -16,8 +16,8 @@ import org.junit.jupiter.api.Test;
 class RenewAllMessageParserTests {
   @Test
   void testParse() {
-    RenewAllMessageParser parser = new RenewAllMessageParser(valueOf('|'));
-    parser.setTimezone(TestUtils.UTCTimeZone);
+    RenewAllMessageParser parser =
+        new RenewAllMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter

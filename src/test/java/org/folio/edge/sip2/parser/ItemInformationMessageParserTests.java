@@ -17,8 +17,7 @@ class ItemInformationMessageParserTests {
   @Test
   void testParse() {
     ItemInformationMessageParser parser =
-        new ItemInformationMessageParser(valueOf('|'));
-    parser.setTimezone(TestUtils.UTCTimeZone);
+        new ItemInformationMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter

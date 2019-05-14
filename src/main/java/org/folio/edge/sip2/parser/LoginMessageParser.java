@@ -19,8 +19,8 @@ import org.folio.edge.sip2.domain.messages.requests.Login.LoginBuilder;
 public final class LoginMessageParser extends MessageParser {
   private static final Logger log = LogManager.getLogger();
 
-  public LoginMessageParser(Character delimiter) {
-    super(delimiter);
+  public LoginMessageParser(Character delimiter, String timezone) {
+    super(delimiter, timezone);
   }
 
   /**

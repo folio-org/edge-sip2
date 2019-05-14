@@ -84,9 +84,9 @@ public final class Utils {
    * @param queryStringParameters an ordered list of query string parameters to parse
    * @param delimiter e.g. "&"|" AND "; spaces included if that's how it's supposed to be formatted
    * @param operator e.g. "=" | "==" | "<" | ">""
-   * @return parsed query string
+   * @return parsed query string: e.g, "module==edge-sip2 AND configName==acsTenantConfig"
    */
-  public static String parseQueryString(Map<String,String> queryStringParameters,
+  public static String buildQueryString(Map<String,String> queryStringParameters,
                                         String delimiter,
                                         String operator) {
 

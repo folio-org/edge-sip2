@@ -18,9 +18,8 @@ import org.junit.jupiter.api.Test;
 class CheckinMessageParserTests {
   @Test
   void testParse() {
-    CheckinMessageParser parser = new CheckinMessageParser(valueOf('|'));
-    parser.setTimezone(TestUtils.UTCTimeZone);
-
+    CheckinMessageParser parser =
+        new CheckinMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime returnDate = transactionDate.plusMinutes(5);

@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 class CheckoutMessageParserTests {
   @Test
   void testParse() {
-    CheckoutMessageParser parser = new CheckoutMessageParser(valueOf('|'));
-    parser.setTimezone(TestUtils.UTCTimeZone);
+    CheckoutMessageParser parser =
+        new CheckoutMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate = TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime nbDueDate = transactionDate.plusDays(30);
     final DateTimeFormatter formatter = DateTimeFormatter

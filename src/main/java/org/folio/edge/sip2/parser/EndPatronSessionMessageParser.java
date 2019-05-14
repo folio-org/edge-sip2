@@ -18,8 +18,8 @@ import org.folio.edge.sip2.domain.messages.requests.EndPatronSession.EndPatronSe
 public class EndPatronSessionMessageParser extends MessageParser {
   private static final Logger log = LogManager.getLogger();
 
-  public EndPatronSessionMessageParser(Character delimiter) {
-    super(delimiter);
+  public EndPatronSessionMessageParser(Character delimiter, String timezone) {
+    super(delimiter, timezone);
   }
 
   /**

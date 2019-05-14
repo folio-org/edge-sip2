@@ -145,7 +145,7 @@ class ParserTests {
 
   @Test
   void testPatronStatusRequestParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().timeZone(TestUtils.UTCTimeZone).build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime now =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final String date = DateTimeFormatter
@@ -171,7 +171,7 @@ class ParserTests {
 
   @Test
   void testCheckoutParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().timeZone(TestUtils.UTCTimeZone).build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime nbDueDate = transactionDate.plusDays(30);
@@ -207,7 +207,7 @@ class ParserTests {
 
   @Test
   void testCheckinParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().timeZone(TestUtils.UTCTimeZone).build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime returnDate = transactionDate.plusMinutes(5);
@@ -240,7 +240,7 @@ class ParserTests {
 
   @Test
   void testBlockPatronParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().timeZone(TestUtils.UTCTimeZone).build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
@@ -298,7 +298,7 @@ class ParserTests {
 
   @Test
   void testPatronInformationParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().timeZone(TestUtils.UTCTimeZone).build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
@@ -329,7 +329,7 @@ class ParserTests {
 
   @Test
   void testEndPatronSessionParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().timeZone(TestUtils.UTCTimeZone).build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
@@ -355,7 +355,7 @@ class ParserTests {
 
   @Test
   void testFeePaidParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().timeZone(TestUtils.UTCTimeZone).build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
@@ -387,7 +387,7 @@ class ParserTests {
 
   @Test
   void testItemInformationParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().timeZone(TestUtils.UTCTimeZone).build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
@@ -411,7 +411,7 @@ class ParserTests {
 
   @Test
   void testItemStatusUpdateParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().timeZone(TestUtils.UTCTimeZone).build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
@@ -438,7 +438,7 @@ class ParserTests {
 
   @Test
   void testPatronEnableParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().timeZone(TestUtils.UTCTimeZone).build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
@@ -463,7 +463,7 @@ class ParserTests {
 
   @Test
   void testHoldParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().timeZone(TestUtils.UTCTimeZone).build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime expirationDate = transactionDate.plusDays(30);
@@ -501,7 +501,7 @@ class ParserTests {
 
   @Test
   void testRenewParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().timeZone(TestUtils.UTCTimeZone).build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime nbDueDate = transactionDate.plusDays(30);
@@ -537,7 +537,7 @@ class ParserTests {
 
   @Test
   void testRenewAllParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().timeZone(TestUtils.UTCTimeZone).build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
@@ -565,7 +565,7 @@ class ParserTests {
   void testRenewAllParsingWithErrorDetection() {
     final Parser parser = Parser.builder()
         .errorDetectionEnaled(TRUE)
-        .timeZone(TestUtils.UTCTimeZone)
+        .timezone(TestUtils.UTCTimeZone)
         .build();
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);

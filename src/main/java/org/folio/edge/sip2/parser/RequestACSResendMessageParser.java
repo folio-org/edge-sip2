@@ -12,8 +12,8 @@ import org.folio.edge.sip2.domain.messages.requests.RequestACSResend.RequestACSR
  *
  */
 public class RequestACSResendMessageParser extends MessageParser {
-  public RequestACSResendMessageParser(Character delimiter) {
-    super(delimiter);
+  public RequestACSResendMessageParser(Character delimiter, String timezone) {
+    super(delimiter, timezone);
   }
 
   /**

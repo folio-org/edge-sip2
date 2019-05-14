@@ -18,8 +18,8 @@ import org.folio.edge.sip2.domain.messages.requests.Checkout.CheckoutBuilder;
 public class CheckoutMessageParser extends MessageParser {
   private static final Logger log = LogManager.getLogger();
 
-  public CheckoutMessageParser(Character delimiter) {
-    super(delimiter);
+  public CheckoutMessageParser(Character delimiter, String timezone) {
+    super(delimiter, timezone);
   }
 
   /**

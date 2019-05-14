@@ -19,8 +19,7 @@ class FeePaidMessageParserTests {
   @Test
   void testParse() {
     FeePaidMessageParser parser =
-        new FeePaidMessageParser(valueOf('|'));
-    parser.setTimezone(TestUtils.UTCTimeZone);
+        new FeePaidMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter

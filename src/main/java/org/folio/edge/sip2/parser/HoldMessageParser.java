@@ -27,8 +27,8 @@ import org.folio.edge.sip2.domain.messages.requests.Hold.HoldBuilder;
 public class HoldMessageParser extends MessageParser {
   private static final Logger log = LogManager.getLogger();
 
-  public HoldMessageParser(Character delimiter) {
-    super(delimiter);
+  public HoldMessageParser(Character delimiter, String timezone) {
+    super(delimiter, timezone);
   }
 
   /**

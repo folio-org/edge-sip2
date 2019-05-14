@@ -16,8 +16,7 @@ class EndPatronSessionMessageParserTests {
   @Test
   void testParse() {
     EndPatronSessionMessageParser parser =
-        new EndPatronSessionMessageParser(valueOf('|'));
-    parser.setTimezone(TestUtils.UTCTimeZone);
+        new EndPatronSessionMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate = TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");

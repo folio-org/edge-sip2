@@ -130,7 +130,7 @@ public class ConfigurationRepository {
           String configurationString = config.getString("value");
           if (!Utils.isStringNullOrEmpty(configurationString)) {
             JsonObject jsonConfiguration = new JsonObject(configurationString);
-            resultJsonConfigs.put(configKey,jsonConfiguration);
+            resultJsonConfigs.put(configKey, jsonConfiguration);
           } else {
             log.error("Getting no value from config store for one of the result config records");
           }
@@ -241,7 +241,7 @@ public class ConfigurationRepository {
           pathStringBuilder.append(" OR ");
         }
         pathStringBuilder.append("(");
-        pathStringBuilder.append(Utils.parseQueryString(configQueryParams.get(i), " AND ", "=="));
+        pathStringBuilder.append(Utils.buildQueryString(configQueryParams.get(i), " AND ", "=="));
         pathStringBuilder.append(")");
       }
 

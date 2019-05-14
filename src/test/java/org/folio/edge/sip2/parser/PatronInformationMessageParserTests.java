@@ -30,8 +30,7 @@ class PatronInformationMessageParserTests {
   @MethodSource("providePatronInformationSummary")
   void testParse(String summaryString, Summary summary) {
     PatronInformationMessageParser parser =
-        new PatronInformationMessageParser(valueOf('|'));
-    parser.setTimezone(TestUtils.UTCTimeZone);
+        new PatronInformationMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
@@ -57,8 +56,7 @@ class PatronInformationMessageParserTests {
   @Test
   void testParseIgnoresUnknownField() {
     PatronInformationMessageParser parser =
-        new PatronInformationMessageParser(valueOf('|'));
-    parser.setTimezone(TestUtils.UTCTimeZone);
+        new PatronInformationMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
         TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter

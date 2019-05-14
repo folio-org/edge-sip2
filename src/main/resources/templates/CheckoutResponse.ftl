@@ -11,7 +11,7 @@
 <#--
     transaction date: 18-char, fixed-length required field: YYYYMMDDZZZZHHMMSS
 -->
-<@lib.transactionDate value=checkoutResponse.transactionDate tz=timezone/>
+<@lib.transactionDate value=checkoutResponse.transactionDate/>
 <#-- institution id: variable-length required field -->
 <@lib.institutionId value=checkoutResponse.institutionId/>
 <#-- patron identifier: variable-length required field -->

@@ -471,8 +471,8 @@
   </#if>
 </#macro>
 
-<#macro transactionDate value tz>
-  ${formatDateTime(value, "yyyyMMdd    HHmmss", tz)}<#t>
+<#macro transactionDate value>
+  ${formatDateTime(value, "yyyyMMdd    HHmmss", timezone)}<#t>
 </#macro>
 
 <#macro transactionId value>

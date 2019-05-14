@@ -41,8 +41,8 @@ import org.folio.edge.sip2.domain.messages.requests.FeePaid.FeePaidBuilder;
 public class FeePaidMessageParser extends MessageParser {
   private static final Logger log = LogManager.getLogger();
 
-  public FeePaidMessageParser(Character delimiter) {
-    super(delimiter);
+  public FeePaidMessageParser(Character delimiter, String timezone) {
+    super(delimiter, timezone);
   }
 
   /**

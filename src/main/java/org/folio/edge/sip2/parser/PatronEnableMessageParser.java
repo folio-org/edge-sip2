@@ -18,8 +18,8 @@ import org.folio.edge.sip2.domain.messages.requests.PatronEnable.PatronEnableBui
 public class PatronEnableMessageParser extends MessageParser {
   private static final Logger log = LogManager.getLogger();
 
-  public PatronEnableMessageParser(Character delimiter) {
-    super(delimiter);
+  public PatronEnableMessageParser(Character delimiter, String timezone) {
+    super(delimiter, timezone);
   }
 
   /**

@@ -24,7 +24,7 @@ public class UtilsTests {
 
     String expectedString = "key1==value1 AND key3==value3";
 
-    String output = Utils.parseQueryString(queryStringParams, delimeter, equalDelimeter);
+    String output = Utils.buildQueryString(queryStringParams, delimeter, equalDelimeter);
     assertEquals(expectedString, output);
   }
 
@@ -44,7 +44,7 @@ public class UtilsTests {
 
     String expectedString = "key3=value3&key5=value5";
 
-    String output = Utils.parseQueryString(queryStringParams, delimeter, equalDelimeter);
+    String output = Utils.buildQueryString(queryStringParams, delimeter, equalDelimeter);
     assertEquals(expectedString, output);
   }
 
