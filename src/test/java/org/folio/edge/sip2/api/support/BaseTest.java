@@ -1,5 +1,7 @@
 package org.folio.edge.sip2.api.support;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -11,6 +13,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
+import io.vertx.core.net.SelfSignedCertificate;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
@@ -36,6 +39,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public abstract class BaseTest {
+  protected static final String TLS_ENABLED = "TLSEnabled";
+  protected static final String ERROR_DETECTION_ENABLED = "ErrorDetectionEnabled";
+
   protected static Logger log = LogManager.getLogger();
 
   @Mock
@@ -61,12 +67,17 @@ public abstract class BaseTest {
 
     JsonObject sipConfig = new JsonObject();
     sipConfig.put("port", port);
-    if (testInfo.getTags().contains("ErrorDetectionEnabled")) {
+    if (testInfo.getTags().contains(ERROR_DETECTION_ENABLED)) {
       sipConfig.put("errorDetectionEnabled", true);
     }
     sipConfig.put("okapiUrl", "http://example.com");
     sipConfig.put("tenant", "diku");
-
+    if (testInfo.getTags().contains(TLS_ENABLED)) {
+      final SelfSignedCertificate certificate = SelfSignedCertificate.create();
+      sipConfig.put("netServerOptions", new JsonObject()
+          .put("ssl", true)
+          .put("pemKeyCertOptions", certificate.keyCertOptions().toJson()));
+    }
     DeploymentOptions opt = new DeploymentOptions();
     opt.setConfig(sipConfig);
 
@@ -95,7 +106,6 @@ public abstract class BaseTest {
     options.setConnectTimeout(2);
     options.setIdleTimeout(2);
     options.setIdleTimeoutUnit(TimeUnit.SECONDS);
-
     NetClient tcpClient = vertx.createNetClient(options);
 
     tcpClient.connect(port, "localhost", res -> {
@@ -121,21 +131,31 @@ public abstract class BaseTest {
     });
   }
 
+  public void callService(String sipMessage, VertxTestContext testContext,
+      Vertx vertx, Handler<String> testHandler) {
+    callService(sipMessage, testContext, vertx, null, testHandler);
+  }
 
   /**
    * Calls the service.
    * @param sipMessage the sip message to send.
    * @param testContext the vertx test context.
    * @param vertx the vertx instance.
+   * @param testInfo info about the test.
    * @param testHandler the handler for this test.
    */
   public void callService(String sipMessage, VertxTestContext testContext,
-                          Vertx vertx, Handler<String> testHandler) {
+                          Vertx vertx, TestInfo testInfo, Handler<String> testHandler) {
 
     NetClientOptions options = new NetClientOptions();
     options.setConnectTimeout(2);
     options.setIdleTimeout(2);
     options.setIdleTimeoutUnit(TimeUnit.SECONDS);
+
+    if (testInfo != null && testInfo.getTags().contains(TLS_ENABLED)) {
+      options.setSsl(true);
+      options.setTrustAll(true);
+    }
 
     NetClient tcpClient = vertx.createNetClient(options);
 
@@ -143,7 +163,11 @@ public abstract class BaseTest {
       if (res.succeeded()) {
         log.debug("Shaking hands...");
         NetSocket socket = res.result();
-
+        if (testInfo != null && testInfo.getTags().contains(TLS_ENABLED)) {
+          assertTrue(socket.isSsl());
+        } else {
+          assertFalse(socket.isSsl());
+        }
         socket.handler(buffer -> {
           String message = buffer.getString(0, buffer.length());
           testContext.verify(() -> testHandler.handle(message));
