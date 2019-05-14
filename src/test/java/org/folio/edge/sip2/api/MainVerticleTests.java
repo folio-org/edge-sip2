@@ -18,6 +18,7 @@ import org.folio.edge.sip2.api.support.TestUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 /**
  * Integration tests for SIP service.
@@ -45,40 +46,40 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
-  public void canMakeARequest(Vertx vertex, VertxTestContext testContext) {
+  public void canMakeARequest(Vertx vertx, VertxTestContext testContext) {
     callService("9300CNMartin|COpassword|\r",
-        testContext, vertex, result -> {
+        testContext, vertx, result -> {
           final String expectedString = "941\r";
           assertEquals(expectedString, result);
         });
   }
 
   @Test
-  public void cannotCheckoutWithInvalidCommandCode(Vertx vertex, VertxTestContext testContext) {
-    callService("blablabalb\r", testContext, vertex, result -> {
+  public void cannotCheckoutWithInvalidCommandCode(Vertx vertx, VertxTestContext testContext) {
+    callService("blablabalb\r", testContext, vertx, result -> {
       assertTrue(result.contains("Problems handling the request"));
     });
   }
 
   @Disabled("Need mock Okapi")
   @Test
-  public void canMakeValidSCStatusRequest(Vertx vertex, VertxTestContext testContext) {
+  public void canMakeValidSCStatusRequest(Vertx vertx, VertxTestContext testContext) {
     callService("9900401.00AY1AZFCA5\r",
-        testContext, vertex, result -> {
+        testContext, vertx, result -> {
           validateExpectedACSStatus(result);
       });
   }
 
   @Test
   public void canMakeInvalidStatusRequestAndGetExpectedErrorMessage(
-      Vertx vertex, VertxTestContext testContext) {
-    callService("990231.23\r", testContext, vertex, result -> {
+      Vertx vertx, VertxTestContext testContext) {
+    callService("990231.23\r", testContext, vertx, result -> {
       assertTrue(result.contains("Problems handling the request"));
     });
   }
 
   @Test
-  @Tag("ErrorDetectionEnabled")
+  @Tag(ERROR_DETECTION_ENABLED)
   public void canGetCsResendMessageWhenSendingInvalidMessage(
       Vertx vertx, VertxTestContext testContext) {
     String scStatusMessage = "9900401.00AY1AZAAAA\r";
@@ -174,6 +175,14 @@ public class MainVerticleTests extends BaseTest {
         testContext, vertx, result -> {
           assertEquals(expectedString, result);
         });
+  }
+
+  @Test
+  @Tag(TLS_ENABLED)
+  void canConnectWithTLS(Vertx vertx, VertxTestContext testContext, TestInfo testInfo) {
+    callService("990231.23\r", testContext, vertx, testInfo, result -> {
+      assertTrue(result.contains("Problems handling the request"));
+    });
   }
 
   private String getFormattedDateString() {
