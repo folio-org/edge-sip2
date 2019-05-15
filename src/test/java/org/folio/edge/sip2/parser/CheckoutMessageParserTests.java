@@ -9,15 +9,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.junit.jupiter.api.Test;
 
 class CheckoutMessageParserTests {
   @Test
   void testParse() {
-    CheckoutMessageParser parser = new CheckoutMessageParser(valueOf('|'));
-    final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+    CheckoutMessageParser parser =
+        new CheckoutMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
+    final OffsetDateTime transactionDate = TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime nbDueDate = transactionDate.plusDays(30);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
@@ -30,10 +31,8 @@ class CheckoutMessageParserTests {
 
     assertEquals(TRUE, checkout.getScRenewalPolicy());
     assertEquals(TRUE, checkout.getNoBlock());
-    assertEquals(transactionDate.getOffset(),
-        checkout.getTransactionDate().getOffset());
-    assertEquals(nbDueDate.getOffset(),
-        checkout.getNbDueDate().getOffset());
+    assertEquals(transactionDate, checkout.getTransactionDate());
+    assertEquals(nbDueDate, checkout.getNbDueDate());
     assertEquals("university_id", checkout.getInstitutionId());
     assertEquals("patron_id", checkout.getPatronIdentifier());
     assertEquals("SomeBook", checkout.getItemIdentifier());

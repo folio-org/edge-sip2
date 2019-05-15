@@ -41,7 +41,7 @@
 <#macro variableLengthDateField id value>
   ${id}<#t>
   <#if value?has_content>
-    ${formatDateTime(value, "yyyyMMdd    HHmmss")}<#t>
+    ${formatDateTime(value, "yyyyMMdd    HHmmss", timezone)}<#t>
   </#if>
   ${delimiter}<#t>
 </#macro>
@@ -472,7 +472,7 @@
 </#macro>
 
 <#macro transactionDate value>
-  ${formatDateTime(value, "yyyyMMdd    HHmmss")}<#t>
+  ${formatDateTime(value, "yyyyMMdd    HHmmss", timezone)}<#t>
 </#macro>
 
 <#macro transactionId value>

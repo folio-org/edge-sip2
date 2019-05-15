@@ -103,6 +103,7 @@ public class PatronRepository {
         .getRequestsByUserId(userId, "Hold", startItem, endItem, sessionData).map(
             holds -> addHolds(holds, patronInformation.getSummary() == HOLD_ITEMS, builder));
     // Get overdue loans data (count and items) and store it in the builder
+    // Due date needs to be UTC since it is being used in CQL for time comparison in the DB.
     final Future<PatronInformationResponseBuilder> overdueFuture =
         circulationRepository.getOverdueLoansByUserId(userId, OffsetDateTime.now(clock),
             startItem, endItem, sessionData).map(
@@ -133,7 +134,7 @@ public class PatronRepository {
     return Future.succeededFuture(PatronInformationResponse.builder()
         .patronStatus(EnumSet.noneOf(PatronStatus.class))
         .language(UNKNOWN)
-        .transactionDate(OffsetDateTime.now(clock)) // need tenant timezone
+        .transactionDate(OffsetDateTime.now(clock))
         .holdItemsCount(Integer.valueOf(0))
         .overdueItemsCount(Integer.valueOf(0))
         .chargedItemsCount(Integer.valueOf(0))

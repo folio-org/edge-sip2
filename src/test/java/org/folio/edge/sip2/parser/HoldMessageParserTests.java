@@ -10,15 +10,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Hold;
 import org.junit.jupiter.api.Test;
 
 class HoldMessageParserTests {
   @Test
   void testParse() {
-    HoldMessageParser parser = new HoldMessageParser(valueOf('|'));
+    HoldMessageParser parser =
+        new HoldMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime expirationDate = transactionDate.plusDays(30);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
@@ -30,10 +32,8 @@ class HoldMessageParserTests {
         + "AD1234|AOuniversity_id|ABSome Book|AJSome Title|BON|");
 
     assertEquals(ADD, hold.getHoldMode());
-    assertEquals(transactionDate.getOffset(),
-        hold.getTransactionDate().getOffset());
-    assertEquals(expirationDate.getOffset(),
-        hold.getExpirationDate().getOffset());
+    assertEquals(transactionDate, hold.getTransactionDate());
+    assertEquals(expirationDate, hold.getExpirationDate());
     assertEquals("circ_desk", hold.getPickupLocation());
     assertEquals(SPECIFIC_COPY_TITLE, hold.getHoldType());
     assertEquals("university_id", hold.getInstitutionId());

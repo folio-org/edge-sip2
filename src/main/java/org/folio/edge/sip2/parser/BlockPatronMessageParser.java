@@ -18,8 +18,8 @@ import org.folio.edge.sip2.domain.messages.requests.BlockPatron.BlockPatronBuild
 public class BlockPatronMessageParser extends MessageParser {
   private static final Logger log = LogManager.getLogger();
 
-  public BlockPatronMessageParser(Character delimiter) {
-    super(delimiter);
+  public BlockPatronMessageParser(Character delimiter, String timezone) {
+    super(delimiter, timezone);
   }
 
   /**

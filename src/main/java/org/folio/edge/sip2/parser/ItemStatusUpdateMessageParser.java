@@ -18,8 +18,8 @@ import org.folio.edge.sip2.domain.messages.requests.ItemStatusUpdate.ItemStatusU
 public class ItemStatusUpdateMessageParser extends MessageParser {
   private static final Logger log = LogManager.getLogger();
 
-  public ItemStatusUpdateMessageParser(Character delimiter) {
-    super(delimiter);
+  public ItemStatusUpdateMessageParser(Character delimiter, String timezone) {
+    super(delimiter, timezone);
   }
 
   /**

@@ -9,15 +9,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Renew;
 import org.junit.jupiter.api.Test;
 
 class RenewMessageParserTests {
   @Test
   void testParse() {
-    RenewMessageParser parser = new RenewMessageParser(valueOf('|'));
+    RenewMessageParser parser =
+        new RenewMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime nbDueDate = transactionDate.plusDays(30);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
@@ -30,10 +32,8 @@ class RenewMessageParserTests {
 
     assertEquals(TRUE, renew.getThirdPartyAllowed());
     assertEquals(TRUE, renew.getNoBlock());
-    assertEquals(transactionDate.getOffset(),
-        renew.getTransactionDate().getOffset());
-    assertEquals(nbDueDate.getOffset(),
-        renew.getNbDueDate().getOffset());
+    assertEquals(transactionDate, renew.getTransactionDate());
+    assertEquals(nbDueDate, renew.getNbDueDate());
     assertEquals("university_id", renew.getInstitutionId());
     assertEquals("patron_id", renew.getPatronIdentifier());
     assertEquals("1234", renew.getPatronPassword());

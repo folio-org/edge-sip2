@@ -26,7 +26,8 @@ public class HandlersFactoryTests {
 
   @Test
   public void canGetAcsStatusHandlerWithNonNullArguments() {
-    IResourceProvider<IRequestData> resourceProvider = new DefaultResourceProvider();
+    IResourceProvider<IRequestData> resourceProvider =
+        new DefaultResourceProvider("json/DefaultACSConfiguration.json");
     ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider,
         TestUtils.getUtcFixedClock());
     Template freemarkerTemplate = FreemarkerRepository.getInstance()

@@ -15,6 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Stream;
+
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.enumerations.Summary;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.junit.jupiter.api.Test;
@@ -27,9 +29,9 @@ class PatronInformationMessageParserTests {
   @MethodSource("providePatronInformationSummary")
   void testParse(String summaryString, Summary summary) {
     PatronInformationMessageParser parser =
-        new PatronInformationMessageParser(valueOf('|'));
+        new PatronInformationMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
@@ -39,8 +41,7 @@ class PatronInformationMessageParserTests {
         + "AOuniversity_id|BP1|BQ10|");
 
     assertEquals(ENGLISH, patronInformation.getLanguage());
-    assertEquals(transactionDate.getOffset(),
-        patronInformation.getTransactionDate().getOffset());
+    assertEquals(transactionDate, patronInformation.getTransactionDate());
     assertEquals(summary, patronInformation.getSummary());
     assertEquals("university_id", patronInformation.getInstitutionId());
     assertEquals("patron_id", patronInformation.getPatronIdentifier());
@@ -53,9 +54,9 @@ class PatronInformationMessageParserTests {
   @Test
   void testParseIgnoresUnknownField() {
     PatronInformationMessageParser parser =
-        new PatronInformationMessageParser(valueOf('|'));
+        new PatronInformationMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
@@ -65,8 +66,7 @@ class PatronInformationMessageParserTests {
         + "AOuniversity_id|BP1|BQ10|XXInvalid|");
 
     assertEquals(ENGLISH, patronInformation.getLanguage());
-    assertEquals(transactionDate.getOffset(),
-        patronInformation.getTransactionDate().getOffset());
+    assertEquals(transactionDate, patronInformation.getTransactionDate());
     assertNull(patronInformation.getSummary());
     assertEquals("university_id", patronInformation.getInstitutionId());
     assertEquals("patron_id", patronInformation.getPatronIdentifier());

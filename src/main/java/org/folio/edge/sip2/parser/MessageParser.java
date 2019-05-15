@@ -5,6 +5,9 @@ import static java.lang.Boolean.TRUE;
 import static org.folio.edge.sip2.parser.Field.UNKNOWN;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,10 +23,14 @@ public abstract class MessageParser {
   private static final Logger log = LogManager.getLogger();
 
   protected int position;
-  protected Character delimiter;
+  protected final Character delimiter;
+  protected final String timezone;
 
-  protected MessageParser(Character delimiter) {
-    this.delimiter = delimiter;
+  protected MessageParser(Character delimiter, String timezone) {
+    this.delimiter = Objects.requireNonNull(delimiter,
+      "delimiter cannot be null");
+    this.timezone = Objects.requireNonNull(timezone,
+      "timezone cannot be null");
   }
 
   protected Field parseFieldIdentifier(char [] messageChars) {
@@ -78,10 +85,9 @@ public abstract class MessageParser {
   }
 
   protected OffsetDateTime convertFieldToDateTime(String dateTimeString) {
-    // TIMEZONE: We'll need to get the correct TZ from somewhere
-    OffsetDateTime now = OffsetDateTime.now();
+    OffsetDateTime now = OffsetDateTime.now(ZoneId.of(this.timezone));
     DateTimeMapper dtMapper = new DateTimeMapper(now.getOffset());
-    return dtMapper.mapDateTime(dateTimeString);
+    return dtMapper.mapDateTime(dateTimeString).withOffsetSameInstant(ZoneOffset.UTC);
   }
 
   protected Boolean convertFieldToBoolean(String value) {

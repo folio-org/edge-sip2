@@ -8,9 +8,7 @@ import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
-import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,6 +20,7 @@ import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.DefaultResourceProvider;
 import org.folio.edge.sip2.repositories.IRequestData;
 import org.folio.edge.sip2.repositories.IResourceProvider;
+import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -33,21 +32,18 @@ public class SCStatusHandlerTests {
       Vertx vertx,
       VertxTestContext testContext) {
 
-    IResourceProvider<IRequestData> defaultConfigurationProvider = new DefaultResourceProvider();
+    IResourceProvider<IRequestData> defaultConfigurationProvider =
+        new DefaultResourceProvider("json/DefaultACSConfiguration.json");
     Clock clock = TestUtils.getUtcFixedClock();
-
-
-    SCStatus.SCStatusBuilder statusBuilder = SCStatus.builder();
-    statusBuilder.maxPrintWidth(20);
-    statusBuilder.protocolVersion("1.00");
-    statusBuilder.statusCode(StatusCode.SC_OK);
-    SCStatus status =  statusBuilder.build();
 
     SCStatusHandler handler = ((SCStatusHandler) HandlersFactory
         .getScStatusHandlerInstance(null, defaultConfigurationProvider, null,
           clock, "abcdefg.com", vertx));
 
-    handler.execute(status, TestUtils.getMockedSessionData()).setHandler(
+    SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setScLocation("TL01");
+
+    handler.execute(getMockedSCStatusMessage(), sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           // Because the sipMessage has a dateTime component that's supposed
           // to be current, we can't assert on the entirety of the string,
@@ -58,7 +54,43 @@ public class SCStatusHandlerTests {
 
           String expectedSipResponse = "98YYNYNN005003"
               + expectedDateTimeString
-              + "1.23AOdikutest|AMdiku|BXYNNNYNYNNNNNNNYN|ANTL01|";
+              + "2.00AOdikutest|AMdiku|BXYNNNYNYNNNNNNNYN|ANTL01|";
+
+          assertEquals(expectedSipResponse, sipMessage);
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void canGetValidScStatusRequestWithNonDefaultTimezone(
+      Vertx vertx,
+      VertxTestContext testContext) {
+
+    IResourceProvider<IRequestData> defaultConfigurationProvider =
+        new DefaultResourceProvider(
+        "json/DefaultACSConfigurationNonDefaultedTimezone.json");
+    Clock clock = TestUtils.getUtcFixedClock();
+
+    SCStatusHandler handler = ((SCStatusHandler) HandlersFactory
+        .getScStatusHandlerInstance(null, defaultConfigurationProvider, null,
+            clock, "abcdefg.com", vertx));
+
+    SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setScLocation("TL01");
+
+    handler.execute(getMockedSCStatusMessage(), sessionData).setHandler(
+        testContext.succeeding(sipMessage -> testContext.verify(() -> {
+          // Because the sipMessage has a dateTime component that's supposed
+          // to be current, we can't assert on the entirety of the string,
+          // have to break it up into pieces.
+
+          String expectedDateTimeString =
+              TestUtils.getFormattedLocalDateTime(
+                OffsetDateTime.now(clock).plusHours(2)); //Europe/Stockholm is 2 hours ahead of UTC
+
+          String expectedSipResponse = "98YYNYNN005003"
+              + expectedDateTimeString
+              + "2.00AOdikutest|AMdiku|BXYNNNYNYNNNNNNNYN|ANTL01|";
 
           assertEquals(expectedSipResponse, sipMessage);
           testContext.completeNow();
@@ -69,22 +101,38 @@ public class SCStatusHandlerTests {
   public void cannotGetAValidResponseDueToMissingTemplate(
       Vertx vertx,
       VertxTestContext testContext) {
-    IResourceProvider<IRequestData> defaultConfigurationProvider = new DefaultResourceProvider();
+    IResourceProvider<IRequestData> defaultConfigurationProvider =
+        new DefaultResourceProvider("json/DefaultACSConfiguration.json");
     ConfigurationRepository configurationRepository =
-        new ConfigurationRepository(defaultConfigurationProvider,
-            Clock.fixed(Instant.now(), ZoneOffset.UTC));
-
-    SCStatus.SCStatusBuilder statusBuilder = SCStatus.builder();
-    statusBuilder.maxPrintWidth(20);
-    statusBuilder.protocolVersion("1.00");
-    statusBuilder.statusCode(StatusCode.SC_OK);
-    SCStatus status =  statusBuilder.build();
+        new ConfigurationRepository(defaultConfigurationProvider, TestUtils.getUtcFixedClock());
 
     SCStatusHandler handler = new SCStatusHandler(configurationRepository, null);
 
-    handler.execute(status, TestUtils.getMockedSessionData()).setHandler(
+    handler.execute(getMockedSCStatusMessage(),
+                    TestUtils.getMockedSessionData()).setHandler(
         testContext.failing(throwable -> testContext.verify(() -> {
           assertEquals("", throwable.getMessage());
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void cannotGetAValidResponseDueToMissingConfig(
+      Vertx vertx,
+      VertxTestContext testContext) {
+
+    IResourceProvider<IRequestData> defaultConfigurationProvider =
+        new DefaultResourceProvider("json/ACSConfigurationWithMissingConfigs.json");
+    ConfigurationRepository configurationRepository =
+        new ConfigurationRepository(defaultConfigurationProvider, TestUtils.getUtcFixedClock());
+
+    SCStatusHandler handler = new SCStatusHandler(configurationRepository, null);
+
+    handler.execute(getMockedSCStatusMessage(),
+                    TestUtils.getMockedSessionData()).setHandler(
+        testContext.failing(throwable -> testContext.verify(() -> {
+          assertEquals("Unable to find all necessary configuration(s). Found 2 of 3",
+              throwable.getMessage());
           testContext.completeNow();
         })));
   }
@@ -116,5 +164,13 @@ public class SCStatusHandlerTests {
     assertFalse(psm.getRequestScAcsResend());
     assertFalse(psm.getScAcsStatus());
     assertFalse(psm.getPatronInformation());
+  }
+
+  private SCStatus getMockedSCStatusMessage() {
+    SCStatus.SCStatusBuilder statusBuilder = SCStatus.builder();
+    statusBuilder.maxPrintWidth(20);
+    statusBuilder.protocolVersion("1.00");
+    statusBuilder.statusCode(StatusCode.SC_OK);
+    return statusBuilder.build();
   }
 }

@@ -18,8 +18,8 @@ import org.folio.edge.sip2.domain.messages.requests.RenewAll.RenewAllBuilder;
 public class RenewAllMessageParser extends MessageParser {
   private static final Logger log = LogManager.getLogger();
 
-  public RenewAllMessageParser(Character delimiter) {
-    super(delimiter);
+  public RenewAllMessageParser(Character delimiter, String timezone) {
+    super(delimiter, timezone);
   }
 
   /**

@@ -41,6 +41,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
 import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
 import org.folio.edge.sip2.domain.messages.requests.BlockPatron;
@@ -144,9 +145,9 @@ class ParserTests {
 
   @Test
   void testPatronStatusRequestParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime now =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final String date = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss")
         .format(now);
@@ -160,8 +161,7 @@ class ParserTests {
         (PatronStatusRequest) message.getRequest();
 
     assertEquals(ENGLISH, patronStatusRequest.getLanguage());
-    assertEquals(now.getOffset(),
-        patronStatusRequest.getTransactionDate().getOffset());
+    assertEquals(now, patronStatusRequest.getTransactionDate());
     assertEquals("patron_id", patronStatusRequest.getPatronIdentifier());
     assertEquals("1234", patronStatusRequest.getPatronPassword());
     assertEquals("university_id", patronStatusRequest.getInstitutionId());
@@ -170,9 +170,9 @@ class ParserTests {
 
   @Test
   void testCheckoutParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime nbDueDate = transactionDate.plusDays(30);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
@@ -190,10 +190,8 @@ class ParserTests {
 
     assertEquals(TRUE, checkout.getScRenewalPolicy());
     assertEquals(TRUE, checkout.getNoBlock());
-    assertEquals(transactionDate.getOffset(),
-        checkout.getTransactionDate().getOffset());
-    assertEquals(nbDueDate.getOffset(),
-        checkout.getNbDueDate().getOffset());
+    assertEquals(transactionDate, checkout.getTransactionDate());
+    assertEquals(nbDueDate, checkout.getNbDueDate());
     assertEquals("university_id", checkout.getInstitutionId());
     assertEquals("patron_id", checkout.getPatronIdentifier());
     assertEquals("SomeBook", checkout.getItemIdentifier());
@@ -206,9 +204,9 @@ class ParserTests {
 
   @Test
   void testCheckinParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime returnDate = transactionDate.plusMinutes(5);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
@@ -225,10 +223,8 @@ class ParserTests {
     final Checkin checkin = (Checkin) message.getRequest();
 
     assertEquals(TRUE, checkin.getNoBlock());
-    assertEquals(transactionDate.getOffset(),
-        checkin.getTransactionDate().getOffset());
-    assertEquals(returnDate.getOffset(),
-        checkin.getReturnDate().getOffset());
+    assertEquals(transactionDate, checkin.getTransactionDate());
+    assertEquals(returnDate, checkin.getReturnDate());
     assertEquals("circ_desk", checkin.getCurrentLocation());
     assertEquals("university_id", checkin.getInstitutionId());
     assertEquals("SomeBook", checkin.getItemIdentifier());
@@ -239,9 +235,9 @@ class ParserTests {
 
   @Test
   void testBlockPatronParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
@@ -257,8 +253,7 @@ class ParserTests {
     final BlockPatron blockPatron = (BlockPatron) message.getRequest();
 
     assertEquals(FALSE, blockPatron.getCardRetained());
-    assertEquals(transactionDate.getOffset(),
-        blockPatron.getTransactionDate().getOffset());
+    assertEquals(transactionDate, blockPatron.getTransactionDate());
     assertEquals("university_id", blockPatron.getInstitutionId());
     assertEquals("Card retained due to excessive fee violations",
         blockPatron.getBlockedCardMsg());
@@ -297,9 +292,9 @@ class ParserTests {
 
   @Test
   void testPatronInformationParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss")
         .format(transactionDate);
@@ -315,8 +310,7 @@ class ParserTests {
         (PatronInformation) message.getRequest();
 
     assertEquals(ENGLISH, patronInformation.getLanguage());
-    assertEquals(transactionDate.getOffset(),
-        patronInformation.getTransactionDate().getOffset());
+    assertEquals(transactionDate, patronInformation.getTransactionDate());
     assertEquals(HOLD_ITEMS, patronInformation.getSummary());
     assertEquals("university_id", patronInformation.getInstitutionId());
     assertEquals("patron_id", patronInformation.getPatronIdentifier());
@@ -328,9 +322,9 @@ class ParserTests {
 
   @Test
   void testEndPatronSessionParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss")
         .format(transactionDate);
@@ -344,8 +338,7 @@ class ParserTests {
     final EndPatronSession endPatronSession =
         (EndPatronSession) message.getRequest();
 
-    assertEquals(transactionDate.getOffset(),
-        endPatronSession.getTransactionDate().getOffset());
+    assertEquals(transactionDate, endPatronSession.getTransactionDate());
     assertEquals("university_id", endPatronSession.getInstitutionId());
     assertEquals("patron_id", endPatronSession.getPatronIdentifier());
     assertEquals("", endPatronSession.getTerminalPassword());
@@ -354,9 +347,9 @@ class ParserTests {
 
   @Test
   void testFeePaidParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss")
         .format(transactionDate);
@@ -370,8 +363,7 @@ class ParserTests {
 
     final FeePaid feePaid = (FeePaid) message.getRequest();
 
-    assertEquals(transactionDate.getOffset(),
-        feePaid.getTransactionDate().getOffset());
+    assertEquals(transactionDate, feePaid.getTransactionDate());
     assertEquals(DAMAGE, feePaid.getFeeType());
     assertEquals(CASH, feePaid.getPaymentType());
     assertEquals(USD, feePaid.getCurrencyType());
@@ -386,9 +378,9 @@ class ParserTests {
 
   @Test
   void testItemInformationParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss")
         .format(transactionDate);
@@ -401,8 +393,7 @@ class ParserTests {
     final ItemInformation itemInformation =
         (ItemInformation) message.getRequest();
 
-    assertEquals(transactionDate.getOffset(),
-        itemInformation.getTransactionDate().getOffset());
+    assertEquals(transactionDate, itemInformation.getTransactionDate());
     assertEquals("university_id", itemInformation.getInstitutionId());
     assertEquals("SomeBook", itemInformation.getItemIdentifier());
     assertNull(itemInformation.getTerminalPassword());
@@ -410,9 +401,9 @@ class ParserTests {
 
   @Test
   void testItemStatusUpdateParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss")
         .format(transactionDate);
@@ -426,8 +417,7 @@ class ParserTests {
     final ItemStatusUpdate itemStatusUpdate =
         (ItemStatusUpdate) message.getRequest();
 
-    assertEquals(transactionDate.getOffset(),
-        itemStatusUpdate.getTransactionDate().getOffset());
+    assertEquals(transactionDate, itemStatusUpdate.getTransactionDate());
     assertEquals("university_id", itemStatusUpdate.getInstitutionId());
     assertEquals("SomeBook", itemStatusUpdate.getItemIdentifier());
     assertNull(itemStatusUpdate.getTerminalPassword());
@@ -437,9 +427,9 @@ class ParserTests {
 
   @Test
   void testPatronEnableParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final String transactionDateString = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss")
         .format(transactionDate);
@@ -452,8 +442,7 @@ class ParserTests {
 
     final PatronEnable patronEnable = (PatronEnable) message.getRequest();
 
-    assertEquals(transactionDate.getOffset(),
-        patronEnable.getTransactionDate().getOffset());
+    assertEquals(transactionDate, patronEnable.getTransactionDate());
     assertEquals("university_id", patronEnable.getInstitutionId());
     assertEquals("patron_id", patronEnable.getPatronIdentifier());
     assertEquals("", patronEnable.getTerminalPassword());
@@ -462,9 +451,9 @@ class ParserTests {
 
   @Test
   void testHoldParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().build();
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime expirationDate = transactionDate.plusDays(30);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
@@ -483,10 +472,8 @@ class ParserTests {
     final Hold hold = (Hold) message.getRequest();
 
     assertEquals(ADD, hold.getHoldMode());
-    assertEquals(transactionDate.getOffset(),
-        hold.getTransactionDate().getOffset());
-    assertEquals(expirationDate.getOffset(),
-        hold.getExpirationDate().getOffset());
+    assertEquals(transactionDate, hold.getTransactionDate());
+    assertEquals(expirationDate, hold.getExpirationDate());
     assertEquals("circ_desk", hold.getPickupLocation());
     assertEquals(SPECIFIC_COPY_TITLE, hold.getHoldType());
     assertEquals("university_id", hold.getInstitutionId());
@@ -500,10 +487,9 @@ class ParserTests {
 
   @Test
   void testRenewParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().build();
-
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final OffsetDateTime nbDueDate = transactionDate.plusDays(30);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
@@ -521,10 +507,8 @@ class ParserTests {
 
     assertEquals(TRUE, renew.getThirdPartyAllowed());
     assertEquals(TRUE, renew.getNoBlock());
-    assertEquals(transactionDate.getOffset(),
-        renew.getTransactionDate().getOffset());
-    assertEquals(nbDueDate.getOffset(),
-        renew.getNbDueDate().getOffset());
+    assertEquals(transactionDate, renew.getTransactionDate());
+    assertEquals(nbDueDate, renew.getNbDueDate());
     assertEquals("university_id", renew.getInstitutionId());
     assertEquals("patron_id", renew.getPatronIdentifier());
     assertEquals("1234", renew.getPatronPassword());
@@ -537,10 +521,9 @@ class ParserTests {
 
   @Test
   void testRenewAllParsingWithoutErrorDetection() {
-    final Parser parser = Parser.builder().build();
-
+    final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
@@ -553,8 +536,7 @@ class ParserTests {
 
     final RenewAll renewAll = (RenewAll) message.getRequest();
 
-    assertEquals(transactionDate.getOffset(),
-        renewAll.getTransactionDate().getOffset());
+    assertEquals(transactionDate, renewAll.getTransactionDate());
     assertEquals("university_id", renewAll.getInstitutionId());
     assertEquals("patron_id", renewAll.getPatronIdentifier());
     assertEquals("1234", renewAll.getPatronPassword());
@@ -564,10 +546,12 @@ class ParserTests {
 
   @Test
   void testRenewAllParsingWithErrorDetection() {
-    final Parser parser = Parser.builder().errorDetectionEnaled(TRUE).build();
-
+    final Parser parser = Parser.builder()
+        .errorDetectionEnaled(TRUE)
+        .timezone(TestUtils.UTCTimeZone)
+        .build();
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
@@ -582,8 +566,7 @@ class ParserTests {
 
     final RenewAll renewAll = (RenewAll) message.getRequest();
 
-    assertEquals(transactionDate.getOffset(),
-        renewAll.getTransactionDate().getOffset());
+    assertEquals(transactionDate, renewAll.getTransactionDate());
     assertEquals("university_id", renewAll.getInstitutionId());
     assertEquals("patron_id", renewAll.getPatronIdentifier());
     assertEquals("1234", renewAll.getPatronPassword());

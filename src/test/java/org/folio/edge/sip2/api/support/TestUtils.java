@@ -32,14 +32,30 @@ public class TestUtils {
 
   /**
    * Method to get a fixed UTC clock for unit testing.
-   * @return
+   * @return UTC fixed clock
    */
   public static Clock getUtcFixedClock() {
     return Clock.fixed(Instant.now(), ZoneOffset.UTC);
   }
 
+  /**
+   * Util method that returns the current (now) OffsetDateTime
+   * instance in UTC for testing.
+   * @return current OffsetDateTime in UTC.
+   */
+  public static OffsetDateTime getOffsetDateTimeUtc() {
+    return OffsetDateTime.now(TestUtils.getUtcFixedClock());
+  }
+
+  /**
+   * Returns a mocked session data with UTC timezones.
+   * @return SessionData object
+   */
   public static SessionData getMockedSessionData() {
-    return SessionData.createSession("diku", '|', false, "");
+    SessionData sessionData = SessionData.createSession("dikutest", '|', false, "IBM850");
+    sessionData.setTimeZone(UTCTimeZone);
+    sessionData.setMaxPrintWidth(100);
+    return sessionData;
   }
 
   /**
@@ -51,10 +67,15 @@ public class TestUtils {
   public static String getJsonFromFile(String fileName) {
     try {
       return String.join("\n", Files.readAllLines(
-          Paths.get(TestUtils.class.getClassLoader().getResource(fileName).toURI())));
+        Paths.get(TestUtils.class.getClassLoader().getResource(fileName).toURI())));
     } catch (Exception e) {
       fail(e);
       return null;
     }
   }
+
+  /**
+   * Public constant for referring to UTC Timezone.
+   */
+  public static final String UTCTimeZone = "Etc/UTC";
 }

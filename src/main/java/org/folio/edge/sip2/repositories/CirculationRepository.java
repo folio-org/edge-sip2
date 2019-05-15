@@ -22,6 +22,7 @@ import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.domain.messages.responses.CheckinResponse;
 import org.folio.edge.sip2.domain.messages.responses.CheckoutResponse;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Utils;
 
 /**
  * Provides interaction with the circulation service.
@@ -59,9 +60,9 @@ public class CirculationRepository {
     final JsonObject body = new JsonObject()
         .put("itemBarcode", itemIdentifier)
         .put("servicePointId", scLocation)
-        .put("checkInDate", DateTimeFormatter.ISO_DATE_TIME
-            .withZone(ZoneOffset.UTC)
-            .format(returnDate));
+        .put("checkInDate", returnDate
+            .withOffsetSameInstant(ZoneOffset.UTC)
+            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
 
     final Map<String, String> headers = getBaseHeaders();
 
@@ -78,8 +79,6 @@ public class CirculationRepository {
               .resensitize(resource.getResource() == null ? FALSE : TRUE)
               .magneticMedia(null)
               .alert(FALSE)
-              // Need to get the "local" time zone from somewhere
-              // Using UTC for now
               .transactionDate(OffsetDateTime.now(clock))
               .institutionId(institutionId)
               .itemIdentifier(itemIdentifier)
@@ -142,8 +141,6 @@ public class CirculationRepository {
               .renewalOk(FALSE)
               .magneticMedia(null)
               .desensitize(resource.getResource() == null ? FALSE : TRUE)
-              // Need to get the "local" time zone from somewhere
-              // Using UTC for now
               .transactionDate(OffsetDateTime.now(clock))
               .institutionId(institutionId)
               .patronIdentifier(patronIdentifier)

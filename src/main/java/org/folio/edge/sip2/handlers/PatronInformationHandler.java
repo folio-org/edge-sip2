@@ -51,7 +51,8 @@ public class PatronInformationHandler implements ISip2RequestHandler {
       root.put("formatDateTime", new FormatDateTimeMethodModel());
       root.put("delimiter", sessionData.getFieldDelimiter());
       root.put("patronInformationResponse", patronInformationResponse);
-      root.put("maxLength", 100); // should come from the sc status command
+      root.put("maxLength", sessionData.getMaxPrintWidth());
+      root.put("timezone", sessionData.getTimeZone());
 
       final String response = FreemarkerUtils.executeFreemarkerTemplate(root, commandTemplate);
 

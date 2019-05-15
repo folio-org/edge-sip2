@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.FeePaid;
 import org.junit.jupiter.api.Test;
 
@@ -17,9 +18,9 @@ class FeePaidMessageParserTests {
   @Test
   void testParse() {
     FeePaidMessageParser parser =
-        new FeePaidMessageParser(valueOf('|'));
+        new FeePaidMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
@@ -28,8 +29,7 @@ class FeePaidMessageParserTests {
         + "BV100.25|AApatron_id|AD1234|AC|"
         + "AOuniversity_id|CGTorn page|BKa1b2c3d4e5|");
 
-    assertEquals(transactionDate.getOffset(),
-        feePaid.getTransactionDate().getOffset());
+    assertEquals(transactionDate, feePaid.getTransactionDate());
     assertEquals(DAMAGE, feePaid.getFeeType());
     assertEquals(CASH, feePaid.getPaymentType());
     assertEquals(USD, feePaid.getCurrencyType());

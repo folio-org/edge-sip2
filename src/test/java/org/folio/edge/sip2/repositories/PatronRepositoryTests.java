@@ -29,6 +29,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Stream;
+
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
 import org.folio.edge.sip2.domain.messages.enumerations.Summary;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
@@ -128,7 +130,7 @@ public class PatronRepositoryTests {
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
@@ -251,7 +253,7 @@ public class PatronRepositoryTests {
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
@@ -355,7 +357,7 @@ public class PatronRepositoryTests {
         eq("c70f966b-435f-4879-a7d1-3f66e6699191"), eq("Recall"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(recallsResponse2));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
@@ -427,7 +429,7 @@ public class PatronRepositoryTests {
     when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(null));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
@@ -494,7 +496,7 @@ public class PatronRepositoryTests {
     when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(new JsonObject().put("active", false)));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
@@ -561,7 +563,7 @@ public class PatronRepositoryTests {
     when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(new JsonObject().put("active", true)));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
@@ -638,7 +640,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);
@@ -723,7 +725,7 @@ public class PatronRepositoryTests {
         any(), eq("Recall"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository =
         new PatronRepository(mockUsersRepository, mockCirculationRepository, clock);

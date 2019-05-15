@@ -51,6 +51,7 @@ public class EndPatronSessionHandler implements ISip2RequestHandler {
     root.put("formatDateTime", new FormatDateTimeMethodModel());
     root.put("delimiter", sessionData.getFieldDelimiter());
     root.put("endSessionResponse", endSessionResponse);
+    root.put("timezone", sessionData.getTimeZone());
 
     final String response = FreemarkerUtils
         .executeFreemarkerTemplate(root, commandTemplate);

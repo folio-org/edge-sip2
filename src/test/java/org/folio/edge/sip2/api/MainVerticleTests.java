@@ -146,6 +146,7 @@ public class MainVerticleTests extends BaseTest {
         });
   }
 
+  @Disabled("Need mock Okapi")
   @Test
   public void canExecuteEndSessionCommand(
       Vertx vertx, VertxTestContext testContext) {

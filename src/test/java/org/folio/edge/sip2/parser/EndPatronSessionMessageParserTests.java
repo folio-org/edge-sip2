@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
 import org.junit.jupiter.api.Test;
 
@@ -14,17 +15,15 @@ class EndPatronSessionMessageParserTests {
   @Test
   void testParse() {
     EndPatronSessionMessageParser parser =
-        new EndPatronSessionMessageParser(valueOf('|'));
-    final OffsetDateTime transactionDate =
-        OffsetDateTime.now().truncatedTo(SECONDS);
+        new EndPatronSessionMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
+    final OffsetDateTime transactionDate = TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
     final EndPatronSession endPatronSession = parser.parse(
         transactionDateString + "AApatron_id|AD1234|AC|AOuniversity_id|");
 
-    assertEquals(transactionDate.getOffset(),
-        endPatronSession.getTransactionDate().getOffset());
+    assertEquals(transactionDate, endPatronSession.getTransactionDate());
     assertEquals("university_id", endPatronSession.getInstitutionId());
     assertEquals("patron_id", endPatronSession.getPatronIdentifier());
     assertEquals("", endPatronSession.getTerminalPassword());

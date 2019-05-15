@@ -66,7 +66,7 @@ public class CheckinHandlerTests {
     final CheckinHandler handler = new CheckinHandler(mockCirculationRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKIN_RESPONSE));
 
-    final SessionData sessionData = SessionData.createSession(institutionId, '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     handler.execute(checkin, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
@@ -117,7 +117,7 @@ public class CheckinHandlerTests {
     final CheckinHandler handler = new CheckinHandler(mockCirculationRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKIN_RESPONSE));
 
-    final SessionData sessionData = SessionData.createSession(institutionId, '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     handler.execute(checkin, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {

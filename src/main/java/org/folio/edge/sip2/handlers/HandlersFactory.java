@@ -4,8 +4,6 @@ import freemarker.template.Template;
 import io.vertx.core.Vertx;
 
 import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.Objects;
 
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
@@ -45,8 +43,7 @@ public class HandlersFactory {
     resProvider = getResourceProvider(resProvider, okapiUrl, vertx);
 
     if (configRepo == null && clock == null) {
-      configRepo = new ConfigurationRepository(resProvider,
-          Clock.fixed(Instant.now(), ZoneOffset.UTC));
+      configRepo = new ConfigurationRepository(resProvider, Clock.systemUTC());
     } else if (configRepo == null) {
       configRepo = new ConfigurationRepository(resProvider, clock);
     }

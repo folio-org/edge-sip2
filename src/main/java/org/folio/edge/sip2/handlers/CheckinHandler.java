@@ -47,6 +47,7 @@ public class CheckinHandler implements ISip2RequestHandler {
       root.put("formatDateTime", new FormatDateTimeMethodModel());
       root.put("delimiter", sessionData.getFieldDelimiter());
       root.put("checkinResponse", checkinResponse);
+      root.put("timezone", sessionData.getTimeZone());
 
       final String response = FreemarkerUtils
           .executeFreemarkerTemplate(root, commandTemplate);

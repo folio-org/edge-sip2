@@ -70,7 +70,7 @@ public class CheckoutHandlerTests {
     final CheckoutHandler handler = new CheckoutHandler(mockCirculationRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKOUT_RESPONSE));
 
-    final SessionData sessionData = SessionData.createSession(institutionId, '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     handler.execute(checkout, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
@@ -129,7 +129,7 @@ public class CheckoutHandlerTests {
     final CheckoutHandler handler = new CheckoutHandler(mockCirculationRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKOUT_RESPONSE));
 
-    final SessionData sessionData = SessionData.createSession(institutionId, '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     handler.execute(checkout, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {

@@ -100,7 +100,7 @@ public class PatronInformationHandlerTests {
     final PatronInformationHandler handler = new PatronInformationHandler(mockPatronRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(PATRON_INFORMATION_RESPONSE));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     handler.execute(patronInformation, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {

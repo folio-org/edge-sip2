@@ -27,8 +27,8 @@ import org.folio.edge.sip2.domain.messages.requests.PatronInformation.PatronInfo
 public class PatronInformationMessageParser extends MessageParser {
   private static final Logger log = LogManager.getLogger();
 
-  public PatronInformationMessageParser(Character delimiter) {
-    super(delimiter);
+  public PatronInformationMessageParser(Character delimiter, String timezone) {
+    super(delimiter, timezone);
   }
 
   /**
@@ -119,13 +119,13 @@ public class PatronInformationMessageParser extends MessageParser {
     if (parseBoolean(messageChars)) {
       position += 5;
       return RECALL_ITEMS;
-    } 
+    }
 
     if (parseBoolean(messageChars)) {
       position += 4;
       return UNAVAILABLE_HOLDS;
     }
-    
+
     position += 4;
     return null; // consider adding Summary.NONE
   }
