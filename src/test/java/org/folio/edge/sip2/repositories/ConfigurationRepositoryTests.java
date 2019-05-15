@@ -128,7 +128,7 @@ public class ConfigurationRepositoryTests {
       Vertx vertx,
       VertxTestContext testContext, @Mock Clock clock) {
 
-    List<LinkedHashMap<String, String>> configParamsList = new ArrayList();
+    List<LinkedHashMap<String, String>> configParamsList = new ArrayList<>();
     LinkedHashMap<String, String> configParamsSet = new LinkedHashMap<>();
     configParamsSet.put("module", "edge-sip2");
     configParamsSet.put("configName", "acsTenantConfig");

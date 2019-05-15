@@ -6,13 +6,10 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.BlockPatron;
-import org.folio.edge.sip2.utils.Utils;
 import org.junit.jupiter.api.Test;
 
 class BlockPatronMessageParserTests {

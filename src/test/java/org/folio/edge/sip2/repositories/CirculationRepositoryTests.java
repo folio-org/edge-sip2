@@ -30,7 +30,6 @@ import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.session.SessionData;
-import org.folio.edge.sip2.utils.Utils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;

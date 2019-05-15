@@ -8,7 +8,6 @@ import static org.folio.edge.sip2.domain.messages.enumerations.HoldType.SPECIFIC
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import org.folio.edge.sip2.api.support.TestUtils;

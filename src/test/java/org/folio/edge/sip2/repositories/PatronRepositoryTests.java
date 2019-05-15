@@ -1,7 +1,6 @@
 package org.folio.edge.sip2.repositories;
 
 import static org.folio.edge.sip2.api.support.TestUtils.getJsonFromFile;
-import static org.folio.edge.sip2.api.support.TestUtils.getMockedSessionData;
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.ENGLISH;
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.UNKNOWN;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.RECALL_ITEMS;
