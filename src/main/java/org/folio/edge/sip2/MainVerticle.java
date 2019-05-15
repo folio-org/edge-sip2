@@ -111,6 +111,7 @@ public class MainVerticle extends AbstractVerticle {
               .delimiter(sessionData.getFieldDelimiter())
               .charset(Charset.forName(sessionData.getCharset()))
               .errorDetectionEnaled(sessionData.isErrorDetectionEnabled())
+              .timezone(sessionData.getTimeZone())
               .build();
 
           //parsing

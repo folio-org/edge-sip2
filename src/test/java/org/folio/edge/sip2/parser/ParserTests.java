@@ -2,6 +2,7 @@ package org.folio.edge.sip2.parser;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.time.ZoneOffset.UTC;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.folio.edge.sip2.domain.messages.enumerations.CurrencyType.USD;
 import static org.folio.edge.sip2.domain.messages.enumerations.FeeType.DAMAGE;
@@ -37,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.Charset;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
@@ -203,6 +204,41 @@ class ParserTests {
   }
 
   @Test
+  void testCheckoutParsingWithoutErrorDetectionAndNonUTCTimezone() {
+    final String zoneId = "Asia/Tokyo";
+    final Parser parser = Parser.builder().timezone(zoneId).build();
+    final OffsetDateTime transactionDate = OffsetDateTime.now(ZoneId.of(zoneId))
+        .truncatedTo(SECONDS);
+    final OffsetDateTime nbDueDate = transactionDate.plusDays(30);
+    final DateTimeFormatter formatter = DateTimeFormatter
+        .ofPattern("yyyyMMdd    HHmmss");
+    final String transactionDateString = formatter.format(transactionDate);
+    final String nbDueDateString = formatter.format(nbDueDate);
+    final Message<?> message = parser.parseMessage(
+        "11YY" + transactionDateString + nbDueDateString
+        + "AApatron_id|ABSomeBook|AC|CHAutographed"
+        + "|AD1234|AOuniversity_id|BON|BIN|");
+
+    assertEquals(CHECKOUT, message.getCommand());
+    assertTrue(message.getRequest() instanceof Checkout);
+
+    final Checkout checkout = (Checkout) message.getRequest();
+
+    assertEquals(TRUE, checkout.getScRenewalPolicy());
+    assertEquals(TRUE, checkout.getNoBlock());
+    assertEquals(transactionDate.withOffsetSameInstant(UTC), checkout.getTransactionDate());
+    assertEquals(nbDueDate.withOffsetSameInstant(UTC), checkout.getNbDueDate());
+    assertEquals("university_id", checkout.getInstitutionId());
+    assertEquals("patron_id", checkout.getPatronIdentifier());
+    assertEquals("SomeBook", checkout.getItemIdentifier());
+    assertEquals("", checkout.getTerminalPassword());
+    assertEquals("Autographed", checkout.getItemProperties());
+    assertEquals("1234", checkout.getPatronPassword());
+    assertEquals(FALSE, checkout.getFeeAcknowledged());
+    assertEquals(FALSE, checkout.getCancel());
+  }
+
+  @Test
   void testCheckinParsingWithoutErrorDetection() {
     final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
@@ -225,6 +261,38 @@ class ParserTests {
     assertEquals(TRUE, checkin.getNoBlock());
     assertEquals(transactionDate, checkin.getTransactionDate());
     assertEquals(returnDate, checkin.getReturnDate());
+    assertEquals("circ_desk", checkin.getCurrentLocation());
+    assertEquals("university_id", checkin.getInstitutionId());
+    assertEquals("SomeBook", checkin.getItemIdentifier());
+    assertEquals("", checkin.getTerminalPassword());
+    assertEquals("Autographed", checkin.getItemProperties());
+    assertEquals(FALSE, checkin.getCancel());
+  }
+
+  @Test
+  void testCheckinParsingWithoutErrorDetectionAndNonUTCTimezone() {
+    final String zoneId = "America/New_York";
+    final Parser parser = Parser.builder().timezone(zoneId).build();
+    final OffsetDateTime transactionDate = OffsetDateTime.now(ZoneId.of(zoneId))
+        .truncatedTo(SECONDS);
+    final OffsetDateTime returnDate = transactionDate.plusMinutes(5);
+    final DateTimeFormatter formatter = DateTimeFormatter
+        .ofPattern("yyyyMMdd    HHmmss");
+    final String transactionDateString = formatter.format(transactionDate);
+    final String returnDateString = formatter.format(returnDate);
+    final Message<?> message = parser.parseMessage(
+        "09Y" + transactionDateString + returnDateString
+        + "APcirc_desk|ABSomeBook|AC|CHAutographed|"
+        + "AOuniversity_id|BIN|");
+
+    assertEquals(CHECKIN, message.getCommand());
+    assertTrue(message.getRequest() instanceof Checkin);
+
+    final Checkin checkin = (Checkin) message.getRequest();
+
+    assertEquals(TRUE, checkin.getNoBlock());
+    assertEquals(transactionDate.withOffsetSameInstant(UTC), checkin.getTransactionDate());
+    assertEquals(returnDate.withOffsetSameInstant(UTC), checkin.getReturnDate());
     assertEquals("circ_desk", checkin.getCurrentLocation());
     assertEquals("university_id", checkin.getInstitutionId());
     assertEquals("SomeBook", checkin.getItemIdentifier());
@@ -311,6 +379,37 @@ class ParserTests {
 
     assertEquals(ENGLISH, patronInformation.getLanguage());
     assertEquals(transactionDate, patronInformation.getTransactionDate());
+    assertEquals(HOLD_ITEMS, patronInformation.getSummary());
+    assertEquals("university_id", patronInformation.getInstitutionId());
+    assertEquals("patron_id", patronInformation.getPatronIdentifier());
+    assertEquals("", patronInformation.getTerminalPassword());
+    assertEquals("1234", patronInformation.getPatronPassword());
+    assertEquals(Integer.valueOf(1), patronInformation.getStartItem());
+    assertEquals(Integer.valueOf(10), patronInformation.getEndItem());
+  }
+
+  @Test
+  void testPatronInformationParsingWithoutErrorDetectionAndNonUTCTimezone() {
+    final String zoneId = "Europe/Stockholm";
+    final Parser parser = Parser.builder().timezone(zoneId).build();
+    final OffsetDateTime transactionDate = OffsetDateTime.now(ZoneId.of(zoneId))
+        .truncatedTo(SECONDS);
+    final String transactionDateString = DateTimeFormatter
+        .ofPattern("yyyyMMdd    HHmmss")
+        .format(transactionDate);
+    final Message<?> message = parser.parseMessage(
+        "63001" + transactionDateString + "Y         "
+        + "AApatron_id|AD1234|AC|"
+        + "AOuniversity_id|BP1|BQ10|");
+
+    assertEquals(PATRON_INFORMATION, message.getCommand());
+    assertTrue(message.getRequest() instanceof PatronInformation);
+
+    final PatronInformation patronInformation = (PatronInformation) message.getRequest();
+
+    assertEquals(ENGLISH, patronInformation.getLanguage());
+    assertEquals(transactionDate.withOffsetSameInstant(UTC),
+        patronInformation.getTransactionDate());
     assertEquals(HOLD_ITEMS, patronInformation.getSummary());
     assertEquals("university_id", patronInformation.getInstitutionId());
     assertEquals("patron_id", patronInformation.getPatronIdentifier());
@@ -486,6 +585,43 @@ class ParserTests {
   }
 
   @Test
+  void testHoldParsingWithoutErrorDetectionAndNonUTCTimezone() {
+    final String zoneId = "Pacific/Guam";
+    final Parser parser = Parser.builder().timezone(zoneId).build();
+    final OffsetDateTime transactionDate = OffsetDateTime.now(ZoneId.of(zoneId))
+        .truncatedTo(SECONDS);
+    final OffsetDateTime expirationDate = transactionDate.plusDays(30);
+    final DateTimeFormatter formatter = DateTimeFormatter
+        .ofPattern("yyyyMMdd    HHmmss");
+    final String transactionDateString = formatter.format(transactionDate);
+    final String expirationDateString = formatter.format(expirationDate);
+
+    final Message<?> message = parser.parseMessage(
+        "15+" + transactionDateString + "BW" + expirationDateString
+        + "|BScirc_desk|BY3|AApatron_id|AC|"
+        + "AD1234|AOuniversity_id|ABSome Book|AJSome Title|BON|");
+
+
+    assertEquals(HOLD, message.getCommand());
+    assertTrue(message.getRequest() instanceof Hold);
+
+    final Hold hold = (Hold) message.getRequest();
+
+    assertEquals(ADD, hold.getHoldMode());
+    assertEquals(transactionDate.withOffsetSameInstant(UTC), hold.getTransactionDate());
+    assertEquals(expirationDate.withOffsetSameInstant(UTC), hold.getExpirationDate());
+    assertEquals("circ_desk", hold.getPickupLocation());
+    assertEquals(SPECIFIC_COPY_TITLE, hold.getHoldType());
+    assertEquals("university_id", hold.getInstitutionId());
+    assertEquals("patron_id", hold.getPatronIdentifier());
+    assertEquals("1234", hold.getPatronPassword());
+    assertEquals("Some Book", hold.getItemIdentifier());
+    assertEquals("Some Title", hold.getTitleIdentifier());
+    assertEquals("", hold.getTerminalPassword());
+    assertEquals(FALSE, hold.getFeeAcknowledged());
+  }
+
+  @Test
   void testRenewParsingWithoutErrorDetection() {
     final Parser parser = Parser.builder().timezone(TestUtils.UTCTimeZone).build();
     final OffsetDateTime transactionDate =
@@ -509,6 +645,41 @@ class ParserTests {
     assertEquals(TRUE, renew.getNoBlock());
     assertEquals(transactionDate, renew.getTransactionDate());
     assertEquals(nbDueDate, renew.getNbDueDate());
+    assertEquals("university_id", renew.getInstitutionId());
+    assertEquals("patron_id", renew.getPatronIdentifier());
+    assertEquals("1234", renew.getPatronPassword());
+    assertEquals("Some Book", renew.getItemIdentifier());
+    assertEquals("Some Title", renew.getTitleIdentifier());
+    assertEquals("", renew.getTerminalPassword());
+    assertEquals("Autographed", renew.getItemProperties());
+    assertEquals(FALSE, renew.getFeeAcknowledged());
+  }
+
+  @Test
+  void testRenewParsingWithoutErrorDetectionAndNonUTCTimezone() {
+    final String zoneId = "Africa/Cairo";
+    final Parser parser = Parser.builder().timezone(zoneId).build();
+    final OffsetDateTime transactionDate = OffsetDateTime.now(ZoneId.of(zoneId))
+        .truncatedTo(SECONDS);
+    final OffsetDateTime nbDueDate = transactionDate.plusDays(30);
+    final DateTimeFormatter formatter = DateTimeFormatter
+        .ofPattern("yyyyMMdd    HHmmss");
+    final String transactionDateString = formatter.format(transactionDate);
+    final String nbDueDateString = formatter.format(nbDueDate);
+    final Message<?> message = parser.parseMessage(
+        "29YY" + transactionDateString + nbDueDateString
+        + "AApatron_id|AC|AD1234|AOuniversity_id|ABSome Book|"
+        + "AJSome Title|CHAutographed|BON|");
+
+    assertEquals(RENEW, message.getCommand());
+    assertTrue(message.getRequest() instanceof Renew);
+
+    final Renew renew = (Renew) message.getRequest();
+
+    assertEquals(TRUE, renew.getThirdPartyAllowed());
+    assertEquals(TRUE, renew.getNoBlock());
+    assertEquals(transactionDate.withOffsetSameInstant(UTC), renew.getTransactionDate());
+    assertEquals(nbDueDate.withOffsetSameInstant(UTC), renew.getNbDueDate());
     assertEquals("university_id", renew.getInstitutionId());
     assertEquals("patron_id", renew.getPatronIdentifier());
     assertEquals("1234", renew.getPatronPassword());
@@ -580,7 +751,7 @@ class ParserTests {
 
     final int sequenceNumber = 1;
     final OffsetDateTime transactionDate =
-        OffsetDateTime.of(2019, 5, 1, 10, 30, 15, 0, ZoneOffset.UTC);
+        OffsetDateTime.of(2019, 5, 1, 10, 30, 15, 0, UTC);
     final DateTimeFormatter formatter = DateTimeFormatter
         .ofPattern("yyyyMMdd   'Z'HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
