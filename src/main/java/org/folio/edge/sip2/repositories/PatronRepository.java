@@ -3,6 +3,9 @@ package org.folio.edge.sip2.repositories;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.UNKNOWN;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.HOLD_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RECALL_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RENEWAL_PRIVILEGES_DENIED;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.HOLD_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.OVERDUE_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.RECALL_ITEMS;
@@ -15,6 +18,7 @@ import io.vertx.core.json.JsonObject;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -40,21 +44,30 @@ import org.folio.edge.sip2.session.SessionData;
  *
  */
 public class PatronRepository {
+  private static final String FIELD_REQUESTS = "requests";
   private static final String FIELD_TITLE = "title";
   private static final String FIELD_TOTAL_RECORDS = "totalRecords";
   private static final Logger log = LogManager.getLogger();
+  // These really should come from FOLIO
+  static final String MESSAGE_INVALID_PATRON =
+      "Your library card number cannot be located.  Please see a staff member for assistance.";
+  static final String MESSAGE_BLOCKED_PATRON =
+      "There are unresolved issues with your account.  Please see a staff member for assistance.";
 
   private final UsersRepository usersRepository;
   private final CirculationRepository circulationRepository;
+  private final FeeFinesRepository feeFinesRepository;
   private final Clock clock;
 
   @Inject
   PatronRepository(UsersRepository usersRepository, CirculationRepository circulationRepository,
-      Clock clock) {
+      FeeFinesRepository feeFinesRepository, Clock clock) {
     this.usersRepository = Objects.requireNonNull(usersRepository,
         "Users repository cannot be null");
     this.circulationRepository = Objects.requireNonNull(circulationRepository,
         "Circulation repository cannot be null");
+    this.feeFinesRepository = Objects.requireNonNull(feeFinesRepository,
+        "FeeFines repository cannot be null");
     this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
   }
 
@@ -98,6 +111,10 @@ public class PatronRepository {
     addPersonalData(personal, builder);
     final Integer startItem = patronInformation.getStartItem();
     final Integer endItem = patronInformation.getEndItem();
+    // Get manual blocks data to build patron status
+    final Future<PatronInformationResponseBuilder> manualBlocksFuture = feeFinesRepository
+        .getManualBlocksByUserId(userId, sessionData)
+        .map(blocks -> buildPatronStatus(blocks, builder));
     // Get holds data (count and items) and store it in the builder
     final Future<PatronInformationResponseBuilder> holdsFuture = circulationRepository
         .getRequestsByUserId(userId, "Hold", startItem, endItem, sessionData).map(
@@ -114,9 +131,8 @@ public class PatronRepository {
         getRecalls(userId, sessionData).compose(recalls -> addRecalls(recalls, startItem, endItem,
             patronInformation.getSummary() == RECALL_ITEMS, builder));
     // When all operations complete, build and return the final PatronInformationResponse
-    return CompositeFuture.all(holdsFuture, overdueFuture, recallsFuture)
+    return CompositeFuture.all(manualBlocksFuture, holdsFuture, overdueFuture, recallsFuture)
         .map(result -> builder
-            .patronStatus(EnumSet.noneOf(PatronStatus.class))
             // Get tenant language from config along with the timezone
             .language(patronInformation.getLanguage())
             .transactionDate(OffsetDateTime.now(clock))
@@ -132,7 +148,7 @@ public class PatronRepository {
 
   private Future<PatronInformationResponse> invalidPatron(PatronInformation patronInformation) {
     return Future.succeededFuture(PatronInformationResponse.builder()
-        .patronStatus(EnumSet.noneOf(PatronStatus.class))
+        .patronStatus(EnumSet.allOf(PatronStatus.class))
         .language(UNKNOWN)
         .transactionDate(OffsetDateTime.now(clock))
         .holdItemsCount(Integer.valueOf(0))
@@ -145,7 +161,42 @@ public class PatronRepository {
         .patronIdentifier(patronInformation.getPatronIdentifier())
         .personalName(null) // Just being explicit here as this is a required field
         .validPatron(FALSE)
+        .screenMessage(Collections.singletonList(MESSAGE_INVALID_PATRON))
         .build());
+  }
+
+  private PatronInformationResponseBuilder buildPatronStatus(JsonObject blocks,
+      PatronInformationResponseBuilder builder) {
+    final EnumSet<PatronStatus> patronStatus = EnumSet.noneOf(PatronStatus.class);
+
+    if (blocks != null && getTotalRecords(blocks) > 0) {
+      blocks.getJsonArray("manualblocks", new JsonArray()).stream()
+          .map(o -> (JsonObject) o)
+          .forEach(jo -> {
+            if (jo.getBoolean("borrowing", FALSE)) {
+              // Block everything
+              patronStatus.addAll(EnumSet.allOf(PatronStatus.class));
+            } else {
+              if (jo.getBoolean("renewals", FALSE)) {
+                patronStatus.add(RENEWAL_PRIVILEGES_DENIED);
+              }
+              if (jo.getBoolean(FIELD_REQUESTS, FALSE)) {
+                patronStatus.add(HOLD_PRIVILEGES_DENIED);
+                patronStatus.add(RECALL_PRIVILEGES_DENIED);
+              }
+            }
+          });
+    }
+
+    if (!patronStatus.isEmpty()) {
+      builder.screenMessage(Collections.singletonList(MESSAGE_BLOCKED_PATRON));
+    }
+
+    return builder.patronStatus(patronStatus);
+  }
+
+  private int getTotalRecords(JsonObject records) {
+    return records.getInteger(FIELD_TOTAL_RECORDS, Integer.valueOf(0)).intValue();
   }
 
   private PatronInformationResponseBuilder addPersonalData(JsonObject personal,
@@ -167,7 +218,7 @@ public class PatronRepository {
     final List<String> holdItems;
 
     if (holds != null) {
-      holdItemsCount = Math.min(countHoldItems(holds), 9999);
+      holdItemsCount = Math.min(getTotalRecords(holds), 9999);
       if (details) {
         holdItems = getHoldItems(holds);
       } else {
@@ -187,7 +238,7 @@ public class PatronRepository {
     final List<String> overdueItems;
 
     if (overdues != null) {
-      overdueItemsCount = Math.min(countOverdueItems(overdues), 9999);
+      overdueItemsCount = Math.min(getTotalRecords(overdues), 9999);
       if (details) {
         overdueItems = getOverdueItems(overdues);
       } else {
@@ -251,11 +302,7 @@ public class PatronRepository {
             .orElse(Optional.empty()))
         .map(this::toHomeAddress);
 
-    return addressString.isPresent() ? addressString.get() : null;
-  }
-
-  private int countHoldItems(JsonObject requests) {
-    return requests.getInteger(FIELD_TOTAL_RECORDS, Integer.valueOf(0)).intValue();
+    return addressString.orElse(null);
   }
 
   private List<String> getTitles(JsonArray items) {
@@ -267,12 +314,8 @@ public class PatronRepository {
 
   private List<String> getHoldItems(JsonObject requests) {
     // All items in the response are holds
-    final JsonArray requestArray = requests.getJsonArray("requests", new JsonArray());
+    final JsonArray requestArray = requests.getJsonArray(FIELD_REQUESTS, new JsonArray());
     return getTitles(requestArray);
-  }
-
-  private int countOverdueItems(JsonObject loans) {
-    return loans.getInteger(FIELD_TOTAL_RECORDS, Integer.valueOf(0)).intValue();
   }
 
   private List<String> getOverdueItems(JsonObject loans) {
@@ -285,7 +328,7 @@ public class PatronRepository {
     return (int) recallItems.stream()
         .map(Future::result)
         .filter(Objects::nonNull)
-        .filter(jo -> jo.getInteger(FIELD_TOTAL_RECORDS, Integer.valueOf(0)).intValue() > 0)
+        .filter(jo -> getTotalRecords(jo) > 0)
         .count();
   }
 
@@ -296,8 +339,8 @@ public class PatronRepository {
     return recallItems.stream()
         .map(Future::result)
         .filter(Objects::nonNull)
-        .filter(jo -> jo.getInteger(FIELD_TOTAL_RECORDS, Integer.valueOf(0)).intValue() > 0)
-        .map(jo -> jo.getJsonArray("requests", new JsonArray()).stream().findAny()
+        .filter(jo -> getTotalRecords(jo) > 0)
+        .map(jo -> jo.getJsonArray(FIELD_REQUESTS, new JsonArray()).stream().findAny()
             .map(o -> (JsonObject) o)
             .map(jsonObject -> getChildString(jsonObject, "item", FIELD_TITLE)))
         .filter(Optional::isPresent)

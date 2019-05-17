@@ -1,0 +1,21 @@
+{
+  "manualblocks" : [ {
+    "type" : "Manual",
+    "desc" : "test block",
+    "staffInformation" : "Collect money",
+    "patronMessage" : "Pay your fines!",
+    "expirationDate" : "2019-06-22T04:00:00.000+0000",
+    "borrowing" : true,
+    "renewals" : true,
+    "requests" : true,
+    "userId" : "a23eac4b-955e-451c-b4ff-6ec2f5e63e23",
+    "metadata" : {
+      "createdDate" : "2019-05-16T19:43:47.262+0000",
+      "createdByUserId" : "299318d2-51c0-5ddb-82e9-084e02ec756e",
+      "updatedDate" : "2019-05-16T19:43:47.262+0000",
+      "updatedByUserId" : "299318d2-51c0-5ddb-82e9-084e02ec756e"
+    },
+    "id" : "43ec8e43-4a78-45b0-a46c-88426346d3df"
+  } ],
+  "totalRecords" : 1
+}
