@@ -14,6 +14,7 @@ import java.time.Clock;
 import javax.inject.Named;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.repositories.CirculationRepository;
+import org.folio.edge.sip2.repositories.FeeFinesRepository;
 import org.folio.edge.sip2.repositories.FolioResourceProvider;
 import org.folio.edge.sip2.repositories.IRequestData;
 import org.folio.edge.sip2.repositories.IResourceProvider;
@@ -21,7 +22,7 @@ import org.folio.edge.sip2.repositories.LoginRepository;
 import org.folio.edge.sip2.repositories.UsersRepository;
 
 /**
- * Module to bind dependencies for {@code CirculationRespository}.
+ * Module to bind dependencies for injection.
  *
  * @author mreno-EBSCO
  *
@@ -33,6 +34,7 @@ public class ApplicationModule extends AbstractModule {
         .to(FolioResourceProvider.class).asEagerSingleton();
     bind(Clock.class).toInstance(Clock.systemUTC());
     bind(CirculationRepository.class);
+    bind(FeeFinesRepository.class);
     bind(LoginRepository.class);
     bind(UsersRepository.class);
   }

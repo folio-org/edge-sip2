@@ -6,6 +6,22 @@
     {
       "id": "login",
       "version": "5.0"
+    },
+    {
+      "id": "circulation",
+      "version": "7.0"
+    },
+    {
+      "id": "users",
+      "version": "15.0"
+    },
+    {
+      "id": "configuration",
+      "version": "2.0"
+    },
+    {
+      "id": "feesfines",
+      "version": "15.0"
     }
   ],
   "permissionSets": [],
