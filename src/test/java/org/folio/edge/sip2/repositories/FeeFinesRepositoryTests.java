@@ -19,6 +19,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.UUID;
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +50,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test
-  public void canGetManualBlocksByUserId(Vertx vertx,
+  public void canGetManualBlocksByUserIdWithNoBlocksApplied(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
 
@@ -60,7 +61,7 @@ public class FeeFinesRepositoryTests {
         .thenReturn(Future.succeededFuture(new FolioResource(manualBlocksResponse,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(mockFolioProvider);
     feeFinesRepository.getManualBlocksByUserId(UUID.randomUUID().toString(),
@@ -82,7 +83,7 @@ public class FeeFinesRepositoryTests {
     when(mockFolioProvider.retrieveResource(any()))
         .thenReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(mockFolioProvider);
     feeFinesRepository.getManualBlocksByUserId(UUID.randomUUID().toString(),
@@ -95,7 +96,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test
-  public void canGetManualBlocksListByUserId(Vertx vertx,
+  public void canGetManualBlocksByUserIdWithBlocksApplied(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
 
@@ -109,7 +110,7 @@ public class FeeFinesRepositoryTests {
         .thenReturn(Future.succeededFuture(new FolioResource(manualBlocksResponse,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(mockFolioProvider);
     feeFinesRepository.getManualBlocksByUserId(userId, sessionData).setHandler(
