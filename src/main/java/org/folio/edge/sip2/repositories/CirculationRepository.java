@@ -82,6 +82,8 @@ public class CirculationRepository {
               .transactionDate(OffsetDateTime.now(clock))
               .institutionId(institutionId)
               .itemIdentifier(itemIdentifier)
+              .titleIdentifier(resource.getResource() == null ? null
+                  : getChildString(resource.getResource(), "item", "title"))
               // this is probably not the permanent location
               // this might require a call to inventory
               .permanentLocation(

@@ -115,6 +115,63 @@ public class CirculationRepositoryTests {
   }
 
   @Test
+  public void canCheckinWithTitleIdentifier(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final OffsetDateTime returnDate = OffsetDateTime.now();
+    final String currentLocation = UUID.randomUUID().toString();
+    final String itemIdentifier = "1234567890";
+    final String titleIdentifier = "Some Cool Book";
+    final Checkin checkin = Checkin.builder()
+        .noBlock(FALSE)
+        .transactionDate(OffsetDateTime.now())
+        .returnDate(returnDate)
+        .currentLocation(currentLocation)
+        .institutionId("diku")
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .cancel(FALSE)
+        .build();
+
+    final JsonObject response = new JsonObject()
+        .put("item", new JsonObject()
+            .put("title", titleIdentifier)
+            .put("location", new JsonObject()
+                .put("name", "Main Library")));
+    when(mockFolioProvider.createResource(any()))
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    final CirculationRepository circulationRepository =
+        new CirculationRepository(mockFolioProvider, clock);
+    circulationRepository.performCheckinCommand(checkin, sessionData).setHandler(
+        testContext.succeeding(checkinResponse -> testContext.verify(() -> {
+          assertNotNull(checkinResponse);
+          assertTrue(checkinResponse.getOk());
+          assertTrue(checkinResponse.getResensitize());
+          assertNull(checkinResponse.getMagneticMedia());
+          assertFalse(checkinResponse.getAlert());
+          assertEquals(OffsetDateTime.now(clock), checkinResponse.getTransactionDate());
+          assertEquals("diku", checkinResponse.getInstitutionId());
+          assertEquals(itemIdentifier, checkinResponse.getItemIdentifier());
+          assertEquals("Main Library", checkinResponse.getPermanentLocation());
+          assertEquals(titleIdentifier, checkinResponse.getTitleIdentifier());
+          assertNull(checkinResponse.getSortBin());
+          assertNull(checkinResponse.getPatronIdentifier());
+          assertNull(checkinResponse.getMediaType());
+          assertNull(checkinResponse.getItemProperties());
+          assertNull(checkinResponse.getScreenMessage());
+          assertNull(checkinResponse.getPrintLine());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
   public void cannotCheckin(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
