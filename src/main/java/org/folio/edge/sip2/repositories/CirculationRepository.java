@@ -82,6 +82,11 @@ public class CirculationRepository {
               .transactionDate(OffsetDateTime.now(clock))
               .institutionId(institutionId)
               .itemIdentifier(itemIdentifier)
+              // if the title is not available, use the item identifier passed in to the checkin.
+              // this allows the kiosk to show something related to the item that could be used
+              // by the patron to identify which item this checkin response applies to.
+              .titleIdentifier(resource.getResource() == null ? itemIdentifier
+                  : getChildString(resource.getResource(), "item", "title", itemIdentifier))
               // this is probably not the permanent location
               // this might require a call to inventory
               .permanentLocation(
