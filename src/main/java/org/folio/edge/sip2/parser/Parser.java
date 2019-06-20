@@ -2,6 +2,7 @@ package org.folio.edge.sip2.parser;
 
 import static java.lang.Boolean.FALSE;
 import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
+import static org.folio.edge.sip2.parser.Command.UNKNOWN;
 
 import java.nio.charset.Charset;
 import org.apache.logging.log4j.LogManager;
@@ -173,6 +174,7 @@ public final class Parser {
       return builder.build();
     } else {
       return Message.builder()
+        .command(command)
         .valid(false)
         .checksumString(ed.checksum)
         .sequenceNumber(ed.sequenceNumber)
@@ -246,9 +248,16 @@ public final class Parser {
   }
 
   private Command parseCommandIdentifier(String message) {
-    String commandString = message.substring(0, 2);
-    Command command = Command.find(commandString);
+    final Command command;
+
+    if (message != null && message.length() >= 2) {
+      command = Command.find(message.substring(0, 2));
+    } else {
+      command = UNKNOWN;
+    }
+
     log.debug("Found command: {}", command);
+
     return command;
   }
 

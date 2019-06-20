@@ -9,9 +9,11 @@ import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION;
 import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
+import static org.folio.edge.sip2.parser.Command.UNKNOWN;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import io.micrometer.core.instrument.Timer;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
@@ -21,8 +23,8 @@ import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
 import java.nio.charset.Charset;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.PreviousMessage;
@@ -33,6 +35,7 @@ import org.folio.edge.sip2.handlers.HandlersFactory;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.handlers.LoginHandler;
 import org.folio.edge.sip2.handlers.PatronInformationHandler;
+import org.folio.edge.sip2.metrics.Metrics;
 import org.folio.edge.sip2.modules.ApplicationModule;
 import org.folio.edge.sip2.modules.FolioResourceProviderModule;
 import org.folio.edge.sip2.parser.Command;
@@ -41,10 +44,10 @@ import org.folio.edge.sip2.parser.Parser;
 import org.folio.edge.sip2.session.SessionData;
 
 public class MainVerticle extends AbstractVerticle {
-
   private Map<Command, ISip2RequestHandler> handlers;
   private NetServer server;
   private final Logger log = LogManager.getLogger();
+  private final Map<Integer, Metrics> metricsMap = new HashMap<>();
 
   /**
    * Construct the {@code MainVerticle}.
@@ -90,6 +93,9 @@ public class MainVerticle extends AbstractVerticle {
 
     log.info("Deployed verticle at port {}", port);
 
+    final Metrics metrics = Metrics.getMetrics(port);
+    metricsMap.putIfAbsent(port, metrics);
+
     server.connectHandler(socket -> {
       final SessionData sessionData = SessionData.createSession(
           config().getString("tenant"),
@@ -99,8 +105,13 @@ public class MainVerticle extends AbstractVerticle {
       final String messageDelimiter = config().getString("messageDelimiter", "\r");
 
       socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
+        final Timer.Sample sample = metrics.sample();
+
         final String messageString = buffer.getString(0, buffer.length(), sessionData.getCharset());
+
         log.debug("Received message: {}", messageString);
+
+        Command command = UNKNOWN;
 
         try {
           // At some point we will need to have these be
@@ -117,10 +128,13 @@ public class MainVerticle extends AbstractVerticle {
           //parsing
           final Message<Object> message = parser.parseMessage(messageString);
 
+          command = message.getCommand();
+
           //process validation results
           if (!message.isValid()) {
             log.error("Message is invalid: {}", messageString);
-            handleInvalidMessage(message, socket, sessionData, messageDelimiter);
+            handleInvalidMessage(message, socket, sessionData, messageDelimiter, sample,
+                metrics);
             return;
           }
 
@@ -131,13 +145,15 @@ public class MainVerticle extends AbstractVerticle {
                 .getPreviousMessageResponse();
             log.info("Sending previous Sip response {}", prvMessage);
             socket.write(prvMessage, sessionData.getCharset());
+            sample.stop(metrics.commandTimer(command));
             return;
           }
 
-          ISip2RequestHandler handler = handlers.get(message.getCommand());
+          ISip2RequestHandler handler = handlers.get(command);
 
           if (handler == null) {
-            log.error("Error locating handler for command; " + message.getCommand().name());
+            log.error("Error locating handler for command; " + command.name());
+            sample.stop(metrics.commandTimer(command));
             return;
           }
 
@@ -161,7 +177,10 @@ public class MainVerticle extends AbstractVerticle {
                   log.error(errorMsg, ar.cause());
                   socket.write(ar.cause().getMessage() + messageDelimiter,
                       sessionData.getCharset());
+                  metrics.responseError();
                 }
+
+                sample.stop(metrics.commandTimer(message.getCommand()));
               });
         } catch (Exception ex) {
           String message = "Problems handling the request: " + ex.getMessage();
@@ -169,12 +188,16 @@ public class MainVerticle extends AbstractVerticle {
           // Return an error message for now for the sake of negative testing.
           // Will find a better way to handle negative test cases.
           socket.write(message + messageDelimiter, sessionData.getCharset());
+
+          sample.stop(metrics.commandTimer(command));
+          metrics.requestError();
         }
       }));
 
       socket.exceptionHandler(t -> {
         log.info("Socket exceptionHandler caught an issue, see error logs for more details");
         log.error("Socket exception", t);
+        metrics.socketError();
       });
     });
 
@@ -193,6 +216,7 @@ public class MainVerticle extends AbstractVerticle {
   public void stop(Future<Void> stopFuture) {
     server.close(result -> {
       if (result.succeeded()) {
+        metricsMap.values().stream().forEach(Metrics::stop);
         stopFuture.complete();
         log.info("MainVerticle stopped successfully!");
       } else {
@@ -206,7 +230,9 @@ public class MainVerticle extends AbstractVerticle {
       Message<Object> message,
       NetSocket socket,
       SessionData sessionData,
-      String messageDelimiter) {
+      String messageDelimiter,
+      Timer.Sample sample,
+      Metrics metrics) {
     if (message.isErrorDetectionEnabled()) {
       //resends validation if checksum string does not match
       ISip2RequestHandler handler = handlers.get(Command.REQUEST_SC_RESEND);
@@ -217,11 +243,15 @@ public class MainVerticle extends AbstractVerticle {
                   messageDelimiter, true), sessionData.getCharset());
             } else {
               log.error("Failed to send SC resend", ar.cause());
+              metrics.scResendError();
             }
           });
     } else {
-      socket.write("Problems handling the request" + messageDelimiter, sessionData.getCharset());
+      socket.write("Problems handling the request: " + messageDelimiter, sessionData.getCharset());
+      metrics.invalidMessageError();
     }
+
+    sample.stop(metrics.commandTimer(message.getCommand()));
   }
 
   private String formatResponse(String response, Message<Object> message, SessionData sessionData,
