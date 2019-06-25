@@ -17,10 +17,8 @@ public class PreviousMessage {
    * @param response - the SIP response that corresponds to the @message.
    */
   public PreviousMessage(Message<Object> message, String response) {
-    if (message.isErrorDetectionEnabled()) {
-      previousRequestSequenceNo = message.getSequenceNumber();
-      previousRequestChecksum = message.getChecksumsString();
-    }
+    previousRequestSequenceNo = message.getSequenceNumber();
+    previousRequestChecksum = message.getChecksumsString();
     previousMessageResponse = response;
   }
 

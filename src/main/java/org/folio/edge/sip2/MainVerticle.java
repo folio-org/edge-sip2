@@ -144,8 +144,8 @@ public class MainVerticle extends AbstractVerticle {
                 .getPreviousMessage()
                 .getPreviousMessageResponse();
             log.info("Sending previous Sip response {}", prvMessage);
-            socket.write(prvMessage, sessionData.getCharset());
             sample.stop(metrics.commandTimer(command));
+            socket.write(prvMessage, sessionData.getCharset());
             return;
           }
 
@@ -171,25 +171,25 @@ public class MainVerticle extends AbstractVerticle {
                   }
                   handler.writeHistory(sessionData, message, responseMsg);
                   log.info("Sip response {}", responseMsg);
+                  sample.stop(metrics.commandTimer(message.getCommand()));
                   socket.write(responseMsg, sessionData.getCharset());
                 } else {
                   String errorMsg = "Failed to respond to request";
                   log.error(errorMsg, ar.cause());
+                  sample.stop(metrics.commandTimer(message.getCommand()));
                   socket.write(ar.cause().getMessage() + messageDelimiter,
                       sessionData.getCharset());
                   metrics.responseError();
                 }
-
-                sample.stop(metrics.commandTimer(message.getCommand()));
               });
         } catch (Exception ex) {
           String message = "Problems handling the request: " + ex.getMessage();
           log.error(message, ex);
           // Return an error message for now for the sake of negative testing.
           // Will find a better way to handle negative test cases.
+          sample.stop(metrics.commandTimer(command));
           socket.write(message + messageDelimiter, sessionData.getCharset());
 
-          sample.stop(metrics.commandTimer(command));
           metrics.requestError();
         }
       }));
@@ -233,25 +233,26 @@ public class MainVerticle extends AbstractVerticle {
       String messageDelimiter,
       Timer.Sample sample,
       Metrics metrics) {
-    if (message.isErrorDetectionEnabled()) {
+    if (sessionData.isErrorDetectionEnabled()) {
       //resends validation if checksum string does not match
       ISip2RequestHandler handler = handlers.get(Command.REQUEST_SC_RESEND);
       handler.execute(message.getRequest(), sessionData)
           .setHandler(ar -> {
             if (ar.succeeded()) {
+              sample.stop(metrics.commandTimer(message.getCommand()));
               socket.write(formatResponse(ar.result(), message, sessionData,
                   messageDelimiter, true), sessionData.getCharset());
             } else {
               log.error("Failed to send SC resend", ar.cause());
               metrics.scResendError();
+              sample.stop(metrics.commandTimer(message.getCommand()));
             }
           });
     } else {
+      sample.stop(metrics.commandTimer(message.getCommand()));
       socket.write("Problems handling the request: " + messageDelimiter, sessionData.getCharset());
       metrics.invalidMessageError();
     }
-
-    sample.stop(metrics.commandTimer(message.getCommand()));
   }
 
   private String formatResponse(String response, Message<Object> message, SessionData sessionData,
@@ -263,7 +264,7 @@ public class MainVerticle extends AbstractVerticle {
       String messageDelimiter, boolean isSCResend) {
     final String result;
 
-    if (message.isErrorDetectionEnabled()) {
+    if (sessionData.isErrorDetectionEnabled()) {
       final StringBuilder sb = new StringBuilder(response.length() + (isSCResend ? 6 : 9)
           + messageDelimiter.length())
           .append(response);
@@ -303,7 +304,7 @@ public class MainVerticle extends AbstractVerticle {
 
     PreviousMessage prevMessage = sessionData.getPreviousMessage();
 
-    if (prevMessage == null || !currentMessage.isErrorDetectionEnabled()) {
+    if (prevMessage == null || !sessionData.isErrorDetectionEnabled()) {
       log.debug("requiredResending is FALSE");
       return false;
     } else {
