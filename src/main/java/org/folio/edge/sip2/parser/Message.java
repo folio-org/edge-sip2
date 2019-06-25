@@ -51,10 +51,6 @@ public class Message<R> {
     return checksumString;
   }
 
-  public boolean isErrorDetectionEnabled() {
-    return sequenceNumber != null;
-  }
-
   public String getTimezone() {
     return timezone;
   }

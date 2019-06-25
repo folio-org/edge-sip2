@@ -731,7 +731,8 @@ class ParserTests {
             + "AApatron_id|AC|AD1234|AOuniversity_id|BON|"));
 
     assertTrue(message.isValid());
-    assertTrue(message.isErrorDetectionEnabled());
+    assertNotNull(message.getSequenceNumber());
+    assertNotNull(message.getChecksumsString());
     assertEquals(RENEW_ALL, message.getCommand());
     assertTrue(message.getRequest() instanceof RenewAll);
 
@@ -760,7 +761,6 @@ class ParserTests {
             + "AApatron_id|AC|AD1234|AOuniversity_id|BON|", sequenceNumber));
 
     assertTrue(message.isValid());
-    assertTrue(message.isErrorDetectionEnabled());
     assertEquals(1, message.getSequenceNumber());
     assertEquals("EB3B", message.getChecksumsString());
     assertEquals(RENEW_ALL, message.getCommand());
