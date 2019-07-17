@@ -39,8 +39,10 @@ import java.util.stream.Stream;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
 import org.folio.edge.sip2.domain.messages.enumerations.Summary;
+import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Utils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -56,9 +58,10 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository,
       @Mock Clock clock) {
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
 
     assertNotNull(patronRepository);
   }
@@ -67,7 +70,7 @@ public class PatronRepositoryTests {
   public void cannotCreatePatronRepositoryWhenUsersRepositoryIsNull() {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
-        () -> new PatronRepository(null, null, null, null));
+        () -> new PatronRepository(null, null, null, null, null));
 
     assertEquals("Users repository cannot be null", thrown.getMessage());
   }
@@ -78,7 +81,7 @@ public class PatronRepositoryTests {
       @Mock Clock mockClock) {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
-        () -> new PatronRepository(mockUsersRepository, null, null, mockClock));
+        () -> new PatronRepository(mockUsersRepository, null, null, null, mockClock));
 
     assertEquals("Circulation repository cannot be null", thrown.getMessage());
   }
@@ -90,21 +93,36 @@ public class PatronRepositoryTests {
       @Mock Clock mockClock) {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
-        () -> new PatronRepository(mockUsersRepository, mockCirculationRepository, null,
+        () -> new PatronRepository(mockUsersRepository, mockCirculationRepository, null, null,
             mockClock));
 
     assertEquals("FeeFines repository cannot be null", thrown.getMessage());
   }
 
   @Test
-  public void cannotCreatePatronRepositoryWhenClockIsNull(
+  public void cannotCreatePatronRepositoryLoginRepositoryIsNull(
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
-      @Mock FeeFinesRepository mockFeeFinesRepository) {
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock Clock mockClock) {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
         () -> new PatronRepository(mockUsersRepository, mockCirculationRepository,
-            mockFeeFinesRepository, null));
+            mockFeeFinesRepository, null, mockClock));
+
+    assertEquals("Login repository cannot be null", thrown.getMessage());
+  }
+
+  @Test
+  public void cannotCreatePatronRepositoryWhenClockIsNull(
+      @Mock UsersRepository mockUsersRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository) {
+    final NullPointerException thrown = assertThrows(
+        NullPointerException.class,
+        () -> new PatronRepository(mockUsersRepository, mockCirculationRepository,
+            mockFeeFinesRepository, mockLoginRepository, null));
 
     assertEquals("Clock cannot be null", thrown.getMessage());
   }
@@ -115,7 +133,8 @@ public class PatronRepositoryTests {
       VertxTestContext testContext,
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
-      @Mock FeeFinesRepository mockFeeFinesRepository) {
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -160,7 +179,7 @@ public class PatronRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -182,6 +201,111 @@ public class PatronRepositoryTests {
           assertNull(patronInformationResponse.getChargedItemsLimit());
           assertTrue(patronInformationResponse.getValidPatron());
           assertNull(patronInformationResponse.getValidPatronPassword());
+          assertNull(patronInformationResponse.getCurrencyType());
+          assertNull(patronInformationResponse.getFeeAmount());
+          assertNull(patronInformationResponse.getFeeLimit());
+          assertNotNull(patronInformationResponse.getHoldItems());
+          assertTrue(patronInformationResponse.getHoldItems().isEmpty());
+          assertNotNull(patronInformationResponse.getOverdueItems());
+          assertTrue(patronInformationResponse.getOverdueItems().isEmpty());
+          assertNotNull(patronInformationResponse.getChargedItems());
+          assertTrue(patronInformationResponse.getChargedItems().isEmpty());
+          assertNotNull(patronInformationResponse.getFineItems());
+          assertTrue(patronInformationResponse.getFineItems().isEmpty());
+          assertNotNull(patronInformationResponse.getRecallItems());
+          assertEquals(Arrays.asList("1990 to 2010"), patronInformationResponse.getRecallItems());
+          assertNotNull(patronInformationResponse.getUnavailableHoldItems());
+          assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
+          assertEquals("00430 Denis Parks, Indianapolis, FL 14654-6001 US",
+              patronInformationResponse.getHomeAddress());
+          assertEquals("earnestine@sipes-stokes-and-durgan.so",
+              patronInformationResponse.getEmailAddress());
+          assertEquals("(916)599-0326",
+              patronInformationResponse.getHomePhoneNumber());
+          assertNull(patronInformationResponse.getScreenMessage());
+          assertNull(patronInformationResponse.getPrintLine());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void canPatronInformationByExternalSystemIdAndPasswordRequired(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final String patronIdentifier = "abc123";
+    final PatronInformation patronInformation = PatronInformation.builder()
+        .language(ENGLISH)
+        .transactionDate(OffsetDateTime.now())
+        .summary(RECALL_ITEMS)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .terminalPassword("1234")
+        .patronPassword("0989")
+        .build();
+
+    final String userResponseJson = getJsonFromFile("json/user_response.json");
+    final JsonObject userResponse = new JsonObject(userResponseJson);
+    final String manualBlocksResponseJson = getJsonFromFile("json/no_manual_blocks_response.json");
+    final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
+    final String overdueResponseJson = getJsonFromFile("json/overdue_response.json");
+    final JsonObject overdueResponse = new JsonObject(overdueResponseJson);
+    final String holdsResponseJson = getJsonFromFile("json/holds_requests_response.json");
+    final JsonObject holdsResponse = new JsonObject(holdsResponseJson);
+    final String openLoansResponseJson = getJsonFromFile("json/open_loans_response.json");
+    final JsonObject openLoansResponse = new JsonObject(openLoansResponseJson);
+    final String recallsResponseJson = getJsonFromFile("json/recall_requests_response.json");
+    final JsonObject recallsResponse = new JsonObject(recallsResponseJson);
+    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(userResponse));
+    when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(overdueResponse));
+    when(mockCirculationRepository.getRequestsByUserId(
+        any(), eq("Hold"), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(holdsResponse));
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(openLoansResponse));
+    when(mockCirculationRepository.getRequestsByItemId(
+        any(), eq("Recall"), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(recallsResponse),
+            Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
+            Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
+    when(mockLoginRepository.patronLogin(eq("leslie"), eq("0989"), any()))
+      .thenReturn(Future.succeededFuture(() -> new JsonObject()));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPatronPasswordVerificationRequired(true);
+
+    final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+    patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
+        testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
+          assertNotNull(patronInformationResponse);
+          assertNotNull(patronInformationResponse.getPatronStatus());
+          assertTrue(patronInformationResponse.getPatronStatus().isEmpty());
+          assertEquals(ENGLISH, patronInformationResponse.getLanguage());
+          assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
+          assertEquals(2, patronInformationResponse.getHoldItemsCount());
+          assertEquals(1, patronInformationResponse.getOverdueItemsCount());
+          assertNull(patronInformationResponse.getChargedItemsCount());
+          assertNull(patronInformationResponse.getFineItemsCount());
+          assertEquals(1, patronInformationResponse.getRecallItemsCount());
+          assertNull(patronInformationResponse.getUnavailableHoldsCount());
+          assertEquals("diku", patronInformationResponse.getInstitutionId());
+          assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
+          assertEquals("Darius Auer", patronInformationResponse.getPersonalName());
+          assertNull(patronInformationResponse.getHoldItemsLimit());
+          assertNull(patronInformationResponse.getOverdueItemsLimit());
+          assertNull(patronInformationResponse.getChargedItemsLimit());
+          assertTrue(patronInformationResponse.getValidPatron());
+          assertTrue(patronInformationResponse.getValidPatronPassword());
           assertNull(patronInformationResponse.getCurrencyType());
           assertNull(patronInformationResponse.getFeeAmount());
           assertNull(patronInformationResponse.getFeeLimit());
@@ -241,7 +365,8 @@ public class PatronRepositoryTests {
       Vertx vertx, VertxTestContext testContext,
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
-      @Mock FeeFinesRepository mockFeeFinesRepository) {
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -288,7 +413,7 @@ public class PatronRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -342,7 +467,8 @@ public class PatronRepositoryTests {
   public void canPatronInformationWithRecallsPaged(Vertx vertx, VertxTestContext testContext,
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
-      @Mock FeeFinesRepository mockFeeFinesRepository) {
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -397,7 +523,7 @@ public class PatronRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -451,7 +577,8 @@ public class PatronRepositoryTests {
       VertxTestContext testContext,
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
-      @Mock FeeFinesRepository mockFeeFinesRepository) {
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -470,7 +597,7 @@ public class PatronRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -486,7 +613,8 @@ public class PatronRepositoryTests {
           assertEquals(0, patronInformationResponse.getUnavailableHoldsCount());
           assertEquals("diku", patronInformationResponse.getInstitutionId());
           assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
-          assertNull(patronInformationResponse.getPersonalName());
+          // Fall back to the patron identifier when there is no name (better than nothing)
+          assertEquals(patronIdentifier, patronInformationResponse.getPersonalName());
           assertFalse(patronInformationResponse.getValidPatron());
           assertNull(patronInformationResponse.getValidPatronPassword());
           assertNull(patronInformationResponse.getCurrencyType());
@@ -520,7 +648,8 @@ public class PatronRepositoryTests {
       VertxTestContext testContext,
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
-      @Mock FeeFinesRepository mockFeeFinesRepository) {
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -539,7 +668,7 @@ public class PatronRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -555,7 +684,8 @@ public class PatronRepositoryTests {
           assertEquals(0, patronInformationResponse.getUnavailableHoldsCount());
           assertEquals("diku", patronInformationResponse.getInstitutionId());
           assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
-          assertNull(patronInformationResponse.getPersonalName());
+          // Fall back to the patron identifier when there is no name (better than nothing)
+          assertEquals(patronIdentifier, patronInformationResponse.getPersonalName());
           assertFalse(patronInformationResponse.getValidPatron());
           assertNull(patronInformationResponse.getValidPatronPassword());
           assertNull(patronInformationResponse.getCurrencyType());
@@ -589,7 +719,8 @@ public class PatronRepositoryTests {
       VertxTestContext testContext,
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
-      @Mock FeeFinesRepository mockFeeFinesRepository) {
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -608,7 +739,7 @@ public class PatronRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -624,7 +755,8 @@ public class PatronRepositoryTests {
           assertEquals(0, patronInformationResponse.getUnavailableHoldsCount());
           assertEquals("diku", patronInformationResponse.getInstitutionId());
           assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
-          assertNull(patronInformationResponse.getPersonalName());
+          // Fall back to the patron identifier when there is no name (better than nothing)
+          assertEquals(patronIdentifier, patronInformationResponse.getPersonalName());
           assertFalse(patronInformationResponse.getValidPatron());
           assertNull(patronInformationResponse.getValidPatronPassword());
           assertNull(patronInformationResponse.getCurrencyType());
@@ -657,7 +789,8 @@ public class PatronRepositoryTests {
   public void canPatronInformationWithNoSummaryDetails(Vertx vertx, VertxTestContext testContext,
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
-      @Mock FeeFinesRepository mockFeeFinesRepository) {
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -691,7 +824,7 @@ public class PatronRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -742,7 +875,8 @@ public class PatronRepositoryTests {
       VertxTestContext testContext,
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
-      @Mock FeeFinesRepository mockFeeFinesRepository) {
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -780,7 +914,7 @@ public class PatronRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -890,7 +1024,8 @@ public class PatronRepositoryTests {
       VertxTestContext testContext,
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
-      @Mock FeeFinesRepository mockFeeFinesRepository) {
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -922,7 +1057,7 @@ public class PatronRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -963,6 +1098,135 @@ public class PatronRepositoryTests {
               patronInformationResponse.getHomePhoneNumber());
           assertEquals(expectedScreenMessage, patronInformationResponse.getScreenMessage());
           assertNull(patronInformationResponse.getPrintLine());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  void canPatronEndSession(
+      Vertx vertx,
+      VertxTestContext testContext,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final String patronIdentifier = "1234567890";
+    final EndPatronSession endPatronSession = EndPatronSession.builder()
+        .transactionDate(OffsetDateTime.now())
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .terminalPassword("1234")
+        .patronPassword("0989")
+        .build();
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+    patronRepository.performEndPatronSessionCommand(endPatronSession, sessionData).setHandler(
+        testContext.succeeding(endSessionResponse -> testContext.verify(() -> {
+          assertNotNull(endSessionResponse);
+          assertTrue(endSessionResponse.getEndSession());
+          assertEquals(OffsetDateTime.now(clock), endSessionResponse.getTransactionDate());
+          assertEquals("diku", endSessionResponse.getInstitutionId());
+          assertEquals(patronIdentifier, endSessionResponse.getPatronIdentifier());
+          assertNull(endSessionResponse.getScreenMessage());
+          assertNull(endSessionResponse.getPrintLine());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  void canPatronEndSessionRequirePassword(
+      Vertx vertx,
+      VertxTestContext testContext,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final String patronIdentifier = "1234567890";
+    final EndPatronSession endPatronSession = EndPatronSession.builder()
+        .transactionDate(OffsetDateTime.now())
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .terminalPassword("1234")
+        .patronPassword("0989")
+        .build();
+
+    final String userResponseJson = getJsonFromFile("json/user_response.json");
+    final JsonObject userResponse = new JsonObject(userResponseJson);
+    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(userResponse));
+    when(mockLoginRepository.patronLogin(eq("leslie"), eq("0989"), any()))
+        .thenReturn(Future.succeededFuture(() -> new JsonObject()));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPatronPasswordVerificationRequired(true);
+
+    final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+    patronRepository.performEndPatronSessionCommand(endPatronSession, sessionData).setHandler(
+        testContext.succeeding(endSessionResponse -> testContext.verify(() -> {
+          assertNotNull(endSessionResponse);
+          assertTrue(endSessionResponse.getEndSession());
+          assertEquals(OffsetDateTime.now(clock), endSessionResponse.getTransactionDate());
+          assertEquals("diku", endSessionResponse.getInstitutionId());
+          assertEquals(patronIdentifier, endSessionResponse.getPatronIdentifier());
+          assertNull(endSessionResponse.getScreenMessage());
+          assertNull(endSessionResponse.getPrintLine());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  void cannotPatronEndSessionRequirePasswordWithBadPassword(
+      Vertx vertx,
+      VertxTestContext testContext,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final String patronIdentifier = "1234567890";
+    final EndPatronSession endPatronSession = EndPatronSession.builder()
+        .transactionDate(OffsetDateTime.now())
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .terminalPassword("1234")
+        .patronPassword("0989")
+        .build();
+
+    final String userResponseJson = getJsonFromFile("json/user_response.json");
+    final JsonObject userResponse = new JsonObject(userResponseJson);
+    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(userResponse));
+    when(mockLoginRepository.patronLogin(eq("leslie"), eq("0989"), any()))
+        .thenReturn(Future.succeededFuture(Utils.handleErrors(new RequestThrowable(null) {
+          private static final long serialVersionUID = -9126223501276281006L;
+          public List<String> getErrorMessages() {
+            return Collections.singletonList("Password does not match");
+          }
+        })));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPatronPasswordVerificationRequired(true);
+
+    final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+    patronRepository.performEndPatronSessionCommand(endPatronSession, sessionData).setHandler(
+        testContext.succeeding(endSessionResponse -> testContext.verify(() -> {
+          assertNotNull(endSessionResponse);
+          assertFalse(endSessionResponse.getEndSession());
+          assertEquals(OffsetDateTime.now(clock), endSessionResponse.getTransactionDate());
+          assertEquals("diku", endSessionResponse.getInstitutionId());
+          assertEquals(patronIdentifier, endSessionResponse.getPatronIdentifier());
+          assertNull(endSessionResponse.getScreenMessage());
+          assertNull(endSessionResponse.getPrintLine());
 
           testContext.completeNow();
         })));

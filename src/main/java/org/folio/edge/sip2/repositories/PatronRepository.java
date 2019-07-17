@@ -31,10 +31,13 @@ import javax.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
+import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
+import org.folio.edge.sip2.domain.messages.responses.EndSessionResponse;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse.PatronInformationResponseBuilder;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Utils;
 
 /**
  * Provides interaction with the patron required services. This repository is a go-between for
@@ -57,17 +60,20 @@ public class PatronRepository {
   private final UsersRepository usersRepository;
   private final CirculationRepository circulationRepository;
   private final FeeFinesRepository feeFinesRepository;
+  private final LoginRepository loginRepository;
   private final Clock clock;
 
   @Inject
   PatronRepository(UsersRepository usersRepository, CirculationRepository circulationRepository,
-      FeeFinesRepository feeFinesRepository, Clock clock) {
+      FeeFinesRepository feeFinesRepository, LoginRepository loginRepository, Clock clock) {
     this.usersRepository = Objects.requireNonNull(usersRepository,
         "Users repository cannot be null");
     this.circulationRepository = Objects.requireNonNull(circulationRepository,
         "Circulation repository cannot be null");
     this.feeFinesRepository = Objects.requireNonNull(feeFinesRepository,
         "FeeFines repository cannot be null");
+    this.loginRepository = Objects.requireNonNull(loginRepository,
+        "Login repository cannot be null");
     this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
   }
 
@@ -89,22 +95,84 @@ public class PatronRepository {
     final Future<JsonObject> result = usersRepository.getUserByBarcode(barcode, sessionData);
     return result.compose(user -> {
       if (user == null || !user.getBoolean("active", FALSE).booleanValue()) {
-        return invalidPatron(patronInformation);
+        return invalidPatron(patronInformation, null);
       } else {
         final String userId = user.getString("id");
         if (userId == null) {
           // Something is really messed up if the id is missing
           log.error("User with barcode {} is missing the \"id\" field", barcode);
-          return invalidPatron(patronInformation);
+          return invalidPatron(patronInformation, null);
         }
-        return validPatron(userId, user.getJsonObject("personal", new JsonObject()),
-            patronInformation, sessionData);
+
+        final Future<IResource> loginFuture;
+        final boolean patronPasswordVerificationRequired =
+            sessionData.isPatronPasswordVerificationRequired();
+        if (patronPasswordVerificationRequired) {
+          loginFuture = loginRepository.patronLogin(user.getString("username"),
+              patronInformation.getPatronPassword(),
+              sessionData);
+        } else {
+          loginFuture = Future.succeededFuture();
+        }
+
+        return loginFuture.compose(login -> {
+          // This means we tried to log in as the patron and failed in some way
+          if (login != null && !login.getErrorMessages().isEmpty()) {
+            return invalidPatron(patronInformation, FALSE);
+          } else {
+            return validPatron(userId, user.getJsonObject("personal", new JsonObject()),
+                patronInformation, sessionData, patronPasswordVerificationRequired
+                && patronInformation.getPatronPassword() != null ? TRUE : null);
+          }
+        });
       }
     });
   }
 
+  /**
+   * Perform End Patron Session.
+   * If PIN verification is required, then we will ensure that the patron password (PIN) is
+   * validated before allowing a successful return.
+   * 
+   * @param endPatronSession command data
+   * @param sessionData session data
+   * @return the end session response indicating whether or not the session was ended
+   */
+  public Future<EndSessionResponse> performEndPatronSessionCommand(
+      EndPatronSession endPatronSession,
+      SessionData sessionData) {
+    Objects.requireNonNull(endPatronSession, "endPatronSession cannot be null");
+    Objects.requireNonNull(sessionData, "sessionData cannot be null");
+
+    final Future<IResource> loginFuture;
+    if (sessionData.isPatronPasswordVerificationRequired()) {
+      final String patronIdentifier = endPatronSession.getPatronIdentifier();
+      final String patronPassword = endPatronSession.getPatronPassword();
+
+      loginFuture = usersRepository.getUserByBarcode(patronIdentifier, sessionData)
+          .compose(user -> {
+            if (user == null) {
+              return Future.succeededFuture(
+                  Utils.handleErrors(new Exception("Patron not found: " + patronIdentifier)));
+            }
+
+            return loginRepository.patronLogin(user.getString("username"), patronPassword,
+                sessionData);
+          });
+    } else {
+      loginFuture = Future.succeededFuture();
+    }
+
+    return loginFuture.map(login -> EndSessionResponse.builder()
+        .endSession(login == null || login.getErrorMessages().isEmpty())
+        .transactionDate(OffsetDateTime.now(clock))
+        .institutionId(endPatronSession.getInstitutionId())
+        .patronIdentifier(endPatronSession.getPatronIdentifier())
+        .build());
+  }
+
   private Future<PatronInformationResponse> validPatron(String userId, JsonObject personal,
-      PatronInformation patronInformation, SessionData sessionData) {
+      PatronInformation patronInformation, SessionData sessionData, Boolean validPassword) {
     // Now that we have a valid patron, we can retrieve data from circulation
     final PatronInformationResponseBuilder builder = PatronInformationResponse.builder();
     // Store patron data in the builder
@@ -142,11 +210,14 @@ public class PatronRepository {
             .institutionId(patronInformation.getInstitutionId())
             .patronIdentifier(patronInformation.getPatronIdentifier())
             .validPatron(TRUE)
+            .validPatronPassword(validPassword)
             .build()
         );
   }
 
-  private Future<PatronInformationResponse> invalidPatron(PatronInformation patronInformation) {
+  private Future<PatronInformationResponse> invalidPatron(
+      PatronInformation patronInformation,
+      Boolean validPassword) {
     return Future.succeededFuture(PatronInformationResponse.builder()
         .patronStatus(EnumSet.allOf(PatronStatus.class))
         .language(UNKNOWN)
@@ -159,8 +230,9 @@ public class PatronRepository {
         .unavailableHoldsCount(Integer.valueOf(0))
         .institutionId(patronInformation.getInstitutionId())
         .patronIdentifier(patronInformation.getPatronIdentifier())
-        .personalName(null) // Just being explicit here as this is a required field
+        .personalName(patronInformation.getPatronIdentifier()) // required, using patron id for now
         .validPatron(FALSE)
+        .validPatronPassword(validPassword)
         .screenMessage(Collections.singletonList(MESSAGE_INVALID_PATRON))
         .build());
   }

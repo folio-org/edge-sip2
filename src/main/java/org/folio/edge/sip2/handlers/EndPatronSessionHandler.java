@@ -17,15 +17,21 @@ import org.folio.edge.sip2.domain.messages.responses.EndSessionResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.parser.Message;
+import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.session.SessionData;
 
 public class EndPatronSessionHandler implements ISip2RequestHandler {
 
   private static final Logger log = LogManager.getLogger();
+
+  private PatronRepository patronRepository;
   private Template commandTemplate;
 
   @Inject
-  public EndPatronSessionHandler(@Named("endSessionResponse") Template commandTemplate) {
+  EndPatronSessionHandler(PatronRepository patronRepository,
+      @Named("endSessionResponse") Template commandTemplate) {
+    this.patronRepository = Objects.requireNonNull(patronRepository,
+        "patronRepository cannot be null");
     this.commandTemplate =
       Objects.requireNonNull(commandTemplate, "EndPatronSession template cannot be null");
   }
@@ -36,29 +42,25 @@ public class EndPatronSessionHandler implements ISip2RequestHandler {
     final EndPatronSession endPatronSession = (EndPatronSession) message;
     log.debug("EndPatronSession: {}", () -> endPatronSession);
 
-    sessionData.setAuthenticationToken(null);
-    sessionData.setUsername(null);
-    sessionData.setPassword(null);
+    final Future<EndSessionResponse> endPatronSessionFuture =
+        patronRepository.performEndPatronSessionCommand(endPatronSession, sessionData);
 
-    EndSessionResponse endSessionResponse = EndSessionResponse.builder()
-                .endSession(true)
-                .transactionDate(endPatronSession.getTransactionDate())
-                .institutionId(endPatronSession.getInstitutionId())
-                .patronIdentifier(endPatronSession.getPatronIdentifier())
-                .build();
+    return endPatronSessionFuture.map(endSessionResponse -> {
+      log.debug("EndSessionResponse: {}", () -> endSessionResponse);
 
-    final Map<String, Object> root = new HashMap<>();
-    root.put("formatDateTime", new FormatDateTimeMethodModel());
-    root.put("delimiter", sessionData.getFieldDelimiter());
-    root.put("endSessionResponse", endSessionResponse);
-    root.put("timezone", sessionData.getTimeZone());
+      final Map<String, Object> root = new HashMap<>();
+      root.put("formatDateTime", new FormatDateTimeMethodModel());
+      root.put("delimiter", sessionData.getFieldDelimiter());
+      root.put("endSessionResponse", endSessionResponse);
+      root.put("timezone", sessionData.getTimeZone());
 
-    final String response = FreemarkerUtils
-        .executeFreemarkerTemplate(root, commandTemplate);
+      final String response = FreemarkerUtils
+          .executeFreemarkerTemplate(root, commandTemplate);
 
-    log.debug("SIP checkin response: {}", response);
+      log.debug("SIP end session response: {}", response);
 
-    return Future.succeededFuture(response);
+      return response;
+    });
   }
 
   @Override

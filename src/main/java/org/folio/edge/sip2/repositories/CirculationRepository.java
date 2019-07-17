@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.inject.Inject;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
@@ -34,12 +35,19 @@ public class CirculationRepository {
   // Should consider letting the template take care of required fields with missing values
   private static final String UNKNOWN = "";
   private final IResourceProvider<IRequestData> resourceProvider;
+  private final UsersRepository usersRepository;
+  private final LoginRepository loginRepository;
   private final Clock clock;
 
   @Inject
-  CirculationRepository(IResourceProvider<IRequestData> resourceProvider, Clock clock) {
+  CirculationRepository(IResourceProvider<IRequestData> resourceProvider,
+      UsersRepository usersRepository, LoginRepository loginRepository, Clock clock) {
     this.resourceProvider = Objects.requireNonNull(resourceProvider,
         "Resource provider cannot be null");
+    this.usersRepository = Objects.requireNonNull(usersRepository,
+        "Users repository cannot be null");
+    this.loginRepository = Objects.requireNonNull(loginRepository,
+        "Login repository cannot be null");
     this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
   }
 
@@ -107,54 +115,95 @@ public class CirculationRepository {
     final String institutionId = checkout.getInstitutionId();
     final String patronIdentifier = checkout.getPatronIdentifier();
     final String itemIdentifier = checkout.getItemIdentifier();
+    final String patronPassword = checkout.getPatronPassword();
 
-    final JsonObject body = new JsonObject()
-        .put("itemBarcode", itemIdentifier)
-        .put("userBarcode", patronIdentifier)
-        .put("servicePointId", sessionData.getScLocation());
-
-    final Map<String, String> headers = getBaseHeaders();
-
-    final CheckoutRequestData checkoutRequestData =
-        new CheckoutRequestData(body, headers, sessionData);
-    final Future<IResource> result = resourceProvider.createResource(checkoutRequestData);
-
-    return result
-        .otherwise(Utils::handleErrors)
-        .compose(resource -> {
-          final OffsetDateTime dueDate;
-          // This is a mess. Need to clean this up. The problem here is that the checkout has
-          // already succeeded, but something could be wrong with the returned data. The odds of
-          // this are low, so we should be able to simplify this logic. The "dueDate" field is not
-          // required, so a loan could be missing one. I am not sure what that means for SIP2
-          // where the due date field is required. Setting it to null is probably wrong and will
-          // likely break the template when building the SIP2 response.
-          if (resource.getResource() != null) {
-            final String dueDateString = resource.getResource().getString("dueDate", null);
-            if (dueDateString == null) {
-              dueDate = null;
-            } else {
-              // Need to convert to the tenant local timezone
-              dueDate = OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(dueDateString));
+    final String [] lmsPatronIdentifier = { patronIdentifier };
+    final Future<IResource> loginFuture;
+    if (sessionData.isPatronPasswordVerificationRequired()) {
+      loginFuture = usersRepository.getUserByBarcode(patronIdentifier, sessionData)
+          .compose(user -> {
+            if (user == null) {
+              return Future.succeededFuture(
+                  Utils.handleErrors(new Exception("Patron not found: " + patronIdentifier)));
             }
+
+            // In the case where an external system ID is used as the SIP2 patron identifier,
+            // we need to use the LMS barcode for the checkout.
+            final String barcode = user.getString("barcode");
+            if (!patronIdentifier.equals(barcode)) {
+              lmsPatronIdentifier[0] = barcode;
+            }
+
+            return loginRepository.patronLogin(user.getString("username"), patronPassword,
+                sessionData);
+          });
+    } else {
+      loginFuture = Future.succeededFuture();
+    }
+
+    return loginFuture
+        .compose(login -> {
+          final JsonObject body = new JsonObject()
+              .put("itemBarcode", itemIdentifier)
+              .put("userBarcode", lmsPatronIdentifier[0])
+              .put("servicePointId", sessionData.getScLocation());
+
+          final Map<String, String> headers = getBaseHeaders();
+
+          final CheckoutRequestData checkoutRequestData =
+              new CheckoutRequestData(body, headers, sessionData);
+
+          // This means we tried to log in as the patron and failed in some way
+          if (login != null && !login.getErrorMessages().isEmpty()) {
+            return Future.succeededFuture(CheckoutResponse.builder()
+                .ok(FALSE)
+                .renewalOk(FALSE)
+                .magneticMedia(null)
+                .desensitize(FALSE)
+                .transactionDate(OffsetDateTime.now(clock))
+                .institutionId(institutionId)
+                .patronIdentifier(patronIdentifier)
+                .itemIdentifier(itemIdentifier)
+                .titleIdentifier(UNKNOWN)
+                .dueDate(OffsetDateTime.now(clock))
+                .screenMessage(login.getErrorMessages())
+                .build());
           } else {
-            dueDate = null;
+            final Future<IResource> result = resourceProvider.createResource(checkoutRequestData);
+
+            return result
+                .otherwise(Utils::handleErrors)
+                .map(resource -> {
+                  final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
+                  // The problem here is that the checkout has already succeeded, but something
+                  // could be wrong with the returned data. The odds of this are low. The "dueDate"
+                  // field is not required, so a loan could be missing one. I am not sure
+                  // what that means for SIP2 where the due date field is required. Setting it to
+                  // null is probably wrong and will likely break the template when building the
+                  // SIP2 response.
+                  final OffsetDateTime dueDate = response
+                      .map(v -> v.getString("dueDate"))
+                      .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
+                      .orElse(null);
+
+                  return CheckoutResponse.builder()
+                      .ok(Boolean.valueOf(response.isPresent()))
+                      .renewalOk(FALSE)
+                      .magneticMedia(null)
+                      .desensitize(Boolean.valueOf(response.isPresent()))
+                      .transactionDate(OffsetDateTime.now(clock))
+                      .institutionId(institutionId)
+                      .patronIdentifier(patronIdentifier)
+                      .itemIdentifier(itemIdentifier)
+                      .titleIdentifier(response.map(
+                          v -> getChildString(v, "item", "title", UNKNOWN)).orElse(UNKNOWN))
+                      .dueDate(dueDate)
+                      .screenMessage(Optional.of(resource.getErrorMessages())
+                          .filter(v -> !v.isEmpty())
+                          .orElse(null))
+                      .build();
+                });
           }
-          return Future.succeededFuture(
-            CheckoutResponse.builder()
-              .ok(resource.getResource() == null ? FALSE : TRUE)
-              .renewalOk(FALSE)
-              .magneticMedia(null)
-              .desensitize(resource.getResource() == null ? FALSE : TRUE)
-              .transactionDate(OffsetDateTime.now(clock))
-              .institutionId(institutionId)
-              .patronIdentifier(patronIdentifier)
-              .itemIdentifier(itemIdentifier)
-              .titleIdentifier(resource.getResource() == null ? UNKNOWN
-                  : getChildString(resource.getResource(), "item", "title", UNKNOWN))
-              .dueDate(dueDate)
-              .screenMessage(resource.getResource() == null ? resource.getErrorMessages() : null)
-              .build());
         });
   }
 

@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.Login;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Utils;
 
 /**
  * Provides interaction with the login service.
@@ -35,6 +36,7 @@ public class LoginRepository {
    * Perform a login.
    *
    * @param login the login domain object
+   * @param sessionData shared session data
    * @return the login response domain object
    */
   public Future<LoginResponse> login(Login login, SessionData sessionData) {
@@ -65,6 +67,27 @@ public class LoginRepository {
               .ok(resource.getResource() == null ? FALSE : TRUE)
               .build());
         });
+  }
+
+  /**
+   * Perform a login.
+   *
+   * @param patronUserName the patron's user name
+   * @param patronPassword the patron's password
+   * @param sessionData shared session data
+   * @return the login response domain object
+   */
+  public Future<IResource> patronLogin(String patronUserName, String patronPassword,
+      SessionData sessionData) {
+    final JsonObject credentials = new JsonObject()
+        .put("username", patronUserName)
+        .put("password", patronPassword);
+
+    final Future<IResource> result = resourceProvider
+        .createResource(new LoginRequestData(credentials, sessionData));
+
+    return result
+        .otherwise(Utils::handleErrors);
   }
 
   private class LoginRequestData implements IRequestData {

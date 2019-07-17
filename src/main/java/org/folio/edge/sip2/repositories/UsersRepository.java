@@ -84,7 +84,7 @@ public class UsersRepository {
 
     @Override
     public String getPath() {
-      return "/users?limit=1&query=barcode==" + barcode;
+      return "/users?limit=1&query=(barcode==" + barcode + " or externalSystemId==" + barcode + ')';
     }
 
     @Override

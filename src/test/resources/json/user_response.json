@@ -2,6 +2,7 @@
   "username" : "leslie",
   "id" : "4f0e711c-d583-41e0-9555-b62f1725023f",
   "barcode" : "997383903573496",
+  "externalSystemId": "abc123",
   "active" : true,
   "type" : "patron",
   "patronGroup" : "bdc2b6d4-5ceb-4a12-ab46-249b9a68473e",
