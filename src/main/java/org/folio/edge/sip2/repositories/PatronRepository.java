@@ -35,6 +35,7 @@ import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse.PatronInformationResponseBuilder;
 import org.folio.edge.sip2.session.SessionData;
+import sun.rmi.runtime.Log;
 
 /**
  * Provides interaction with the patron required services. This repository is a go-between for
@@ -92,12 +93,13 @@ public class PatronRepository {
         return invalidPatron(patronInformation);
       } else {
         final String userId = user.getString("id");
+        final JsonObject personal =  user.getJsonObject("personal", new JsonObject());
         if (userId == null) {
           // Something is really messed up if the id is missing
           log.error("User with barcode {} is missing the \"id\" field", barcode);
           return invalidPatron(patronInformation);
         }
-        return validPatron(userId, user.getJsonObject("personal", new JsonObject()),
+        return validPatron(userId,personal,
             patronInformation, sessionData);
       }
     });
@@ -108,7 +110,7 @@ public class PatronRepository {
     // Now that we have a valid patron, we can retrieve data from circulation
     final PatronInformationResponseBuilder builder = PatronInformationResponse.builder();
     // Store patron data in the builder
-    addPersonalData(personal, builder);
+    addPersonalData(personal, patronInformation.getPatronIdentifier(), builder);
     final Integer startItem = patronInformation.getStartItem();
     final Integer endItem = patronInformation.getEndItem();
     // Get manual blocks data to build patron status
@@ -159,7 +161,7 @@ public class PatronRepository {
         .unavailableHoldsCount(Integer.valueOf(0))
         .institutionId(patronInformation.getInstitutionId())
         .patronIdentifier(patronInformation.getPatronIdentifier())
-        .personalName(null) // Just being explicit here as this is a required field
+        .personalName(patronInformation.getPatronIdentifier())
         .validPatron(FALSE)
         .screenMessage(Collections.singletonList(MESSAGE_INVALID_PATRON))
         .build());
@@ -200,8 +202,9 @@ public class PatronRepository {
   }
 
   private PatronInformationResponseBuilder addPersonalData(JsonObject personal,
-      PatronInformationResponseBuilder builder) {
-    final String personalName = getPatronPersonalName(personal);
+      String patronIdentifier, PatronInformationResponseBuilder builder) {
+    String personalName = getPatronPersonalName(personal);
+    personalName = personalName.isEmpty() ? patronIdentifier : personalName;
     final String homeAddress = getPatronHomeAddress(personal);
     final String emailAddress = personal.getString("email");
     final String homePhoneNumber = personal.getString("phone");
