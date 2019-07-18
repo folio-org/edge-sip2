@@ -92,13 +92,12 @@ public class PatronRepository {
         return invalidPatron(patronInformation);
       } else {
         final String userId = user.getString("id");
-        final JsonObject personal =  user.getJsonObject("personal", new JsonObject());
         if (userId == null) {
           // Something is really messed up if the id is missing
           log.error("User with barcode {} is missing the \"id\" field", barcode);
           return invalidPatron(patronInformation);
         }
-        return validPatron(userId,personal,
+        return validPatron(userId,user.getJsonObject("personal", new JsonObject()),
             patronInformation, sessionData);
       }
     });
