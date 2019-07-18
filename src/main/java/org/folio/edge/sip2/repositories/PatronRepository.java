@@ -35,7 +35,6 @@ import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse.PatronInformationResponseBuilder;
 import org.folio.edge.sip2.session.SessionData;
-import sun.rmi.runtime.Log;
 
 /**
  * Provides interaction with the patron required services. This repository is a go-between for
