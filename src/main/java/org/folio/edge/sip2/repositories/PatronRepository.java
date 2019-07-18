@@ -97,7 +97,7 @@ public class PatronRepository {
           log.error("User with barcode {} is missing the \"id\" field", barcode);
           return invalidPatron(patronInformation);
         }
-        return validPatron(userId,user.getJsonObject("personal", new JsonObject()),
+        return validPatron(userId, user.getJsonObject("personal", new JsonObject()),
             patronInformation, sessionData);
       }
     });
