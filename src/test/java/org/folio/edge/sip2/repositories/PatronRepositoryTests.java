@@ -572,7 +572,7 @@ public class PatronRepositoryTests {
           assertEquals(0, patronInformationResponse.getUnavailableHoldsCount());
           assertEquals("diku", patronInformationResponse.getInstitutionId());
           assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
-          assertNull(patronInformationResponse.getPersonalName());
+          assertEquals(patronIdentifier, patronInformationResponse.getPersonalName());
           assertFalse(patronInformationResponse.getValidPatron());
           assertNull(patronInformationResponse.getValidPatronPassword());
           assertNull(patronInformationResponse.getCurrencyType());
@@ -641,7 +641,7 @@ public class PatronRepositoryTests {
           assertEquals(0, patronInformationResponse.getUnavailableHoldsCount());
           assertEquals("diku", patronInformationResponse.getInstitutionId());
           assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
-          assertNull(patronInformationResponse.getPersonalName());
+          assertEquals(patronIdentifier,patronInformationResponse.getPersonalName());
           assertFalse(patronInformationResponse.getValidPatron());
           assertNull(patronInformationResponse.getValidPatronPassword());
           assertNull(patronInformationResponse.getCurrencyType());
@@ -710,7 +710,7 @@ public class PatronRepositoryTests {
           assertEquals(0, patronInformationResponse.getUnavailableHoldsCount());
           assertEquals("diku", patronInformationResponse.getInstitutionId());
           assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
-          assertNull(patronInformationResponse.getPersonalName());
+          assertEquals(patronIdentifier, patronInformationResponse.getPersonalName());
           assertFalse(patronInformationResponse.getValidPatron());
           assertNull(patronInformationResponse.getValidPatronPassword());
           assertNull(patronInformationResponse.getCurrencyType());
