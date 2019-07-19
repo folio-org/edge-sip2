@@ -15,6 +15,7 @@ public class SessionData {
   private String password; // should we really save this?
   private PreviousMessage previousMessage;
   private String timeZone;
+  private boolean patronPasswordVerificationRequired;
 
   private SessionData(String tenant, char fieldDelimiter,
       boolean errorDetectionEnabled, String charset) {
@@ -94,6 +95,14 @@ public class SessionData {
 
   public void setTimeZone(String timeZone) {
     this.timeZone = timeZone;
+  }
+
+  public boolean isPatronPasswordVerificationRequired() {
+    return patronPasswordVerificationRequired;
+  }
+
+  public void setPatronPasswordVerificationRequired(boolean patronPasswordVerificationRequired) {
+    this.patronPasswordVerificationRequired = patronPasswordVerificationRequired;
   }
 
   public static SessionData createSession(String tenant, char fieldDelimiter,
