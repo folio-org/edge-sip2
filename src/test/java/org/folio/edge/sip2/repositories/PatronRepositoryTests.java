@@ -1,5 +1,7 @@
 package org.folio.edge.sip2.repositories;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static org.folio.edge.sip2.api.support.TestUtils.getJsonFromFile;
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.ENGLISH;
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.UNKNOWN;
@@ -21,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
@@ -41,8 +44,9 @@ import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
 import org.folio.edge.sip2.domain.messages.enumerations.Summary;
 import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
+import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
+import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
-import org.folio.edge.sip2.utils.Utils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -58,10 +62,10 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
-      @Mock LoginRepository mockLoginRepository,
+      @Mock PasswordVerifier mockPasswordVerifier,
       @Mock Clock clock) {
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
 
     assertNotNull(patronRepository);
   }
@@ -100,7 +104,7 @@ public class PatronRepositoryTests {
   }
 
   @Test
-  public void cannotCreatePatronRepositoryLoginRepositoryIsNull(
+  public void cannotCreatePatronRepositoryPasswordVerifierIsNull(
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
@@ -110,7 +114,7 @@ public class PatronRepositoryTests {
         () -> new PatronRepository(mockUsersRepository, mockCirculationRepository,
             mockFeeFinesRepository, null, mockClock));
 
-    assertEquals("Login repository cannot be null", thrown.getMessage());
+    assertEquals("Password verifier cannot be null", thrown.getMessage());
   }
 
   @Test
@@ -118,11 +122,11 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
-      @Mock LoginRepository mockLoginRepository) {
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
         () -> new PatronRepository(mockUsersRepository, mockCirculationRepository,
-            mockFeeFinesRepository, mockLoginRepository, null));
+            mockFeeFinesRepository, mockPasswordVerifier, null));
 
     assertEquals("Clock cannot be null", thrown.getMessage());
   }
@@ -134,7 +138,7 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
-      @Mock LoginRepository mockLoginRepository) {
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -148,7 +152,7 @@ public class PatronRepositoryTests {
         .build();
 
     final String userResponseJson = getJsonFromFile("json/user_response.json");
-    final JsonObject userResponse = new JsonObject(userResponseJson);
+    final User userResponse = Json.decodeValue(userResponseJson, User.class);
     final String manualBlocksResponseJson = getJsonFromFile("json/no_manual_blocks_response.json");
     final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
     final String overdueResponseJson = getJsonFromFile("json/overdue_response.json");
@@ -175,11 +179,13 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(recallsResponse),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -236,7 +242,7 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
-      @Mock LoginRepository mockLoginRepository) {
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "abc123";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -250,7 +256,7 @@ public class PatronRepositoryTests {
         .build();
 
     final String userResponseJson = getJsonFromFile("json/user_response.json");
-    final JsonObject userResponse = new JsonObject(userResponseJson);
+    final User userResponse = Json.decodeValue(userResponseJson, User.class);
     final String manualBlocksResponseJson = getJsonFromFile("json/no_manual_blocks_response.json");
     final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
     final String overdueResponseJson = getJsonFromFile("json/overdue_response.json");
@@ -261,8 +267,6 @@ public class PatronRepositoryTests {
     final JsonObject openLoansResponse = new JsonObject(openLoansResponseJson);
     final String recallsResponseJson = getJsonFromFile("json/recall_requests_response.json");
     final JsonObject recallsResponse = new JsonObject(recallsResponseJson);
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
-        .thenReturn(Future.succeededFuture(userResponse));
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
@@ -277,14 +281,18 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(recallsResponse),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockLoginRepository.patronLogin(eq("leslie"), eq("0989"), any()))
-      .thenReturn(Future.succeededFuture(() -> new JsonObject()));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+        .thenReturn(Future.succeededFuture(
+            PatronPasswordVerificationRecords.builder()
+              .passwordVerified(TRUE)
+              .user(userResponse)
+              .build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
     sessionData.setPatronPasswordVerificationRequired(true);
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -366,7 +374,7 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
-      @Mock LoginRepository mockLoginRepository) {
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -382,7 +390,7 @@ public class PatronRepositoryTests {
         .build();
 
     final String userResponseJson = getJsonFromFile("json/user_response.json");
-    final JsonObject userResponse = new JsonObject(userResponseJson);
+    final User userResponse = Json.decodeValue(userResponseJson, User.class);
     final String manualBlocksResponseJson = getJsonFromFile("json/no_manual_blocks_response.json");
     final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
     final String overdueResponseJson = getJsonFromFile("json/overdue_response.json");
@@ -409,11 +417,13 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(recallsResponse),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -468,7 +478,7 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
-      @Mock LoginRepository mockLoginRepository) {
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -484,7 +494,7 @@ public class PatronRepositoryTests {
         .build();
 
     final String userResponseJson = getJsonFromFile("json/user_response3.json");
-    final JsonObject userResponse = new JsonObject(userResponseJson);
+    final User userResponse = Json.decodeValue(userResponseJson, User.class);
     final String manualBlocksResponseJson = getJsonFromFile("json/no_manual_blocks_response.json");
     final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
     final String overdueResponseJson = getJsonFromFile("json/overdue_response.json");
@@ -519,11 +529,13 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByItemId(
         eq("c70f966b-435f-4879-a7d1-3f66e6699191"), eq("Recall"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(recallsResponse2));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -578,7 +590,7 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
-      @Mock LoginRepository mockLoginRepository) {
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -593,11 +605,13 @@ public class PatronRepositoryTests {
 
     when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(null));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -649,7 +663,7 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
-      @Mock LoginRepository mockLoginRepository) {
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -663,12 +677,14 @@ public class PatronRepositoryTests {
         .build();
 
     when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
-        .thenReturn(Future.succeededFuture(new JsonObject().put("active", false)));
+        .thenReturn(Future.succeededFuture(new User.Builder().active(FALSE).build()));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -720,7 +736,7 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
-      @Mock LoginRepository mockLoginRepository) {
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -734,12 +750,14 @@ public class PatronRepositoryTests {
         .build();
 
     when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
-        .thenReturn(Future.succeededFuture(new JsonObject().put("active", true)));
+        .thenReturn(Future.succeededFuture(new User.Builder().active(TRUE).build()));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -790,7 +808,7 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
-      @Mock LoginRepository mockLoginRepository) {
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -806,7 +824,7 @@ public class PatronRepositoryTests {
         .build();
 
     final String userResponseJson = getJsonFromFile("json/user_response2.json");
-    final JsonObject userResponse = new JsonObject(userResponseJson);
+    final User userResponse = Json.decodeValue(userResponseJson, User.class);
     final String manualBlocksResponseJson = getJsonFromFile("json/no_manual_blocks_response.json");
     final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
     when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
@@ -820,11 +838,13 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -876,7 +896,7 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
-      @Mock LoginRepository mockLoginRepository) {
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -892,7 +912,7 @@ public class PatronRepositoryTests {
         .build();
 
     final String userResponseJson = getJsonFromFile("json/user_response1.json");
-    final JsonObject userResponse = new JsonObject(userResponseJson);
+    final User userResponse = Json.decodeValue(userResponseJson, User.class);
     final String manualBlocksResponseJson = getJsonFromFile("json/no_manual_blocks_response.json");
     final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
     when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
@@ -910,11 +930,13 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -1025,7 +1047,7 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
-      @Mock LoginRepository mockLoginRepository) {
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final PatronInformation patronInformation = PatronInformation.builder()
@@ -1041,7 +1063,7 @@ public class PatronRepositoryTests {
         .build();
 
     final String userResponseJson = getJsonFromFile("json/user_response2.json");
-    final JsonObject userResponse = new JsonObject(userResponseJson);
+    final User userResponse = Json.decodeValue(userResponseJson, User.class);
     when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(userResponse));
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
@@ -1053,11 +1075,13 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).setHandler(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
@@ -1110,7 +1134,7 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
-      @Mock LoginRepository mockLoginRepository) {
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final EndPatronSession endPatronSession = EndPatronSession.builder()
@@ -1121,10 +1145,13 @@ public class PatronRepositoryTests {
         .patronPassword("0989")
         .build();
 
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
+
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
     patronRepository.performEndPatronSessionCommand(endPatronSession, sessionData).setHandler(
         testContext.succeeding(endSessionResponse -> testContext.verify(() -> {
           assertNotNull(endSessionResponse);
@@ -1146,7 +1173,7 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
-      @Mock LoginRepository mockLoginRepository) {
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final EndPatronSession endPatronSession = EndPatronSession.builder()
@@ -1157,18 +1184,15 @@ public class PatronRepositoryTests {
         .patronPassword("0989")
         .build();
 
-    final String userResponseJson = getJsonFromFile("json/user_response.json");
-    final JsonObject userResponse = new JsonObject(userResponseJson);
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
-        .thenReturn(Future.succeededFuture(userResponse));
-    when(mockLoginRepository.patronLogin(eq("leslie"), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(() -> new JsonObject()));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+        .thenReturn(Future.succeededFuture(
+            PatronPasswordVerificationRecords.builder().passwordVerified(TRUE).build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
     sessionData.setPatronPasswordVerificationRequired(true);
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
     patronRepository.performEndPatronSessionCommand(endPatronSession, sessionData).setHandler(
         testContext.succeeding(endSessionResponse -> testContext.verify(() -> {
           assertNotNull(endSessionResponse);
@@ -1190,7 +1214,7 @@ public class PatronRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
       @Mock FeeFinesRepository mockFeeFinesRepository,
-      @Mock LoginRepository mockLoginRepository) {
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
     final String patronIdentifier = "1234567890";
     final EndPatronSession endPatronSession = EndPatronSession.builder()
@@ -1201,23 +1225,18 @@ public class PatronRepositoryTests {
         .patronPassword("0989")
         .build();
 
-    final String userResponseJson = getJsonFromFile("json/user_response.json");
-    final JsonObject userResponse = new JsonObject(userResponseJson);
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
-        .thenReturn(Future.succeededFuture(userResponse));
-    when(mockLoginRepository.patronLogin(eq("leslie"), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(Utils.handleErrors(new RequestThrowable(null) {
-          private static final long serialVersionUID = -9126223501276281006L;
-          public List<String> getErrorMessages() {
-            return Collections.singletonList("Password does not match");
-          }
-        })));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+        .thenReturn(Future.succeededFuture(
+            PatronPasswordVerificationRecords.builder()
+              .passwordVerified(FALSE)
+              .errorMessages(Collections.singletonList("Password does not match"))
+              .build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
     sessionData.setPatronPasswordVerificationRequired(true);
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
-        mockCirculationRepository, mockFeeFinesRepository, mockLoginRepository, clock);
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
     patronRepository.performEndPatronSessionCommand(endPatronSession, sessionData).setHandler(
         testContext.succeeding(endSessionResponse -> testContext.verify(() -> {
           assertNotNull(endSessionResponse);

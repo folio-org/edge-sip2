@@ -1,5 +1,6 @@
 package org.folio.edge.sip2.handlers;
 
+import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.folio.edge.sip2.parser.Command.END_SESSION_RESPONSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,6 +70,63 @@ public class EndPatronSessionHandlerTests {
     handler.execute(endPatronSessionRequest, sessionData).setHandler(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "36Y"
+              + OffsetDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
+              + "AO" + institutionId + "|AA" + patronIdentifier + '|';
+
+          assertEquals(expectedString, sipMessage);
+
+          //through the magic of Pass-by-Reference, sessionData was updated
+          //and we can see its updated values without having it explicitly being returned
+          assertEquals("abcdefghijklmnop", sessionData.getAuthenticationToken());
+          assertEquals("JoeSmith", sessionData.getUsername());
+          assertEquals("some random password", sessionData.getPassword());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void canSuccessfullyGetFailedEndPatronSessionResponse(
+      @Mock PatronRepository mockPatronRepository,
+      Vertx vertx,
+      VertxTestContext testContext) {
+
+    final String institutionId = "fs00000001";
+    final String patronIdentifier = "patronId1234";
+    final String patronPassword = "patronPassword";
+    final Clock clock = TestUtils.getUtcFixedClock();
+
+    final EndPatronSession endPatronSessionRequest = EndPatronSession.builder()
+        .patronIdentifier(patronIdentifier)
+        .patronPassword(patronPassword)
+        .institutionId(institutionId)
+        .terminalPassword("12345")
+        .transactionDate(OffsetDateTime.now(clock))
+        .build();
+
+    when(mockPatronRepository.performEndPatronSessionCommand(any(), any()))
+        .thenReturn(Future.succeededFuture(EndSessionResponse.builder()
+          .endSession(FALSE)
+          .transactionDate(OffsetDateTime.now(clock))
+          .institutionId(institutionId)
+          .patronIdentifier(patronIdentifier)
+          .build()));
+    Template template = FreemarkerRepository
+        .getInstance()
+        .getFreemarkerTemplate(END_SESSION_RESPONSE);
+
+    final EndPatronSessionHandler handler =
+        new EndPatronSessionHandler(mockPatronRepository, template);
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPassword("some random password");
+    sessionData.setUsername("JoeSmith");
+    sessionData.setAuthenticationToken("abcdefghijklmnop");
+    sessionData.setPatronPasswordVerificationRequired(true);
+
+    handler.execute(endPatronSessionRequest, sessionData).setHandler(
+        testContext.succeeding(sipMessage -> testContext.verify(() -> {
+          final String expectedString = "36N"
               + OffsetDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
               + "AO" + institutionId + "|AA" + patronIdentifier + '|';
 

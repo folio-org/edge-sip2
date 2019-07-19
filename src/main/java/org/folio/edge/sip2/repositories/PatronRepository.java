@@ -36,8 +36,10 @@ import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.folio.edge.sip2.domain.messages.responses.EndSessionResponse;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse.PatronInformationResponseBuilder;
+import org.folio.edge.sip2.repositories.domain.Address;
+import org.folio.edge.sip2.repositories.domain.Personal;
+import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
-import org.folio.edge.sip2.utils.Utils;
 
 /**
  * Provides interaction with the patron required services. This repository is a go-between for
@@ -60,20 +62,20 @@ public class PatronRepository {
   private final UsersRepository usersRepository;
   private final CirculationRepository circulationRepository;
   private final FeeFinesRepository feeFinesRepository;
-  private final LoginRepository loginRepository;
+  private final PasswordVerifier passwordVerifier;
   private final Clock clock;
 
   @Inject
   PatronRepository(UsersRepository usersRepository, CirculationRepository circulationRepository,
-      FeeFinesRepository feeFinesRepository, LoginRepository loginRepository, Clock clock) {
+      FeeFinesRepository feeFinesRepository, PasswordVerifier passwordVerifier, Clock clock) {
     this.usersRepository = Objects.requireNonNull(usersRepository,
         "Users repository cannot be null");
     this.circulationRepository = Objects.requireNonNull(circulationRepository,
         "Circulation repository cannot be null");
     this.feeFinesRepository = Objects.requireNonNull(feeFinesRepository,
         "FeeFines repository cannot be null");
-    this.loginRepository = Objects.requireNonNull(loginRepository,
-        "Login repository cannot be null");
+    this.passwordVerifier = Objects.requireNonNull(passwordVerifier,
+        "Password verifier cannot be null");
     this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
   }
 
@@ -89,44 +91,38 @@ public class PatronRepository {
     Objects.requireNonNull(patronInformation, "patronInformation cannot be null");
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
 
-    final String barcode = patronInformation.getPatronIdentifier();
+    final String patronIdentifier = patronInformation.getPatronIdentifier();
+    final String patronPassword = patronInformation.getPatronPassword();
 
-    // Look up the patron by barcode
-    final Future<JsonObject> result = usersRepository.getUserByBarcode(barcode, sessionData);
-    return result.compose(user -> {
-      if (user == null || !user.getBoolean("active", FALSE).booleanValue()) {
-        return invalidPatron(patronInformation, null);
-      } else {
-        final String userId = user.getString("id");
-        if (userId == null) {
-          // Something is really messed up if the id is missing
-          log.error("User with barcode {} is missing the \"id\" field", barcode);
-          return invalidPatron(patronInformation, null);
-        }
-
-        final Future<IResource> loginFuture;
-        final boolean patronPasswordVerificationRequired =
-            sessionData.isPatronPasswordVerificationRequired();
-        if (patronPasswordVerificationRequired) {
-          loginFuture = loginRepository.patronLogin(user.getString("username"),
-              patronInformation.getPatronPassword(),
-              sessionData);
-        } else {
-          loginFuture = Future.succeededFuture();
-        }
-
-        return loginFuture.compose(login -> {
-          // This means we tried to log in as the patron and failed in some way
-          if (login != null && !login.getErrorMessages().isEmpty()) {
+    return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+        .compose(verification -> {
+          if (FALSE.equals(verification.getPasswordVerified())) {
             return invalidPatron(patronInformation, FALSE);
-          } else {
-            return validPatron(userId, user.getJsonObject("personal", new JsonObject()),
-                patronInformation, sessionData, patronPasswordVerificationRequired
-                && patronInformation.getPatronPassword() != null ? TRUE : null);
           }
+          final Future<User> userFuture;
+          if (verification.getPasswordVerified() == null) {
+            userFuture = usersRepository.getUserByBarcode(patronIdentifier, sessionData);
+          } else {
+            userFuture = Future.succeededFuture(verification.getUser());
+          }
+
+          return userFuture.compose(user -> {
+            if (user == null || FALSE.equals(user.getActive())) {
+              return invalidPatron(patronInformation, null);
+            } else {
+              final String userId = user.getId();
+              if (userId == null) {
+                // Something is really messed up if the id is missing
+                log.error("User with patron identifier {} is missing the \"id\" field",
+                    patronIdentifier);
+                return invalidPatron(patronInformation, verification.getPasswordVerified());
+              }
+
+              return validPatron(userId, user.getPersonal(), patronInformation, sessionData,
+                  verification.getPasswordVerified());
+            }
+          });
         });
-      }
-    });
   }
 
   /**
@@ -144,34 +140,19 @@ public class PatronRepository {
     Objects.requireNonNull(endPatronSession, "endPatronSession cannot be null");
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
 
-    final Future<IResource> loginFuture;
-    if (sessionData.isPatronPasswordVerificationRequired()) {
-      final String patronIdentifier = endPatronSession.getPatronIdentifier();
-      final String patronPassword = endPatronSession.getPatronPassword();
+    final String patronIdentifier = endPatronSession.getPatronIdentifier();
+    final String patronPassword = endPatronSession.getPatronPassword();
 
-      loginFuture = usersRepository.getUserByBarcode(patronIdentifier, sessionData)
-          .compose(user -> {
-            if (user == null) {
-              return Future.succeededFuture(
-                  Utils.handleErrors(new Exception("Patron not found: " + patronIdentifier)));
-            }
-
-            return loginRepository.patronLogin(user.getString("username"), patronPassword,
-                sessionData);
-          });
-    } else {
-      loginFuture = Future.succeededFuture();
-    }
-
-    return loginFuture.map(login -> EndSessionResponse.builder()
-        .endSession(login == null || login.getErrorMessages().isEmpty())
-        .transactionDate(OffsetDateTime.now(clock))
-        .institutionId(endPatronSession.getInstitutionId())
-        .patronIdentifier(endPatronSession.getPatronIdentifier())
-        .build());
+    return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+        .map(verification -> EndSessionResponse.builder()
+          .endSession(!FALSE.equals(verification.getPasswordVerified()))
+          .transactionDate(OffsetDateTime.now(clock))
+          .institutionId(endPatronSession.getInstitutionId())
+          .patronIdentifier(endPatronSession.getPatronIdentifier())
+          .build());
   }
 
-  private Future<PatronInformationResponse> validPatron(String userId, JsonObject personal,
+  private Future<PatronInformationResponse> validPatron(String userId, Personal personal,
       PatronInformation patronInformation, SessionData sessionData, Boolean validPassword) {
     // Now that we have a valid patron, we can retrieve data from circulation
     final PatronInformationResponseBuilder builder = PatronInformationResponse.builder();
@@ -271,12 +252,12 @@ public class PatronRepository {
     return records.getInteger(FIELD_TOTAL_RECORDS, Integer.valueOf(0)).intValue();
   }
 
-  private PatronInformationResponseBuilder addPersonalData(JsonObject personal,
+  private PatronInformationResponseBuilder addPersonalData(Personal personal,
       PatronInformationResponseBuilder builder) {
     final String personalName = getPatronPersonalName(personal);
     final String homeAddress = getPatronHomeAddress(personal);
-    final String emailAddress = personal.getString("email");
-    final String homePhoneNumber = personal.getString("phone");
+    final String emailAddress = personal == null ? null : personal.getEmail();
+    final String homePhoneNumber = personal == null ? null : personal.getPhone();
 
     return builder.personalName(personalName)
         .homeAddress(homeAddress)
@@ -342,39 +323,43 @@ public class PatronRepository {
     });
   }
 
-  private String getPatronPersonalName(JsonObject personal) {
-    final Optional<String> firstName = Optional.ofNullable(personal.getString("firstName"));
-    final Optional<String> middleName = Optional.ofNullable(personal.getString("middleName"));
-    final Optional<String> lastName = Optional.ofNullable(personal.getString("lastName"));
+  private String getPatronPersonalName(Personal personal) {
+    if (personal != null) {
+      return Stream.of(personal.getFirstName(), personal.getMiddleName(), personal.getLastName())
+          .filter(Objects::nonNull)
+          .collect(Collectors.joining(" "));
+    }
 
-    return Stream.of(firstName, middleName, lastName)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .collect(Collectors.joining(" "));
+    return "";
   }
 
-  private String getPatronHomeAddress(JsonObject personal) {
-    final JsonArray addresses = personal.getJsonArray("addresses", new JsonArray());
-    // For now, we will do the following:
-    // 1. if the address list > 0, pick the "primaryAddress"
-    // 2. if no "primaryAddress", pick the first address
-    // 3. no addresses, return null (home address is an optional field)
-    // In the future, we should use the UUID of the home address type to select the home address
-    // and if no match, then return null so as to not expose other addresses.
-    // This can be cleaned up a bit when we get to Java 11.
-    Optional<String> addressString = addresses.stream()
-        .map(o -> (JsonObject) o)
-        .filter(address -> address.getBoolean("primaryAddress", FALSE).booleanValue())
-        .findFirst()
-        .map(Optional::of)
-        .orElseGet(() -> addresses.stream()
-            .map(o -> (JsonObject) o)
-            .findFirst()
-            .map(Optional::of)
-            .orElse(Optional.empty()))
-        .map(this::toHomeAddress);
+  private String getPatronHomeAddress(Personal personal) {
+    if (personal != null) {
+      return Optional.ofNullable(personal.getAddresses())
+          .map(addresses -> {
+            // For now, we will do the following:
+            // 1. if the address list > 0, pick the "primaryAddress"
+            // 2. if no "primaryAddress", pick the first address
+            // 3. no addresses, return null (home address is an optional field)
+            // In the future, we should use the UUID of the home address type to select the home
+            // address and if no match, then return null so as to not expose other addresses.
+            // This can be cleaned up a bit when we get to Java 11.
+            Optional<String> addressString = addresses.stream()
+                .filter(address -> TRUE.equals(address.getPrimaryAddress()))
+                .findFirst()
+                .map(Optional::of)
+                .orElseGet(() -> addresses.stream()
+                    .findFirst()
+                    .map(Optional::of)
+                    .orElse(Optional.empty()))
+                .map(this::toHomeAddress);
 
-    return addressString.orElse(null);
+            return addressString.orElse(null);
+          })
+          .orElse(null);
+    }
+
+    return null;
   }
 
   private List<String> getTitles(JsonArray items) {
@@ -423,13 +408,13 @@ public class PatronRepository {
         .collect(Collectors.toList());
   }
 
-  private String toHomeAddress(JsonObject address) {
-    final Optional<String> addressLine1 = Optional.ofNullable(address.getString("addressLine1"));
-    final Optional<String> addressLine2 = Optional.ofNullable(address.getString("addressLine2"));
-    final Optional<String> city = Optional.ofNullable(address.getString("city"));
-    final Optional<String> region = Optional.ofNullable(address.getString("region"));
-    final Optional<String> postalCode = Optional.ofNullable(address.getString("postalCode"));
-    final Optional<String> countryId = Optional.ofNullable(address.getString("countryId"));
+  private String toHomeAddress(Address address) {
+    final Optional<String> addressLine1 = Optional.ofNullable(address.getAddressLine1());
+    final Optional<String> addressLine2 = Optional.ofNullable(address.getAddressLine2());
+    final Optional<String> city = Optional.ofNullable(address.getCity());
+    final Optional<String> region = Optional.ofNullable(address.getRegion());
+    final Optional<String> postalCode = Optional.ofNullable(address.getPostalCode());
+    final Optional<String> countryId = Optional.ofNullable(address.getCountryId());
 
     // Not to sure about this format. It is one line and looks like:
     // 123 Fake Street, Anytown, CA 12345-1234 US

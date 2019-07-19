@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
+import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
 
 /**
@@ -32,7 +33,7 @@ public class UsersRepository {
    * @param sessionData session data
    * @return the user details in raw JSON
    */
-  public Future<JsonObject> getUserByBarcode(
+  public Future<User> getUserByBarcode(
       String barcode,
       SessionData sessionData) {
     Objects.requireNonNull(barcode, "barcode cannot be null");
@@ -51,8 +52,8 @@ public class UsersRepository {
         .map(this::getUserFromList);
   }
 
-  private JsonObject getUserFromList(JsonObject userList) {
-    final JsonObject user;
+  private User getUserFromList(JsonObject userList) {
+    final User user;
 
     if (userList == null || userList.getInteger("totalRecords",
         Integer.valueOf(0)).intValue() == 0) {
@@ -63,7 +64,7 @@ public class UsersRepository {
         user = null;
       } else {
         // there should be only 1 user, if the barcode exists
-        user = users.getJsonObject(0);
+        user = users.getJsonObject(0).mapTo(User.class);
       }
     }
 
