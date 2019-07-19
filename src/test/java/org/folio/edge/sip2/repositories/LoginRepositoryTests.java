@@ -3,6 +3,7 @@ package org.folio.edge.sip2.repositories;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
@@ -15,6 +16,7 @@ import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import java.util.Collections;
 import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
 import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
 import org.folio.edge.sip2.domain.messages.requests.Login;
@@ -95,6 +97,52 @@ public class LoginRepositoryTests {
         testContext.succeeding(loginResponse -> testContext.verify(() -> {
           assertNotNull(loginResponse);
           assertFalse(loginResponse.getOk());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void canPatronLogin(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final String username = "test";
+    final String password = "xyzzy";
+
+    when(mockFolioProvider.createResource(any()))
+        .thenReturn(Future.succeededFuture(new FolioResource(new JsonObject(),
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
+    loginRepository.patronLogin(username, password, sessionData).setHandler(
+        testContext.succeeding(loginResponse -> testContext.verify(() -> {
+          assertNotNull(loginResponse);
+          assertNotNull(loginResponse.getResource());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void cannotPatronLogin(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final String username = "test";
+    final String password = "xyzzy";
+
+    when(mockFolioProvider.createResource(any()))
+        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
+    loginRepository.patronLogin(username, password, sessionData).setHandler(
+        testContext.succeeding(loginResponse -> testContext.verify(() -> {
+          assertNotNull(loginResponse);
+          assertNull(loginResponse.getResource());
+          assertEquals(Collections.singletonList("Test failure"), loginResponse.getErrorMessages());
 
           testContext.completeNow();
         })));
