@@ -252,8 +252,9 @@ public class PatronRepository {
     return records.getInteger(FIELD_TOTAL_RECORDS, Integer.valueOf(0)).intValue();
   }
 
-  private PatronInformationResponseBuilder addPersonalData(Personal personal, String patronIdentifier,
-                                                           PatronInformationResponseBuilder builder) {
+  private PatronInformationResponseBuilder addPersonalData(Personal personal,
+                                                     String patronIdentifier,
+                                                     PatronInformationResponseBuilder builder) {
     String personalName = getPatronPersonalName(personal);
     personalName = personalName.isEmpty() ? patronIdentifier : personalName;
     final String homeAddress = getPatronHomeAddress(personal);
