@@ -152,7 +152,7 @@ public class ConfigurationRepository {
                                         String configKeyLocale, ACSStatusBuilder builder,
                                         SessionData sessionData) {
 
-    addTenantConfig(sets.get(configKeyTenant), builder);
+    addTenantConfig(sets.get(configKeyTenant), sessionData, builder);
     addSCStationConfig(sets.get(configKeySC), builder);
     addLocaleConfig(sets.get(configKeyLocale), sessionData);
     builder.institutionId(sessionData.getTenant());
@@ -166,7 +166,8 @@ public class ConfigurationRepository {
     }
   }
 
-  private void addTenantConfig(JsonObject config, ACSStatusBuilder builder) {
+  private void addTenantConfig(JsonObject config, SessionData sessionData, 
+      ACSStatusBuilder builder) {
     if (config != null) {
       builder.onLineStatus(true);
       builder.statusUpdateOk(config.getBoolean("statusUpdateOk"));
@@ -174,6 +175,8 @@ public class ConfigurationRepository {
       builder.protocolVersion("2.00");
       builder.supportedMessages(getSupportedMessagesFromJson(
           config.getJsonArray("supportedMessages")));
+      sessionData.setPatronPasswordVerificationRequired(
+          config.getBoolean("patronPasswordVerificationRequired", Boolean.FALSE));
     }
   }
 

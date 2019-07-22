@@ -60,7 +60,7 @@ public class UsersRepositoryTests {
     usersRepository.getUserByBarcode("997383903573496", sessionData).setHandler(
         testContext.succeeding(user -> testContext.verify(() -> {
           assertNotNull(user);
-          assertEquals("997383903573496", user.getString("barcode"));
+          assertEquals("997383903573496", user.getBarcode());
 
           testContext.completeNow();
         })));
