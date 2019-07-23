@@ -55,9 +55,9 @@ public class PatronRepository {
   private static final Logger log = LogManager.getLogger();
   // These really should come from FOLIO
   static final String MESSAGE_INVALID_PATRON =
-      "Your library card number cannot be located.  Please see a staff member for assistance.";
+      "Your library card number cannot be located. Please see a staff member for assistance.";
   static final String MESSAGE_BLOCKED_PATRON =
-      "There are unresolved issues with your account.  Please see a staff member for assistance.";
+      "There are unresolved issues with your account. Please see a staff member for assistance.";
 
   private final UsersRepository usersRepository;
   private final CirculationRepository circulationRepository;
@@ -255,8 +255,7 @@ public class PatronRepository {
   private PatronInformationResponseBuilder addPersonalData(Personal personal,
                                                      String patronIdentifier,
                                                      PatronInformationResponseBuilder builder) {
-    String personalName = getPatronPersonalName(personal);
-    personalName = personalName.isEmpty() ? patronIdentifier : personalName;
+    final String personalName = getPatronPersonalName(personal, patronIdentifier);
     final String homeAddress = getPatronHomeAddress(personal);
     final String emailAddress = personal == null ? null : personal.getEmail();
     final String homePhoneNumber = personal == null ? null : personal.getPhone();
@@ -325,11 +324,12 @@ public class PatronRepository {
     });
   }
 
-  private String getPatronPersonalName(Personal personal) {
+  private String getPatronPersonalName(Personal personal, String defaultPersonalName) {
     if (personal != null) {
       return Stream.of(personal.getFirstName(), personal.getMiddleName(), personal.getLastName())
           .filter(Objects::nonNull)
-          .collect(Collectors.joining(" "));
+          .collect(Collectors.collectingAndThen(Collectors.joining(" "),
+              s -> s.isEmpty() ? defaultPersonalName : s));
     }
 
     return "";
