@@ -55,9 +55,9 @@ public class PatronRepository {
   private static final Logger log = LogManager.getLogger();
   // These really should come from FOLIO
   static final String MESSAGE_INVALID_PATRON =
-      "Your library card number cannot be located.  Please see a staff member for assistance.";
+      "Your library card number cannot be located. Please see a staff member for assistance.";
   static final String MESSAGE_BLOCKED_PATRON =
-      "There are unresolved issues with your account.  Please see a staff member for assistance.";
+      "There are unresolved issues with your account. Please see a staff member for assistance.";
 
   private final UsersRepository usersRepository;
   private final CirculationRepository circulationRepository;
@@ -129,7 +129,7 @@ public class PatronRepository {
    * Perform End Patron Session.
    * If PIN verification is required, then we will ensure that the patron password (PIN) is
    * validated before allowing a successful return.
-   * 
+   *
    * @param endPatronSession command data
    * @param sessionData session data
    * @return the end session response indicating whether or not the session was ended
@@ -157,7 +157,7 @@ public class PatronRepository {
     // Now that we have a valid patron, we can retrieve data from circulation
     final PatronInformationResponseBuilder builder = PatronInformationResponse.builder();
     // Store patron data in the builder
-    addPersonalData(personal, builder);
+    addPersonalData(personal, patronInformation.getPatronIdentifier(), builder);
     final Integer startItem = patronInformation.getStartItem();
     final Integer endItem = patronInformation.getEndItem();
     // Get manual blocks data to build patron status
@@ -253,8 +253,9 @@ public class PatronRepository {
   }
 
   private PatronInformationResponseBuilder addPersonalData(Personal personal,
-      PatronInformationResponseBuilder builder) {
-    final String personalName = getPatronPersonalName(personal);
+                                                     String patronIdentifier,
+                                                     PatronInformationResponseBuilder builder) {
+    final String personalName = getPatronPersonalName(personal, patronIdentifier);
     final String homeAddress = getPatronHomeAddress(personal);
     final String emailAddress = personal == null ? null : personal.getEmail();
     final String homePhoneNumber = personal == null ? null : personal.getPhone();
@@ -323,14 +324,14 @@ public class PatronRepository {
     });
   }
 
-  private String getPatronPersonalName(Personal personal) {
+  private String getPatronPersonalName(Personal personal, String defaultPersonalName) {
     if (personal != null) {
       return Stream.of(personal.getFirstName(), personal.getMiddleName(), personal.getLastName())
           .filter(Objects::nonNull)
-          .collect(Collectors.joining(" "));
+          .collect(Collectors.collectingAndThen(Collectors.joining(" "),
+              s -> s.isEmpty() ? defaultPersonalName : s));
     }
-
-    return "";
+    return defaultPersonalName;
   }
 
   private String getPatronHomeAddress(Personal personal) {

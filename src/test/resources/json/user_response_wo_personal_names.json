@@ -1,0 +1,44 @@
+{
+  "username" : "leslie",
+  "id" : "4f0e711c-d583-41e0-9555-b62f1725023f",
+  "barcode" : "997383903573496",
+  "active" : true,
+  "type" : "patron",
+  "patronGroup" : "bdc2b6d4-5ceb-4a12-ab46-249b9a68473e",
+  "proxyFor" : [ ],
+  "personal" : {
+    "email" : "earnestine@sipes-stokes-and-durgan.so",
+    "phone" : "(916)599-0326",
+    "dateOfBirth" : "1968-08-12T00:00:00.000+0000",
+    "addresses" : [ {
+      "countryId" : "US",
+      "addressLine1" : "2123 Blah Street",
+      "city" : "Boston",
+      "region" : "MA",
+      "postalCode" : "12345-1234",
+      "addressTypeId" : "93d3d88d-499b-45d0-9bc7-ac73c3a19880"
+    }, {
+      "countryId" : "US",
+      "addressLine1" : "00430 Denis Parks",
+      "city" : "Indianapolis",
+      "region" : "FL",
+      "postalCode" : "14654-6001",
+      "addressTypeId" : "93d3d88d-499b-45d0-9bc7-ac73c3a19880",
+      "primaryAddress" : true
+    } ],
+    "preferredContactTypeId" : "005"
+  },
+  "enrollmentDate" : "2015-04-30T00:00:00.000+0000",
+  "expirationDate" : "2020-06-19T00:00:00.000+0000",
+  "createdDate" : "2019-04-15T10:23:30.751+0000",
+  "updatedDate" : "2019-04-16T19:08:57.247+0000",
+  "metadata" : {
+    "createdDate" : "2019-04-16T19:08:57.244+0000",
+    "createdByUserId" : "d5402f1c-f64f-5eb9-8176-abacba37c8a9",
+    "updatedDate" : "2019-04-16T19:08:57.244+0000",
+    "updatedByUserId" : "d5402f1c-f64f-5eb9-8176-abacba37c8a9"
+  },
+  "tags" : {
+    "tagList" : [ "urgent" ]
+  }
+}
