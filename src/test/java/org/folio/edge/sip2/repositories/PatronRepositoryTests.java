@@ -1455,10 +1455,4 @@ public class PatronRepositoryTests {
             EnumSet.noneOf(PatronStatus.class),
             null));
   }
-
-  private static Stream personalFileArguments(){
-    return Stream.of(
-      Arguments.of("json/user_response_with_no_personal.json"),
-      Arguments.of("json/user_response_wo_personal_names.json"));
-  }
 }
