@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import junitparams.converters.Param;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
 import org.folio.edge.sip2.domain.messages.enumerations.Summary;
