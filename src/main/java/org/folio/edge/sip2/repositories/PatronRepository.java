@@ -331,8 +331,7 @@ public class PatronRepository {
           .collect(Collectors.collectingAndThen(Collectors.joining(" "),
               s -> s.isEmpty() ? defaultPersonalName : s));
     }
-
-    return "";
+    return defaultPersonalName;
   }
 
   private String getPatronHomeAddress(Personal personal) {
