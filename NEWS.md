@@ -1,2 +1,9 @@
-## 1.0.0 Unreleased
- * [SIP2-35](https://issues.folio.org/browse/SIP2-35): Add the domain model for SIP2/FOLIO usage.
+## 1.0.0 2019-07-24
+ * Initial release contains support for the following SIP commands:
+    * Checkout
+    * Checkin
+    * SC Status
+    * Request ACS Resend
+    * Login
+    * Patron Information
+    * End Patron Session
