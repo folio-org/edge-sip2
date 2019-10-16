@@ -11,7 +11,7 @@ import org.folio.edge.sip2.session.SessionData;
 
 /**
  * Verifies passwords sent via SIP2.
- * 
+ *
  * @author mreno-EBSCO
  */
 public class PasswordVerifier {
@@ -44,7 +44,7 @@ public class PasswordVerifier {
     final Future<PatronPasswordVerificationRecords> loginFuture;
 
     if (sessionData.isPatronPasswordVerificationRequired()) {
-      loginFuture = usersRepository.getUserByBarcode(patronIdentifier, sessionData)
+      loginFuture = usersRepository.getUserById(patronIdentifier, sessionData)
           .compose(user -> {
             if (user == null) {
               return Future.succeededFuture(PatronPasswordVerificationRecords.builder()

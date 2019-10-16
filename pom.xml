@@ -304,6 +304,7 @@
                   <manifestEntries>
                     <Main-Class>io.vertx.core.Launcher</Main-Class>
                     <Main-Verticle>${exec.mainClass}</Main-Verticle>
+                    <Multi-Release>true</Multi-Release>
                   </manifestEntries>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">

@@ -57,13 +57,69 @@ public class UsersRepositoryTests {
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
     final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
-    usersRepository.getUserByBarcode("997383903573496", sessionData).setHandler(
+    usersRepository.getUserById("997383903573496", sessionData).setHandler(
         testContext.succeeding(user -> testContext.verify(() -> {
           assertNotNull(user);
           assertEquals("997383903573496", user.getBarcode());
 
           testContext.completeNow();
         })));
+  }
+
+  @Test
+  public void canGetUserByUsername(Vertx vertx,
+                                  VertxTestContext testContext,
+                                  @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+
+    final String userResponseJson = getJsonFromFile("json/users_response.json");
+    final JsonObject userResponse = new JsonObject(userResponseJson);
+
+    when(mockFolioProvider.retrieveResource(any()))
+      .thenReturn(Future.succeededFuture(new FolioResource(userResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
+    usersRepository.getUserById("leslie", sessionData).setHandler(
+      testContext.succeeding(user -> testContext.verify(() -> {
+        assertNotNull(user);
+        assertEquals("leslie", user.getUsername());
+
+        testContext.completeNow();
+      })));
+  }
+
+  /**
+   * In the unlikely case of multiple user records returning for the same externalSystemId because it's not unique,
+   * the service should only return the first record.
+   * @param vertx vertx object
+   * @param testContext test context object
+   * @param mockFolioProvider a mock provider simulating backend FOLIO
+   */
+  @Test
+  public void canGetOnlyOneUserByExternalSystemId(Vertx vertx,
+                                   VertxTestContext testContext,
+                                   @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final String userResponseJson = getJsonFromFile("json/multiple_users_response.json");
+    final JsonObject userResponse = new JsonObject(userResponseJson);
+
+    final String extSystemId = "4f0e711c-d583-41e0-9555-b62f1725023f";
+
+    when(mockFolioProvider.retrieveResource(any()))
+      .thenReturn(Future.succeededFuture(new FolioResource(userResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
+    usersRepository.getUserById(extSystemId, sessionData).setHandler(
+      testContext.succeeding(user -> testContext.verify(() -> {
+        assertNotNull(user);
+        assertEquals(extSystemId, user.getExtSystemId());
+        assertEquals("adarius1", user.getUsername());
+        testContext.completeNow();
+      })));
   }
 
   @Test
@@ -76,7 +132,7 @@ public class UsersRepositoryTests {
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
     final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
-    usersRepository.getUserByBarcode("1234667", sessionData).setHandler(
+    usersRepository.getUserById("1234667", sessionData).setHandler(
         testContext.succeeding(user -> testContext.verify(() -> {
           assertNull(user);
 

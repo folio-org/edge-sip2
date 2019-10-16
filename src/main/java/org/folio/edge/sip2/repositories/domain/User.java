@@ -12,6 +12,7 @@ public class User {
   private final String username;
   private final Boolean active;
   private final Personal personal;
+  private final String externalSystemId;
 
   private User(Builder builder) {
     id = builder.id;
@@ -19,6 +20,7 @@ public class User {
     username = builder.username;
     active = builder.active;
     personal = builder.personal;
+    externalSystemId = builder.externalSystemId;
   }
 
   public String getId() {
@@ -27,6 +29,10 @@ public class User {
 
   public String getBarcode() {
     return barcode;
+  }
+
+  public String getExtSystemId() {
+    return externalSystemId;
   }
 
   public String getUsername() {
@@ -49,6 +55,7 @@ public class User {
     private String username;
     private Boolean active;
     private Personal personal;
+    private String externalSystemId;
 
     @JsonProperty
     public Builder id(String id) {
@@ -77,6 +84,12 @@ public class User {
     @JsonProperty
     public Builder personal(Personal personal) {
       this.personal = personal;
+      return this;
+    }
+
+    @JsonProperty
+    public Builder externalSystemId(String externalSystemId) {
+      this.externalSystemId = externalSystemId;
       return this;
     }
 
