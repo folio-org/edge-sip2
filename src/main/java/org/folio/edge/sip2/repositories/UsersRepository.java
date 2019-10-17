@@ -55,8 +55,8 @@ public class UsersRepository {
   private User getUserFromList(JsonObject userList) {
     final User user;
 
-    if (userList == null ||
-      userList.getInteger("totalRecords", 0) == 0) {
+    if (userList == null
+        || userList.getInteger("totalRecords", 0) == 0) {
       user = null;
     } else {
       final JsonArray users = userList.getJsonArray("users");
@@ -87,7 +87,7 @@ public class UsersRepository {
     public String getPath() {
       return "/users?limit=1&query=(barcode==" + identifier
                     + " or externalSystemId==" + identifier
-                    + " or username==" + identifier +')';
+                    + " or username==" + identifier + ')';
     }
 
     @Override

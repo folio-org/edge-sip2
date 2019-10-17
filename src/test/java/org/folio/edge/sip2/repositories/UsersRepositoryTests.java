@@ -75,24 +75,24 @@ public class UsersRepositoryTests {
     final JsonObject userResponse = new JsonObject(userResponseJson);
 
     when(mockFolioProvider.retrieveResource(any()))
-      .thenReturn(Future.succeededFuture(new FolioResource(userResponse,
+        .thenReturn(Future.succeededFuture(new FolioResource(userResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
     final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
     usersRepository.getUserById("leslie", sessionData).setHandler(
-      testContext.succeeding(user -> testContext.verify(() -> {
-        assertNotNull(user);
-        assertEquals("leslie", user.getUsername());
+        testContext.succeeding(user -> testContext.verify(() -> {
+          assertNotNull(user);
+          assertEquals("leslie", user.getUsername());
 
-        testContext.completeNow();
-      })));
+          testContext.completeNow();
+        })));
   }
 
   /**
-   * In the unlikely case of multiple user records returning for the same externalSystemId because it's not unique,
-   * the service should only return the first record.
+   * In the unlikely case of multiple user records returning for the same externalSystemId
+   * because it's not unique, the service should only return the first record.
    * @param vertx vertx object
    * @param testContext test context object
    * @param mockFolioProvider a mock provider simulating backend FOLIO
@@ -107,19 +107,19 @@ public class UsersRepositoryTests {
     final String extSystemId = "4f0e711c-d583-41e0-9555-b62f1725023f";
 
     when(mockFolioProvider.retrieveResource(any()))
-      .thenReturn(Future.succeededFuture(new FolioResource(userResponse,
+        .thenReturn(Future.succeededFuture(new FolioResource(userResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
     final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
     usersRepository.getUserById(extSystemId, sessionData).setHandler(
-      testContext.succeeding(user -> testContext.verify(() -> {
-        assertNotNull(user);
-        assertEquals(extSystemId, user.getExtSystemId());
-        assertEquals("adarius1", user.getUsername());
-        testContext.completeNow();
-      })));
+        testContext.succeeding(user -> testContext.verify(() -> {
+          assertNotNull(user);
+          assertEquals(extSystemId, user.getExtSystemId());
+          assertEquals("adarius1", user.getUsername());
+          testContext.completeNow();
+        })));
   }
 
   @Test

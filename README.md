@@ -20,6 +20,10 @@ The edge-sip2 module can be launched via `edge-sip2-fat.jar` as follows:
 ```bash
 $ java -jar edge-sip2-fat.jar -conf '{"port":1234,"okapiUrl":"https://folio-snapshot-okapi.aws.indexdata.com","tenant":"diku"}'
 ```
+On Windows the `edge-sip2-fat.jar` should be launched with the JSON configuration in double quotes and the inner double quotes should be escaped, for example:
+```
+$ java -jar edge-sip2-fat.jar -conf "{\"port\":1234,\"okapiUrl\":\"https://folio-snapshot-okapi.aws.indexdata.com\",\"tenant\":\"diku"\}"
+``` 
 
 |Config option|Type|Description|
 |-------------|----|-----------|
