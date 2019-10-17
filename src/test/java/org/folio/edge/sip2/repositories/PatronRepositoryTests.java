@@ -163,7 +163,7 @@ public class PatronRepositoryTests {
     final JsonObject openLoansResponse = new JsonObject(openLoansResponseJson);
     final String recallsResponseJson = getJsonFromFile("json/recall_requests_response.json");
     final JsonObject recallsResponse = new JsonObject(recallsResponseJson);
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(userResponse));
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
@@ -266,7 +266,7 @@ public class PatronRepositoryTests {
     final JsonObject openLoansResponse = new JsonObject(openLoansResponseJson);
     final String recallsResponseJson = getJsonFromFile("json/recall_requests_response.json");
     final JsonObject recallsResponse = new JsonObject(recallsResponseJson);
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
       .thenReturn(Future.succeededFuture(userResponse));
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
       .thenReturn(Future.succeededFuture(manualBlocksResponse));
@@ -369,7 +369,7 @@ public class PatronRepositoryTests {
     final JsonObject openLoansResponse = new JsonObject(openLoansResponseJson);
     final String recallsResponseJson = getJsonFromFile("json/recall_requests_response.json");
     final JsonObject recallsResponse = new JsonObject(recallsResponseJson);
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
       .thenReturn(Future.succeededFuture(userResponse));
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
       .thenReturn(Future.succeededFuture(manualBlocksResponse));
@@ -604,7 +604,7 @@ public class PatronRepositoryTests {
     final JsonObject openLoansResponse = new JsonObject(openLoansResponseJson);
     final String recallsResponseJson = getJsonFromFile("json/recall_requests_response.json");
     final JsonObject recallsResponse = new JsonObject(recallsResponseJson);
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(userResponse));
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
@@ -712,7 +712,7 @@ public class PatronRepositoryTests {
     final JsonObject recallsResponse1 = new JsonObject(recallsResponse1Json);
     final String recallsResponse2Json = getJsonFromFile("json/recall_requests_response2.json");
     final JsonObject recallsResponse2 = new JsonObject(recallsResponse2Json);
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(userResponse));
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
@@ -806,7 +806,7 @@ public class PatronRepositoryTests {
         .patronPassword("0989")
         .build();
 
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(null));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
@@ -880,7 +880,7 @@ public class PatronRepositoryTests {
         .patronPassword("0989")
         .build();
 
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(new User.Builder().active(FALSE).build()));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
@@ -954,7 +954,7 @@ public class PatronRepositoryTests {
         .patronPassword("0989")
         .build();
 
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(new User.Builder().active(TRUE).build()));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
@@ -1032,7 +1032,7 @@ public class PatronRepositoryTests {
     final User userResponse = Json.decodeValue(userResponseJson, User.class);
     final String manualBlocksResponseJson = getJsonFromFile("json/no_manual_blocks_response.json");
     final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(userResponse));
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
@@ -1120,7 +1120,7 @@ public class PatronRepositoryTests {
     final User userResponse = Json.decodeValue(userResponseJson, User.class);
     final String manualBlocksResponseJson = getJsonFromFile("json/no_manual_blocks_response.json");
     final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(userResponse));
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
@@ -1213,7 +1213,7 @@ public class PatronRepositoryTests {
 
     final String userResponseJson = getJsonFromFile("json/user_response2.json");
     final User userResponse = Json.decodeValue(userResponseJson, User.class);
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
       .thenReturn(Future.succeededFuture(userResponse));
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
       .thenReturn(Future.succeededFuture(manualBlocksResponse));

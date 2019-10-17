@@ -39,7 +39,7 @@ class PasswordVerifierTests {
 
     final String userResponseJson = getJsonFromFile("json/user_response.json");
     final User userResponse = Json.decodeValue(userResponseJson, User.class);
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(userResponse));
     when(mockLoginRepository.patronLogin(eq("leslie"), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(() -> new JsonObject()));
@@ -69,7 +69,7 @@ class PasswordVerifierTests {
       @Mock LoginRepository mockLoginRepository) {
     final String patronIdentifier = "1234567890";
 
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(null));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
@@ -98,7 +98,7 @@ class PasswordVerifierTests {
 
     final String userResponseJson = getJsonFromFile("json/user_response.json");
     final User userResponse = Json.decodeValue(userResponseJson, User.class);
-    when(mockUsersRepository.getUserByBarcode(eq(patronIdentifier), any()))
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(userResponse));
     when(mockLoginRepository.patronLogin(eq("leslie"), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(Utils.handleErrors(new RequestThrowable(null) {

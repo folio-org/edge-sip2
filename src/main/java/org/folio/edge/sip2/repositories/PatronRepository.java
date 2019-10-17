@@ -101,7 +101,7 @@ public class PatronRepository {
           }
           final Future<User> userFuture;
           if (verification.getPasswordVerified() == null) {
-            userFuture = usersRepository.getUserByBarcode(patronIdentifier, sessionData);
+            userFuture = usersRepository.getUserById(patronIdentifier, sessionData);
           } else {
             userFuture = Future.succeededFuture(verification.getUser());
           }

@@ -29,21 +29,21 @@ public class UsersRepository {
   /**
    * Get user data by the user's barcode.
    *
-   * @param barcode the user's barcode
+   * @param identifier the user's identifier, which can be barcode, external system ID, or username
    * @param sessionData session data
    * @return the user details in raw JSON
    */
-  public Future<User> getUserByBarcode(
-      String barcode,
+  public Future<User> getUserById(
+      String identifier,
       SessionData sessionData) {
-    Objects.requireNonNull(barcode, "barcode cannot be null");
+    Objects.requireNonNull(identifier, "identifier cannot be null");
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
 
     final Map<String, String> headers = new HashMap<>();
     headers.put("accept", "application/json");
 
-    final GetUserByBarcodeRequestData getUserByBarcodeRequestData =
-        new GetUserByBarcodeRequestData(barcode, headers, sessionData);
+    final GetUserByIdentifierRequestData getUserByBarcodeRequestData =
+        new GetUserByIdentifierRequestData(identifier, headers, sessionData);
     final Future<IResource> result = resourceProvider.retrieveResource(getUserByBarcodeRequestData);
 
     return result
@@ -55,15 +55,15 @@ public class UsersRepository {
   private User getUserFromList(JsonObject userList) {
     final User user;
 
-    if (userList == null || userList.getInteger("totalRecords",
-        Integer.valueOf(0)).intValue() == 0) {
+    if (userList == null
+        || userList.getInteger("totalRecords", 0) == 0) {
       user = null;
     } else {
       final JsonArray users = userList.getJsonArray("users");
       if (users == null || users.size() == 0) {
         user = null;
       } else {
-        // there should be only 1 user, if the barcode exists
+        // there should be only 1 user, if barcode/username/the external ID exists
         user = users.getJsonObject(0).mapTo(User.class);
       }
     }
@@ -71,21 +71,23 @@ public class UsersRepository {
     return user;
   }
 
-  private class GetUserByBarcodeRequestData implements IRequestData {
-    private final String barcode;
+  private class GetUserByIdentifierRequestData implements IRequestData {
+    private final String identifier;
     private final Map<String, String> headers;
     private final SessionData sessionData;
 
-    private GetUserByBarcodeRequestData(String barcode, Map<String, String> headers,
+    private GetUserByIdentifierRequestData(String identifier, Map<String, String> headers,
         SessionData sessionData) {
-      this.barcode = barcode;
+      this.identifier = identifier;
       this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
       this.sessionData = sessionData;
     }
 
     @Override
     public String getPath() {
-      return "/users?limit=1&query=(barcode==" + barcode + " or externalSystemId==" + barcode + ')';
+      return "/users?limit=1&query=(barcode==" + identifier
+                    + " or externalSystemId==" + identifier
+                    + " or username==" + identifier + ')';
     }
 
     @Override
