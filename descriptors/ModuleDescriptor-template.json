@@ -36,7 +36,7 @@
     },
     "env": [
       { "name": "JAVA_OPTIONS",
-        "value": "-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+        "value": "-XX:MaxRAMPercentage=66.0"
       }
     ]
   }
