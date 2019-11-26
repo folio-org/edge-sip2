@@ -1,4 +1,4 @@
-FROM folioci/openjdk8-jre:latest
+FROM folioci/alpine-jre-openjdk8:latest
 
 ENV VERTICLE_FILE edge-sip2-fat.jar
 
