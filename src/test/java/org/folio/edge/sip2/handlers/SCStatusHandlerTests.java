@@ -21,6 +21,7 @@ import org.folio.edge.sip2.repositories.DefaultResourceProvider;
 import org.folio.edge.sip2.repositories.IRequestData;
 import org.folio.edge.sip2.repositories.IResourceProvider;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Utils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -86,7 +87,7 @@ public class SCStatusHandlerTests {
 
           String expectedDateTimeString =
               TestUtils.getFormattedLocalDateTime(
-                OffsetDateTime.now(clock).plusHours(2)); //Europe/Stockholm is 2 hours ahead of UTC
+                  Utils.convertDateTime(OffsetDateTime.now(clock),"Europe/Stockholm"));
 
           String expectedSipResponse = "98YYNYNN005003"
               + expectedDateTimeString
