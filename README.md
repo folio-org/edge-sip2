@@ -36,6 +36,99 @@ $ java -jar edge-sip2-fat.jar -conf "{\"port\":1234,\"okapiUrl\":\"https://folio
 |`messageDelimiter`|string|The character sequence that indicates the end of a single SIP message. This is available in case the self check kiosk is not compliant with the SIP specification. The default is "\\r"|
 |`netServerOptions`|JSON object|Configuration options for the server. These are Vertx options and are numerous. See: [NetServerOptions](https://vertx.io/docs/apidocs/io/vertx/core/net/NetServerOptions.html).|
 
+## FOLIO Configuration
+
+Certain properties are retrieved from FOLIO configuration once a user has logged in via SIP2. There are properties at the tenant level and properties per kiosk, which is defined as a FOLIO service point. Properties are stored as JSON via the `configuration` module. Missing configuration properties will lead to edge-sip2 runtime failures. The edge-sip2 properties listed below must be manually created via the `POST` `/configurations/entries` API using a tool such as curl or postman.
+
+### Tenant Properties
+
+|Property|Type|Description|
+|--------|----|-----------|
+|`statusUpdateOk`|`boolean`|Indicates to the kiosk that the SIP service allows patron status updates from the kiosk.|
+|`offlineOk`|`boolean`|Indicates to the kiosk that FOLIO supports off-line operations.|
+|`supportedMessages`|`object[]`|An array objects that indicate to the kiosk which messages are supported by the edge-sip2 module.|
+|`patronPasswordVerificationRequired`|`boolean`|Indicates whether or not SIP commands that supply a patron password will attempt to verify the password by attempting a FOLIO login with these supplied patron credentials. A failed patron login will fail the SIP request.|
+
+#### `supportedMessages` object properties
+
+|Property|Type|Description|
+|--------|----|-----------|
+|`messageName`|`string`|The name of the message. See: [Messages](src/main/java/org/folio/edge/sip2/domain/messages/enumerations/Messages.java)|
+|`isSupported`|`string`|`Y` or `N` to indicate to the kiosk whether or not the message is supported|
+
+#### Example `configuration` object
+
+```javascript
+{
+  "module": "edge-sip2",
+  "configName": "acsTenantConfig",
+  "enabled": true,
+  "value": "{\"supportedMessages\": [{\"messageName\": \"PATRON_STATUS_REQUEST\",\"isSupported\": \"N\"},{\"messageName\": \"CHECKOUT\",\"isSupported\": \"Y\"},{\"messageName\": \"CHECKIN\",\"isSupported\": \"Y\"},{\"messageName\": \"BLOCK_PATRON\",\"isSupported\": \"N\"},{\"messageName\": \"SC_ACS_STATUS\",\"isSupported\": \"Y\"},{\"messageName\": \"LOGIN\",\"isSupported\": \"Y\"},{\"messageName\": \"PATRON_INFORMATION\",\"isSupported\": \"Y\"},{\"messageName\": \"END_PATRON_SESSION\",\"isSupported\": \"Y\"},{\"messageName\": \"FEE_PAID\",\"isSupported\": \"N\"},{\"messageName\": \"ITEM_INFORMATION\",\"isSupported\": \"N\"},{\"messageName\": \"ITEM_STATUS_UPDATE\",\"isSupported\": \"N\"},{\"messageName\": \"PATRON_ENABLE\",\"isSupported\": \"N\"},{\"messageName\": \"HOLD\",\"isSupported\": \"N\"},{\"messageName\": \"RENEW\",\"isSupported\": \"N\"},{\"messageName\": \"RENEW_ALL\",\"isSupported\": \"N\"}, {\"messageName\": \"REQUEST_SC_ACS_RESEND\",\"isSupported\": \"Y\"}],\"statusUpdateOk\": false,\"offlineOk\": false,\"patronPasswordVerificationRequired\": true}"
+}
+```
+
+### Kiosk (service point) Properties
+
+|Property|Type|Description|
+|--------|----|-----------|
+|`retriesAllowed`|`number`|Indicates to the kiosk the number of retries allowed by FOLIO. This should be a number between 0 and 999, where 999 means that the retry number is unknown.|
+|`timeoutPeriod`|`number`|Indicates to the kiosk the period of time before a transaction is aborted by the kiosk. The number should be between 0 and 999, where 0 means that FOLIO is not online and 999 means the time out is unknown. The number is expressed in tenths of a second.|
+|`checkinOk`|`boolean`|Indicates whether or not the kiosk is allowed to check in items.|
+|`acsRenewalPolicy`|`boolean`|Indicates that the kiosk is allowed by FOLIO to process patron renewal requests.|
+|`checkoutOk`|`boolean`|Indicates whether or not the kiosk is allowed to check out items.|
+|`libraryName`|`string`|The name of the library where the kiosk is located or whatever makes sense for the tenant.|
+|`terminalLocation`|`string`|This could be the location of the kiosk within the library or the UUID of the service point.|
+
+#### Example `configuration` object
+
+```javascript
+{
+  "module": "edge-sip2",
+  "configName": "selfCheckoutConfig.e0ab8c91-2a4a-433d-a3cf-1837053c89a8",
+  "enabled": true,
+  "value": "{\"timeoutPeriod\": 5,\"retriesAllowed\": 3,\"checkinOk\": true,\"checkoutOk\": true,\"acsRenewalPolicy\": false,\"libraryName\": \"Datalogisk Institut\",\"terminalLocation\": \"e0ab8c91-2a4a-433d-a3cf-1837053c89a8\"}"
+}
+```
+
+### FOLIO Provided Properties
+
+|Property|Type|Description|
+|--------|----|-----------|
+|`timezone`|`string`|The tenant's time zone as set in FOLIO.| 
+
+#### Example `configuration` object
+
+```javascript
+{
+  "module": "ORG",
+  "configName": "localeSettings",
+  "enabled": true,
+  "value": "{\"timezone\":\"America/New_York\"}"
+}
+```
+
+## Implemented Messages
+
+Currently, edge-sip2 implements select SIP messages. Below, is the list of all implemented messages.
+
+|SIP Request|Implemented|Notes|
+|-----------|-----------|-----|
+|Patron Status Request|No||
+|Checkout|Yes|Response SIP fields hardcoded: "renewal ok" is set to "N", "magnetic media" is set to "U". SIP field "desensitize" is set to "Y" is the FOLIO check out succeeded and "N" when there is failure. Fee/fines related fields are not implemented. The "due date" format is the same as other SIP date/time format strings: "YYYYMMDDZZZZHHMMSS".|
+|Checkin|Yes|Response SIP fields hardcoded: "alert" is set to "N", "magnetic media" is set to "U". Most optional SIP fields are not implemented. The "resensitize" field will be set to "Y" if the FOLIO check in succeeded and "N" if there was a failure.|
+|Block Patron|No||
+|SC Status|Yes||
+|Request ACS Resend|Yes||
+|Login|Yes|The request "location code" should contain the UUID of the service point for the kiosk.|
+|Patron Information|Yes|Response SIP field "hold items count" currently only refers to FOLIO "Hold" requests and not "Page" requests. Only "Hold" request data is returned in the summary results as well. The "charged items count", "fine items count" and "unavailable holds count" are not supported. However, "unavailable holds count" is not implemented due to an oversight as "hold items count" includes all "Hold" requests in any "Open" state, instead of limited to "Open - Awaiting pickup". Likewise, "unavailable holds count" could contain "Hold" requests that are not "Closed" and not "Open - Awaiting pickup". This will likely need to be corrected. The response "patron status" field is partially supported via FOLIO manual blocks where a "borrowing" block will set all privilege codes to "N", a "renewals" block will set the SIP "renewal privileges defined" code to "N", and a "requests" block will set "hold privileges denied" and "recall privileges denied" to "N".|
+|End Patron Session|Yes||
+|Fee Paid|No||
+|Item Information|No||
+|Patron Enable|No||
+|Hold|No||
+|Renew|No||
+|Renew All|No||
+
 ## Security
 
 The SIP protocol does not consider security apart from providing the possibility of SC/ACS negotiated encryption algorithm for the password and user ID, which seems unlikely to be used. All communication over the wire, via TCP, is plain text. This may be fine in an environment that is locked down in some way. However, FOLIO, along with this module, can be hosted in the cloud and plain text communication is not acceptable.
@@ -154,6 +247,12 @@ $ docker run -v /my/metrics/libs:/metrics -p 6443:6443 --expose 8081 -p 8081:808
 ```
 
 This example shows how to launch with the Prometheus binding. Since Prometheus needs to scrape the metrics, we need to expose port for the HTTP server.
+
+## Common Problems
+
+### "Unable to find all necessary configuration(s). Found \<N\> of \<M\>"
+
+This log message happens when one or more of the FOLIO configuration key/value maps are missing when retrieved. Ensure that each set of properties is stored in FOLIO `configuration` and that the service point UUID for the kiosk configuration matches the "location code" in the SIP "Login" message. Another problem could be that the tenant locale settings may not be saved in the database. On the initial deployment of FOLIO, as of Edelweiss, the locale settings are defaulted by the UI and not stored in the database until the "save" button is pressed. Since the UI defaults to usable settings for many, it may be misleading that these settings are present for backend modules, like edge-sip2, to consume.
 
 ## Additional information
 
