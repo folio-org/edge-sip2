@@ -1,3 +1,7 @@
+## 1.2.0 2020-03-18
+ * [SIP2-43](https://issues.folio.org/browse/SIP2-43): Document SIP2 implementation
+ * [SIP2-79](https://issues.folio.org/browse/SIP2-79): Migrate to new major version of item-storage, inventory, circulation
+
 ## 1.1.0 2019-12-09
  * [SIP2-77](https://issues.folio.org/browse/SIP2-77): Update the `circulation` interface
    dependency with `8.0`
