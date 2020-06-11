@@ -5,7 +5,7 @@
   "requires": [
     {
       "id": "login",
-      "version": "5.0 6.0"
+      "version": "5.0 6.0 7.0"
     },
     {
       "id": "circulation",
