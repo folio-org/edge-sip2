@@ -1,3 +1,7 @@
+## 1.3.0 2020-06-12
+ * [SIP2-84](https://issues.folio.org/browse/SIP2-84): Add 7.0 as acceptable login interface version
+ * [SIP2-82](https://issues.folio.org/browse/SIP2-82): Upgrade RMB to v30.0.2 and release it.
+
 ## 1.2.0 2020-03-18
  * [SIP2-43](https://issues.folio.org/browse/SIP2-43): Document SIP2 implementation
  * [SIP2-79](https://issues.folio.org/browse/SIP2-79): Migrate to new major version of item-storage, inventory, circulation
