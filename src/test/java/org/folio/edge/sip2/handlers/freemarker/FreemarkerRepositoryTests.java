@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import freemarker.template.Template;
-
 import org.folio.edge.sip2.parser.Command;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

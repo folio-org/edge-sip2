@@ -1,7 +1,6 @@
 package org.folio.edge.sip2.parser;
 
 import java.util.Arrays;
-
 import org.folio.edge.sip2.domain.messages.enumerations.Language;
 
 /**

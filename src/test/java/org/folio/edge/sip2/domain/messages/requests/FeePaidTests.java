@@ -14,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
-
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.FeeType;
 import org.folio.edge.sip2.domain.messages.enumerations.PaymentType;

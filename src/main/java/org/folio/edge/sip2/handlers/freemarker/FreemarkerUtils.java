@@ -2,11 +2,9 @@ package org.folio.edge.sip2.handlers.freemarker;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

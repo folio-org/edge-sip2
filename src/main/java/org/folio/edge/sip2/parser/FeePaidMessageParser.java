@@ -23,7 +23,6 @@ import static org.folio.edge.sip2.domain.messages.enumerations.PaymentType.VISA;
 import static org.folio.edge.sip2.domain.messages.requests.FeePaid.builder;
 
 import java.time.OffsetDateTime;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;

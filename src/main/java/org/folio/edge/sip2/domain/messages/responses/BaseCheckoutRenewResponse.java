@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.FeeType;
 import org.folio.edge.sip2.domain.messages.enumerations.MediaType;
@@ -40,7 +39,7 @@ public abstract class BaseCheckoutRenewResponse {
   /**
    * {@code TRUE} if the SC should desensitize the article. {@code FALSE} if
    * the SC should not desensitize the article, e.g. a closed reserve book or
-   * the checkout was refused. 
+   * the checkout was refused.
    */
   private final Boolean desensitize;
   /** The date and time the patron checked out the item at the SC. */

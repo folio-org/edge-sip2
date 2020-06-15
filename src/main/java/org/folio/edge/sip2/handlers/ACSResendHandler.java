@@ -1,7 +1,6 @@
 package org.folio.edge.sip2.handlers;
 
 import io.vertx.core.Future;
-
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.session.SessionData;

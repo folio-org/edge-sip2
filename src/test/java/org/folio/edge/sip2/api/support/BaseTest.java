@@ -16,7 +16,6 @@ import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SelfSignedCertificate;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.EnumMap;

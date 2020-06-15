@@ -4,11 +4,9 @@ import freemarker.ext.beans.StringModel;
 import freemarker.template.SimpleScalar;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
-
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-
 import org.folio.edge.sip2.utils.Utils;
 
 public class FormatDateTimeMethodModel implements TemplateMethodModelEx {

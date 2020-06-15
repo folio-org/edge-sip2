@@ -15,7 +15,6 @@ import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
 import org.folio.edge.sip2.domain.messages.responses.EndSessionResponse;
