@@ -1,23 +1,7 @@
 package org.folio.edge.sip2.repositories;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
-import static org.folio.edge.sip2.utils.JsonUtils.getChildString;
-import static org.folio.edge.sip2.utils.JsonUtils.getSubChildString;
-
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
-import java.time.Clock;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import javax.inject.Inject;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.domain.messages.responses.CheckinResponse;
@@ -25,6 +9,18 @@ import org.folio.edge.sip2.domain.messages.responses.CheckoutResponse;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
+
+import javax.inject.Inject;
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+import static org.folio.edge.sip2.utils.JsonUtils.getChildString;
+import static org.folio.edge.sip2.utils.JsonUtils.getSubChildString;
 
 /**
  * Provides interaction with the circulation service.
@@ -38,15 +34,18 @@ public class CirculationRepository {
   private final IResourceProvider<IRequestData> resourceProvider;
   private final PasswordVerifier passwordVerifier;
   private final Clock clock;
+  private final UsersRepository usersRepository;
 
   @Inject
   CirculationRepository(IResourceProvider<IRequestData> resourceProvider,
-      PasswordVerifier passwordVerifier, Clock clock) {
+      PasswordVerifier passwordVerifier, Clock clock,UsersRepository usersRepository) {
     this.resourceProvider = Objects.requireNonNull(resourceProvider,
         "Resource provider cannot be null");
     this.passwordVerifier = Objects.requireNonNull(passwordVerifier,
         "Password verifier cannot be null");
     this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
+    this.usersRepository = Objects.requireNonNull(usersRepository,
+      "users Repository cannot be null");
   }
 
   /**
@@ -133,46 +132,49 @@ public class CirculationRepository {
                 .build());
           }
 
-          final User user = verification.getUser();
-          final JsonObject body = new JsonObject()
+          final Future<User> userResult = usersRepository.
+            getUserById(patronIdentifier, sessionData);
+          return userResult.compose(userResource -> {
+            final JsonObject body = new JsonObject()
               .put("itemBarcode", itemIdentifier)
-              .put("userBarcode", user != null ? user.getBarcode() : patronIdentifier)
+              .put("userBarcode",userResource.getBarcode())
               .put("servicePointId", sessionData.getScLocation());
 
-          final Map<String, String> headers = getBaseHeaders();
+            final Map<String, String> headers = getBaseHeaders();
 
-          final CheckoutRequestData checkoutRequestData =
+            final CheckoutRequestData checkoutRequestData =
               new CheckoutRequestData(body, headers, sessionData);
 
-          final Future<IResource> result = resourceProvider.createResource(checkoutRequestData);
+            final Future<IResource> result = resourceProvider.createResource(checkoutRequestData);
 
-          return result
+            return result
               .otherwise(Utils::handleErrors)
               .map(resource -> {
                 final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
 
                 final OffsetDateTime dueDate = response
-                    .map(v -> v.getString("dueDate"))
-                    .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
-                    .orElse(OffsetDateTime.now(clock));
+                  .map(v -> v.getString("dueDate"))
+                  .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
+                  .orElse(OffsetDateTime.now(clock));
 
                 return CheckoutResponse.builder()
-                    .ok(Boolean.valueOf(response.isPresent()))
-                    .renewalOk(FALSE)
-                    .magneticMedia(null)
-                    .desensitize(Boolean.valueOf(response.isPresent()))
-                    .transactionDate(OffsetDateTime.now(clock))
-                    .institutionId(institutionId)
-                    .patronIdentifier(patronIdentifier)
-                    .itemIdentifier(itemIdentifier)
-                    .titleIdentifier(response.map(
-                        v -> getChildString(v, "item", "title", UNKNOWN)).orElse(UNKNOWN))
-                    .dueDate(dueDate)
-                    .screenMessage(Optional.of(resource.getErrorMessages())
-                        .filter(v -> !v.isEmpty())
-                        .orElse(null))
-                    .build();
+                  .ok(Boolean.valueOf(response.isPresent()))
+                  .renewalOk(FALSE)
+                  .magneticMedia(null)
+                  .desensitize(Boolean.valueOf(response.isPresent()))
+                  .transactionDate(OffsetDateTime.now(clock))
+                  .institutionId(institutionId)
+                  .patronIdentifier(patronIdentifier)
+                  .itemIdentifier(itemIdentifier)
+                  .titleIdentifier(response.map(
+                    v -> getChildString(v, "item", "title", UNKNOWN)).orElse(UNKNOWN))
+                  .dueDate(dueDate)
+                  .screenMessage(Optional.of(resource.getErrorMessages())
+                    .filter(v -> !v.isEmpty())
+                    .orElse(null))
+                  .build();
               });
+          });
         });
   }
 
