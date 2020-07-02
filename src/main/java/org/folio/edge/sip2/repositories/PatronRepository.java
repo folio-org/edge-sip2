@@ -99,12 +99,8 @@ public class PatronRepository {
           if (FALSE.equals(verification.getPasswordVerified())) {
             return invalidPatron(patronInformation, FALSE);
           }
-          final Future<User> userFuture;
-          if (verification.getPasswordVerified() == null) {
-            userFuture = usersRepository.getUserById(patronIdentifier, sessionData);
-          } else {
-            userFuture = Future.succeededFuture(verification.getUser());
-          }
+          //getUser is add in PasswordVerifier
+          final Future<User> userFuture = Future.succeededFuture(verification.getUser());
 
           return userFuture.compose(user -> {
             if (user == null || FALSE.equals(user.getActive())) {

@@ -50,11 +50,11 @@ public class CirculationRepositoryTests {
 
   @Test
   public void canCreateCirculationRepository(
-    @Mock IResourceProvider<IRequestData> mockFolioResource,
-    @Mock PasswordVerifier mockPasswordVerifier,
-    @Mock Clock clock,@Mock UsersRepository usersRepository) {
+      @Mock IResourceProvider<IRequestData> mockFolioResource,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock Clock clock) {
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioResource, mockPasswordVerifier, clock, usersRepository);
+        mockFolioResource, mockPasswordVerifier, clock);
 
     assertNotNull(circulationRepository);
   }
@@ -62,715 +62,715 @@ public class CirculationRepositoryTests {
   @Test
   public void cannotCreateCirculationRepositoryWhenResourceProviderIsNull() {
     final NullPointerException thrown = assertThrows(
-      NullPointerException.class,
-      () -> new CirculationRepository(null, null, null,null));
+        NullPointerException.class,
+        () -> new CirculationRepository(null, null, null));
 
     assertEquals("Resource provider cannot be null", thrown.getMessage());
   }
 
   @Test
   public void canCheckin(Vertx vertx,
-                         VertxTestContext testContext,
-                         @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                         @Mock PasswordVerifier mockPasswordVerifier,@Mock UsersRepository usersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime returnDate = OffsetDateTime.now();
     final String currentLocation = UUID.randomUUID().toString();
     final String itemIdentifier = "1234567890";
     final String titleIdentifier = "Some Cool Book";
     final Checkin checkin = Checkin.builder()
-      .noBlock(FALSE)
-      .transactionDate(OffsetDateTime.now())
-      .returnDate(returnDate)
-      .currentLocation(currentLocation)
-      .institutionId("diku")
-      .itemIdentifier(itemIdentifier)
-      .terminalPassword("1234")
-      .itemProperties("Some property of this item")
-      .cancel(FALSE)
-      .build();
+        .noBlock(FALSE)
+        .transactionDate(OffsetDateTime.now())
+        .returnDate(returnDate)
+        .currentLocation(currentLocation)
+        .institutionId("diku")
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .cancel(FALSE)
+        .build();
 
     final JsonObject response = new JsonObject()
-      .put("item", new JsonObject()
-        .put("title", titleIdentifier)
-        .put("location", new JsonObject()
-          .put("name", "Main Library")));
+        .put("item", new JsonObject()
+            .put("title", titleIdentifier)
+            .put("location", new JsonObject()
+                .put("name", "Main Library")));
     when(mockFolioProvider.createResource(any()))
-      .thenReturn(Future.succeededFuture(new FolioResource(response,
-        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioProvider, mockPasswordVerifier, clock,usersRepository);
+        mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.performCheckinCommand(checkin, sessionData).setHandler(
-      testContext.succeeding(checkinResponse -> testContext.verify(() -> {
-        assertNotNull(checkinResponse);
-        assertTrue(checkinResponse.getOk());
-        assertTrue(checkinResponse.getResensitize());
-        assertNull(checkinResponse.getMagneticMedia());
-        assertFalse(checkinResponse.getAlert());
-        assertEquals(OffsetDateTime.now(clock), checkinResponse.getTransactionDate());
-        assertEquals("diku", checkinResponse.getInstitutionId());
-        assertEquals(itemIdentifier, checkinResponse.getItemIdentifier());
-        assertEquals("Main Library", checkinResponse.getPermanentLocation());
-        assertEquals(titleIdentifier, checkinResponse.getTitleIdentifier());
-        assertNull(checkinResponse.getSortBin());
-        assertNull(checkinResponse.getPatronIdentifier());
-        assertNull(checkinResponse.getMediaType());
-        assertNull(checkinResponse.getItemProperties());
-        assertNull(checkinResponse.getScreenMessage());
-        assertNull(checkinResponse.getPrintLine());
+        testContext.succeeding(checkinResponse -> testContext.verify(() -> {
+          assertNotNull(checkinResponse);
+          assertTrue(checkinResponse.getOk());
+          assertTrue(checkinResponse.getResensitize());
+          assertNull(checkinResponse.getMagneticMedia());
+          assertFalse(checkinResponse.getAlert());
+          assertEquals(OffsetDateTime.now(clock), checkinResponse.getTransactionDate());
+          assertEquals("diku", checkinResponse.getInstitutionId());
+          assertEquals(itemIdentifier, checkinResponse.getItemIdentifier());
+          assertEquals("Main Library", checkinResponse.getPermanentLocation());
+          assertEquals(titleIdentifier, checkinResponse.getTitleIdentifier());
+          assertNull(checkinResponse.getSortBin());
+          assertNull(checkinResponse.getPatronIdentifier());
+          assertNull(checkinResponse.getMediaType());
+          assertNull(checkinResponse.getItemProperties());
+          assertNull(checkinResponse.getScreenMessage());
+          assertNull(checkinResponse.getPrintLine());
 
-        testContext.completeNow();
-      })));
+          testContext.completeNow();
+        })));
   }
 
   @Test
   public void canCheckinWithoutTitleIdentifier(Vertx vertx,
-                                               VertxTestContext testContext,
-                                               @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                                               @Mock PasswordVerifier mockPasswordVerifier,@Mock UsersRepository usersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime returnDate = OffsetDateTime.now();
     final String currentLocation = UUID.randomUUID().toString();
     final String itemIdentifier = "1234567890";
     final Checkin checkin = Checkin.builder()
-      .noBlock(FALSE)
-      .transactionDate(OffsetDateTime.now())
-      .returnDate(returnDate)
-      .currentLocation(currentLocation)
-      .institutionId("diku")
-      .itemIdentifier(itemIdentifier)
-      .terminalPassword("1234")
-      .itemProperties("Some property of this item")
-      .cancel(FALSE)
-      .build();
+        .noBlock(FALSE)
+        .transactionDate(OffsetDateTime.now())
+        .returnDate(returnDate)
+        .currentLocation(currentLocation)
+        .institutionId("diku")
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .cancel(FALSE)
+        .build();
 
     final JsonObject response = new JsonObject()
-      .put("item", new JsonObject()
-        .put("location", new JsonObject()
-          .put("name", "Main Library")));
+        .put("item", new JsonObject()
+            .put("location", new JsonObject()
+                .put("name", "Main Library")));
     when(mockFolioProvider.createResource(any()))
-      .thenReturn(Future.succeededFuture(new FolioResource(response,
-        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioProvider, mockPasswordVerifier, clock, usersRepository);
+        mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.performCheckinCommand(checkin, sessionData).setHandler(
-      testContext.succeeding(checkinResponse -> testContext.verify(() -> {
-        assertNotNull(checkinResponse);
-        assertTrue(checkinResponse.getOk());
-        assertTrue(checkinResponse.getResensitize());
-        assertNull(checkinResponse.getMagneticMedia());
-        assertFalse(checkinResponse.getAlert());
-        assertEquals(OffsetDateTime.now(clock), checkinResponse.getTransactionDate());
-        assertEquals("diku", checkinResponse.getInstitutionId());
-        assertEquals(itemIdentifier, checkinResponse.getItemIdentifier());
-        assertEquals("Main Library", checkinResponse.getPermanentLocation());
-        assertEquals(itemIdentifier, checkinResponse.getTitleIdentifier());
-        assertNull(checkinResponse.getSortBin());
-        assertNull(checkinResponse.getPatronIdentifier());
-        assertNull(checkinResponse.getMediaType());
-        assertNull(checkinResponse.getItemProperties());
-        assertNull(checkinResponse.getScreenMessage());
-        assertNull(checkinResponse.getPrintLine());
+        testContext.succeeding(checkinResponse -> testContext.verify(() -> {
+          assertNotNull(checkinResponse);
+          assertTrue(checkinResponse.getOk());
+          assertTrue(checkinResponse.getResensitize());
+          assertNull(checkinResponse.getMagneticMedia());
+          assertFalse(checkinResponse.getAlert());
+          assertEquals(OffsetDateTime.now(clock), checkinResponse.getTransactionDate());
+          assertEquals("diku", checkinResponse.getInstitutionId());
+          assertEquals(itemIdentifier, checkinResponse.getItemIdentifier());
+          assertEquals("Main Library", checkinResponse.getPermanentLocation());
+          assertEquals(itemIdentifier, checkinResponse.getTitleIdentifier());
+          assertNull(checkinResponse.getSortBin());
+          assertNull(checkinResponse.getPatronIdentifier());
+          assertNull(checkinResponse.getMediaType());
+          assertNull(checkinResponse.getItemProperties());
+          assertNull(checkinResponse.getScreenMessage());
+          assertNull(checkinResponse.getPrintLine());
 
-        testContext.completeNow();
-      })));
+          testContext.completeNow();
+        })));
   }
 
   @Test
   public void cannotCheckin(Vertx vertx,
-                            VertxTestContext testContext,
-                            @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                            @Mock PasswordVerifier mockPasswordVerifier,@Mock UsersRepository usersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime returnDate = OffsetDateTime.now();
     final String currentLocation = UUID.randomUUID().toString();
     final String itemIdentifier = "1234567890";
     final Checkin checkin = Checkin.builder()
-      .noBlock(FALSE)
-      .transactionDate(OffsetDateTime.now())
-      .returnDate(returnDate)
-      .currentLocation(currentLocation)
-      .institutionId("diku")
-      .itemIdentifier(itemIdentifier)
-      .terminalPassword("1234")
-      .itemProperties("Some property of this item")
-      .cancel(FALSE)
-      .build();
+        .noBlock(FALSE)
+        .transactionDate(OffsetDateTime.now())
+        .returnDate(returnDate)
+        .currentLocation(currentLocation)
+        .institutionId("diku")
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .cancel(FALSE)
+        .build();
 
     when(mockFolioProvider.createResource(any()))
-      .thenReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")));
+        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioProvider, mockPasswordVerifier, clock,usersRepository);
+        mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.performCheckinCommand(checkin, sessionData).setHandler(
-      testContext.succeeding(checkinResponse -> testContext.verify(() -> {
-        assertNotNull(checkinResponse);
-        assertFalse(checkinResponse.getOk());
-        assertFalse(checkinResponse.getResensitize());
-        assertNull(checkinResponse.getMagneticMedia());
-        assertFalse(checkinResponse.getAlert());
-        assertEquals(OffsetDateTime.now(clock), checkinResponse.getTransactionDate());
-        assertEquals("diku", checkinResponse.getInstitutionId());
-        assertEquals(itemIdentifier, checkinResponse.getItemIdentifier());
-        assertEquals("", checkinResponse.getPermanentLocation());
-        assertEquals(itemIdentifier, checkinResponse.getTitleIdentifier());
-        assertNull(checkinResponse.getSortBin());
-        assertNull(checkinResponse.getPatronIdentifier());
-        assertNull(checkinResponse.getMediaType());
-        assertNull(checkinResponse.getItemProperties());
-        assertNull(checkinResponse.getScreenMessage());
-        assertNull(checkinResponse.getPrintLine());
+        testContext.succeeding(checkinResponse -> testContext.verify(() -> {
+          assertNotNull(checkinResponse);
+          assertFalse(checkinResponse.getOk());
+          assertFalse(checkinResponse.getResensitize());
+          assertNull(checkinResponse.getMagneticMedia());
+          assertFalse(checkinResponse.getAlert());
+          assertEquals(OffsetDateTime.now(clock), checkinResponse.getTransactionDate());
+          assertEquals("diku", checkinResponse.getInstitutionId());
+          assertEquals(itemIdentifier, checkinResponse.getItemIdentifier());
+          assertEquals("", checkinResponse.getPermanentLocation());
+          assertEquals(itemIdentifier, checkinResponse.getTitleIdentifier());
+          assertNull(checkinResponse.getSortBin());
+          assertNull(checkinResponse.getPatronIdentifier());
+          assertNull(checkinResponse.getMediaType());
+          assertNull(checkinResponse.getItemProperties());
+          assertNull(checkinResponse.getScreenMessage());
+          assertNull(checkinResponse.getPrintLine());
 
-        testContext.completeNow();
-      })));
+          testContext.completeNow();
+        })));
   }
 
   @Test
   public void canCheckout(Vertx vertx,
-                          VertxTestContext testContext,
-                          @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                          @Mock PasswordVerifier mockPasswordVerifier,@Mock UsersRepository usersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
     final String itemIdentifier = "1234567890";
     final String title = "Some book";
     final Checkout checkout = Checkout.builder()
-      .scRenewalPolicy(FALSE)
-      .noBlock(FALSE)
-      .transactionDate(OffsetDateTime.now())
-      .nbDueDate(nbDueDate)
-      .institutionId("diku")
-      .patronIdentifier(patronIdentifier)
-      .itemIdentifier(itemIdentifier)
-      .terminalPassword("1234")
-      .itemProperties("Some property of this item")
-      .patronPassword("7890")
-      .feeAcknowledged(FALSE)
-      .cancel(FALSE)
-      .build();
+        .scRenewalPolicy(FALSE)
+        .noBlock(FALSE)
+        .transactionDate(OffsetDateTime.now())
+        .nbDueDate(nbDueDate)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .patronPassword("7890")
+        .feeAcknowledged(FALSE)
+        .cancel(FALSE)
+        .build();
 
     final JsonObject response = new JsonObject()
-      .put("item", new JsonObject()
-        .put("title", title))
-      .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        .put("item", new JsonObject()
+            .put("title", title))
+        .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
     when(mockFolioProvider.createResource(any()))
-      .thenReturn(Future.succeededFuture(new FolioResource(response,
-        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
-      .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioProvider, mockPasswordVerifier, clock, usersRepository);
+        mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.performCheckoutCommand(checkout, sessionData).setHandler(
-      testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
-        assertNotNull(checkoutResponse);
-        assertTrue(checkoutResponse.getOk());
-        assertFalse(checkoutResponse.getRenewalOk());
-        assertNull(checkoutResponse.getMagneticMedia());
-        assertTrue(checkoutResponse.getDesensitize());
-        assertEquals(OffsetDateTime.now(clock), checkoutResponse.getTransactionDate());
-        assertEquals("diku", checkoutResponse.getInstitutionId());
-        assertEquals(patronIdentifier, checkoutResponse.getPatronIdentifier());
-        assertEquals(itemIdentifier, checkoutResponse.getItemIdentifier());
-        assertEquals(title, checkoutResponse.getTitleIdentifier());
-        assertEquals(nbDueDate, checkoutResponse.getDueDate());
-        assertNull(checkoutResponse.getFeeType());
-        assertNull(checkoutResponse.getSecurityInhibit());
-        assertNull(checkoutResponse.getCurrencyType());
-        assertNull(checkoutResponse.getFeeAmount());
-        assertNull(checkoutResponse.getMediaType());
-        assertNull(checkoutResponse.getItemProperties());
-        assertNull(checkoutResponse.getTransactionId());
-        assertNull(checkoutResponse.getScreenMessage());
-        assertNull(checkoutResponse.getPrintLine());
+        testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
+          assertNotNull(checkoutResponse);
+          assertTrue(checkoutResponse.getOk());
+          assertFalse(checkoutResponse.getRenewalOk());
+          assertNull(checkoutResponse.getMagneticMedia());
+          assertTrue(checkoutResponse.getDesensitize());
+          assertEquals(OffsetDateTime.now(clock), checkoutResponse.getTransactionDate());
+          assertEquals("diku", checkoutResponse.getInstitutionId());
+          assertEquals(patronIdentifier, checkoutResponse.getPatronIdentifier());
+          assertEquals(itemIdentifier, checkoutResponse.getItemIdentifier());
+          assertEquals(title, checkoutResponse.getTitleIdentifier());
+          assertEquals(nbDueDate, checkoutResponse.getDueDate());
+          assertNull(checkoutResponse.getFeeType());
+          assertNull(checkoutResponse.getSecurityInhibit());
+          assertNull(checkoutResponse.getCurrencyType());
+          assertNull(checkoutResponse.getFeeAmount());
+          assertNull(checkoutResponse.getMediaType());
+          assertNull(checkoutResponse.getItemProperties());
+          assertNull(checkoutResponse.getTransactionId());
+          assertNull(checkoutResponse.getScreenMessage());
+          assertNull(checkoutResponse.getPrintLine());
 
-        testContext.completeNow();
-      })));
+          testContext.completeNow();
+        })));
   }
 
   @Test
   public void canCheckoutRequiredPassword(Vertx vertx,
-                                          VertxTestContext testContext,
-                                          @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                                          @Mock PasswordVerifier mockPasswordVerifier,@Mock UsersRepository usersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
     final String itemIdentifier = "1234567890";
     final String title = "Some book";
     final Checkout checkout = Checkout.builder()
-      .scRenewalPolicy(FALSE)
-      .noBlock(FALSE)
-      .transactionDate(OffsetDateTime.now())
-      .nbDueDate(nbDueDate)
-      .institutionId("diku")
-      .patronIdentifier(patronIdentifier)
-      .itemIdentifier(itemIdentifier)
-      .terminalPassword("1234")
-      .itemProperties("Some property of this item")
-      .patronPassword("7890")
-      .feeAcknowledged(FALSE)
-      .cancel(FALSE)
-      .build();
+        .scRenewalPolicy(FALSE)
+        .noBlock(FALSE)
+        .transactionDate(OffsetDateTime.now())
+        .nbDueDate(nbDueDate)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .patronPassword("7890")
+        .feeAcknowledged(FALSE)
+        .cancel(FALSE)
+        .build();
 
     final JsonObject response = new JsonObject()
-      .put("item", new JsonObject()
-        .put("title", title))
-      .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        .put("item", new JsonObject()
+            .put("title", title))
+        .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
     final String userResponseJson = getJsonFromFile("json/user_response.json");
     final User userResponse = Json.decodeValue(userResponseJson, User.class);
     when(mockFolioProvider.createResource(any()))
-      .thenReturn(Future.succeededFuture(new FolioResource(response,
-        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
-      .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-        .user(userResponse)
-        .passwordVerified(TRUE)
-        .build()));
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .user(userResponse)
+            .passwordVerified(TRUE)
+            .build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
     sessionData.setPatronPasswordVerificationRequired(true);
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioProvider, mockPasswordVerifier, clock, usersRepository);
+        mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.performCheckoutCommand(checkout, sessionData).setHandler(
-      testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
-        assertNotNull(checkoutResponse);
-        assertTrue(checkoutResponse.getOk());
-        assertFalse(checkoutResponse.getRenewalOk());
-        assertNull(checkoutResponse.getMagneticMedia());
-        assertTrue(checkoutResponse.getDesensitize());
-        assertEquals(OffsetDateTime.now(clock), checkoutResponse.getTransactionDate());
-        assertEquals("diku", checkoutResponse.getInstitutionId());
-        assertEquals(patronIdentifier, checkoutResponse.getPatronIdentifier());
-        assertEquals(itemIdentifier, checkoutResponse.getItemIdentifier());
-        assertEquals(title, checkoutResponse.getTitleIdentifier());
-        assertEquals(nbDueDate, checkoutResponse.getDueDate());
-        assertNull(checkoutResponse.getFeeType());
-        assertNull(checkoutResponse.getSecurityInhibit());
-        assertNull(checkoutResponse.getCurrencyType());
-        assertNull(checkoutResponse.getFeeAmount());
-        assertNull(checkoutResponse.getMediaType());
-        assertNull(checkoutResponse.getItemProperties());
-        assertNull(checkoutResponse.getTransactionId());
-        assertNull(checkoutResponse.getScreenMessage());
-        assertNull(checkoutResponse.getPrintLine());
+        testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
+          assertNotNull(checkoutResponse);
+          assertTrue(checkoutResponse.getOk());
+          assertFalse(checkoutResponse.getRenewalOk());
+          assertNull(checkoutResponse.getMagneticMedia());
+          assertTrue(checkoutResponse.getDesensitize());
+          assertEquals(OffsetDateTime.now(clock), checkoutResponse.getTransactionDate());
+          assertEquals("diku", checkoutResponse.getInstitutionId());
+          assertEquals(patronIdentifier, checkoutResponse.getPatronIdentifier());
+          assertEquals(itemIdentifier, checkoutResponse.getItemIdentifier());
+          assertEquals(title, checkoutResponse.getTitleIdentifier());
+          assertEquals(nbDueDate, checkoutResponse.getDueDate());
+          assertNull(checkoutResponse.getFeeType());
+          assertNull(checkoutResponse.getSecurityInhibit());
+          assertNull(checkoutResponse.getCurrencyType());
+          assertNull(checkoutResponse.getFeeAmount());
+          assertNull(checkoutResponse.getMediaType());
+          assertNull(checkoutResponse.getItemProperties());
+          assertNull(checkoutResponse.getTransactionId());
+          assertNull(checkoutResponse.getScreenMessage());
+          assertNull(checkoutResponse.getPrintLine());
 
-        testContext.completeNow();
-      })));
+          testContext.completeNow();
+        })));
   }
 
   @Test
   public void cannotCheckoutRequiredPasswordWithBadPassword(Vertx vertx,
-                                                            VertxTestContext testContext,
-                                                            @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                                                            @Mock PasswordVerifier mockPasswordVerifier,@Mock UsersRepository usersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate =  OffsetDateTime.now(clock).plusDays(30);
     final String patronIdentifier = "1029384756";
     final String itemIdentifier = "1234567890";
     final String title = "";
     final Checkout checkout = Checkout.builder()
-      .scRenewalPolicy(FALSE)
-      .noBlock(FALSE)
-      .transactionDate(OffsetDateTime.now())
-      .nbDueDate(nbDueDate)
-      .institutionId("diku")
-      .patronIdentifier(patronIdentifier)
-      .itemIdentifier(itemIdentifier)
-      .terminalPassword("1234")
-      .itemProperties("Some property of this item")
-      .patronPassword("7890")
-      .feeAcknowledged(FALSE)
-      .cancel(FALSE)
-      .build();
+        .scRenewalPolicy(FALSE)
+        .noBlock(FALSE)
+        .transactionDate(OffsetDateTime.now())
+        .nbDueDate(nbDueDate)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .patronPassword("7890")
+        .feeAcknowledged(FALSE)
+        .cancel(FALSE)
+        .build();
 
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
-      .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-        .passwordVerified(FALSE)
-        .errorMessages(Collections.singletonList("Password does not match"))
-        .build()));
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .passwordVerified(FALSE)
+            .errorMessages(Collections.singletonList("Password does not match"))
+            .build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
     sessionData.setPatronPasswordVerificationRequired(true);
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioProvider, mockPasswordVerifier, clock, usersRepository);
+        mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.performCheckoutCommand(checkout, sessionData).setHandler(
-      testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
-        assertNotNull(checkoutResponse);
-        assertFalse(checkoutResponse.getOk());
-        assertFalse(checkoutResponse.getRenewalOk());
-        assertNull(checkoutResponse.getMagneticMedia());
-        assertFalse(checkoutResponse.getDesensitize());
-        assertEquals(OffsetDateTime.now(clock), checkoutResponse.getTransactionDate());
-        assertEquals("diku", checkoutResponse.getInstitutionId());
-        assertEquals(patronIdentifier, checkoutResponse.getPatronIdentifier());
-        assertEquals(itemIdentifier, checkoutResponse.getItemIdentifier());
-        assertEquals(title, checkoutResponse.getTitleIdentifier());
-        assertEquals(OffsetDateTime.now(clock), checkoutResponse.getDueDate());
-        assertNull(checkoutResponse.getFeeType());
-        assertNull(checkoutResponse.getSecurityInhibit());
-        assertNull(checkoutResponse.getCurrencyType());
-        assertNull(checkoutResponse.getFeeAmount());
-        assertNull(checkoutResponse.getMediaType());
-        assertNull(checkoutResponse.getItemProperties());
-        assertNull(checkoutResponse.getTransactionId());
-        assertNotNull(checkoutResponse.getScreenMessage());
-        assertEquals(Collections.singletonList("Password does not match"),
-          checkoutResponse.getScreenMessage());
-        assertNull(checkoutResponse.getPrintLine());
+        testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
+          assertNotNull(checkoutResponse);
+          assertFalse(checkoutResponse.getOk());
+          assertFalse(checkoutResponse.getRenewalOk());
+          assertNull(checkoutResponse.getMagneticMedia());
+          assertFalse(checkoutResponse.getDesensitize());
+          assertEquals(OffsetDateTime.now(clock), checkoutResponse.getTransactionDate());
+          assertEquals("diku", checkoutResponse.getInstitutionId());
+          assertEquals(patronIdentifier, checkoutResponse.getPatronIdentifier());
+          assertEquals(itemIdentifier, checkoutResponse.getItemIdentifier());
+          assertEquals(title, checkoutResponse.getTitleIdentifier());
+          assertEquals(OffsetDateTime.now(clock), checkoutResponse.getDueDate());
+          assertNull(checkoutResponse.getFeeType());
+          assertNull(checkoutResponse.getSecurityInhibit());
+          assertNull(checkoutResponse.getCurrencyType());
+          assertNull(checkoutResponse.getFeeAmount());
+          assertNull(checkoutResponse.getMediaType());
+          assertNull(checkoutResponse.getItemProperties());
+          assertNull(checkoutResponse.getTransactionId());
+          assertNotNull(checkoutResponse.getScreenMessage());
+          assertEquals(Collections.singletonList("Password does not match"),
+              checkoutResponse.getScreenMessage());
+          assertNull(checkoutResponse.getPrintLine());
 
-        testContext.completeNow();
-      })));
+          testContext.completeNow();
+        })));
   }
 
   private static Stream<Arguments> provideCirculationErrors() {
     return Stream.of(
-      Arguments.of("{\n"
-        + "  \"errors\" : [ {\n"
-        + "    \"message\" : \"Item is already checked out\",\n"
-        + "    \"parameters\" : [ {\n"
-        + "      \"key\" : \"itemBarcode\",\n"
-        + "      \"value\" : \"12345\"\n"
-        + "    } ]\n"
-        + "  }, {\n"
-        + "    \"message\" : \"Item is lost\",\n"
-        + "    \"parameters\" : [ {\n"
-        + "      \"key\" : \"itemBarcode\",\n"
-        + "      \"value\" : \"12345\"\n"
-        + "    } ]\n"
-        + "  } ]\n"
-        + "}", asList("Item is already checked out", "Item is lost")),
-      Arguments.of("Not logged in", asList("Not logged in")));
+        Arguments.of("{\n"
+            + "  \"errors\" : [ {\n"
+            + "    \"message\" : \"Item is already checked out\",\n"
+            + "    \"parameters\" : [ {\n"
+            + "      \"key\" : \"itemBarcode\",\n"
+            + "      \"value\" : \"12345\"\n"
+            + "    } ]\n"
+            + "  }, {\n"
+            + "    \"message\" : \"Item is lost\",\n"
+            + "    \"parameters\" : [ {\n"
+            + "      \"key\" : \"itemBarcode\",\n"
+            + "      \"value\" : \"12345\"\n"
+            + "    } ]\n"
+            + "  } ]\n"
+            + "}", asList("Item is already checked out", "Item is lost")),
+        Arguments.of("Not logged in", asList("Not logged in")));
   }
 
   @ParameterizedTest
   @MethodSource("provideCirculationErrors")
   void cannotCheckout(String errorMessage, List<String> expectedErrors, Vertx vertx,
-                      VertxTestContext testContext,
-                      @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                      @Mock PasswordVerifier mockPasswordVerifier,@Mock UsersRepository usersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate = OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
     final String itemIdentifier = "1234567890";
     final Checkout checkout = Checkout.builder()
-      .scRenewalPolicy(FALSE)
-      .noBlock(FALSE)
-      .transactionDate(OffsetDateTime.now())
-      .nbDueDate(nbDueDate)
-      .institutionId("diku")
-      .patronIdentifier(patronIdentifier)
-      .itemIdentifier(itemIdentifier)
-      .terminalPassword("1234")
-      .itemProperties("Some property of this item")
-      .patronPassword("7890")
-      .feeAcknowledged(FALSE)
-      .cancel(FALSE)
-      .build();
+        .scRenewalPolicy(FALSE)
+        .noBlock(FALSE)
+        .transactionDate(OffsetDateTime.now())
+        .nbDueDate(nbDueDate)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .patronPassword("7890")
+        .feeAcknowledged(FALSE)
+        .cancel(FALSE)
+        .build();
 
     when(mockFolioProvider.createResource(any()))
-      .thenReturn(Future.failedFuture(new FolioRequestThrowable(errorMessage)));
+        .thenReturn(Future.failedFuture(new FolioRequestThrowable(errorMessage)));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
-      .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioProvider, mockPasswordVerifier, clock, usersRepository);
+        mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.performCheckoutCommand(checkout, sessionData).setHandler(
-      testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
-        assertNotNull(checkoutResponse);
-        assertFalse(checkoutResponse.getOk());
-        assertFalse(checkoutResponse.getRenewalOk());
-        assertNull(checkoutResponse.getMagneticMedia());
-        assertFalse(checkoutResponse.getDesensitize());
-        assertEquals(OffsetDateTime.now(clock), checkoutResponse.getTransactionDate());
-        assertEquals("diku", checkoutResponse.getInstitutionId());
-        assertEquals(patronIdentifier, checkoutResponse.getPatronIdentifier());
-        assertEquals(itemIdentifier, checkoutResponse.getItemIdentifier());
-        assertEquals("", checkoutResponse.getTitleIdentifier());
-        assertEquals(OffsetDateTime.now(clock), checkoutResponse.getDueDate());
-        assertNull(checkoutResponse.getFeeType());
-        assertNull(checkoutResponse.getSecurityInhibit());
-        assertNull(checkoutResponse.getCurrencyType());
-        assertNull(checkoutResponse.getFeeAmount());
-        assertNull(checkoutResponse.getMediaType());
-        assertNull(checkoutResponse.getItemProperties());
-        assertNull(checkoutResponse.getTransactionId());
-        assertEquals(expectedErrors, checkoutResponse.getScreenMessage());
-        assertNull(checkoutResponse.getPrintLine());
+        testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
+          assertNotNull(checkoutResponse);
+          assertFalse(checkoutResponse.getOk());
+          assertFalse(checkoutResponse.getRenewalOk());
+          assertNull(checkoutResponse.getMagneticMedia());
+          assertFalse(checkoutResponse.getDesensitize());
+          assertEquals(OffsetDateTime.now(clock), checkoutResponse.getTransactionDate());
+          assertEquals("diku", checkoutResponse.getInstitutionId());
+          assertEquals(patronIdentifier, checkoutResponse.getPatronIdentifier());
+          assertEquals(itemIdentifier, checkoutResponse.getItemIdentifier());
+          assertEquals("", checkoutResponse.getTitleIdentifier());
+          assertEquals(OffsetDateTime.now(clock), checkoutResponse.getDueDate());
+          assertNull(checkoutResponse.getFeeType());
+          assertNull(checkoutResponse.getSecurityInhibit());
+          assertNull(checkoutResponse.getCurrencyType());
+          assertNull(checkoutResponse.getFeeAmount());
+          assertNull(checkoutResponse.getMediaType());
+          assertNull(checkoutResponse.getItemProperties());
+          assertNull(checkoutResponse.getTransactionId());
+          assertEquals(expectedErrors, checkoutResponse.getScreenMessage());
+          assertNull(checkoutResponse.getPrintLine());
 
-        testContext.completeNow();
-      })));
+          testContext.completeNow();
+        })));
   }
 
   @Test
   public void canGetLoansByUserId(Vertx vertx,
-                                  VertxTestContext testContext,
-                                  @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                                  @Mock PasswordVerifier mockPasswordVerifier,@Mock UsersRepository usersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String userId = UUID.randomUUID().toString();
     final String itemId = UUID.randomUUID().toString();
 
     final JsonObject response = new JsonObject()
-      .put("loans", new JsonArray()
-        .add(new JsonObject()
-          .put("userId", userId)
-          .put("itemId", itemId)
-          .put("loanDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
-          .put("action", "checkedout")))
-      .put("totalRecords", 1);
+        .put("loans", new JsonArray()
+            .add(new JsonObject()
+                .put("userId", userId)
+                .put("itemId", itemId)
+                .put("loanDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
+                .put("action", "checkedout")))
+        .put("totalRecords", 1);
     when(mockFolioProvider.retrieveResource(any()))
-      .thenReturn(Future.succeededFuture(new FolioResource(response,
-        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioProvider, mockPasswordVerifier, clock, usersRepository);
+        mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.getLoansByUserId(userId, null, null, sessionData).setHandler(
-      testContext.succeeding(loansResponse -> testContext.verify(() -> {
-        assertNotNull(loansResponse);
-        assertEquals(1, loansResponse.getInteger("totalRecords"));
-        final JsonArray loans = loansResponse.getJsonArray("loans");
-        assertNotNull(loans);
-        final JsonObject loan = loans.getJsonObject(0);
-        assertNotNull(loan);
-        assertEquals(userId, loan.getString("userId"));
-        assertEquals(itemId, loan.getString("itemId"));
+        testContext.succeeding(loansResponse -> testContext.verify(() -> {
+          assertNotNull(loansResponse);
+          assertEquals(1, loansResponse.getInteger("totalRecords"));
+          final JsonArray loans = loansResponse.getJsonArray("loans");
+          assertNotNull(loans);
+          final JsonObject loan = loans.getJsonObject(0);
+          assertNotNull(loan);
+          assertEquals(userId, loan.getString("userId"));
+          assertEquals(itemId, loan.getString("itemId"));
 
-        testContext.completeNow();
-      })));
+          testContext.completeNow();
+        })));
   }
 
   @Test
   public void cannotGetLoansByUserId(Vertx vertx,
-                                     VertxTestContext testContext,
-                                     @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                                     @Mock PasswordVerifier mockPasswordVerifier,@Mock UsersRepository usersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String userId = UUID.randomUUID().toString();
 
     when(mockFolioProvider.retrieveResource(any()))
-      .thenReturn(Future.failedFuture(new NoStackTraceThrowable("cannotGetLoansByUserId")));
+        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("cannotGetLoansByUserId")));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioProvider, mockPasswordVerifier, clock, usersRepository);
+        mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.getLoansByUserId(userId, null, null, sessionData).setHandler(
-      testContext.succeeding(loansResponse -> testContext.verify(() -> {
-        assertNull(loansResponse);
+        testContext.succeeding(loansResponse -> testContext.verify(() -> {
+          assertNull(loansResponse);
 
-        testContext.completeNow();
-      })));
+          testContext.completeNow();
+        })));
   }
 
   @Test
   public void canGetOverdueLoansByUserId(Vertx vertx,
-                                         VertxTestContext testContext,
-                                         @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                                         @Mock PasswordVerifier mockPasswordVerifier,@Mock UsersRepository usersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String userId = UUID.randomUUID().toString();
     final String itemId = UUID.randomUUID().toString();
 
     final JsonObject response = new JsonObject()
-      .put("loans", new JsonArray()
-        .add(new JsonObject()
-          .put("userId", userId)
-          .put("itemId", itemId)
-          .put("loanDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
-          .put("action", "checkedout")))
-      .put("totalRecords", 1);
+        .put("loans", new JsonArray()
+            .add(new JsonObject()
+                .put("userId", userId)
+                .put("itemId", itemId)
+                .put("loanDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
+                .put("action", "checkedout")))
+        .put("totalRecords", 1);
     when(mockFolioProvider.retrieveResource(any()))
-      .thenReturn(Future.succeededFuture(new FolioResource(response,
-        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioProvider, mockPasswordVerifier, clock, usersRepository);
+        mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.getOverdueLoansByUserId(userId, OffsetDateTime.now(clock), null, null,
-      sessionData).setHandler(testContext.succeeding(loansResponse -> testContext.verify(() -> {
-      assertNotNull(loansResponse);
-      assertEquals(1, loansResponse.getInteger("totalRecords"));
-      final JsonArray loans = loansResponse.getJsonArray("loans");
-      assertNotNull(loans);
-      final JsonObject loan = loans.getJsonObject(0);
-      assertNotNull(loan);
-      assertEquals(userId, loan.getString("userId"));
-      assertEquals(itemId, loan.getString("itemId"));
+        sessionData).setHandler(testContext.succeeding(loansResponse -> testContext.verify(() -> {
+          assertNotNull(loansResponse);
+          assertEquals(1, loansResponse.getInteger("totalRecords"));
+          final JsonArray loans = loansResponse.getJsonArray("loans");
+          assertNotNull(loans);
+          final JsonObject loan = loans.getJsonObject(0);
+          assertNotNull(loan);
+          assertEquals(userId, loan.getString("userId"));
+          assertEquals(itemId, loan.getString("itemId"));
 
-      testContext.completeNow();
-    })));
+          testContext.completeNow();
+        })));
   }
 
   @Test
   public void cannotGetOverdueLoansByUserId(Vertx vertx,
-                                            VertxTestContext testContext,
-                                            @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                                            @Mock PasswordVerifier mockPasswordVerifier,@Mock UsersRepository usersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String userId = UUID.randomUUID().toString();
 
     when(mockFolioProvider.retrieveResource(any()))
-      .thenReturn(Future.failedFuture(
-        new NoStackTraceThrowable("cannotGetOverdueLoansByUserId")));
+        .thenReturn(Future.failedFuture(
+            new NoStackTraceThrowable("cannotGetOverdueLoansByUserId")));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioProvider, mockPasswordVerifier, clock, usersRepository);
+        mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.getOverdueLoansByUserId(userId, OffsetDateTime.now(clock), null, null,
-      sessionData).setHandler(testContext.succeeding(loansResponse -> testContext.verify(() -> {
-      assertNull(loansResponse);
+        sessionData).setHandler(testContext.succeeding(loansResponse -> testContext.verify(() -> {
+          assertNull(loansResponse);
 
-      testContext.completeNow();
-    })));
+          testContext.completeNow();
+        })));
   }
 
   @Test
   public void canGetRequestsByItemId(Vertx vertx,
-                                     VertxTestContext testContext,
-                                     @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                                     @Mock PasswordVerifier mockPasswordVerifier,@Mock UsersRepository usersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String userId = UUID.randomUUID().toString();
     final String itemId = UUID.randomUUID().toString();
 
     final JsonObject response = new JsonObject()
-      .put("requests", new JsonArray()
-        .add(new JsonObject()
-          .put("requesterId", userId)
-          .put("itemId", itemId)
-          .put("requestType", "Recall")
-          .put("requestDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
-          .put("fulfilmentPreference", "Hold Shelf")))
-      .put("totalRecords", 1);
+        .put("requests", new JsonArray()
+            .add(new JsonObject()
+                .put("requesterId", userId)
+                .put("itemId", itemId)
+                .put("requestType", "Recall")
+                .put("requestDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
+                .put("fulfilmentPreference", "Hold Shelf")))
+        .put("totalRecords", 1);
     when(mockFolioProvider.retrieveResource(any()))
-      .thenReturn(Future.succeededFuture(new FolioResource(response,
-        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioProvider, mockPasswordVerifier, clock, usersRepository);
+        mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.getRequestsByItemId(itemId, "Recall", null, null, sessionData)
-      .setHandler(testContext.succeeding(requestsResponse -> testContext.verify(() -> {
-        assertNotNull(requestsResponse);
-        assertEquals(1, requestsResponse.getInteger("totalRecords"));
-        final JsonArray requests = requestsResponse.getJsonArray("requests");
-        assertNotNull(requests);
-        final JsonObject request = requests.getJsonObject(0);
-        assertNotNull(request);
-        assertEquals(userId, request.getString("requesterId"));
-        assertEquals(itemId, request.getString("itemId"));
+        .setHandler(testContext.succeeding(requestsResponse -> testContext.verify(() -> {
+          assertNotNull(requestsResponse);
+          assertEquals(1, requestsResponse.getInteger("totalRecords"));
+          final JsonArray requests = requestsResponse.getJsonArray("requests");
+          assertNotNull(requests);
+          final JsonObject request = requests.getJsonObject(0);
+          assertNotNull(request);
+          assertEquals(userId, request.getString("requesterId"));
+          assertEquals(itemId, request.getString("itemId"));
 
-        testContext.completeNow();
-      })));
+          testContext.completeNow();
+        })));
   }
 
   @Test
   public void cannotGetRequestsByItemId(Vertx vertx,
-                                        VertxTestContext testContext,
-                                        @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                                        @Mock PasswordVerifier mockPasswordVerifier,@Mock UsersRepository usersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String itemId = UUID.randomUUID().toString();
 
     when(mockFolioProvider.retrieveResource(any()))
-      .thenReturn(Future.failedFuture(new NoStackTraceThrowable("cannotGetRequestsByItemId")));
+        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("cannotGetRequestsByItemId")));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioProvider, mockPasswordVerifier, clock, usersRepository);
+        mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.getRequestsByItemId(itemId, "Recall", null, null,
-      sessionData).setHandler(testContext.succeeding(
-      requestsResponse -> testContext.verify(() -> {
-        assertNull(requestsResponse);
+        sessionData).setHandler(testContext.succeeding(
+            requestsResponse -> testContext.verify(() -> {
+              assertNull(requestsResponse);
 
-        testContext.completeNow();
-      })));
+              testContext.completeNow();
+            })));
   }
 
   @Test
   public void canGetRequestsByUserId(Vertx vertx,
-                                     VertxTestContext testContext,
-                                     @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                                     @Mock PasswordVerifier mockPasswordVerifier,@Mock UsersRepository usersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String userId = UUID.randomUUID().toString();
     final String itemId = UUID.randomUUID().toString();
 
     final JsonObject response = new JsonObject()
-      .put("requests", new JsonArray()
-        .add(new JsonObject()
-          .put("requesterId", userId)
-          .put("itemId", itemId)
-          .put("requestType", "Hold")
-          .put("requestDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
-          .put("fulfilmentPreference", "Hold Shelf")))
-      .put("totalRecords", 1);
+        .put("requests", new JsonArray()
+            .add(new JsonObject()
+                .put("requesterId", userId)
+                .put("itemId", itemId)
+                .put("requestType", "Hold")
+                .put("requestDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
+                .put("fulfilmentPreference", "Hold Shelf")))
+        .put("totalRecords", 1);
     when(mockFolioProvider.retrieveResource(any()))
-      .thenReturn(Future.succeededFuture(new FolioResource(response,
-        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioProvider, mockPasswordVerifier, clock, usersRepository);
+        mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.getRequestsByItemId(itemId, "Hold", null, null, sessionData)
-      .setHandler(testContext.succeeding(requestsResponse -> testContext.verify(() -> {
-        assertNotNull(requestsResponse);
-        assertEquals(1, requestsResponse.getInteger("totalRecords"));
-        final JsonArray requests = requestsResponse.getJsonArray("requests");
-        assertNotNull(requests);
-        final JsonObject request = requests.getJsonObject(0);
-        assertNotNull(request);
-        assertEquals(userId, request.getString("requesterId"));
-        assertEquals(itemId, request.getString("itemId"));
+        .setHandler(testContext.succeeding(requestsResponse -> testContext.verify(() -> {
+          assertNotNull(requestsResponse);
+          assertEquals(1, requestsResponse.getInteger("totalRecords"));
+          final JsonArray requests = requestsResponse.getJsonArray("requests");
+          assertNotNull(requests);
+          final JsonObject request = requests.getJsonObject(0);
+          assertNotNull(request);
+          assertEquals(userId, request.getString("requesterId"));
+          assertEquals(itemId, request.getString("itemId"));
 
-        testContext.completeNow();
-      })));
+          testContext.completeNow();
+        })));
   }
 
   @Test
   public void cannotGetRequestsByUserId(Vertx vertx,
-                                        VertxTestContext testContext,
-                                        @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                                        @Mock PasswordVerifier mockPasswordVerifier,@Mock UsersRepository usersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String userId = UUID.randomUUID().toString();
 
     when(mockFolioProvider.retrieveResource(any()))
-      .thenReturn(Future.failedFuture(new NoStackTraceThrowable("cannotGetRequestsByUserId")));
+        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("cannotGetRequestsByUserId")));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-      mockFolioProvider, mockPasswordVerifier, clock, usersRepository);
+        mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.getRequestsByItemId(userId, "Hold", null, null,
-      sessionData).setHandler(testContext.succeeding(
-      requestsResponse -> testContext.verify(() -> {
-        assertNull(requestsResponse);
+        sessionData).setHandler(testContext.succeeding(
+            requestsResponse -> testContext.verify(() -> {
+              assertNull(requestsResponse);
 
-        testContext.completeNow();
-      })));
+              testContext.completeNow();
+            })));
   }
 }
