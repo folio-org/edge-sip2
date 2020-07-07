@@ -1,7 +1,6 @@
 package org.folio.edge.sip2.domain.messages.requests;
 
 import java.util.Objects;
-
 import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
 import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
 

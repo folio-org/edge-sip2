@@ -2,7 +2,6 @@ package org.folio.edge.sip2.domain.messages.requests;
 
 import java.time.OffsetDateTime;
 import java.util.Objects;
-
 import org.folio.edge.sip2.domain.messages.enumerations.Language;
 import org.folio.edge.sip2.domain.messages.enumerations.Summary;
 

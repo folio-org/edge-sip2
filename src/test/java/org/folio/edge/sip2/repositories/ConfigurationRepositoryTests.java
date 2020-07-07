@@ -12,13 +12,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
 import org.folio.edge.sip2.session.SessionData;
@@ -84,7 +82,7 @@ public class ConfigurationRepositoryTests {
     resultsWrapper.put("configs", configsArray);
 
     when(mockFolioProvider.retrieveResource(any()))
-      .thenReturn(succeededFuture(() -> resultsWrapper));
+        .thenReturn(succeededFuture(() -> resultsWrapper));
 
     Clock clock = TestUtils.getUtcFixedClock();
 

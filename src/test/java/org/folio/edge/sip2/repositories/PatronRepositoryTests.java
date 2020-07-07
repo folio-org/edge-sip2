@@ -38,7 +38,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
-
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
 import org.folio.edge.sip2.domain.messages.enumerations.Summary;
@@ -267,23 +266,23 @@ public class PatronRepositoryTests {
     final String recallsResponseJson = getJsonFromFile("json/recall_requests_response.json");
     final JsonObject recallsResponse = new JsonObject(recallsResponseJson);
     when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
-      .thenReturn(Future.succeededFuture(userResponse));
+        .thenReturn(Future.succeededFuture(userResponse));
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
-      .thenReturn(Future.succeededFuture(manualBlocksResponse));
+        .thenReturn(Future.succeededFuture(manualBlocksResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
-      .thenReturn(Future.succeededFuture(overdueResponse));
+        .thenReturn(Future.succeededFuture(overdueResponse));
     when(mockCirculationRepository.getRequestsByUserId(
       any(), eq("Hold"), any(), any(), any()))
-      .thenReturn(Future.succeededFuture(holdsResponse));
+        .thenReturn(Future.succeededFuture(holdsResponse));
     when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
-      .thenReturn(Future.succeededFuture(openLoansResponse));
+        .thenReturn(Future.succeededFuture(openLoansResponse));
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
           .thenReturn(Future.succeededFuture(recallsResponse),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
-      .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -370,23 +369,23 @@ public class PatronRepositoryTests {
     final String recallsResponseJson = getJsonFromFile("json/recall_requests_response.json");
     final JsonObject recallsResponse = new JsonObject(recallsResponseJson);
     when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
-      .thenReturn(Future.succeededFuture(userResponse));
+        .thenReturn(Future.succeededFuture(userResponse));
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
-      .thenReturn(Future.succeededFuture(manualBlocksResponse));
+        .thenReturn(Future.succeededFuture(manualBlocksResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
-      .thenReturn(Future.succeededFuture(overdueResponse));
+        .thenReturn(Future.succeededFuture(overdueResponse));
     when(mockCirculationRepository.getRequestsByUserId(
       any(), eq("Hold"), any(), any(), any()))
-      .thenReturn(Future.succeededFuture(holdsResponse));
+        .thenReturn(Future.succeededFuture(holdsResponse));
     when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
-      .thenReturn(Future.succeededFuture(openLoansResponse));
+        .thenReturn(Future.succeededFuture(openLoansResponse));
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
           .thenReturn(Future.succeededFuture(recallsResponse),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
-      .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -1214,14 +1213,14 @@ public class PatronRepositoryTests {
     final String userResponseJson = getJsonFromFile("json/user_response2.json");
     final User userResponse = Json.decodeValue(userResponseJson, User.class);
     when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
-      .thenReturn(Future.succeededFuture(userResponse));
+        .thenReturn(Future.succeededFuture(userResponse));
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
-      .thenReturn(Future.succeededFuture(manualBlocksResponse));
+        .thenReturn(Future.succeededFuture(manualBlocksResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
-      .thenReturn(Future.succeededFuture(null));
+        .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getRequestsByUserId(
       any(), eq("Hold"), any(), any(), any()))
-      .thenReturn(Future.succeededFuture(null));
+        .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))

@@ -11,11 +11,9 @@ import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
-
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.EnumMap;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.parser.Command;

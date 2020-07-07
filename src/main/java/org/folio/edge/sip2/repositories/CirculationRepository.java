@@ -308,16 +308,14 @@ public class CirculationRepository {
       final int offset;
       if (startItem != null) {
         offset = startItem.intValue() - 1; // expects a 1-based count, FOLIO is 0
-        sb.append("&offset=")
-          .append(offset);
+        sb.append("&offset=").append(offset);
       } else {
         offset = 0;
       }
 
       if (endItem != null) {
         final int limit = endItem.intValue() - offset;
-        sb.append("&limit=")
-          .append(limit);
+        sb.append("&limit=").append(limit);
       }
 
       return sb;
@@ -376,8 +374,7 @@ public class CirculationRepository {
           .append(idValue)
           .append(" and status=Open");
       if (requestType != null) {
-        sb.append(" and requestType==")
-          .append(requestType);
+        sb.append(" and requestType==").append(requestType);
       }
       sb.append(')');
 

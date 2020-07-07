@@ -3,11 +3,8 @@ package org.folio.edge.sip2.handlers.freemarker;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import freemarker.template.Template;
-
 import java.util.Date;
-
 import org.folio.edge.sip2.parser.Command;
-
 import org.junit.jupiter.api.Test;
 
 
