@@ -71,15 +71,6 @@ public class PatronRepositoryTests {
   }
 
   @Test
-  public void cannotCreatePatronRepositoryWhenUsersRepositoryIsNull() {
-    final NullPointerException thrown = assertThrows(
-        NullPointerException.class,
-        () -> new PatronRepository(null, null, null, null, null));
-
-    assertEquals("Users repository cannot be null", thrown.getMessage());
-  }
-
-  @Test
   public void cannotCreatePatronRepositoryCirculationRepositoryIsNull(
       @Mock UsersRepository mockUsersRepository,
       @Mock Clock mockClock) {
