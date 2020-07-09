@@ -66,7 +66,13 @@ public class PasswordVerifier {
                 });
           });
     } else {
-      loginFuture = Future.succeededFuture(PatronPasswordVerificationRecords.builder().build());
+      loginFuture = usersRepository.getUserById(patronIdentifier, sessionData).compose(user -> {
+        if (user != null) {
+          return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .user(user).build());
+        }
+        return Future.succeededFuture(PatronPasswordVerificationRecords.builder().build());
+      });
     }
 
     return loginFuture;

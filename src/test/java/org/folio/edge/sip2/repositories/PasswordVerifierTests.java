@@ -127,6 +127,33 @@ class PasswordVerifierTests {
   }
 
   @Test
+  void canVerifyPasswordNotRequiredWithUserById(
+      Vertx vertx,
+      VertxTestContext testContext,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock LoginRepository mockLoginRepository) {
+    final String patronIdentifier = "1234567890";
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPatronPasswordVerificationRequired(false);
+    final String userResponseJson = getJsonFromFile("json/user_response.json");
+    final User userResponse = Json.decodeValue(userResponseJson, User.class);
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(userResponse));
+
+    final PasswordVerifier passwordVerifier = new PasswordVerifier(mockUsersRepository,
+        mockLoginRepository);
+    passwordVerifier.verifyPatronPassword(patronIdentifier,"0989", sessionData).setHandler(
+        testContext.succeeding(verification -> testContext.verify(() -> {
+          assertNotNull(verification);
+          assertNotNull(verification.getUser());
+          assertNull(verification.getPasswordVerified());
+          assertNull(verification.getErrorMessages());
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
   void canVerifyPasswordNotRequired(
       Vertx vertx,
       VertxTestContext testContext,
@@ -136,7 +163,8 @@ class PasswordVerifierTests {
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
     sessionData.setPatronPasswordVerificationRequired(false);
-
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(null));
     final PasswordVerifier passwordVerifier = new PasswordVerifier(mockUsersRepository,
         mockLoginRepository);
     passwordVerifier.verifyPatronPassword(patronIdentifier, "0989", sessionData).setHandler(

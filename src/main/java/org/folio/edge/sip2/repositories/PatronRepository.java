@@ -59,7 +59,6 @@ public class PatronRepository {
   static final String MESSAGE_BLOCKED_PATRON =
       "There are unresolved issues with your account. Please see a staff member for assistance.";
 
-  private final UsersRepository usersRepository;
   private final CirculationRepository circulationRepository;
   private final FeeFinesRepository feeFinesRepository;
   private final PasswordVerifier passwordVerifier;
@@ -68,8 +67,6 @@ public class PatronRepository {
   @Inject
   PatronRepository(UsersRepository usersRepository, CirculationRepository circulationRepository,
       FeeFinesRepository feeFinesRepository, PasswordVerifier passwordVerifier, Clock clock) {
-    this.usersRepository = Objects.requireNonNull(usersRepository,
-        "Users repository cannot be null");
     this.circulationRepository = Objects.requireNonNull(circulationRepository,
         "Circulation repository cannot be null");
     this.feeFinesRepository = Objects.requireNonNull(feeFinesRepository,
@@ -99,12 +96,8 @@ public class PatronRepository {
           if (FALSE.equals(verification.getPasswordVerified())) {
             return invalidPatron(patronInformation, FALSE);
           }
-          final Future<User> userFuture;
-          if (verification.getPasswordVerified() == null) {
-            userFuture = usersRepository.getUserById(patronIdentifier, sessionData);
-          } else {
-            userFuture = Future.succeededFuture(verification.getUser());
-          }
+          //getUser is add in PasswordVerifier
+          final Future<User> userFuture = Future.succeededFuture(verification.getUser());
 
           return userFuture.compose(user -> {
             if (user == null || FALSE.equals(user.getActive())) {
