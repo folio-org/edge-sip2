@@ -2,10 +2,8 @@ package org.folio.edge.sip2.handlers;
 
 import freemarker.template.Template;
 import io.vertx.core.Vertx;
-
 import java.time.Clock;
 import java.util.Objects;
-
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.repositories.ConfigurationRepository;

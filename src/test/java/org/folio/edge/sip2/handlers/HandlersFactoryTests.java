@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import freemarker.template.Template;
 import io.vertx.core.Vertx;
-
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;

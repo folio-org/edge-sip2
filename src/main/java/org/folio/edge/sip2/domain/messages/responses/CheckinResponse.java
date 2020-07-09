@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
 import org.folio.edge.sip2.domain.messages.enumerations.MediaType;
 
 /**
@@ -28,7 +27,7 @@ public final class CheckinResponse {
   /**
    * {@code TRUE} if the SC should resensitize the article. {@code FALSE} if
    * the SC should not resensitize the article, e.g. a closed reserve book or
-   * the checkin was refused. 
+   * the checkin was refused.
    */
   private final Boolean resensitize;
   /**

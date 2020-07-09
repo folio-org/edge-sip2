@@ -3,7 +3,6 @@ package org.folio.edge.sip2.repositories;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -15,7 +14,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
@@ -166,7 +164,7 @@ public class ConfigurationRepository {
     }
   }
 
-  private void addTenantConfig(JsonObject config, SessionData sessionData, 
+  private void addTenantConfig(JsonObject config, SessionData sessionData,
       ACSStatusBuilder builder) {
     if (config != null) {
       builder.onLineStatus(true);

@@ -28,23 +28,23 @@ public class FolioResourceProviderTests {
       .requestHandler(req -> {
         if (req.path().equals("/test_retrieve")) {
           req.response()
-            .setStatusCode(200)
-            .putHeader("content-type", "application/json")
-            .putHeader("x-okapi-token", "token-value")
-            .end("{\"test\":\"value\"}");
+              .setStatusCode(200)
+              .putHeader("content-type", "application/json")
+              .putHeader("x-okapi-token", "token-value")
+              .end("{\"test\":\"value\"}");
         } else if (req.path().equals("/test_create")) {
           req.response()
-            .setStatusCode(201)
-            .putHeader("content-type", "application/json")
-            .putHeader("x-okapi-token", "token-value")
-            .end("{\"test\":\"value\"}");
+              .setStatusCode(201)
+              .putHeader("content-type", "application/json")
+              .putHeader("x-okapi-token", "token-value")
+              .end("{\"test\":\"value\"}");
         } else {
           req.response()
-            .setStatusCode(500)
-            .end("Unexpected call: " + req.path());
+              .setStatusCode(500)
+              .end("Unexpected call: " + req.path());
         }
       })
-      .listen(port, testContext.completing());
+        .listen(port, testContext.completing());
 
     assertTrue(testContext.awaitCompletion(5, TimeUnit.SECONDS));
 

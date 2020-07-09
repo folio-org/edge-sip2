@@ -7,7 +7,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
 
 /**
