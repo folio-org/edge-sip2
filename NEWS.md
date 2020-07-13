@@ -1,3 +1,7 @@
+## 1.3.1 2020-07-13
+ * [SIP2-83](https://issues.folio.org/browse/SIP2-83): Allow checkout when externalUserId is provided and password is not required
+ * [SIP2-80](https://issues.folio.org/browse/SIP2-80): Fix security vulnerability reported in checkstyle < 8.29
+
 ## 1.3.0 2020-06-12
  * [SIP2-84](https://issues.folio.org/browse/SIP2-84): Add 7.0 as acceptable login interface version
  * [SIP2-82](https://issues.folio.org/browse/SIP2-82): Upgrade RMB to v30.0.2 and release it.
