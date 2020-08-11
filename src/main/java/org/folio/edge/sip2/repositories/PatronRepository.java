@@ -170,7 +170,8 @@ public class PatronRepository {
                     patronInformation.getSummary() == OVERDUE_ITEMS, builder));
     // Get recalled items data (count and items) and store it in the builder
     final Future<PatronInformationResponseBuilder> recallsFuture =
-        getRecalls(userId, sessionData).compose(recalls -> addRecalls(recalls, startItem, endItem,
+      getRecallsAndHolds(userId, sessionData, patronInformation, builder)
+          .compose(recalls -> addRecalls(recalls, startItem, endItem,
             patronInformation.getSummary() == RECALL_ITEMS, builder));
     // When all operations complete, build and return the final PatronInformationResponse
     return CompositeFuture.all(manualBlocksFuture, holdsFuture, overdueFuture, recallsFuture)
@@ -299,6 +300,26 @@ public class PatronRepository {
     return builder.overdueItemsCount(Integer.valueOf(overdueItemsCount)).overdueItems(overdueItems);
   }
 
+  private PatronInformationResponseBuilder addPartonHolds(JsonObject holds, boolean details,
+    PatronInformationResponseBuilder builder) {
+    final int holdItemsCount;
+    final List<String> holdItems;
+
+    if (holds != null) {
+      holdItemsCount = Math.min(getTotalRecords(holds), 9999);
+      if (details) {
+        holdItems = getBarCodeItems(holds);
+      } else {
+        holdItems = null;
+      }
+    } else {
+      holdItemsCount = 0;
+      holdItems = null;
+    }
+
+    return builder.holdItemsCount(Integer.valueOf(holdItemsCount)).holdItems(holdItems);
+  }
+
   @SuppressWarnings("rawtypes")
   private Future<PatronInformationResponseBuilder> addRecalls(List<Future<JsonObject>> recalls,
       Integer startItem, Integer endItem, boolean details,
@@ -375,6 +396,14 @@ public class PatronRepository {
     return getTitles(requestArray);
   }
 
+  private List<String> getBarCodeItems(JsonObject loans) {
+    final JsonArray requestArray = loans.getJsonArray("loans", new JsonArray());
+    return requestArray.stream().map(o -> (JsonObject) o)
+      .map(loan -> loan.getJsonObject("item"))
+      .map(item -> item == null ? null : item.getString("barcode"))
+      .collect(Collectors.toList());
+  }
+
   private int countRecallItems(List<Future<JsonObject>> recallItems) {
     return (int) recallItems.stream()
         .map(Future::result)
@@ -440,6 +469,25 @@ public class PatronRepository {
           .map(loan -> circulationRepository.getRequestsByItemId(loan.getString("itemId"),
               "Recall", null, null, sessionData))
           .collect(Collectors.toList());
+    });
+  }
+
+  private Future<List<Future<JsonObject>>> getRecallsAndHolds(String userId, SessionData sessionData,
+    PatronInformation patronInformation,
+    PatronInformationResponseBuilder builder) {
+    final Future<JsonObject> loansFuture =
+      circulationRepository.getLoansByUserId(userId, null, null, sessionData);
+
+    return loansFuture.map(jo -> {
+      addPartonHolds(jo, patronInformation.getSummary() == HOLD_ITEMS, builder);
+      final JsonArray loans = jo == null ? new JsonArray()
+        : jo.getJsonArray("loans", new JsonArray());
+      return loans.stream()
+        .map(o -> (JsonObject) o)
+        .map(loan -> circulationRepository.getRequestsByItemId(loan.getString("itemId"),
+          "Recall", null, null, sessionData)
+        )
+        .collect(Collectors.toList());
     });
   }
 }
