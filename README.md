@@ -1,6 +1,6 @@
 # edge-sip2
 
-Copyright (C) 2019 The Open Library Foundation
+Copyright (C) 2019-2020 The Open Library Foundation
 
 This software is distributed under the terms of the Apache License,
 Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
@@ -18,11 +18,11 @@ FOLIO results for all supported (TBD) SIP2 commands.
 The edge-sip2 module can be launched via `edge-sip2-fat.jar` as follows:
 
 ```bash
-$ java -jar edge-sip2-fat.jar -conf '{"port":1234,"okapiUrl":"https://folio-snapshot-okapi.aws.indexdata.com","tenant":"diku"}'
+$ java -jar edge-sip2-fat.jar -conf '{"port":1234,"okapiUrl":"https://folio-snapshot-okapi.dev.folio.org","tenant":"diku"}'
 ```
 On Windows the `edge-sip2-fat.jar` should be launched with the JSON configuration in double quotes and the inner double quotes should be escaped, for example:
 ```
-$ java -jar edge-sip2-fat.jar -conf "{\"port\":1234,\"okapiUrl\":\"https://folio-snapshot-okapi.aws.indexdata.com\",\"tenant\":\"diku"\}"
+$ java -jar edge-sip2-fat.jar -conf "{\"port\":1234,\"okapiUrl\":\"https://folio-snapshot-okapi.dev.folio.org\",\"tenant\":\"diku"\}"
 ``` 
 
 |Config option|Type|Description|
@@ -152,7 +152,7 @@ connect = sip2.example.com:6443
 Example edge-sip2 configuration:
 
 ```bash
-$ java -jar edge-sip2-fat.jar -conf '{"port":1234,"okapiUrl":"https://folio-snapshot-okapi.aws.indexdata.com","tenant":"diku","netServerOptions":{"ssl":true,"pemKeyCertOptions":{"certPaths":["cert.crt"],"keyPaths":["cert.key"]}}}'
+$ java -jar edge-sip2-fat.jar -conf '{"port":1234,"okapiUrl":"https://folio-snapshot-okapi.dev.folio.org","tenant":"diku","netServerOptions":{"ssl":true,"pemKeyCertOptions":{"certPaths":["cert.crt"],"keyPaths":["cert.key"]}}}'
 ```
 
 |Config option|Type|Description|
