@@ -1,3 +1,7 @@
+## 1.4.0 2020-10-20
+ * [SIP2-86](https://issues.folio.org/browse/SIP2-86): Upgrade edge-sip2 to use Java 11 
+ * [FOLIO-2706](https://issues.folio.org/browse/FOLIO-2706): Update dev documentation for FQDNs of reference environments
+
 ## 1.3.1 2020-07-13
  * [SIP2-83](https://issues.folio.org/browse/SIP2-83): Allow checkout when externalUserId is provided and password is not required
  * [SIP2-80](https://issues.folio.org/browse/SIP2-80): Fix security vulnerability reported in checkstyle < 8.29
