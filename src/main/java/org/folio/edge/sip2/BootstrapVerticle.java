@@ -15,23 +15,32 @@ public class BootstrapVerticle extends AbstractVerticle {
   @Override
   public void start(Future<Void> startFuture) {
 
-    log.info("Starting to bootstrap sip2");
-    
+    log.info("Bootstrapping sip2, retrieving config from:\n {}", () -> config().encodePrettily());
     JsonObject crOptionsJson = config().getJsonObject("configRetrieverOptions");
     ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
     ConfigRetriever configRetriever = ConfigRetriever.create(vertx, crOptions);
-
-    log.info("Retrieving sip2 config");
 
     configRetriever.getConfig(ar -> {
       if (ar.succeeded()) {
         DeploymentOptions opt = new DeploymentOptions().setConfig(ar.result());
         log.info("Deploying sip2 MainVerticle");
-        vertx.deployVerticle("org.folio.edge.sip2.MainVerticle", opt);
+        vertx.deployVerticle("org.folio.edge.sip2.MainVerticle", opt, mvar -> {
+          if (mvar.succeeded()) {
+            startFuture.complete();
+          } else {
+            startFuture.fail(mvar.cause());
+          }
+        });
       } else {
         log.error("Unable to getConfig - {}", ar.cause().getMessage());
         startFuture.fail(ar.cause());
       }
     });
+    
+    configRetriever.listen(change -> {
+      JsonObject newConfig = change.getNewConfiguration();
+      log.info("config change detected for sip2, new config is:\n {}", newConfig.encodePrettily());
+    });
+
   }
 }

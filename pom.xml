@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>edge-sip2</artifactId>
@@ -141,17 +143,12 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
-	<dependency>
-	    <groupId>commons-net</groupId>
-	    <artifactId>commons-net</artifactId>
-	    <version>3.7.2</version>
-	</dependency>
     <dependency>
-      <groupId>software.amazon.awssdk</groupId>
-      <artifactId>s3</artifactId>
-      <version>2.13.28</version>
+      <groupId>commons-net</groupId>
+      <artifactId>commons-net</artifactId>
+      <version>3.7.2</version>
     </dependency>
-    
+
     <!-- Test dependencies -->
     <dependency>
       <groupId>io.vertx</groupId>
@@ -205,6 +202,10 @@
       <name>FOLIO Maven repository</name>
       <url>https://repository.folio.org/repository/maven-folio</url>
     </repository>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
   </repositories>
 
   <profiles>
@@ -232,6 +233,20 @@
           <groupId>io.micrometer</groupId>
           <artifactId>micrometer-registry-influx</artifactId>
           <version>1.1.5</version>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>vertx-config-s3</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>com.github.mikelee2082</groupId>
+          <artifactId>vertx-config-s3</artifactId>
+          <version>0.2.0</version>
           <scope>runtime</scope>
         </dependency>
       </dependencies>
@@ -321,14 +336,16 @@
                 </filter>
               </filters>
               <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                <transformer
+                  implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <manifestEntries>
                     <Main-Class>io.vertx.core.Launcher</Main-Class>
                     <Main-Verticle>${exec.mainClass}</Main-Verticle>
                     <Multi-Release>true</Multi-Release>
                   </manifestEntries>
                 </transformer>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                <transformer
+                  implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                   <file>log4j2.xml</file>
                 </transformer>
               </transformers>
@@ -383,12 +400,10 @@
       </plugin>
     </plugins>
     <pluginManagement>
-      <!--
-           The super pom declares these dependencies and versions. Eclipse warns when versions
-           are specified for plugins that are controlled by pluginManagement. By declaring them
-           here we avoid these warnings and ensure we are getting the expected versions, in case
-           the super pom changes versions for some reason.
-      -->
+      <!-- The super pom declares these dependencies and versions. Eclipse 
+        warns when versions are specified for plugins that are controlled by pluginManagement. 
+        By declaring them here we avoid these warnings and ensure we are getting 
+        the expected versions, in case the super pom changes versions for some reason. -->
       <plugins>
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
