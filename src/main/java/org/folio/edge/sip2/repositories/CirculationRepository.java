@@ -7,6 +7,7 @@ import static org.folio.edge.sip2.utils.JsonUtils.getSubChildString;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -367,18 +368,21 @@ public class CirculationRepository {
 
     @Override
     public String getPath() {
-      final StringBuilder sb = new StringBuilder()
-          .append("/circulation/requests?query=(")
+      final StringBuilder qSb = new StringBuilder()
+          .append("(")
           .append(idField)
           .append("==")
           .append(idValue)
           .append(" and status=Open");
       if (requestType != null) {
-        sb.append(" and requestType==").append(requestType);
+        qSb.append(" and requestType==").append(requestType);
       }
-      sb.append(')');
+      qSb.append(')');
+      final StringBuilder urlSb = new StringBuilder()
+          .append("/circulation/requests?query=")
+          .append(Utils.encode(qSb.toString()));
 
-      return appendLimits(sb).toString();
+      return appendLimits(urlSb).toString();
     }
   }
 
@@ -397,8 +401,8 @@ public class CirculationRepository {
 
     @Override
     public String getPath() {
-      return "/circulation/loans?query=(userId==" + userId
-          + " and status.name=Open)";
+      String query = Utils.encode("(userId==" + userId + " and status.name=Open)");
+      return "/circulation/loans?query=" + query;
     }
   }
 
@@ -420,13 +424,17 @@ public class CirculationRepository {
 
     @Override
     public String getPath() {
-      final StringBuilder sb = new StringBuilder()
-          .append("/circulation/loans?query=(userId==")
+      final StringBuilder qSb = new StringBuilder()
+          .append("(userId==")
           .append(userId)
           .append(" and status.name=Open and dueDate<")
           .append(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(dueDate))
           .append(')');
-      return appendLimits(sb).toString();
+      final StringBuilder path = new StringBuilder()
+          .append("/circulation/loans?query=")
+          .append(Utils.encode(qSb.toString()));
+
+      return appendLimits(path).toString();
     }
   }
 }
