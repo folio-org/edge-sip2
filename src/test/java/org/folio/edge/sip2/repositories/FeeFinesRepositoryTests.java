@@ -21,6 +21,7 @@ import io.vertx.junit5.VertxTestContext;
 import java.util.UUID;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Utils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -106,7 +107,7 @@ public class FeeFinesRepositoryTests {
     final String userId = "a23eac4b-955e-451c-b4ff-6ec2f5e63e23";
 
     when(mockFolioProvider.retrieveResource(
-        argThat(arg -> arg.getPath().endsWith("userId==" + userId))))
+        argThat(arg -> arg.getPath().endsWith(Utils.encode("userId==" + userId)))))
         .thenReturn(Future.succeededFuture(new FolioResource(manualBlocksResponse,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
