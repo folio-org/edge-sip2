@@ -54,7 +54,7 @@ public class UtilsTests {
   }
 
   @Test
-  public void testEncode(){
+  public void testEncode() {
     String url = "item = ab39%3183-194&bp23909&item2 == 23ab3;";
     assertEquals(URLEncoder.encode(url, StandardCharsets.UTF_8), Utils.encode(url));
   }

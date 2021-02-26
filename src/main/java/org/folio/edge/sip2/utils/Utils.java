@@ -1,7 +1,6 @@
 package org.folio.edge.sip2.utils;
 
 import io.vertx.core.json.JsonObject;
-
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
@@ -106,7 +105,7 @@ public final class Utils {
     return stringBuilder.toString();
   }
 
-  public static String encode(String url){
+  public static String encode(String url) {
     return URLEncoder.encode(url, StandardCharsets.UTF_8);
   }
 }
