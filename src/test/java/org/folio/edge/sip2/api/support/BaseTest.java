@@ -6,11 +6,11 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
 import io.vertx.core.DeploymentOptions;
-import io.vertx.core.file.FileSystem;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
@@ -84,11 +84,13 @@ public abstract class BaseTest {
 
     if (testInfo.getTags().contains(ERROR_DETECTION_ENABLED)) {
       try {
-        Thread.currentThread().sleep(500);
+        Thread.sleep(500);  // allow for MainVerticle to start before changing config
         Buffer buff = fs.readFileBlocking("sip2-tenants-error-detect-true.conf");
         fs.writeFileBlocking("sip2-tenants.conf", buff);
-        Thread.currentThread().sleep(1500);
-      } catch (InterruptedException e) {}
+        Thread.sleep(1500);  // allow for MainVerticle to detect config change
+      } catch (InterruptedException e) {
+        log.info("Interrupted sleep, gonna be tired :( ");        
+      }
     }
     
     log.info("done deploying in base class");

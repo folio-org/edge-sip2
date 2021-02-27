@@ -246,11 +246,6 @@
       </dependencies>
       <repositories>
         <repository>
-          <id>folio-nexus</id>
-          <name>FOLIO Maven repository</name>
-          <url>https://repository.folio.org/repository/maven-folio</url>
-        </repository>
-        <repository>
           <id>jitpack.io</id>
           <url>https://jitpack.io</url>
         </repository>
