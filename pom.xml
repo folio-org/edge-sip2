@@ -41,7 +41,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <exec.mainClass>org.folio.edge.sip2.BootstrapVerticle</exec.mainClass>
+    <exec.mainClass>org.folio.edge.sip2.MainVerticle</exec.mainClass>
   </properties>
 
   <dependencyManagement>

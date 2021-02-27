@@ -24,35 +24,29 @@ public class TenantUtils {
    *     I.E:<br>
    * <pre>
        {
-        "port": 6443,
-        "okapiUrl": "http://${okapi_lb_url}:${okapi_port}",
         "scTenants": [
           {
             "scSubnet": "11.11.00.00/16",
-            "tenant": "fs00000011",
+            "tenant": "diku",
             "errorDetectionEnabled": true,
             "messageDelimiter": "\r",
             "charset": "ISO-8859-1"
           },
           {
             "scSubnet": "22.22.00.00/16",
-            "tenant": "fs00000022",
+            "tenant": "test_tenant",
             "errorDetectionEnabled": true,
             "messageDelimiter": "\r",
             "charset": "ISO-8859-1"
           },
           {
             "scSubnet": "33.33.00.00/16",
-            "tenant": "fs00000033",
+            "tenant": "test_tenant",
             "errorDetectionEnabled": true,
             "messageDelimiter": "\r",
             "charset": "ISO-8859-1"
           }
-        ],
-        "tenant": "${tenant}",
-        "errorDetectionEnabled": true,
-        "messageDelimiter": "\r",
-        "charset": "ISO-8859-1"
+        ]
       }
    * </pre>
    * 

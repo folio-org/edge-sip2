@@ -14,9 +14,13 @@ import static org.folio.edge.sip2.parser.Command.UNKNOWN;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import io.micrometer.core.instrument.Timer;
+import io.vertx.config.ConfigRetriever;
+import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.pointer.JsonPointer;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.NetSocket;
@@ -49,7 +53,8 @@ public class MainVerticle extends AbstractVerticle {
   private NetServer server;
   private final Logger log = LogManager.getLogger();
   private final Map<Integer, Metrics> metricsMap = new HashMap<>();
-
+  private JsonObject multiTenantConfig = new JsonObject();
+  
   /**
    * Construct the {@code MainVerticle}.
    */
@@ -61,9 +66,15 @@ public class MainVerticle extends AbstractVerticle {
     this.handlers = handlers;
   }
 
+  private String getSanitizedConfig() {
+    JsonObject sc = config().copy();
+    JsonPointer.from("/tenantConfigRetrieverOptions/stores/0/config").writeJson(sc, "******");
+    return sc.encodePrettily();
+  }
+  
   @Override
   public void start(Future<Void> startFuture) {
-    log.debug("Startup configuration: {}", () -> config().encodePrettily());
+    log.debug("Startup configuration: {}", () -> getSanitizedConfig());
 
     // We need to reduce the complexity of this method...
     if (handlers == null) {
@@ -84,6 +95,25 @@ public class MainVerticle extends AbstractVerticle {
       handlers.put(END_PATRON_SESSION, injector.getInstance(EndPatronSessionHandler.class));
     }
 
+    JsonObject crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
+    ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
+    ConfigRetriever configRetriever = ConfigRetriever.create(vertx, crOptions);
+
+    configRetriever.getConfig(ar -> {
+      if (ar.succeeded()) {
+        multiTenantConfig = ar.result();
+        log.info("Tenant config loaded: {}", () -> multiTenantConfig.encodePrettily());
+      } else {
+        log.error("Unable to get Tenant config - {}", ar.cause().getMessage());
+        startFuture.fail(ar.cause());
+      }
+    });
+    
+    configRetriever.listen(change -> {
+      multiTenantConfig = change.getNewConfiguration();
+      log.info("Tenant config changeed: {}", () -> multiTenantConfig.encodePrettily());
+    });    
+
     //set Config object's defaults
     int port = config().getInteger("port"); // move port to netServerOptions
     NetServerOptions options = new NetServerOptions(
@@ -99,7 +129,7 @@ public class MainVerticle extends AbstractVerticle {
 
     server.connectHandler(socket -> {
       
-      JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(config(), 
+      JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig, 
           socket.remoteAddress().host());
       
       final SessionData sessionData = SessionData.createSession(
