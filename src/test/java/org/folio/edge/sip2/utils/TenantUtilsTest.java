@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.vertx.core.json.JsonObject;
 import org.junit.jupiter.api.Test;
 
-public class TenantUtilsTest {
+class TenantUtilsTest {
 
   private static String multiTenantConfig = ""
       + "{" 
@@ -51,45 +51,45 @@ public class TenantUtilsTest {
       + "}";
   
   @Test
-  public void testNonMultiTenantConfig() {
+  void testNonMultiTenantConfig() {
 
-    assertEquals(getTenant(nonMultiTenantConfig, "1.2.3.4"), "default");
+    assertEquals("default", getTenant(nonMultiTenantConfig, "1.2.3.4"));
   }
   
   @Test
-  public void testMultiTenantConfig_Lo11() {
+  void testMultiTenantConfig_Lo11() {
 
-    assertEquals(getTenant(multiTenantConfig, "11.11.0.0"), "fs00000011");
+    assertEquals("fs00000011", getTenant(multiTenantConfig, "11.11.0.0"));
   }
   
   @Test
-  public void testMultiTenantConfig_Mid11() {
+  void testMultiTenantConfig_Mid11() {
 
-    assertEquals(getTenant(multiTenantConfig, "11.11.128.128"), "fs00000011");
+    assertEquals("fs00000011", getTenant(multiTenantConfig, "11.11.128.128"));
   }
   
   @Test
-  public void testMultiTenantConfig_Hi11() {
+  void testMultiTenantConfig_Hi11() {
 
-    assertEquals(getTenant(multiTenantConfig, "11.11.255.255"), "fs00000011");
+    assertEquals("fs00000011", getTenant(multiTenantConfig, "11.11.255.255"));
   }
 
   @Test
-  public void testMultiTenantConfig_Mid22() {
+  void testMultiTenantConfig_Mid22() {
 
-    assertEquals(getTenant(multiTenantConfig, "22.22.128.128"), "fs00000022");
-  }
-  
-  @Test
-  public void testMultiTenantConfig_Mid33() {
-
-    assertEquals(getTenant(multiTenantConfig, "33.33.128.128"), "fs00000033");
+    assertEquals("fs00000022", getTenant(multiTenantConfig, "22.22.128.128"));
   }
   
   @Test
-  public void testBadIpMultiTenantConfig() {
+  void testMultiTenantConfig_Mid33() {
 
-    assertEquals(getTenant(multiTenantConfig, "44.44.128.128"), "default");
+    assertEquals("fs00000033", getTenant(multiTenantConfig, "33.33.128.128"));
+  }
+  
+  @Test
+  void testBadIpMultiTenantConfig() {
+
+    assertEquals("default", getTenant(multiTenantConfig, "44.44.128.128"));
   }
   
   
