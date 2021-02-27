@@ -18,23 +18,102 @@ FOLIO results for all supported (TBD) SIP2 commands.
 The edge-sip2 module can be launched via `edge-sip2-fat.jar` as follows:
 
 ```bash
-$ java -jar edge-sip2-fat.jar -conf '{"port":1234,"okapiUrl":"https://folio-snapshot-okapi.dev.folio.org","tenant":"diku"}'
+$ java -jar edge-sip2-fat.jar -conf sip2.conf
 ```
-On Windows the `edge-sip2-fat.jar` should be launched with the JSON configuration in double quotes and the inner double quotes should be escaped, for example:
+The -conf option can either specify the filename of the configuration or inline JSON. 
+Here is a sample sip2.conf file:
 ```
-$ java -jar edge-sip2-fat.jar -conf "{\"port\":1234,\"okapiUrl\":\"https://folio-snapshot-okapi.dev.folio.org\",\"tenant\":\"diku"\}"
+{ "port": 6443,
+  "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
+  "tenantConfigRetrieverOptions": {
+    "scanPeriod": 5000,
+    "stores": [{
+      "type": "file",
+      "format": "json",
+      "config": {
+        "path": "sip2-tenants.conf"
+      },
+      "optional": false
+    }]
+  }
+}
+```
+For inline JSON, the format is:
+```
+-conf '{"port":1234,"okapiUrl":"https://folio-snapshot-okapi.dev.folio.org".....}'
+```
+On Windows inline JSON configuration is in double quotes and the inner double quotes should be escaped, for example:
+```
+-conf "{\"port\":1234,\"okapiUrl\":\"https://folio-snapshot-okapi.dev.folio.org\"....}"
 ``` 
 
 |Config option|Type|Description|
 |-------------|----|-----------|
 |`port`|int|The port the module will use to bind, typically 1024 < port < 65,535.|
 |`okapiUrl`|string|The URL of the Okapi server used by FOLIO.|
-|`tenant`|string|The FOLIO assigned tenant ID. Multi-tenant support TBD.|
-|`fieldDelimiter`|string|The character that the self service kiosk will use when encoding SIP messages. Defaults to "\|".|
-|`errorDetectionEnabled`|boolean|Indicates whether or not the self service kiosk will be using SIP error detection in messages sent to and from this module. Defaults to "false".|
-|`charset`|string|The character set SIP messages must be encoded with when sent and received by the self service kiosk. The charset must be defined as a "Canonical Name for java.nio API". See: [Supported Encodings](https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html). Default is "IBM850".|
-|`messageDelimiter`|string|The character sequence that indicates the end of a single SIP message. This is available in case the self check kiosk is not compliant with the SIP specification. The default is "\\r"|
+|`tenantConfigRetrieverOptions`|JSON object|Location for tenant configuration.|
+|`scanPeriod`|int|Frequency in msec that sip2 will check for and reload tenant configuration changes.|
+|`stores`|JSON array|Defines the properties for the tenant configuration stores. Multiple sources of tenant configuration can be loaded and combined into together. |
+|`type`|string|The store type. Many types are supported including: file, http, github, s3, etc. For more info, see: [vertx config](https://vertx.io/docs/vertx-config/java/) |
+|`format`|string|Sip2 expects configuration to be in json format.|
+|`config`|string|Store-specific properties. For more info, see: [vertx config](https://vertx.io/docs/vertx-config/java/)|
+|`path`|string|Name of the tenant configuration file for file type stores. |
 |`netServerOptions`|JSON object|Configuration options for the server. These are Vertx options and are numerous. See: [NetServerOptions](https://vertx.io/docs/apidocs/io/vertx/core/net/NetServerOptions.html).|
+
+Here is a sample sip2-tenants.conf file:
+```
+{
+"scTenants": [
+  {
+  "scSubnet": "11.11.00.00/16",
+  "tenant": "fs00000011",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "charset": "ISO-8859-1"
+  },
+  {
+  "scSubnet": "22.22.00.00/16",
+  "tenant": "fs00000022",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "charset": "ISO-8859-1"
+  },
+  {
+  "scSubnet": "33.33.00.00/16",
+  "tenant": "fs00000033",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "charset": "ISO-8859-1"
+  },
+  {
+  "scSubnet": "88.88.11.00/24",
+  "tenant": "fs00000088",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "charset": "ISO-8859-1"
+  },
+  {
+  "scSubnet": "88.88.22.00/24",
+  "tenant": "fs00000088",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "charset": "ISO-8859-1"
+  }
+]
+}
+```
+
+|Config option|Type|Description|
+|-------------|----|-----------|
+|`scTenants`|JSON array|Array of sip2 tenant configurations.|
+|`scSubnet`|string|IPv4 CIDR of a tenant's self service kiosk. This is used to find the tenant configuration for an incoming kiosk connection. |
+|`tenant`|string|The FOLIO assigned tenant ID. |
+|`errorDetectionEnabled`|boolean|Indicates whether or not the self service kiosk will be using SIP error detection in messages sent to and from this module. Defaults to "false".|
+|`messageDelimiter`|string|The character sequence that indicates the end of a single SIP message. This is available in case the self check kiosk is not compliant with the SIP specification. The default is "\\r"|
+|`charset`|string|The character set SIP messages must be encoded with when sent and received by the self service kiosk. The charset must be defined as a "Canonical Name for java.nio API". See: [Supported Encodings](https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html). Default is "IBM850".|
+
+
+
 
 ## FOLIO Configuration
 
