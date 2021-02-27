@@ -100,13 +100,8 @@ public class MainVerticle extends AbstractVerticle {
     ConfigRetriever configRetriever = ConfigRetriever.create(vertx, crOptions);
 
     configRetriever.getConfig(ar -> {
-      if (ar.succeeded()) {
-        multiTenantConfig = ar.result();
-        log.info("Tenant config loaded: {}", () -> multiTenantConfig.encodePrettily());
-      } else {
-        log.error("Unable to get Tenant config - {}", ar.cause().getMessage());
-        startFuture.fail(ar.cause());
-      }
+      multiTenantConfig = ar.result();
+      log.info("Tenant config loaded: {}", () -> multiTenantConfig.encodePrettily());
     });
     
     configRetriever.listen(change -> {
