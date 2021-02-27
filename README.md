@@ -59,8 +59,7 @@ On Windows, inline JSON configuration is in double quotes and the inner double q
 |`format`|string|Sip2 expects configuration to be in json format.|
 |`config`|string|Store type-specific properties. |
 |`path`|string|Path name of the tenant configuration file for file type stores. |
-|`optional`|boolean|If a failure is caught while loading the tenant configuration from an optional store, the failure is logged, but the processing does not fail. 
-Instead, tenant configuration will be empty.|
+|`optional`|boolean|If a failure is caught while loading the tenant configuration from an optional store, the failure is logged, but the processing does not fail. Instead, the tenant configuration will be empty.|
 |`netServerOptions`|JSON object|Configuration options for the server. These are Vertx options and are numerous. See: [NetServerOptions](https://vertx.io/docs/apidocs/io/vertx/core/net/NetServerOptions.html).|
 
 Here is a sample sip2-tenants.conf file:
