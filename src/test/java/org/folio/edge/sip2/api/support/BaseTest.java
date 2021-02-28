@@ -68,7 +68,7 @@ public abstract class BaseTest {
 
     
     FileSystem fs = vertx.fileSystem();
-    JsonObject sipConfig = fs.readFileBlocking("sip2.conf").toJsonObject();
+    JsonObject sipConfig = fs.readFileBlocking("test-sip2.conf").toJsonObject();
     sipConfig.put("port", port);
     if (testInfo.getTags().contains(TLS_ENABLED)) {
       final SelfSignedCertificate certificate = SelfSignedCertificate.create();
