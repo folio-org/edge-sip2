@@ -540,7 +540,8 @@ public class CirculationRepositoryTests {
     String expectedPath = "/circulation/loans?query="
         + Utils.encode("(userId==" + userId + " and status.name=Open)");
 
-    when(mockFolioProvider.retrieveResource(argThat((IRequestData data) -> data.getPath().equals(expectedPath))))
+    when(mockFolioProvider.retrieveResource(
+        argThat((IRequestData data) -> data.getPath().equals(expectedPath))))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
@@ -607,9 +608,10 @@ public class CirculationRepositoryTests {
 
     String expectedPath = "/circulation/loans?query="
         + Utils.encode("(userId==" + userId + " and status.name=Open and dueDate<"
-        + dueDate +")");
+        + dueDate + ")");
 
-    when(mockFolioProvider.retrieveResource(argThat((IRequestData data) -> data.getPath().equals(expectedPath))))
+    when(mockFolioProvider.retrieveResource(
+        argThat((IRequestData data) -> data.getPath().equals(expectedPath))))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
@@ -675,11 +677,12 @@ public class CirculationRepositoryTests {
                 .put("fulfilmentPreference", "Hold Shelf")))
         .put("totalRecords", 1);
 
-    String expectedPath ="/circulation/requests?query="
+    String expectedPath = "/circulation/requests?query="
         + Utils.encode("(itemId==" + itemId
         + " and status=Open and requestType==Recall)");
 
-    when(mockFolioProvider.retrieveResource(argThat((IRequestData data) -> data.getPath().equals(expectedPath))))
+    when(mockFolioProvider.retrieveResource(
+        argThat((IRequestData data) -> data.getPath().equals(expectedPath))))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
