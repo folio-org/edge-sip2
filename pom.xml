@@ -346,6 +346,9 @@
                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                   <file>log4j2.xml</file>
                 </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/services/io.vertx.config.spi.ConfigStoreFactory</resource>
+                </transformer>
               </transformers>
               <artifactSet />
               <outputFile>${project.build.directory}/${project.artifactId}-fat.jar</outputFile>
