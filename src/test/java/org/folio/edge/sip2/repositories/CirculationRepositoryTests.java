@@ -537,7 +537,7 @@ public class CirculationRepositoryTests {
                 .put("action", "checkedout")))
         .put("totalRecords", 1);
 
-    String expectedPath = "/circulation/loans?query="
+    final String expectedPath = "/circulation/loans?query="
         + Utils.encode("(userId==" + userId + " and status.name=Open)");
 
     when(mockFolioProvider.retrieveResource(
@@ -606,7 +606,7 @@ public class CirculationRepositoryTests {
                 .put("action", "checkedout")))
         .put("totalRecords", 1);
 
-    String expectedPath = "/circulation/loans?query="
+    final String expectedPath = "/circulation/loans?query="
         + Utils.encode("(userId==" + userId + " and status.name=Open and dueDate<"
         + dueDate + ")");
 
@@ -677,7 +677,7 @@ public class CirculationRepositoryTests {
                 .put("fulfilmentPreference", "Hold Shelf")))
         .put("totalRecords", 1);
 
-    String expectedPath = "/circulation/requests?query="
+    final String expectedPath = "/circulation/requests?query="
         + Utils.encode("(itemId==" + itemId
         + " and status=Open and requestType==Recall)");
 
