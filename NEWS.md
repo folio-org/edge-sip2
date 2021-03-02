@@ -1,3 +1,6 @@
+## 1.4.1 2021-03-2021
+ * [SIP2-90](https://issues.folio.org/browse/SIP2-90): ACS command causes 502 Bad Gateway errors in logs
+ 
 ## 1.4.0 2020-10-20
  * [SIP2-86](https://issues.folio.org/browse/SIP2-86): Upgrade edge-sip2 to use Java 11 
  * [FOLIO-2706](https://issues.folio.org/browse/FOLIO-2706): Update dev documentation for FQDNs of reference environments
