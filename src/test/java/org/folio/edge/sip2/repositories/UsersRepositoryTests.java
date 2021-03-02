@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -16,6 +17,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Utils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -105,8 +107,13 @@ public class UsersRepositoryTests {
     final JsonObject userResponse = new JsonObject(userResponseJson);
 
     final String extSystemId = "4f0e711c-d583-41e0-9555-b62f1725023f";
+    final String expectedPath = "/users?limit=1&query="
+        + Utils.encode("(barcode==" + extSystemId
+        + " or externalSystemId==" + extSystemId
+        + " or username==" + extSystemId + ')');
 
-    when(mockFolioProvider.retrieveResource(any()))
+    when(mockFolioProvider.retrieveResource(
+        argThat((IRequestData data) -> data.getPath().equals(expectedPath))))
         .thenReturn(Future.succeededFuture(new FolioResource(userResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 

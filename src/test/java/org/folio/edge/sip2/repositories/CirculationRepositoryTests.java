@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -37,6 +38,7 @@ import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Utils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -534,7 +536,12 @@ public class CirculationRepositoryTests {
                 .put("loanDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
                 .put("action", "checkedout")))
         .put("totalRecords", 1);
-    when(mockFolioProvider.retrieveResource(any()))
+
+    final String expectedPath = "/circulation/loans?query="
+        + Utils.encode("(userId==" + userId + " and status.name=Open)");
+
+    when(mockFolioProvider.retrieveResource(
+        argThat((IRequestData data) -> data.getPath().equals(expectedPath))))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
@@ -588,16 +595,23 @@ public class CirculationRepositoryTests {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String userId = UUID.randomUUID().toString();
     final String itemId = UUID.randomUUID().toString();
+    final String dueDate = OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME);
 
     final JsonObject response = new JsonObject()
         .put("loans", new JsonArray()
             .add(new JsonObject()
                 .put("userId", userId)
                 .put("itemId", itemId)
-                .put("loanDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
+                .put("loanDate", dueDate)
                 .put("action", "checkedout")))
         .put("totalRecords", 1);
-    when(mockFolioProvider.retrieveResource(any()))
+
+    final String expectedPath = "/circulation/loans?query="
+        + Utils.encode("(userId==" + userId + " and status.name=Open and dueDate<"
+        + dueDate + ")");
+
+    when(mockFolioProvider.retrieveResource(
+        argThat((IRequestData data) -> data.getPath().equals(expectedPath))))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
@@ -662,7 +676,13 @@ public class CirculationRepositoryTests {
                 .put("requestDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
                 .put("fulfilmentPreference", "Hold Shelf")))
         .put("totalRecords", 1);
-    when(mockFolioProvider.retrieveResource(any()))
+
+    final String expectedPath = "/circulation/requests?query="
+        + Utils.encode("(itemId==" + itemId
+        + " and status=Open and requestType==Recall)");
+
+    when(mockFolioProvider.retrieveResource(
+        argThat((IRequestData data) -> data.getPath().equals(expectedPath))))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
