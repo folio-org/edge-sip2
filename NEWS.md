@@ -1,4 +1,4 @@
-## 1.4.1 2021-03-2021
+## 1.4.1 2021-03-02
  * [SIP2-90](https://issues.folio.org/browse/SIP2-90): ACS command causes 502 Bad Gateway errors in logs
  
 ## 1.4.0 2020-10-20
