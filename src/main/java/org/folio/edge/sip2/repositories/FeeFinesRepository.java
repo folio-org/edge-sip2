@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Utils;
 
 /**
  * Provides interaction with the feefines service.
@@ -64,7 +65,7 @@ public class FeeFinesRepository {
 
     @Override
     public String getPath() {
-      return "/manualblocks?query=userId==" + userId;
+      return "/manualblocks?query=" + Utils.encode("userId==" + userId);
     }
 
     @Override

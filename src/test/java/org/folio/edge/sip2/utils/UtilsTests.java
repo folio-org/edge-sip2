@@ -3,6 +3,8 @@ package org.folio.edge.sip2.utils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -49,5 +51,11 @@ public class UtilsTests {
   @Test
   public void testIsStringNullOrEmpty() {
     assertTrue(Utils.isStringNullOrEmpty(""));
+  }
+
+  @Test
+  void testEncode() {
+    String url = "item = ab39%3183-194&bp23909&item2 == 23ab3;";
+    assertEquals(URLEncoder.encode(url, StandardCharsets.UTF_8), Utils.encode(url));
   }
 }

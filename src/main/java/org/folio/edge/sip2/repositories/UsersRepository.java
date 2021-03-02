@@ -10,6 +10,7 @@ import java.util.Objects;
 import javax.inject.Inject;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Utils;
 
 /**
  * Provides interaction with the users service.
@@ -85,9 +86,15 @@ public class UsersRepository {
 
     @Override
     public String getPath() {
-      return "/users?limit=1&query=(barcode==" + identifier
-                    + " or externalSystemId==" + identifier
-                    + " or username==" + identifier + ')';
+      StringBuilder query = new StringBuilder()
+          .append("(barcode==")
+          .append(identifier)
+          .append(" or externalSystemId==")
+          .append(identifier)
+          .append(" or username==")
+          .append(identifier)
+          .append(')');
+      return "/users?limit=1&query=" + Utils.encode(query.toString());
     }
 
     @Override
