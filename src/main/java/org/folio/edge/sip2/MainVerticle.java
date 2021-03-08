@@ -17,7 +17,7 @@ import io.micrometer.core.instrument.Timer;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.pointer.JsonPointer;
 import io.vertx.core.net.NetServer;
@@ -54,6 +54,7 @@ public class MainVerticle extends AbstractVerticle {
   private final Logger log = LogManager.getLogger();
   private final Map<Integer, Metrics> metricsMap = new HashMap<>();
   private JsonObject multiTenantConfig = new JsonObject();
+  private ConfigRetriever configRetriever;
   
   /**
    * Construct the {@code MainVerticle}.
@@ -73,7 +74,7 @@ public class MainVerticle extends AbstractVerticle {
   }
   
   @Override
-  public void start(Future<Void> startFuture) {
+  public void start(Promise<Void> startFuture) {
     log.debug("Startup configuration: {}", () -> getSanitizedConfig());
 
     // We need to reduce the complexity of this method...
@@ -94,20 +95,6 @@ public class MainVerticle extends AbstractVerticle {
       handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
       handlers.put(END_PATRON_SESSION, injector.getInstance(EndPatronSessionHandler.class));
     }
-
-    JsonObject crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
-    ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
-    ConfigRetriever configRetriever = ConfigRetriever.create(vertx, crOptions);
-
-    configRetriever.getConfig(ar -> {
-      multiTenantConfig = ar.result();
-      log.info("Tenant config loaded: {}", () -> multiTenantConfig.encodePrettily());
-    });
-    
-    configRetriever.listen(change -> {
-      multiTenantConfig = change.getNewConfiguration();
-      log.info("Tenant config changeed: {}", () -> multiTenantConfig.encodePrettily());
-    });    
 
     //set Config object's defaults
     int port = config().getInteger("port"); // move port to netServerOptions
@@ -233,19 +220,42 @@ public class MainVerticle extends AbstractVerticle {
       });
     });
 
-    server.listen(result -> {
-      if (result.succeeded()) {
-        log.info("MainVerticle deployed successfuly, server is now listening!");
-        startFuture.complete();
+    JsonObject crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
+    ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
+    configRetriever = ConfigRetriever.create(vertx, crOptions);
+
+    // after tenant config is loaded, start listening for messages
+    configRetriever.getConfig(ar -> {
+      if (ar.succeeded()) {
+        multiTenantConfig = ar.result();
+        log.info("Tenant config loaded: {}", () -> multiTenantConfig.encodePrettily());
+
+        server.listen(result -> {
+          if (result.succeeded()) {
+            log.info("MainVerticle deployed successfuly, server is now listening!");
+            startFuture.complete();
+          } else {
+            log.error("Failed to deploy MainVerticle", result.cause());
+            startFuture.fail(result.cause());
+          }
+        });
+
       } else {
-        log.error("Failed to deploy MainVerticle", result.cause());
-        startFuture.fail(result.cause());
+        log.error("Failed to load tenant config", ar.cause());
+        startFuture.fail(ar.cause());
       }
     });
+    
+    configRetriever.listen(change -> {
+      multiTenantConfig = change.getNewConfiguration();
+      log.info("Tenant config changed: {}", () -> multiTenantConfig.encodePrettily());
+    });    
+
   }
 
   @Override
-  public void stop(Future<Void> stopFuture) {
+  public void stop(Promise<Void> stopFuture) {
+    configRetriever.close();
     server.close(result -> {
       if (result.succeeded()) {
         metricsMap.values().stream().forEach(Metrics::stop);
