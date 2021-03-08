@@ -18,7 +18,6 @@ import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.pointer.JsonPointer;
 import io.vertx.core.net.NetServer;
@@ -29,6 +28,7 @@ import java.nio.charset.Charset;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.PreviousMessage;
@@ -124,8 +124,9 @@ public class MainVerticle extends AbstractVerticle {
 
     server.connectHandler(socket -> {
       
+      String clientAddress = socket.remoteAddress().host();
       JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig, 
-          socket.remoteAddress().host());
+          clientAddress);
       
       final SessionData sessionData = SessionData.createSession(
           tenantConfig.getString("tenant"),
@@ -136,6 +137,11 @@ public class MainVerticle extends AbstractVerticle {
 
       socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
         final Timer.Sample sample = metrics.sample();
+
+        if (Objects.isNull(sessionData.getTenant())) {
+          log.error("No tenant configured for address: {}  message ignored.", clientAddress);
+          return;
+        }
 
         final String messageString = buffer.getString(0, buffer.length(), sessionData.getCharset());
 

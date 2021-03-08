@@ -14,21 +14,28 @@ class TenantUtilsTest {
       + "  \"scTenants\": [" 
       + "    {" 
       + "      \"scSubnet\": \"11.11.00.00/16\"," 
-      + "      \"tenant\": \"fs00000011\"," 
+      + "      \"tenant\": \"testTenant11\"," 
       + "      \"errorDetectionEnabled\": true," 
       + "      \"messageDelimiter\": \"\\r\"," 
       + "      \"charset\": \"ISO-8859-1\"" 
       + "    }," 
       + "    {" 
       + "      \"scSubnet\": \"22.22.00.00/16\"," 
-      + "      \"tenant\": \"fs00000022\"," 
+      + "      \"tenant\": \"testTenant22\"," 
       + "      \"errorDetectionEnabled\": true," 
       + "      \"messageDelimiter\": \"\\r\"," 
       + "      \"charset\": \"ISO-8859-1\"" 
       + "    }," 
       + "    {" 
       + "      \"scSubnet\": \"33.33.00.00/16\"," 
-      + "      \"tenant\": \"fs00000033\"," 
+      + "      \"tenant\": \"testTenant33\"," 
+      + "      \"errorDetectionEnabled\": true," 
+      + "      \"messageDelimiter\": \"\\r\"," 
+      + "      \"charset\": \"ISO-8859-1\"" 
+      + "    }," 
+      + "    {" 
+      + "      \"scSubnet\": \"44.44.44.44/32\"," 
+      + "      \"tenant\": \"testTenant44\"," 
       + "      \"errorDetectionEnabled\": true," 
       + "      \"messageDelimiter\": \"\\r\"," 
       + "      \"charset\": \"ISO-8859-1\"" 
@@ -59,31 +66,37 @@ class TenantUtilsTest {
   @Test
   void testMultiTenantConfig_Lo11() {
 
-    assertEquals("fs00000011", getTenant(multiTenantConfig, "11.11.0.0"));
+    assertEquals("testTenant11", getTenant(multiTenantConfig, "11.11.0.0"));
   }
   
   @Test
   void testMultiTenantConfig_Mid11() {
 
-    assertEquals("fs00000011", getTenant(multiTenantConfig, "11.11.128.128"));
+    assertEquals("testTenant11", getTenant(multiTenantConfig, "11.11.128.128"));
   }
   
   @Test
   void testMultiTenantConfig_Hi11() {
 
-    assertEquals("fs00000011", getTenant(multiTenantConfig, "11.11.255.255"));
+    assertEquals("testTenant11", getTenant(multiTenantConfig, "11.11.255.255"));
   }
 
   @Test
   void testMultiTenantConfig_Mid22() {
 
-    assertEquals("fs00000022", getTenant(multiTenantConfig, "22.22.128.128"));
+    assertEquals("testTenant22", getTenant(multiTenantConfig, "22.22.128.128"));
   }
   
   @Test
   void testMultiTenantConfig_Mid33() {
 
-    assertEquals("fs00000033", getTenant(multiTenantConfig, "33.33.128.128"));
+    assertEquals("testTenant33", getTenant(multiTenantConfig, "33.33.128.128"));
+  }
+  
+  @Test
+  void testMultiTenantConfig_exact44() {
+
+    assertEquals("testTenant44", getTenant(multiTenantConfig, "44.44.44.44"));
   }
   
   @Test

@@ -71,15 +71,7 @@ public class TenantUtils {
           return sn.getInfo().isInRange(clientIP);
         })
         .findFirst();
-    JsonObject tc = tcOpt.orElse(sip2config);
-    if (tcOpt.isEmpty()) {
-      log.error("LookupTenantConfig "
-          + "unable to find tenant with subnet in range for clientIP: {}",clientIP);
-    } else {
-      log.debug("lookupTenantConfig "
-          + "found tenant: {} for clientIP: {}", tc.getString("tenant"), clientIP);
-    }
-    return tc;
+    return tcOpt.orElse(sip2config);
   }
 
 }
