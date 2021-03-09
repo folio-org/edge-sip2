@@ -1,3 +1,6 @@
+## 2.0.0 2021-03-10
+ * [SIP2-78](https://issues.folio.org/browse/SIP2-78): Add multi-tenant support 
+ 
 ## 1.4.1 2021-03-02
  * [SIP2-90](https://issues.folio.org/browse/SIP2-90): ACS command causes 502 Bad Gateway errors in logs
  

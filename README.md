@@ -27,7 +27,7 @@ Here is a sample sip2.conf file:
   "port": 6443,
   "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
   "tenantConfigRetrieverOptions": {
-    "scanPeriod": 5000,
+    "scanPeriod": 300000,
     "stores": [{
       "type": "file",
       "format": "json",
@@ -62,6 +62,8 @@ On Windows, inline JSON configuration is in double quotes and the inner double q
 |`optional`|boolean|If a failure is caught while loading the tenant configuration from an optional store, the failure is logged, but the processing does not fail. Instead, the tenant configuration will be empty.|
 |`netServerOptions`|JSON object|Configuration options for the server. These are Vertx options and are numerous. See: [NetServerOptions](https://vertx.io/docs/apidocs/io/vertx/core/net/NetServerOptions.html).|
 
+Note: edge-sip2 now requires two config files: the main bootstrap sip2.conf and tenant configuration: sip2-tenants.conf. The additional config file is required to support multi-tenants and runtime reloading of tenant configuration without restarting the edge-sip2 module.
+ 
 Here is a sample sip2-tenants.conf file:
 ```
 {
@@ -76,27 +78,6 @@ Here is a sample sip2-tenants.conf file:
   {
   "scSubnet": "22.22.00.00/16",
   "tenant": "test_tenant2",
-  "errorDetectionEnabled": true,
-  "messageDelimiter": "\r",
-  "charset": "ISO-8859-1"
-  },
-  {
-  "scSubnet": "33.33.00.00/16",
-  "tenant": "test_tenant3",
-  "errorDetectionEnabled": true,
-  "messageDelimiter": "\r",
-  "charset": "ISO-8859-1"
-  },
-  {
-  "scSubnet": "88.88.11.00/24",
-  "tenant": "test_tenant4",
-  "errorDetectionEnabled": true,
-  "messageDelimiter": "\r",
-  "charset": "ISO-8859-1"
-  },
-  {
-  "scSubnet": "88.88.22.00/24",
-  "tenant": "test_tenant4",
   "errorDetectionEnabled": true,
   "messageDelimiter": "\r",
   "charset": "ISO-8859-1"
@@ -115,6 +96,30 @@ Here is a sample sip2-tenants.conf file:
 |`charset`|string|The character set SIP messages must be encoded with when sent and received by the self service kiosk. The charset must be defined as a "Canonical Name for java.nio API". See: [Supported Encodings](https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html). Default is "IBM850".|
 
 
+### Tenant configuration located in AWS S3
+Edge-sip2 supports [various locations](https://vertx.io/docs/vertx-config/java/#_available_configuration_stores) for sip2-tenants.conf  tenant configuration. Additionally, it supports [S3 config](https://github.com/mikelee2082/vertx-config-s3). To include vertx-config-s3 libraries when building edge-sip2, include the maven profile command:
+
+    mvn -P vertx-config-s3
+
+Here is a sample sip2.conf for storing tenant config in S3:
+
+    {
+    "port": 6443,
+    "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
+    "tenantConfigRetrieverOptions": {
+      "scanPeriod": 300000,
+      "stores": [{
+        "type": "s3",
+        "format": "json",
+        "config": {
+          "region": "my-region",
+          "bucket": "my-bucket",
+          "key": "sip2/sip2-tenants.conf"
+        },
+        "optional": true
+      }]
+    }
+  }
 
 
 ## FOLIO Configuration
