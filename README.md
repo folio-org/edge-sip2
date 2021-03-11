@@ -96,8 +96,7 @@ Here is a sample sip2-tenants.conf file:
 |`errorDetectionEnabled`|boolean|Indicates whether or not the self service kiosk will be using SIP error detection in messages sent to and from this module. Defaults to "false".|
 |`messageDelimiter`|string|The character sequence that indicates the end of a single SIP message. This is available in case the self check kiosk is not compliant with the SIP specification. The default is "\\r"|
 |`fieldDelimiter`|string|The character that the self service kiosk will use when encoding SIP messages. Defaults to "\|".|
-|`charset`|string|The character set SIP messages must be encoded with when sent and received by the self service kiosk. The charset must be defined as a "Canonical Name for java.nio API". See: [Supported Encodings](https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html). Default is "IBM850".|
-
+|`charset`|string|The character set SIP messages must be encoded with when sent and received by the self service kiosk. The charset must be defined as a "Canonical Name for java.nio API". See: [Supported Encodings](https://docs.oracle.com/en/java/javase/11/intl/supported-encodings.html). Default is "IBM850".|
 
 ### Tenant configuration located in AWS S3
 Edge-sip2 supports [various locations](https://vertx.io/docs/vertx-config/java/#_available_configuration_stores) for sip2-tenants.conf  tenant configuration. Additionally, it supports [S3 config](https://github.com/mikelee2082/vertx-config-s3). To include vertx-config-s3 libraries when building edge-sip2, include the maven profile command:
