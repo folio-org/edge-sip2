@@ -73,6 +73,7 @@ Here is a sample sip2-tenants.conf file:
   "tenant": "test_tenant1",
   "errorDetectionEnabled": true,
   "messageDelimiter": "\r",
+  "fieldDelimiter": "\|",
   "charset": "ISO-8859-1"
   },
   {
@@ -80,6 +81,7 @@ Here is a sample sip2-tenants.conf file:
   "tenant": "test_tenant2",
   "errorDetectionEnabled": true,
   "messageDelimiter": "\r",
+  "fieldDelimiter": "\|",
   "charset": "ISO-8859-1"
   }
 ]
@@ -93,6 +95,7 @@ Here is a sample sip2-tenants.conf file:
 |`tenant`|string|The FOLIO assigned tenant ID. |
 |`errorDetectionEnabled`|boolean|Indicates whether or not the self service kiosk will be using SIP error detection in messages sent to and from this module. Defaults to "false".|
 |`messageDelimiter`|string|The character sequence that indicates the end of a single SIP message. This is available in case the self check kiosk is not compliant with the SIP specification. The default is "\\r"|
+|`fieldDelimiter`|string|The character that the self service kiosk will use when encoding SIP messages. Defaults to "\|".|
 |`charset`|string|The character set SIP messages must be encoded with when sent and received by the self service kiosk. The charset must be defined as a "Canonical Name for java.nio API". See: [Supported Encodings](https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html). Default is "IBM850".|
 
 
