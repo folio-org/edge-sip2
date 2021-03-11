@@ -93,7 +93,7 @@ Here is a sample sip2-tenants.conf file:
 |`tenant`|string|The FOLIO assigned tenant ID. |
 |`errorDetectionEnabled`|boolean|Indicates whether or not the self service kiosk will be using SIP error detection in messages sent to and from this module. Defaults to "false".|
 |`messageDelimiter`|string|The character sequence that indicates the end of a single SIP message. This is available in case the self check kiosk is not compliant with the SIP specification. The default is "\\r"|
-|`charset`|string|The character set SIP messages must be encoded with when sent and received by the self service kiosk. The charset must be defined as a "Canonical Name for java.nio API". See: [Supported Encodings](https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html). Default is "IBM850".|
+|`charset`|string|The character set SIP messages must be encoded with when sent and received by the self service kiosk. The charset must be defined as a "Canonical Name for java.nio API". See: [Supported Encodings](https://docs.oracle.com/en/java/javase/11/intl/supported-encodings.html). Default is "IBM850".|
 
 
 ### Tenant configuration located in AWS S3
