@@ -9,6 +9,8 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
@@ -64,13 +66,10 @@ public abstract class BaseTest {
   public void deployVerticle(Vertx vertx, VertxTestContext testContext, TestInfo testInfo) {
     log.info("Starting: {}", testInfo.getDisplayName());
 
-    JsonObject sipConfig = new JsonObject();
+    
+    FileSystem fs = vertx.fileSystem();
+    JsonObject sipConfig = fs.readFileBlocking("test-sip2.conf").toJsonObject();
     sipConfig.put("port", port);
-    if (testInfo.getTags().contains(ERROR_DETECTION_ENABLED)) {
-      sipConfig.put("errorDetectionEnabled", true);
-    }
-    sipConfig.put("okapiUrl", "http://example.com");
-    sipConfig.put("tenant", "diku");
     if (testInfo.getTags().contains(TLS_ENABLED)) {
       final SelfSignedCertificate certificate = SelfSignedCertificate.create();
       sipConfig.put("netServerOptions", new JsonObject()
@@ -83,6 +82,17 @@ public abstract class BaseTest {
     setMainVerticleInstance(testInfo.getDisplayName());
     vertx.deployVerticle(myVerticle, opt, testContext.completing());
 
+    if (testInfo.getTags().contains(ERROR_DETECTION_ENABLED)) {
+      try {
+        Thread.sleep(500);  // allow for MainVerticle to start before changing config
+        Buffer buff = fs.readFileBlocking("sip2-tenants-error-detect-true.conf");
+        fs.writeFileBlocking("sip2-tenants.conf", buff);
+        Thread.sleep(1500);  // allow for MainVerticle to detect config change
+      } catch (InterruptedException e) {
+        log.info("Interrupted sleep, gonna be tired :( ");        
+      }
+    }
+    
     log.info("done deploying in base class");
   }
 

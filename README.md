@@ -18,23 +18,111 @@ FOLIO results for all supported (TBD) SIP2 commands.
 The edge-sip2 module can be launched via `edge-sip2-fat.jar` as follows:
 
 ```bash
-$ java -jar edge-sip2-fat.jar -conf '{"port":1234,"okapiUrl":"https://folio-snapshot-okapi.dev.folio.org","tenant":"diku"}'
+$ java -jar edge-sip2-fat.jar -conf sip2.conf
 ```
-On Windows the `edge-sip2-fat.jar` should be launched with the JSON configuration in double quotes and the inner double quotes should be escaped, for example:
+The -conf option can either specify the filename of the configuration or inline JSON. 
+Here is a sample sip2.conf file:
 ```
-$ java -jar edge-sip2-fat.jar -conf "{\"port\":1234,\"okapiUrl\":\"https://folio-snapshot-okapi.dev.folio.org\",\"tenant\":\"diku"\}"
+{ 
+  "port": 6443,
+  "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
+  "tenantConfigRetrieverOptions": {
+    "scanPeriod": 300000,
+    "stores": [{
+      "type": "file",
+      "format": "json",
+      "config": {
+        "path": "sip2-tenants.conf"
+      },
+      "optional": false
+    }]
+  }
+}
+```
+For inline JSON, the format is:
+```
+-conf '{"port":1234,"okapiUrl":"https://folio-snapshot-okapi.dev.folio.org".....}'
+```
+On Windows, inline JSON configuration is in double quotes and the inner double quotes should be escaped, for example:
+```
+-conf "{\"port\":1234,\"okapiUrl\":\"https://folio-snapshot-okapi.dev.folio.org\"....}"
 ``` 
 
 |Config option|Type|Description|
 |-------------|----|-----------|
 |`port`|int|The port the module will use to bind, typically 1024 < port < 65,535.|
 |`okapiUrl`|string|The URL of the Okapi server used by FOLIO.|
-|`tenant`|string|The FOLIO assigned tenant ID. Multi-tenant support TBD.|
-|`fieldDelimiter`|string|The character that the self service kiosk will use when encoding SIP messages. Defaults to "\|".|
-|`errorDetectionEnabled`|boolean|Indicates whether or not the self service kiosk will be using SIP error detection in messages sent to and from this module. Defaults to "false".|
-|`charset`|string|The character set SIP messages must be encoded with when sent and received by the self service kiosk. The charset must be defined as a "Canonical Name for java.nio API". See: [Supported Encodings](https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html). Default is "IBM850".|
-|`messageDelimiter`|string|The character sequence that indicates the end of a single SIP message. This is available in case the self check kiosk is not compliant with the SIP specification. The default is "\\r"|
+|`tenantConfigRetrieverOptions`|JSON object|Location for tenant configuration.|
+|`scanPeriod`|int|Frequency in msec that sip2 will check for and reload tenant configuration changes.|
+|`stores`|JSON array|Defines the properties for the tenant configuration stores. Multiple sources of tenant configuration can be loaded and combined together. |
+|`type`|string|The store type. Several supported types include: file, http, github, s3. See: [vertx config](https://vertx.io/docs/vertx-config/java/) |
+|`format`|string|Sip2 expects configuration to be in json format.|
+|`config`|string|Store type-specific properties. |
+|`path`|string|Path name of the tenant configuration file for file type stores. |
+|`optional`|boolean|If a failure is caught while loading the tenant configuration from an optional store, the failure is logged, but the processing does not fail. Instead, the tenant configuration will be empty.|
 |`netServerOptions`|JSON object|Configuration options for the server. These are Vertx options and are numerous. See: [NetServerOptions](https://vertx.io/docs/apidocs/io/vertx/core/net/NetServerOptions.html).|
+
+Note: edge-sip2 now requires two config files: the main bootstrap sip2.conf and tenant configuration: sip2-tenants.conf. The additional config file is required to support multi-tenants and runtime reloading of tenant configuration without restarting the edge-sip2 module.
+ 
+Here is a sample sip2-tenants.conf file:
+```
+{
+"scTenants": [
+  {
+  "scSubnet": "11.11.00.00/16",
+  "tenant": "test_tenant1",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "fieldDelimiter": "\|",
+  "charset": "ISO-8859-1"
+  },
+  {
+  "scSubnet": "22.22.00.00/16",
+  "tenant": "test_tenant2",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "fieldDelimiter": "\|",
+  "charset": "ISO-8859-1"
+  }
+]
+}
+```
+
+|Config option|Type|Description|
+|-------------|----|-----------|
+|`scTenants`|JSON array|Array of sip2 tenant configurations.|
+|`scSubnet`|string|IPv4 CIDR of a tenant's self service kiosk. This is used to identify the tenant configuration for an incoming kiosk connection. |
+|`tenant`|string|The FOLIO assigned tenant ID. |
+|`errorDetectionEnabled`|boolean|Indicates whether or not the self service kiosk will be using SIP error detection in messages sent to and from this module. Defaults to "false".|
+|`messageDelimiter`|string|The character sequence that indicates the end of a single SIP message. This is available in case the self check kiosk is not compliant with the SIP specification. The default is "\\r"|
+|`fieldDelimiter`|string|The character that the self service kiosk will use when encoding SIP messages. Defaults to "\|".|
+|`charset`|string|The character set SIP messages must be encoded with when sent and received by the self service kiosk. The charset must be defined as a "Canonical Name for java.nio API". See: [Supported Encodings](https://docs.oracle.com/en/java/javase/11/intl/supported-encodings.html). Default is "IBM850".|
+
+### Tenant configuration located in AWS S3
+Edge-sip2 supports [various locations](https://vertx.io/docs/vertx-config/java/#_available_configuration_stores) for sip2-tenants.conf  tenant configuration. Additionally, it supports [S3 config](https://github.com/mikelee2082/vertx-config-s3). To include vertx-config-s3 libraries when building edge-sip2, include the maven profile command:
+
+    mvn -P vertx-config-s3
+
+Here is a sample sip2.conf for storing tenant config in S3:
+
+    {
+    "port": 6443,
+    "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
+    "tenantConfigRetrieverOptions": {
+      "scanPeriod": 300000,
+      "stores": [{
+        "type": "s3",
+        "format": "json",
+        "config": {
+          "region": "my-region",
+          "bucket": "my-bucket",
+          "key": "sip2/sip2-tenants.conf"
+        },
+        "optional": true
+      }]
+    }
+  }
+
 
 ## FOLIO Configuration
 

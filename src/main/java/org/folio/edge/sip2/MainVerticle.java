@@ -14,9 +14,12 @@ import static org.folio.edge.sip2.parser.Command.UNKNOWN;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import io.micrometer.core.instrument.Timer;
+import io.vertx.config.ConfigRetriever;
+import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.pointer.JsonPointer;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.NetSocket;
@@ -25,6 +28,7 @@ import java.nio.charset.Charset;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.PreviousMessage;
@@ -42,13 +46,16 @@ import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.TenantUtils;
 
 public class MainVerticle extends AbstractVerticle {
   private Map<Command, ISip2RequestHandler> handlers;
   private NetServer server;
   private final Logger log = LogManager.getLogger();
   private final Map<Integer, Metrics> metricsMap = new HashMap<>();
-
+  private JsonObject multiTenantConfig = new JsonObject();
+  private ConfigRetriever configRetriever;
+  
   /**
    * Construct the {@code MainVerticle}.
    */
@@ -60,9 +67,15 @@ public class MainVerticle extends AbstractVerticle {
     this.handlers = handlers;
   }
 
+  private String getSanitizedConfig() {
+    JsonObject sc = config().copy();
+    JsonPointer.from("/tenantConfigRetrieverOptions/stores/0/config").writeJson(sc, "******");
+    return sc.encodePrettily();
+  }
+  
   @Override
-  public void start(Future<Void> startFuture) {
-    log.debug("Startup configuration: {}", () -> config().encodePrettily());
+  public void start(Promise<Void> startFuture) {
+    log.debug("Startup configuration: {}", () -> getSanitizedConfig());
 
     // We need to reduce the complexity of this method...
     if (handlers == null) {
@@ -97,15 +110,25 @@ public class MainVerticle extends AbstractVerticle {
     metricsMap.putIfAbsent(port, metrics);
 
     server.connectHandler(socket -> {
+      
+      String clientAddress = socket.remoteAddress().host();
+      JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig, 
+          clientAddress);
+      
       final SessionData sessionData = SessionData.createSession(
-          config().getString("tenant"),
-          config().getString("fieldDelimiter", "|").charAt(0),
-          config().getBoolean("errorDetectionEnabled", FALSE),
-          config().getString("charset", "IBM850"));
-      final String messageDelimiter = config().getString("messageDelimiter", "\r");
+          tenantConfig.getString("tenant"),
+          tenantConfig.getString("fieldDelimiter", "|").charAt(0),
+          tenantConfig.getBoolean("errorDetectionEnabled", FALSE),
+          tenantConfig.getString("charset", "IBM850"));
+      final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
 
       socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
         final Timer.Sample sample = metrics.sample();
+
+        if (Objects.isNull(sessionData.getTenant())) {
+          log.error("No tenant configured for address: {}  message ignored.", clientAddress);
+          return;
+        }
 
         final String messageString = buffer.getString(0, buffer.length(), sessionData.getCharset());
 
@@ -114,10 +137,6 @@ public class MainVerticle extends AbstractVerticle {
         Command command = UNKNOWN;
 
         try {
-          // At some point we will need to have these be
-          // tenant specific. This will be difficult considering that we need
-          // to parse the login message before we know which tenant it is.
-          // We may need another mechanism to obtain this configuration...
           final Parser parser = Parser.builder()
               .delimiter(sessionData.getFieldDelimiter())
               .charset(Charset.forName(sessionData.getCharset()))
@@ -201,19 +220,42 @@ public class MainVerticle extends AbstractVerticle {
       });
     });
 
-    server.listen(result -> {
-      if (result.succeeded()) {
-        log.info("MainVerticle deeployed successfuly, server is now listening!");
-        startFuture.complete();
+    JsonObject crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
+    ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
+    configRetriever = ConfigRetriever.create(vertx, crOptions);
+
+    // after tenant config is loaded, start listening for messages
+    configRetriever.getConfig(ar -> {
+      if (ar.succeeded()) {
+        multiTenantConfig = ar.result();
+        log.info("Tenant config loaded: {}", () -> multiTenantConfig.encodePrettily());
+
+        server.listen(result -> {
+          if (result.succeeded()) {
+            log.info("MainVerticle deployed successfuly, server is now listening!");
+            startFuture.complete();
+          } else {
+            log.error("Failed to deploy MainVerticle", result.cause());
+            startFuture.fail(result.cause());
+          }
+        });
+
       } else {
-        log.error("Failed to deploy MainVerticle", result.cause());
-        startFuture.fail(result.cause());
+        log.error("Failed to load tenant config", ar.cause());
+        startFuture.fail(ar.cause());
       }
     });
+    
+    configRetriever.listen(change -> {
+      multiTenantConfig = change.getNewConfiguration();
+      log.info("Tenant config changed: {}", () -> multiTenantConfig.encodePrettily());
+    });    
+
   }
 
   @Override
-  public void stop(Future<Void> stopFuture) {
+  public void stop(Promise<Void> stopFuture) {
+    configRetriever.close();
     server.close(result -> {
       if (result.succeeded()) {
         metricsMap.values().stream().forEach(Metrics::stop);
