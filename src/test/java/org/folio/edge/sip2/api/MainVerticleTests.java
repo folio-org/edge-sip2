@@ -57,8 +57,8 @@ public class MainVerticleTests extends BaseTest {
     sipMessageBf.append("11");  // checkout command
     sipMessageBf.append("Y");   // SC renewal policy
     sipMessageBf.append("N");   // no block
-    sipMessageBf.append(TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock)));    // transaction date
-    sipMessageBf.append(TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock)));    // nb due date
+    sipMessageBf.append(TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock)));
+    sipMessageBf.append(TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock)));
     sipMessageBf.append("AO" + institutionId + delimeter);
     sipMessageBf.append("AA" + patronIdentifier + delimeter);
     sipMessageBf.append("AB" + itemIdentifier + delimeter);
@@ -86,7 +86,7 @@ public class MainVerticleTests extends BaseTest {
     sipMessageBf.append("11");  // checkout command
     sipMessageBf.append("Y");   // SC renewal policy
     sipMessageBf.append("N");   // no block
-    sipMessageBf.append(TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock)));    // transaction date
+    sipMessageBf.append(TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock)));
     sipMessageBf.append(" ".repeat(18));  // 18 char blank nb due date
     sipMessageBf.append("AO" + institutionId + delimeter);
     sipMessageBf.append("AA" + patronIdentifier + delimeter);
