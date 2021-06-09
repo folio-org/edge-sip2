@@ -27,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.MainVerticle;
 import org.folio.edge.sip2.handlers.ACSResendHandler;
+import org.folio.edge.sip2.handlers.CheckoutHandler;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.handlers.LoginHandler;
 import org.folio.edge.sip2.parser.Command;
@@ -47,6 +48,8 @@ public abstract class BaseTest {
 
   @Mock
   private LoginHandler mockLoginHandler;
+  @Mock
+  private CheckoutHandler mockCheckoutHandler;
   protected MainVerticle myVerticle;
   private final int port = getRandomPort();
 
@@ -207,6 +210,15 @@ public abstract class BaseTest {
           new EnumMap<>(Command.class);
       requestHandlerMap.put(Command.LOGIN, mockLoginHandler);
       requestHandlerMap.put(Command.REQUEST_ACS_RESEND, new ACSResendHandler());
+
+      myVerticle = new MainVerticle(requestHandlerMap);
+
+    } else if (methodName.startsWith("canCheckOut")) {
+      when(mockCheckoutHandler.execute(any(), any())).thenReturn(Future.succeededFuture("12"));
+
+      EnumMap<Command, ISip2RequestHandler> requestHandlerMap =
+          new EnumMap<>(Command.class);
+      requestHandlerMap.put(Command.CHECKOUT, mockCheckoutHandler);
 
       myVerticle = new MainVerticle(requestHandlerMap);
 

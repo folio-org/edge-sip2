@@ -42,7 +42,7 @@ public class RenewMessageParser extends MessageParser {
     rBuilder.transactionDate(transactionDate);
 
     // nb due date: 18-char, fixed-length required field
-    final OffsetDateTime nbDueDate = parseDateTime(messageChars);
+    final OffsetDateTime nbDueDate = parseDateTimeNB(messageChars);
     rBuilder.nbDueDate(nbDueDate);
 
     // Variable length fields

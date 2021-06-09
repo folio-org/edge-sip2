@@ -62,6 +62,17 @@ public abstract class MessageParser {
     return new String(messageChars, startPosition, position - startPosition);
   }
 
+  protected OffsetDateTime parseDateTimeNB(char [] messageChars) {
+    final String dateTimeString = new String(messageChars, position, 18);
+    
+    if (" ".repeat(18).equals(dateTimeString)) {  // return null for 18 space nb due date
+      position += 18;
+      return null;
+    } else {
+      return parseDateTime(messageChars);
+    }
+  }
+
   protected OffsetDateTime parseDateTime(char [] messageChars) {
     final String dateTimeString = new String(messageChars, position, 18);
     position += 18;
