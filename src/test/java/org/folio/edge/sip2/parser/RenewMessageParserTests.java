@@ -42,4 +42,33 @@ class RenewMessageParserTests {
     assertEquals("Autographed", renew.getItemProperties());
     assertEquals(FALSE, renew.getFeeAcknowledged());
   }
+
+  @Test
+  void testParseBlankNbDueDate() {
+    RenewMessageParser parser =
+        new RenewMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
+    final OffsetDateTime transactionDate =
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
+    final DateTimeFormatter formatter = DateTimeFormatter
+        .ofPattern("yyyyMMdd    HHmmss");
+    final String transactionDateString = formatter.format(transactionDate);
+    final String nbDueDateString = " ".repeat(18);
+    final Renew renew = parser.parse(
+        "YY" + transactionDateString + nbDueDateString
+        + "AApatron_id|AC|AD1234|AOuniversity_id|ABSome Book|"
+        + "AJSome Title|CHAutographed|BON|");
+
+    assertEquals(TRUE, renew.getThirdPartyAllowed());
+    assertEquals(TRUE, renew.getNoBlock());
+    assertEquals(transactionDate, renew.getTransactionDate());
+    assertEquals(null, renew.getNbDueDate());
+    assertEquals("university_id", renew.getInstitutionId());
+    assertEquals("patron_id", renew.getPatronIdentifier());
+    assertEquals("1234", renew.getPatronPassword());
+    assertEquals("Some Book", renew.getItemIdentifier());
+    assertEquals("Some Title", renew.getTitleIdentifier());
+    assertEquals("", renew.getTerminalPassword());
+    assertEquals("Autographed", renew.getItemProperties());
+    assertEquals(FALSE, renew.getFeeAcknowledged());
+  }
 }

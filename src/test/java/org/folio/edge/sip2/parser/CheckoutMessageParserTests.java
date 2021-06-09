@@ -41,4 +41,32 @@ class CheckoutMessageParserTests {
     assertEquals(FALSE, checkout.getFeeAcknowledged());
     assertEquals(FALSE, checkout.getCancel());
   }
+
+  @Test
+  void testParseBlankNbDueDate() {
+    CheckoutMessageParser parser =
+        new CheckoutMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
+    final OffsetDateTime transactionDate = TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
+    final DateTimeFormatter formatter = DateTimeFormatter
+        .ofPattern("yyyyMMdd    HHmmss");
+    final String transactionDateString = formatter.format(transactionDate);
+    final String nbDueDateString = " ".repeat(18);
+    final Checkout checkout = parser.parse(
+        "YY" + transactionDateString + nbDueDateString
+        + "AApatron_id|ABSomeBook|AC|CHAutographed"
+        + "|AD1234|AOuniversity_id|BON|BIN|");
+
+    assertEquals(TRUE, checkout.getScRenewalPolicy());
+    assertEquals(TRUE, checkout.getNoBlock());
+    assertEquals(transactionDate, checkout.getTransactionDate());
+    assertEquals(null, checkout.getNbDueDate());
+    assertEquals("university_id", checkout.getInstitutionId());
+    assertEquals("patron_id", checkout.getPatronIdentifier());
+    assertEquals("SomeBook", checkout.getItemIdentifier());
+    assertEquals("", checkout.getTerminalPassword());
+    assertEquals("Autographed", checkout.getItemProperties());
+    assertEquals("1234", checkout.getPatronPassword());
+    assertEquals(FALSE, checkout.getFeeAcknowledged());
+    assertEquals(FALSE, checkout.getCancel());
+  }
 }
