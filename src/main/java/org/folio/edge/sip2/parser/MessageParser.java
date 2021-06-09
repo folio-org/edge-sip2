@@ -20,6 +20,7 @@ import org.folio.edge.sip2.parser.exceptions.MissingDelimiterException;
  */
 public abstract class MessageParser {
   private static final Logger log = LogManager.getLogger();
+  private static final String MISSING_NB_DUE_DATE = " ".repeat(18);
 
   protected int position;
   protected final Character delimiter;
@@ -64,12 +65,12 @@ public abstract class MessageParser {
 
   protected OffsetDateTime parseDateTimeNB(char [] messageChars) {
     final String dateTimeString = new String(messageChars, position, 18);
+    position += 18;
     
-    if (" ".repeat(18).equals(dateTimeString)) {  // return null for 18 space nb due date
-      position += 18;
+    if (MISSING_NB_DUE_DATE.equals(dateTimeString)) {  // return null for 18 space nb due date
       return null;
     } else {
-      return parseDateTime(messageChars);
+      return convertFieldToDateTime(dateTimeString);
     }
   }
 
