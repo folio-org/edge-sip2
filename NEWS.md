@@ -1,3 +1,8 @@
+## 2.0.1 2021-06-11
+ * [SIP2-95](https://issues.folio.org/browse/SIP2-95): add support for empty no block due date 
+ * [SIP2-92](https://issues.folio.org/browse/SIP2-92): Update circulation interface dependency 
+ * [SIP2-91](https://issues.folio.org/browse/SIP2-91): Update circulation interface dependency 
+ 
 ## 2.0.0 2021-03-15
  * [SIP2-78](https://issues.folio.org/browse/SIP2-78): Add multi-tenant support 
  
