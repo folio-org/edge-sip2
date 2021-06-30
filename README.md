@@ -48,6 +48,9 @@ On Windows, inline JSON configuration is in double quotes and the inner double q
 -conf "{\"port\":1234,\"okapiUrl\":\"https://folio-snapshot-okapi.dev.folio.org\"....}"
 ``` 
 
+One option is to mount the configuration files to the Docker container and provide
+command line arguments to point it to the right path (e.g. `-conf /path/to/config`).
+
 |Config option|Type|Description|
 |-------------|----|-----------|
 |`port`|int|The port the module will use to bind, typically 1024 < port < 65,535.|
