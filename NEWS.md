@@ -1,3 +1,5 @@
+## 2.0.2 2021-12-20
+ * [SIP2-100] (https://issues.folio.org/browse/SIP2-100) Update log4j for log4shell vulnerability (backported to juniper
 ## 2.0.1 2021-06-11
  * [SIP2-95](https://issues.folio.org/browse/SIP2-95): add support for empty no block due date 
  * [SIP2-92](https://issues.folio.org/browse/SIP2-92): Update circulation interface dependency 
