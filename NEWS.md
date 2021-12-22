@@ -1,3 +1,5 @@
+## 2.1.1 2021-12-17
+* [SIP2-100](https://issues.folio.org/browse/SIP2-100): Update log4j for log4shell vulnerability
 ## 2.1.0 2021-10-11
  * [SIP2-96](https://issues.folio.org/browse/SIP2-96): Update feesfines interface version to 17.0 
 
