@@ -1,3 +1,5 @@
+## 2.1.2 2021-12-17
+* [SIP2-102](https://issues.folio.org/browse/SIP2-100): Kiwi R3 2021 - Log4j edge- modules 2.17.0 upgrade
 ## 2.1.1 2021-12-17
 * [SIP2-100](https://issues.folio.org/browse/SIP2-100): Update log4j for log4shell vulnerability
 ## 2.1.0 2021-10-11
