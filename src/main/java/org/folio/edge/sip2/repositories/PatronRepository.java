@@ -356,23 +356,23 @@ public class PatronRepository {
     return null;
   }
 
-  private List<String> getTitles(JsonArray items) {
+  private List<String> getTitles(JsonArray items, String childField) {
     return items.stream()
         .map(o -> (JsonObject) o)
-        .map(jo -> getChildString(jo, "item", FIELD_TITLE))
+        .map(jo -> getChildString(jo, childField, FIELD_TITLE))
         .collect(Collectors.toList());
   }
 
   private List<String> getHoldItems(JsonObject requests) {
     // All items in the response are holds
     final JsonArray requestArray = requests.getJsonArray(FIELD_REQUESTS, new JsonArray());
-    return getTitles(requestArray);
+    return getTitles(requestArray, "instance");
   }
 
   private List<String> getOverdueItems(JsonObject loans) {
     // All items in the response are overdue loans
     final JsonArray requestArray = loans.getJsonArray("loans", new JsonArray());
-    return getTitles(requestArray);
+    return getTitles(requestArray, "item");
   }
 
   private int countRecallItems(List<Future<JsonObject>> recallItems) {
@@ -393,7 +393,7 @@ public class PatronRepository {
         .filter(jo -> getTotalRecords(jo) > 0)
         .map(jo -> jo.getJsonArray(FIELD_REQUESTS, new JsonArray()).stream().findAny()
             .map(o -> (JsonObject) o)
-            .map(jsonObject -> getChildString(jsonObject, "item", FIELD_TITLE)))
+            .map(jsonObject -> getChildString(jsonObject, "instance", FIELD_TITLE)))
         .filter(Optional::isPresent)
         .map(Optional::get)
         .sorted(Comparator.naturalOrder())
