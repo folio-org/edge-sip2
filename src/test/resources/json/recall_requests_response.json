@@ -6,9 +6,14 @@
     "requesterId" : "78c51a90-e64f-49ce-8d28-e246a49c7f63",
     "itemId" : "4593bdb8-f056-4a75-9c75-7b04c3a1dd64",
     "status" : "Open - Not yet filled",
+    "holdingsRecordId": "4dab2451-e4e2-4f19-952b-dc27c98883c3",
+    "requestLevel": "Item",
+    "instanceId": "4dab2451-e4e2-4f19-952b-dc27c98883c3",
+    "instance": {
+      "title": "1990 to 2010"
+    },
     "position" : 1,
     "item" : {
-      "title" : "1990 to 2010",
       "barcode" : "6214635593916"
     },
     "requester" : {

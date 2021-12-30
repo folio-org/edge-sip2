@@ -7,8 +7,13 @@
     "itemId" : "c70f966b-435f-4879-a7d1-3f66e6699191",
     "status" : "Open - Not yet filled",
     "position" : 1,
+    "holdingsRecordId": "4dab2451-e4e2-4f19-952b-dc27c98883c3",
+    "requestLevel": "Item",
+    "instanceId": "4dab2451-e4e2-4f19-952b-dc27c98883c3",
+    "instance": {
+      "title" : "Al Gore"
+    },
     "item" : {
-      "title" : "Al Gore",
       "barcode" : "9546958212529"
     },
     "requester" : {
