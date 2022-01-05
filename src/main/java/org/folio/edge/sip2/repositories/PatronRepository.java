@@ -52,6 +52,8 @@ public class PatronRepository {
   private static final String FIELD_REQUESTS = "requests";
   private static final String FIELD_TITLE = "title";
   private static final String FIELD_TOTAL_RECORDS = "totalRecords";
+  private static final String FIELD_INSTANCE = "instance";
+  private static final String FIELD_ITEM = "item";
   private static final Logger log = LogManager.getLogger();
   // These really should come from FOLIO
   static final String MESSAGE_INVALID_PATRON =
@@ -356,23 +358,31 @@ public class PatronRepository {
     return null;
   }
 
-  private List<String> getTitles(JsonArray items) {
+  private List<String> getTitlesForRequests(JsonArray items) {
+    return getTitles(items, FIELD_INSTANCE);
+  }
+
+  private List<String> getTitlesForLoans(JsonArray loans) {
+    return getTitles(loans, FIELD_ITEM);
+  }
+
+  private List<String> getTitles(JsonArray items, String childField) {
     return items.stream()
         .map(o -> (JsonObject) o)
-        .map(jo -> getChildString(jo, "item", FIELD_TITLE))
+        .map(jo -> getChildString(jo, childField, FIELD_TITLE))
         .collect(Collectors.toList());
   }
 
   private List<String> getHoldItems(JsonObject requests) {
     // All items in the response are holds
     final JsonArray requestArray = requests.getJsonArray(FIELD_REQUESTS, new JsonArray());
-    return getTitles(requestArray);
+    return getTitlesForRequests(requestArray);
   }
 
   private List<String> getOverdueItems(JsonObject loans) {
     // All items in the response are overdue loans
-    final JsonArray requestArray = loans.getJsonArray("loans", new JsonArray());
-    return getTitles(requestArray);
+    final JsonArray loanArray = loans.getJsonArray("loans", new JsonArray());
+    return getTitlesForLoans(loanArray);
   }
 
   private int countRecallItems(List<Future<JsonObject>> recallItems) {
@@ -393,7 +403,7 @@ public class PatronRepository {
         .filter(jo -> getTotalRecords(jo) > 0)
         .map(jo -> jo.getJsonArray(FIELD_REQUESTS, new JsonArray()).stream().findAny()
             .map(o -> (JsonObject) o)
-            .map(jsonObject -> getChildString(jsonObject, "item", FIELD_TITLE)))
+            .map(jsonObject -> getChildString(jsonObject, FIELD_INSTANCE, FIELD_TITLE)))
         .filter(Optional::isPresent)
         .map(Optional::get)
         .sorted(Comparator.naturalOrder())

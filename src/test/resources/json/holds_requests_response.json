@@ -4,11 +4,16 @@
     "requestType" : "Hold",
     "requestDate" : "2019-04-30T14:10:46.000+0000",
     "requesterId" : "4f0e711c-d583-41e0-9555-b62f1725023f",
+    "holdingsRecordId": "4dab2451-e4e2-4f19-952b-dc27c98883c3",
+    "requestLevel": "Item",
+    "instanceId": "4dab2451-e4e2-4f19-952b-dc27c98883c3",
     "itemId" : "bb5a6689-c008-4c96-8f8f-b666850ee12d",
     "status" : "Open - Not yet filled",
     "position" : 2,
+    "instance": {
+      "title" : "Interesting Times"
+    },
     "item" : {
-      "title" : "Interesting Times",
       "barcode" : "326547658598"
     },
     "requester" : {
@@ -32,8 +37,13 @@
     "itemId" : "30abf854-c55b-4485-9788-b15616e470f7",
     "status" : "Open - Not yet filled",
     "position" : 2,
+    "holdingsRecordId": "4dab2451-e4e2-4f19-952b-dc27c98883c3",
+    "requestLevel": "Title",
+    "instanceId": "4dab2451-e4e2-4f19-952b-dc27c98883c3",
+    "instance": {
+      "title" : "Request title1556587200969"
+    },
     "item" : {
-      "title" : "Request title1556587200969",
       "barcode" : "1556587200969"
     },
     "requester" : {

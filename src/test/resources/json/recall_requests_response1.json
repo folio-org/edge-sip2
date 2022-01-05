@@ -7,8 +7,13 @@
     "itemId" : "02114831-1c8f-4594-beb9-1bf23f65054c",
     "status" : "Open - Not yet filled",
     "position" : 1,
+    "holdingsRecordId": "4dab2451-e4e2-4f19-952b-dc27c98883c3",
+    "requestLevel": "Title",
+    "instanceId": "4dab2451-e4e2-4f19-952b-dc27c98883c3",
+    "instance": {
+      "title" : "In defense of our country"
+    },
     "item" : {
-      "title" : "In defense of our country",
       "barcode" : "7041345600523"
     },
     "requester" : {
