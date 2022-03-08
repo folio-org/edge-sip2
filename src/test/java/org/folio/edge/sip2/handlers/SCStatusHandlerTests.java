@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.vertx.core.Vertx;
+import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
@@ -38,12 +39,12 @@ public class SCStatusHandlerTests {
 
     SCStatusHandler handler = ((SCStatusHandler) HandlersFactory
         .getScStatusHandlerInstance(null, defaultConfigurationProvider, null,
-          clock, "abcdefg.com", vertx));
+          clock, "abcdefg.com", WebClient.create(vertx)));
 
     SessionData sessionData = TestUtils.getMockedSessionData();
     sessionData.setScLocation("TL01");
 
-    handler.execute(getMockedSCStatusMessage(), sessionData).setHandler(
+    handler.execute(getMockedSCStatusMessage(), sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           // Because the sipMessage has a dateTime component that's supposed
           // to be current, we can't assert on the entirety of the string,
@@ -73,12 +74,12 @@ public class SCStatusHandlerTests {
 
     SCStatusHandler handler = ((SCStatusHandler) HandlersFactory
         .getScStatusHandlerInstance(null, defaultConfigurationProvider, null,
-            clock, "abcdefg.com", vertx));
+            clock, "abcdefg.com", WebClient.create(vertx)));
 
     SessionData sessionData = TestUtils.getMockedSessionData();
     sessionData.setScLocation("TL01");
 
-    handler.execute(getMockedSCStatusMessage(), sessionData).setHandler(
+    handler.execute(getMockedSCStatusMessage(), sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           // Because the sipMessage has a dateTime component that's supposed
           // to be current, we can't assert on the entirety of the string,
@@ -109,7 +110,7 @@ public class SCStatusHandlerTests {
     SCStatusHandler handler = new SCStatusHandler(configurationRepository, null);
 
     handler.execute(getMockedSCStatusMessage(),
-                    TestUtils.getMockedSessionData()).setHandler(
+                    TestUtils.getMockedSessionData()).onComplete(
         testContext.failing(throwable -> testContext.verify(() -> {
           assertEquals("", throwable.getMessage());
           testContext.completeNow();
@@ -129,7 +130,7 @@ public class SCStatusHandlerTests {
     SCStatusHandler handler = new SCStatusHandler(configurationRepository, null);
 
     handler.execute(getMockedSCStatusMessage(),
-                    TestUtils.getMockedSessionData()).setHandler(
+                    TestUtils.getMockedSessionData()).onComplete(
         testContext.failing(throwable -> testContext.verify(() -> {
           assertEquals("Unable to find all necessary configuration(s). Found 2 of 3",
               throwable.getMessage());

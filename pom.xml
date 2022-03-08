@@ -49,7 +49,7 @@
       <dependency>
         <groupId>io.vertx</groupId>
         <artifactId>vertx-stack-depchain</artifactId>
-        <version>3.9.2</version>
+        <version>4.2.5</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -331,7 +331,7 @@
                 <filter>
                   <artifact>*:*</artifact>
                   <excludes>
-                    <exclude>module-info.class</exclude>
+                    <exclude>**/module-info.class</exclude>
                   </excludes>
                 </filter>
               </filters>

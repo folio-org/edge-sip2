@@ -36,7 +36,7 @@ public class DefaultResourceProviderTests {
 
     DefaultResourceProvider defaultConfigurationProvider =
         new DefaultResourceProvider(DEFAULT_CONFIGURATION_FILE);
-    defaultConfigurationProvider.retrieveResource(mockRequestData).setHandler(
+    defaultConfigurationProvider.retrieveResource(mockRequestData).onComplete(
         testContext.succeeding(resource -> testContext.verify(() -> {
           final JsonObject jsonConfig = resource.getResource();
           assertNotNull(jsonConfig);
@@ -64,7 +64,7 @@ public class DefaultResourceProviderTests {
 
     DefaultResourceProvider defaultConfigurationProvider =
         new DefaultResourceProvider(DEFAULT_CONFIGURATION_FILE);
-    defaultConfigurationProvider.retrieveResource(mockRequestData).setHandler(
+    defaultConfigurationProvider.retrieveResource(mockRequestData).onComplete(
         testContext.succeeding(resource -> testContext.verify(() -> {
           final JsonObject jsonConfig = resource.getResource();
           assertNotNull(jsonConfig);

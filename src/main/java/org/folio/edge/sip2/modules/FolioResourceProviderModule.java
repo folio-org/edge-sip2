@@ -2,7 +2,7 @@ package org.folio.edge.sip2.modules;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
-import io.vertx.core.Vertx;
+import io.vertx.ext.web.client.WebClient;
 
 /**
  * Module for creating a {@code FolioResourceProvider} via Dependency injection.
@@ -12,21 +12,21 @@ import io.vertx.core.Vertx;
  */
 public class FolioResourceProviderModule extends AbstractModule {
   private final String okapiUrl;
-  private final Vertx vertx;
+  private final WebClient webClient;
 
   /**
    * Build a module for dependency injection.
    * @param okapiUrl the okapi url
-   * @param vertx the instance of vertx
+   * @param webClient the instance of WebClient
    */
-  public FolioResourceProviderModule(String okapiUrl, Vertx vertx) {
+  public FolioResourceProviderModule(String okapiUrl, WebClient webClient) {
     this.okapiUrl = okapiUrl;
-    this.vertx = vertx;
+    this.webClient = webClient;
   }
 
   @Override
   protected void configure() {
     bind(String.class).annotatedWith(Names.named("okapiUrl")).toInstance(okapiUrl);
-    bind(Vertx.class).annotatedWith(Names.named("vertx")).toInstance(vertx);
+    bind(WebClient.class).annotatedWith(Names.named("webClient")).toInstance(webClient);
   }
 }
