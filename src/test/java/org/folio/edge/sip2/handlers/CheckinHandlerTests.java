@@ -67,7 +67,7 @@ public class CheckinHandlerTests {
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
-    handler.execute(checkin, sessionData).setHandler(
+    handler.execute(checkin, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "101YUN"
               + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
@@ -118,7 +118,7 @@ public class CheckinHandlerTests {
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
-    handler.execute(checkin, sessionData).setHandler(
+    handler.execute(checkin, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "100YUN"
               + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))

@@ -59,7 +59,7 @@ public class UsersRepositoryTests {
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
     final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
-    usersRepository.getUserById("997383903573496", sessionData).setHandler(
+    usersRepository.getUserById("997383903573496", sessionData).onComplete(
         testContext.succeeding(user -> testContext.verify(() -> {
           assertNotNull(user);
           assertEquals("997383903573496", user.getBarcode());
@@ -83,7 +83,7 @@ public class UsersRepositoryTests {
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
     final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
-    usersRepository.getUserById("leslie", sessionData).setHandler(
+    usersRepository.getUserById("leslie", sessionData).onComplete(
         testContext.succeeding(user -> testContext.verify(() -> {
           assertNotNull(user);
           assertEquals("leslie", user.getUsername());
@@ -120,7 +120,7 @@ public class UsersRepositoryTests {
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
     final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
-    usersRepository.getUserById(extSystemId, sessionData).setHandler(
+    usersRepository.getUserById(extSystemId, sessionData).onComplete(
         testContext.succeeding(user -> testContext.verify(() -> {
           assertNotNull(user);
           assertEquals(extSystemId, user.getExtSystemId());
@@ -139,7 +139,7 @@ public class UsersRepositoryTests {
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
     final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
-    usersRepository.getUserById("1234667", sessionData).setHandler(
+    usersRepository.getUserById("1234667", sessionData).onComplete(
         testContext.succeeding(user -> testContext.verify(() -> {
           assertNull(user);
 

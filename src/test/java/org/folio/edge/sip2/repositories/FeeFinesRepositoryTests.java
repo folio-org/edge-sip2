@@ -66,7 +66,7 @@ public class FeeFinesRepositoryTests {
 
     final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(mockFolioProvider);
     feeFinesRepository.getManualBlocksByUserId(UUID.randomUUID().toString(),
-        sessionData).setHandler(
+        sessionData).onComplete(
             testContext.succeeding(manualBlocks -> testContext.verify(() -> {
               assertNotNull(manualBlocks);
               assertNotNull(manualBlocks.getJsonArray(FIELD_MANUALBLOCKS));
@@ -88,7 +88,7 @@ public class FeeFinesRepositoryTests {
 
     final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(mockFolioProvider);
     feeFinesRepository.getManualBlocksByUserId(UUID.randomUUID().toString(),
-        sessionData).setHandler(
+        sessionData).onComplete(
             testContext.succeeding(manualBlocks -> testContext.verify(() -> {
               assertNull(manualBlocks);
 
@@ -114,7 +114,7 @@ public class FeeFinesRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(mockFolioProvider);
-    feeFinesRepository.getManualBlocksByUserId(userId, sessionData).setHandler(
+    feeFinesRepository.getManualBlocksByUserId(userId, sessionData).onComplete(
         testContext.succeeding(manualBlocks -> testContext.verify(() -> {
           assertNotNull(manualBlocks);
           assertEquals(1, manualBlocks.getInteger(FIELD_TOTAL_RECORDS));

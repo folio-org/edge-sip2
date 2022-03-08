@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import freemarker.template.Template;
 import io.vertx.core.Vertx;
+import io.vertx.ext.web.client.WebClient;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
@@ -15,10 +16,12 @@ import org.folio.edge.sip2.repositories.IResourceProvider;
 import org.junit.jupiter.api.Test;
 
 public class HandlersFactoryTests {
+  private WebClient webClient = WebClient.create(Vertx.vertx());
+
   @Test
   public void canGetAcsStatusHandlerWithNullArguments() {
     ISip2RequestHandler acsStatusHandler = HandlersFactory
-        .getScStatusHandlerInstance(null, null, null, null, "http://abcdefg.com", Vertx.vertx());
+        .getScStatusHandlerInstance(null, null, null, null, "http://abcdefg.com", webClient);
     assertNotNull(acsStatusHandler);
     assertTrue(acsStatusHandler instanceof SCStatusHandler);
   }
@@ -34,7 +37,7 @@ public class HandlersFactoryTests {
 
     ISip2RequestHandler acsStatusHandler = HandlersFactory
         .getScStatusHandlerInstance(configRepo, resourceProvider,
-            freemarkerTemplate, null, "abcdefg", Vertx.vertx());
+            freemarkerTemplate, null, "abcdefg", webClient);
     assertNotNull(acsStatusHandler);
     assertTrue(acsStatusHandler instanceof SCStatusHandler);
   }
