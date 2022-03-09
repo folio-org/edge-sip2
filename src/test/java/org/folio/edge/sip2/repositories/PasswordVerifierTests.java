@@ -49,7 +49,7 @@ class PasswordVerifierTests {
 
     final PasswordVerifier passwordVerifier = new PasswordVerifier(mockUsersRepository,
         mockLoginRepository);
-    passwordVerifier.verifyPatronPassword(patronIdentifier, "0989", sessionData).setHandler(
+    passwordVerifier.verifyPatronPassword(patronIdentifier, "0989", sessionData).onComplete(
         testContext.succeeding(verification -> testContext.verify(() -> {
           assertNotNull(verification);
           assertEquals("997383903573496", verification.getUser().getBarcode());
@@ -77,7 +77,7 @@ class PasswordVerifierTests {
 
     final PasswordVerifier passwordVerifier = new PasswordVerifier(mockUsersRepository,
         mockLoginRepository);
-    passwordVerifier.verifyPatronPassword(patronIdentifier, "0989", sessionData).setHandler(
+    passwordVerifier.verifyPatronPassword(patronIdentifier, "0989", sessionData).onComplete(
         testContext.succeeding(verification -> testContext.verify(() -> {
           assertNotNull(verification);
           assertNull(verification.getUser());
@@ -113,7 +113,7 @@ class PasswordVerifierTests {
 
     final PasswordVerifier passwordVerifier = new PasswordVerifier(mockUsersRepository,
         mockLoginRepository);
-    passwordVerifier.verifyPatronPassword(patronIdentifier, "0989", sessionData).setHandler(
+    passwordVerifier.verifyPatronPassword(patronIdentifier, "0989", sessionData).onComplete(
         testContext.succeeding(verification -> testContext.verify(() -> {
           assertNotNull(verification);
           assertEquals("997383903573496", verification.getUser().getBarcode());
@@ -143,7 +143,7 @@ class PasswordVerifierTests {
 
     final PasswordVerifier passwordVerifier = new PasswordVerifier(mockUsersRepository,
         mockLoginRepository);
-    passwordVerifier.verifyPatronPassword(patronIdentifier,"0989", sessionData).setHandler(
+    passwordVerifier.verifyPatronPassword(patronIdentifier,"0989", sessionData).onComplete(
         testContext.succeeding(verification -> testContext.verify(() -> {
           assertNotNull(verification);
           assertNotNull(verification.getUser());
@@ -167,7 +167,7 @@ class PasswordVerifierTests {
         .thenReturn(Future.succeededFuture(null));
     final PasswordVerifier passwordVerifier = new PasswordVerifier(mockUsersRepository,
         mockLoginRepository);
-    passwordVerifier.verifyPatronPassword(patronIdentifier, "0989", sessionData).setHandler(
+    passwordVerifier.verifyPatronPassword(patronIdentifier, "0989", sessionData).onComplete(
         testContext.succeeding(verification -> testContext.verify(() -> {
           assertNotNull(verification);
           assertNull(verification.getUser());

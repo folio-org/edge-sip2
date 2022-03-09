@@ -105,7 +105,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
-    circulationRepository.performCheckinCommand(checkin, sessionData).setHandler(
+    circulationRepository.performCheckinCommand(checkin, sessionData).onComplete(
         testContext.succeeding(checkinResponse -> testContext.verify(() -> {
           assertNotNull(checkinResponse);
           assertTrue(checkinResponse.getOk());
@@ -161,7 +161,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
-    circulationRepository.performCheckinCommand(checkin, sessionData).setHandler(
+    circulationRepository.performCheckinCommand(checkin, sessionData).onComplete(
         testContext.succeeding(checkinResponse -> testContext.verify(() -> {
           assertNotNull(checkinResponse);
           assertTrue(checkinResponse.getOk());
@@ -212,7 +212,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
-    circulationRepository.performCheckinCommand(checkin, sessionData).setHandler(
+    circulationRepository.performCheckinCommand(checkin, sessionData).onComplete(
         testContext.succeeding(checkinResponse -> testContext.verify(() -> {
           assertNotNull(checkinResponse);
           assertFalse(checkinResponse.getOk());
@@ -274,7 +274,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
-    circulationRepository.performCheckoutCommand(checkout, sessionData).setHandler(
+    circulationRepository.performCheckoutCommand(checkout, sessionData).onComplete(
         testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
           assertTrue(checkoutResponse.getOk());
@@ -346,7 +346,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
-    circulationRepository.performCheckoutCommand(checkout, sessionData).setHandler(
+    circulationRepository.performCheckoutCommand(checkout, sessionData).onComplete(
         testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
           assertTrue(checkoutResponse.getOk());
@@ -409,7 +409,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
-    circulationRepository.performCheckoutCommand(checkout, sessionData).setHandler(
+    circulationRepository.performCheckoutCommand(checkout, sessionData).onComplete(
         testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
           assertFalse(checkoutResponse.getOk());
@@ -492,7 +492,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
-    circulationRepository.performCheckoutCommand(checkout, sessionData).setHandler(
+    circulationRepository.performCheckoutCommand(checkout, sessionData).onComplete(
         testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
           assertFalse(checkoutResponse.getOk());
@@ -549,7 +549,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
-    circulationRepository.getLoansByUserId(userId, null, null, sessionData).setHandler(
+    circulationRepository.getLoansByUserId(userId, null, null, sessionData).onComplete(
         testContext.succeeding(loansResponse -> testContext.verify(() -> {
           assertNotNull(loansResponse);
           assertEquals(1, loansResponse.getInteger("totalRecords"));
@@ -579,7 +579,7 @@ public class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
-    circulationRepository.getLoansByUserId(userId, null, null, sessionData).setHandler(
+    circulationRepository.getLoansByUserId(userId, null, null, sessionData).onComplete(
         testContext.succeeding(loansResponse -> testContext.verify(() -> {
           assertNull(loansResponse);
 
@@ -620,7 +620,7 @@ public class CirculationRepositoryTests {
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.getOverdueLoansByUserId(userId, OffsetDateTime.now(clock), null, null,
-        sessionData).setHandler(testContext.succeeding(loansResponse -> testContext.verify(() -> {
+        sessionData).onComplete(testContext.succeeding(loansResponse -> testContext.verify(() -> {
           assertNotNull(loansResponse);
           assertEquals(1, loansResponse.getInteger("totalRecords"));
           final JsonArray loans = loansResponse.getJsonArray("loans");
@@ -651,7 +651,7 @@ public class CirculationRepositoryTests {
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.getOverdueLoansByUserId(userId, OffsetDateTime.now(clock), null, null,
-        sessionData).setHandler(testContext.succeeding(loansResponse -> testContext.verify(() -> {
+        sessionData).onComplete(testContext.succeeding(loansResponse -> testContext.verify(() -> {
           assertNull(loansResponse);
 
           testContext.completeNow();
@@ -691,7 +691,7 @@ public class CirculationRepositoryTests {
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.getRequestsByItemId(itemId, "Recall", null, null, sessionData)
-        .setHandler(testContext.succeeding(requestsResponse -> testContext.verify(() -> {
+        .onComplete(testContext.succeeding(requestsResponse -> testContext.verify(() -> {
           assertNotNull(requestsResponse);
           assertEquals(1, requestsResponse.getInteger("totalRecords"));
           final JsonArray requests = requestsResponse.getJsonArray("requests");
@@ -721,7 +721,7 @@ public class CirculationRepositoryTests {
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.getRequestsByItemId(itemId, "Recall", null, null,
-        sessionData).setHandler(testContext.succeeding(
+        sessionData).onComplete(testContext.succeeding(
             requestsResponse -> testContext.verify(() -> {
               assertNull(requestsResponse);
 
@@ -756,7 +756,7 @@ public class CirculationRepositoryTests {
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.getRequestsByItemId(itemId, "Hold", null, null, sessionData)
-        .setHandler(testContext.succeeding(requestsResponse -> testContext.verify(() -> {
+        .onComplete(testContext.succeeding(requestsResponse -> testContext.verify(() -> {
           assertNotNull(requestsResponse);
           assertEquals(1, requestsResponse.getInteger("totalRecords"));
           final JsonArray requests = requestsResponse.getJsonArray("requests");
@@ -786,7 +786,7 @@ public class CirculationRepositoryTests {
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
     circulationRepository.getRequestsByItemId(userId, "Hold", null, null,
-        sessionData).setHandler(testContext.succeeding(
+        sessionData).onComplete(testContext.succeeding(
             requestsResponse -> testContext.verify(() -> {
               assertNull(requestsResponse);
 

@@ -24,6 +24,7 @@ import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
+import io.vertx.ext.web.client.WebClient;
 import java.nio.charset.Charset;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -55,7 +56,7 @@ public class MainVerticle extends AbstractVerticle {
   private final Map<Integer, Metrics> metricsMap = new HashMap<>();
   private JsonObject multiTenantConfig = new JsonObject();
   private ConfigRetriever configRetriever;
-  
+
   /**
    * Construct the {@code MainVerticle}.
    */
@@ -72,7 +73,7 @@ public class MainVerticle extends AbstractVerticle {
     JsonPointer.from("/tenantConfigRetrieverOptions/stores/0/config").writeJson(sc, "******");
     return sc.encodePrettily();
   }
-  
+
   @Override
   public void start(Promise<Void> startFuture) {
     log.debug("Startup configuration: {}", () -> getSanitizedConfig());
@@ -80,15 +81,15 @@ public class MainVerticle extends AbstractVerticle {
     // We need to reduce the complexity of this method...
     if (handlers == null) {
       String okapiUrl = config().getString("okapiUrl");
-
+      final WebClient webClient = WebClient.create(vertx);
       final Injector injector = Guice.createInjector(
-          new FolioResourceProviderModule(okapiUrl, vertx),
+          new FolioResourceProviderModule(okapiUrl, webClient),
           new ApplicationModule());
       handlers = new EnumMap<>(Command.class);
       handlers.put(CHECKOUT, injector.getInstance(CheckoutHandler.class));
       handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
       handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null,
-                null, null, okapiUrl, vertx));
+          null, null, okapiUrl, webClient));
       handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
       handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
       handlers.put(PATRON_INFORMATION, injector.getInstance(PatronInformationHandler.class));
@@ -110,11 +111,11 @@ public class MainVerticle extends AbstractVerticle {
     metricsMap.putIfAbsent(port, metrics);
 
     server.connectHandler(socket -> {
-      
+
       String clientAddress = socket.remoteAddress().host();
-      JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig, 
+      JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
           clientAddress);
-      
+
       final SessionData sessionData = SessionData.createSession(
           tenantConfig.getString("tenant"),
           tenantConfig.getString("fieldDelimiter", "|").charAt(0),
@@ -140,7 +141,7 @@ public class MainVerticle extends AbstractVerticle {
           final Parser parser = Parser.builder()
               .delimiter(sessionData.getFieldDelimiter())
               .charset(Charset.forName(sessionData.getCharset()))
-              .errorDetectionEnaled(sessionData.isErrorDetectionEnabled())
+              .errorDetectionEnabled(sessionData.isErrorDetectionEnabled())
               .timezone(sessionData.getTimeZone())
               .build();
 
@@ -178,28 +179,26 @@ public class MainVerticle extends AbstractVerticle {
 
           handler
               .execute(message.getRequest(), sessionData)
-              .setHandler(ar -> {
-                if (ar.succeeded()) {
-                  final String responseMsg;
-                  if (message.getCommand() == REQUEST_ACS_RESEND) {
-                    // we don't want to modify the response
-                    responseMsg = ar.result();
-                  } else {
-                    responseMsg = formatResponse(ar.result(), message, sessionData,
-                        messageDelimiter);
-                  }
-                  handler.writeHistory(sessionData, message, responseMsg);
-                  log.info("Sip response {}", responseMsg);
-                  sample.stop(metrics.commandTimer(message.getCommand()));
-                  socket.write(responseMsg, sessionData.getCharset());
+              .onSuccess(result -> {
+                final String responseMsg;
+                if (message.getCommand() == REQUEST_ACS_RESEND) {
+                  // we don't want to modify the response
+                  responseMsg = result;
                 } else {
-                  String errorMsg = "Failed to respond to request";
-                  log.error(errorMsg, ar.cause());
-                  sample.stop(metrics.commandTimer(message.getCommand()));
-                  socket.write(ar.cause().getMessage() + messageDelimiter,
-                      sessionData.getCharset());
-                  metrics.responseError();
+                  responseMsg = formatResponse(result, message, sessionData,
+                      messageDelimiter);
                 }
+                handler.writeHistory(sessionData, message, responseMsg);
+                log.info("Sip response {}", responseMsg);
+                sample.stop(metrics.commandTimer(message.getCommand()));
+                socket.write(responseMsg, sessionData.getCharset());
+              }).onFailure(e -> {
+                String errorMsg = "Failed to respond to request";
+                log.error(errorMsg, e);
+                sample.stop(metrics.commandTimer(message.getCommand()));
+                socket.write(e.getMessage() + messageDelimiter,
+                    sessionData.getCharset());
+                metrics.responseError();
               });
         } catch (Exception ex) {
           String message = "Problems handling the request: " + ex.getMessage();
@@ -245,11 +244,11 @@ public class MainVerticle extends AbstractVerticle {
         startFuture.fail(ar.cause());
       }
     });
-    
+
     configRetriever.listen(change -> {
       multiTenantConfig = change.getNewConfiguration();
       log.info("Tenant config changed: {}", () -> multiTenantConfig.encodePrettily());
-    });    
+    });
 
   }
 
@@ -279,16 +278,15 @@ public class MainVerticle extends AbstractVerticle {
       //resends validation if checksum string does not match
       ISip2RequestHandler handler = handlers.get(Command.REQUEST_SC_RESEND);
       handler.execute(message.getRequest(), sessionData)
-          .setHandler(ar -> {
-            if (ar.succeeded()) {
-              sample.stop(metrics.commandTimer(message.getCommand()));
-              socket.write(formatResponse(ar.result(), message, sessionData,
-                  messageDelimiter, true), sessionData.getCharset());
-            } else {
-              log.error("Failed to send SC resend", ar.cause());
-              metrics.scResendError();
-              sample.stop(metrics.commandTimer(message.getCommand()));
-            }
+          .onSuccess(result -> {
+            sample.stop(metrics.commandTimer(message.getCommand()));
+            socket.write(formatResponse(result, message, sessionData,
+                messageDelimiter, true), sessionData.getCharset());
+          })
+          .onFailure(e -> {
+            log.error("Failed to send SC resend", e);
+            metrics.scResendError();
+            sample.stop(metrics.commandTimer(message.getCommand()));
           });
     } else {
       sample.stop(metrics.commandTimer(message.getCommand()));
