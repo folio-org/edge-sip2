@@ -21,7 +21,6 @@ import io.vertx.junit5.VertxTestContext;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.EnumMap;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,7 +65,7 @@ public abstract class BaseTest {
   public void deployVerticle(Vertx vertx, VertxTestContext testContext, TestInfo testInfo) {
     log.info("Starting: {}", testInfo.getDisplayName());
 
-    
+
     FileSystem fs = vertx.fileSystem();
     JsonObject sipConfig = fs.readFileBlocking("test-sip2.conf").toJsonObject();
     sipConfig.put("port", port);
@@ -80,7 +79,7 @@ public abstract class BaseTest {
     opt.setConfig(sipConfig);
 
     setMainVerticleInstance(testInfo.getDisplayName());
-    vertx.deployVerticle(myVerticle, opt, testContext.completing());
+    vertx.deployVerticle(myVerticle, opt, testContext.succeedingThenComplete());
 
     if (testInfo.getTags().contains(ERROR_DETECTION_ENABLED)) {
       try {
@@ -89,10 +88,10 @@ public abstract class BaseTest {
         fs.writeFileBlocking("sip2-tenants.conf", buff);
         Thread.sleep(1500);  // allow for MainVerticle to detect config change
       } catch (InterruptedException e) {
-        log.info("Interrupted sleep, gonna be tired :( ");        
+        log.info("Interrupted sleep, gonna be tired :( ");
       }
     }
-    
+
     log.info("done deploying in base class");
   }
 
@@ -216,19 +215,12 @@ public abstract class BaseTest {
   }
 
   private static int getRandomPort() {
-    int port;
     do {
-      // Use a random ephemeral port
-      port = new Random().nextInt(16_384) + 49_152;
-      try {
-        final ServerSocket socket = new ServerSocket(port);
-        socket.close();
+      try (ServerSocket socket = new ServerSocket(0)) {
+        return socket.getLocalPort();
       } catch (IOException e) {
-        continue;
+        // ignore
       }
-      break;
     } while (true);
-
-    return port;
   }
 }

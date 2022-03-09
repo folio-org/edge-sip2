@@ -6,12 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,8 +18,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(VertxExtension.class)
 public class FolioResourceProviderTests {
-  private static final int port = getRandomPort();
+  private static int port;
 
+  @Timeout(5000)
   @BeforeAll
   static void setup(Vertx vertx, VertxTestContext testContext) throws Throwable {
     vertx.createHttpServer()
@@ -44,18 +43,14 @@ public class FolioResourceProviderTests {
               .end("Unexpected call: " + req.path());
         }
       })
-        .listen(port, testContext.completing());
-
-    assertTrue(testContext.awaitCompletion(5, TimeUnit.SECONDS));
-
-    if (testContext.failed()) {
-      throw testContext.causeOfFailure();
-    }
+        .listen(0)
+        .onSuccess(httpServer -> port = httpServer.actualPort())
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @AfterAll
   static void tearDown(Vertx vertx, VertxTestContext testContext) {
-    vertx.close(testContext.completing());
+    vertx.close(testContext.succeedingThenComplete());
   }
 
   @Test
@@ -63,7 +58,7 @@ public class FolioResourceProviderTests {
       Vertx vertx,
       VertxTestContext testContext) {
     final FolioResourceProvider folioResourceProvider =
-        new FolioResourceProvider("http://example.com", vertx);
+        new FolioResourceProvider("http://example.com", WebClient.create(vertx));
 
     assertNotNull(folioResourceProvider);
 
@@ -75,8 +70,8 @@ public class FolioResourceProviderTests {
       Vertx vertx,
       VertxTestContext testContext) {
     final FolioResourceProvider folioResourceProvider =
-        new FolioResourceProvider("http://localhost:" + port, vertx);
-    folioResourceProvider.retrieveResource((FolioRequestData)() -> "/test_retrieve").setHandler(
+        new FolioResourceProvider("http://localhost:" + port, WebClient.create(vertx));
+    folioResourceProvider.retrieveResource((FolioRequestData)() -> "/test_retrieve").onComplete(
         testContext.succeeding(resource -> testContext.verify(() -> {
           final JsonObject jo = resource.getResource();
 
@@ -93,9 +88,9 @@ public class FolioResourceProviderTests {
       Vertx vertx,
       VertxTestContext testContext) {
     final FolioResourceProvider folioResourceProvider =
-        new FolioResourceProvider("http://localhost:" + port, vertx);
+        new FolioResourceProvider("http://localhost:" + port, WebClient.create(vertx));
     folioResourceProvider.retrieveResource((FolioRequestData)() -> "/test_retrieve_bad")
-        .setHandler(testContext.failing(throwable -> testContext.verify(() -> {
+        .onComplete(testContext.failing(throwable -> testContext.verify(() -> {
           assertNotNull(throwable);
           assertEquals("Unexpected call: /test_retrieve_bad",
               throwable.getMessage());
@@ -109,8 +104,8 @@ public class FolioResourceProviderTests {
       Vertx vertx,
       VertxTestContext testContext) {
     final FolioResourceProvider folioResourceProvider =
-        new FolioResourceProvider("http://localhost:" + port, vertx);
-    folioResourceProvider.createResource((FolioRequestData)() -> "/test_create").setHandler(
+        new FolioResourceProvider("http://localhost:" + port, WebClient.create(vertx));
+    folioResourceProvider.createResource((FolioRequestData)() -> "/test_create").onComplete(
         testContext.succeeding(resource -> testContext.verify(() -> {
           final JsonObject jo = resource.getResource();
 
@@ -127,32 +122,15 @@ public class FolioResourceProviderTests {
       Vertx vertx,
       VertxTestContext testContext) {
     final FolioResourceProvider folioResourceProvider =
-        new FolioResourceProvider("http://localhost:" + port, vertx);
+        new FolioResourceProvider("http://localhost:" + port, WebClient.create(vertx));
     folioResourceProvider.createResource((FolioRequestData)() -> "/test_create_bad")
-        .setHandler(testContext.failing(throwable -> testContext.verify(() -> {
+        .onComplete(testContext.failing(throwable -> testContext.verify(() -> {
           assertNotNull(throwable);
           assertEquals("Unexpected call: /test_create_bad",
               throwable.getMessage());
 
           testContext.completeNow();
         })));
-  }
-
-  private static int getRandomPort() {
-    int port = -1;
-    do {
-      // Use a random ephemeral port
-      port = new Random().nextInt(16_384) + 49_152;
-      try {
-        final ServerSocket socket = new ServerSocket(port);
-        socket.close();
-      } catch (IOException e) {
-        continue;
-      }
-      break;
-    } while (true);
-
-    return port;
   }
 
   private interface FolioRequestData extends IRequestData {

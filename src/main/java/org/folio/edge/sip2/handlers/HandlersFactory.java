@@ -1,7 +1,7 @@
 package org.folio.edge.sip2.handlers;
 
 import freemarker.template.Template;
-import io.vertx.core.Vertx;
+import io.vertx.ext.web.client.WebClient;
 import java.time.Clock;
 import java.util.Objects;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
@@ -33,12 +33,12 @@ public class HandlersFactory {
       Template freeMarkerTemplate,
       Clock clock,
       String okapiUrl,
-      Vertx vertx) {
+      WebClient webClient) {
 
     Objects.requireNonNull(okapiUrl, "okapiUrl is required");
-    Objects.requireNonNull(vertx, "vertx is required");
+    Objects.requireNonNull(webClient, "webClient is required");
 
-    resProvider = getResourceProvider(resProvider, okapiUrl, vertx);
+    resProvider = getResourceProvider(resProvider, okapiUrl, webClient);
 
     if (configRepo == null && clock == null) {
       configRepo = new ConfigurationRepository(resProvider, Clock.systemUTC());
@@ -58,9 +58,9 @@ public class HandlersFactory {
 
   @SuppressWarnings("unchecked")
   private static <T> IResourceProvider<T> getResourceProvider(
-      IResourceProvider<T> resourceProvider, String okapiUrl, Vertx vertx) {
+      IResourceProvider<T> resourceProvider, String okapiUrl, WebClient webClient) {
     if (resourceProvider == null) {
-      return (IResourceProvider<T>) new FolioResourceProvider(okapiUrl, vertx);
+      return (IResourceProvider<T>) new FolioResourceProvider(okapiUrl, webClient);
     }
 
     return resourceProvider;

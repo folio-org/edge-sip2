@@ -289,7 +289,7 @@ public final class Parser {
       return this;
     }
 
-    public ParserBuilder errorDetectionEnaled(Boolean errorDetectionEnabled) {
+    public ParserBuilder errorDetectionEnabled(Boolean errorDetectionEnabled) {
       this.errorDetectionEnabled = errorDetectionEnabled;
       return this;
     }

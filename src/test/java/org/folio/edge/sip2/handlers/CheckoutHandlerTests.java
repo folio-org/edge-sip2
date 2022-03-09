@@ -71,7 +71,7 @@ public class CheckoutHandlerTests {
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
-    handler.execute(checkout, sessionData).setHandler(
+    handler.execute(checkout, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "121NUY"
               + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
@@ -130,7 +130,7 @@ public class CheckoutHandlerTests {
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
-    handler.execute(checkout, sessionData).setHandler(
+    handler.execute(checkout, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "120NUN"
               + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))

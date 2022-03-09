@@ -98,7 +98,7 @@ class ParserTests {
 
   @Test
   void testLoginParsingWithErrorDetection() {
-    final Parser parser = Parser.builder().errorDetectionEnaled(TRUE).build();
+    final Parser parser = Parser.builder().errorDetectionEnabled(TRUE).build();
     final Message<?> message = parser.parseMessage(
         "9300CNuser_id|COpassw0rd|AY1AZF594");
 
@@ -116,7 +116,7 @@ class ParserTests {
 
   @Test
   void testLoginParsingWithErrorDetectionAndBadChecksum() {
-    final Parser parser = Parser.builder().errorDetectionEnaled(TRUE).build();
+    final Parser parser = Parser.builder().errorDetectionEnabled(TRUE).build();
     final Message<?> message = parser.parseMessage(
         "9300CNuser_id|COpassw0rd|AY1AZF595");
 
@@ -717,7 +717,7 @@ class ParserTests {
   @Test
   void testRenewAllParsingWithErrorDetection() {
     final Parser parser = Parser.builder()
-        .errorDetectionEnaled(TRUE)
+        .errorDetectionEnabled(TRUE)
         .timezone(TestUtils.UTCTimeZone)
         .build();
     final OffsetDateTime transactionDate =
@@ -747,7 +747,7 @@ class ParserTests {
 
   @Test
   void testRenewAllParsingWithErrorDetectionAndKnownSequenceNumber() {
-    final Parser parser = Parser.builder().errorDetectionEnaled(TRUE).build();
+    final Parser parser = Parser.builder().errorDetectionEnabled(TRUE).build();
 
     final int sequenceNumber = 1;
     final OffsetDateTime transactionDate =
