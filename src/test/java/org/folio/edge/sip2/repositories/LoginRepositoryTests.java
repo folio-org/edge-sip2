@@ -66,7 +66,7 @@ public class LoginRepositoryTests {
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
     final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
-    loginRepository.login(login, sessionData).setHandler(
+    loginRepository.login(login, sessionData).onComplete(
         testContext.succeeding(loginResponse -> testContext.verify(() -> {
           assertNotNull(loginResponse);
           assertTrue(loginResponse.getOk());
@@ -93,7 +93,7 @@ public class LoginRepositoryTests {
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
     final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
-    loginRepository.login(login, sessionData).setHandler(
+    loginRepository.login(login, sessionData).onComplete(
         testContext.succeeding(loginResponse -> testContext.verify(() -> {
           assertNotNull(loginResponse);
           assertFalse(loginResponse.getOk());
@@ -116,7 +116,7 @@ public class LoginRepositoryTests {
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
     final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
-    loginRepository.patronLogin(username, password, sessionData).setHandler(
+    loginRepository.patronLogin(username, password, sessionData).onComplete(
         testContext.succeeding(loginResponse -> testContext.verify(() -> {
           assertNotNull(loginResponse);
           assertNotNull(loginResponse.getResource());
@@ -138,7 +138,7 @@ public class LoginRepositoryTests {
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
     final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
-    loginRepository.patronLogin(username, password, sessionData).setHandler(
+    loginRepository.patronLogin(username, password, sessionData).onComplete(
         testContext.succeeding(loginResponse -> testContext.verify(() -> {
           assertNotNull(loginResponse);
           assertNull(loginResponse.getResource());

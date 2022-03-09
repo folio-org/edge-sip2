@@ -66,7 +66,7 @@ public class EndPatronSessionHandlerTests {
     sessionData.setUsername("JoeSmith");
     sessionData.setAuthenticationToken("abcdefghijklmnop");
 
-    handler.execute(endPatronSessionRequest, sessionData).setHandler(
+    handler.execute(endPatronSessionRequest, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "36Y"
               + OffsetDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))
@@ -123,7 +123,7 @@ public class EndPatronSessionHandlerTests {
     sessionData.setAuthenticationToken("abcdefghijklmnop");
     sessionData.setPatronPasswordVerificationRequired(true);
 
-    handler.execute(endPatronSessionRequest, sessionData).setHandler(
+    handler.execute(endPatronSessionRequest, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "36N"
               + OffsetDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss"))

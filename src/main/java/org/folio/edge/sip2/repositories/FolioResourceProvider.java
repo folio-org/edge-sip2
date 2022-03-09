@@ -1,8 +1,6 @@
 package org.folio.edge.sip2.repositories;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
@@ -39,14 +37,14 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   /**
    * Construct a FOLIO resource provider with the specified parameters.
    * @param okapiUrl the URL for okapi
-   * @param vertx the vertx instance
+   * @param webClient the WebClient instance
    */
   @Inject
   public FolioResourceProvider(
       @Named("okapiUrl") String okapiUrl,
-      @Named("vertx") Vertx vertx) {
+      @Named("webClient") WebClient webClient) {
     this.okapiUrl = okapiUrl;
-    this.client = WebClient.create(vertx);
+    this.client = webClient;
   }
 
   @Override
@@ -59,8 +57,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     setHeaders(requestData.getHeaders(), request,
         Objects.requireNonNull(requestData.getSessionData(), "SessionData cannot be null"));
 
-    final Future<IResource> future = Future.future();
-    request
+    return request
         .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, getErrorConverter()))
         // Some APIs return application/json, some return with the charset
         // parameter (e.g. circulation). So we can't use the built-in JSON
@@ -69,9 +66,9 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
             "application/json",
             "application/json; charset=utf-8")))
         .as(BodyCodec.jsonObject())
-        .send(ar -> handleResponse(future, ar));
-
-    return future;
+        .send()
+        .map(FolioResourceProvider::toIResource)
+        .onFailure(e -> log.error("Request failed", e));
   }
 
   @Override
@@ -85,8 +82,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
     setHeaders(requestData.getHeaders(), request, requestData.getSessionData());
 
-    final Future<IResource> future = Future.future();
-    request
+    return request
         .expect(ResponsePredicate.create(ResponsePredicate.SC_SUCCESS, getErrorConverter()))
         // Some APIs return application/json, some return with the charset
         // parameter (e.g. circulation). So we can't use the built-in JSON
@@ -95,10 +91,9 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
             "application/json",
             "application/json; charset=utf-8")))
         .as(BodyCodec.jsonObject())
-        .sendJsonObject(requestData.getBody(),
-            ar -> handleResponse(future, ar));
-
-    return future;
+        .sendJsonObject(requestData.getBody())
+        .map(FolioResourceProvider::toIResource)
+        .onFailure(e -> log.error("Request failed", e));
   }
 
   @Override
@@ -130,18 +125,9 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     request.putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant());
   }
 
-  private void handleResponse(
-      Future<IResource> future,
-      AsyncResult<HttpResponse<JsonObject>> ar) {
-    if (ar.succeeded()) {
-      log.debug("FOLIO response body: {}",
-          () -> ar.result().body().encodePrettily());
-
-      future.complete(new FolioResource(ar.result().body(), ar.result().headers()));
-    } else {
-      log.error("Request failed", ar.cause());
-      future.fail(ar.cause());
-    }
+  private static IResource toIResource(HttpResponse<JsonObject> httpResponse) {
+    log.debug("FOLIO response body: {}", () -> httpResponse.body().encodePrettily());
+    return new FolioResource(httpResponse.body(), httpResponse.headers());
   }
 
   private ErrorConverter getErrorConverter() {

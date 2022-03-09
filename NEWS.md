@@ -1,7 +1,14 @@
+## 2.1.3 2022-03-09
+* [SIP2-110](https://issues.folio.org/browse/SIP2-110): Update dependencies (CVE-2020-25649)
+* [SIP2-110](https://issues.folio.org/browse/SIP2-110): Update Vert.x from 3.9.2 to 4.2.5
+* [SIP2-107](https://issues.folio.org/browse/SIP2-107): Support circulation interface v13
+
 ## 2.1.2 2021-12-17
-* [SIP2-102](https://issues.folio.org/browse/SIP2-100): Kiwi R3 2021 - Log4j edge- modules 2.17.0 upgrade
+* [SIP2-102](https://issues.folio.org/browse/SIP2-102): Kiwi R3 2021 - Log4j edge- modules 2.17.0 upgrade
+
 ## 2.1.1 2021-12-17
 * [SIP2-100](https://issues.folio.org/browse/SIP2-100): Update log4j for log4shell vulnerability
+
 ## 2.1.0 2021-10-11
  * [SIP2-96](https://issues.folio.org/browse/SIP2-96): Update feesfines interface version to 17.0 
 

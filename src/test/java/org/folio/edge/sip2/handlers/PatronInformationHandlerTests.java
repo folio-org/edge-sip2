@@ -102,7 +102,7 @@ public class PatronInformationHandlerTests {
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
-    handler.execute(patronInformation, sessionData).setHandler(
+    handler.execute(patronInformation, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "64              001"
               + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock).plusSeconds(5))

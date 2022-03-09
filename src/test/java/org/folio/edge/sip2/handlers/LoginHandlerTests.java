@@ -48,7 +48,7 @@ public class LoginHandlerTests {
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
-    handler.execute(login, sessionData).setHandler(
+    handler.execute(login, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "941";
 
@@ -79,7 +79,7 @@ public class LoginHandlerTests {
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
-    handler.execute(login, sessionData).setHandler(
+    handler.execute(login, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "940";
 
