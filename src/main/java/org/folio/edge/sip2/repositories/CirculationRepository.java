@@ -37,6 +37,7 @@ import org.folio.edge.sip2.utils.Utils;
 public class CirculationRepository {
   // Should consider letting the template take care of required fields with missing values
   private static final String UNKNOWN = "";
+  public static final String TITLE_NOT_FOUND = "TITLE NOT FOUND";
   private final IResourceProvider<IRequestData> resourceProvider;
   private final PasswordVerifier passwordVerifier;
   private final Clock clock;
@@ -180,20 +181,18 @@ public class CirculationRepository {
   }
 
   private String getTitle(String itemIdentifier, SessionData sessionData) {
-    System.out.println("inside test method");
 
     final Map<String, String> headers = getBaseHeaders();
-
     final ItemRequestData itemRequestData =
       new ItemRequestData(null, headers, sessionData,itemIdentifier);
-
-    System.out.println("path is-> "+itemRequestData.getPath());
 
     AtomicReference<String> title = new AtomicReference<>("");
 
     final Future<IResource> result = resourceProvider.retrieveResource(itemRequestData);
     if(Optional.ofNullable(result).isPresent())
-      result.onSuccess(items-> title.set(getTitelFromJson(items.getResource())));
+      result.onSuccess(items-> title.set(getTitelFromJson(items.getResource()))).onFailure(e->{
+        title.set(TITLE_NOT_FOUND);
+      });
 
     return title.get();
   }
