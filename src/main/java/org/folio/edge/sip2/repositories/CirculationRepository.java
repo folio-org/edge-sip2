@@ -255,12 +255,6 @@ public class CirculationRepository {
     return result.otherwise(() -> null).map(IResource::getResource);
   }
 
-  private String onSucessTest(JsonObject resource) {
-    System.out.println("resource is "+resource.toString());
-    System.out.println("onSucess working");
-    return "onSucessTestData";
-  }
-
   /**
    * Get loans for the specified patron.
    *
