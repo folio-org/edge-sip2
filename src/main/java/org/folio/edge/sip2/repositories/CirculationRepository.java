@@ -6,6 +6,7 @@ import static org.folio.edge.sip2.utils.JsonUtils.getChildString;
 import static org.folio.edge.sip2.utils.JsonUtils.getSubChildString;
 
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.time.Clock;
 import java.time.OffsetDateTime;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Inject;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
@@ -38,6 +40,7 @@ public class CirculationRepository {
   private final IResourceProvider<IRequestData> resourceProvider;
   private final PasswordVerifier passwordVerifier;
   private final Clock clock;
+
 
   @Inject
   CirculationRepository(IResourceProvider<IRequestData> resourceProvider,
@@ -166,7 +169,7 @@ public class CirculationRepository {
                     .patronIdentifier(patronIdentifier)
                     .itemIdentifier(itemIdentifier)
                     .titleIdentifier(response.map(
-                        v -> getChildString(v, "item", "title", UNKNOWN)).orElse(UNKNOWN))
+                        v -> getChildString(v, "item", "title", UNKNOWN)).orElseGet(()->getTitle(itemIdentifier,sessionData)))
                     .dueDate(dueDate)
                     .screenMessage(Optional.of(resource.getErrorMessages())
                         .filter(v -> !v.isEmpty())
@@ -174,6 +177,40 @@ public class CirculationRepository {
                     .build();
               });
         });
+  }
+
+  private String getTitle(String itemIdentifier, SessionData sessionData) {
+    System.out.println("inside test method");
+
+    final Map<String, String> headers = getBaseHeaders();
+
+    final ItemRequestData itemRequestData =
+      new ItemRequestData(null, headers, sessionData,itemIdentifier);
+
+    System.out.println("path is-> "+itemRequestData.getPath());
+
+    AtomicReference<String> title = new AtomicReference<>("");
+
+    final Future<IResource> result = resourceProvider.retrieveResource(itemRequestData);
+    if(Optional.ofNullable(result).isPresent())
+      result.onSuccess(items-> title.set(getTitelFromJson(items.getResource())));
+
+    return title.get();
+  }
+
+  private String getTitelFromJson(JsonObject resource) {
+    String title = "";
+    final Optional<JsonObject> response = Optional.ofNullable(resource);
+    if(response.isEmpty())
+      return "";
+
+    final String instances = "instances";
+    JsonArray instanceArray = response.get().getJsonArray(instances);
+    if(instanceArray.size()>0)
+    {
+      title = instanceArray.getJsonObject(0).getString("title");
+    }
+    return title;
   }
 
   /**
@@ -208,14 +245,20 @@ public class CirculationRepository {
    * @return a list of open requests for the specified item
    */
   public Future<JsonObject> getRequestsByItemId(String itemId, String requestType,
-      Integer startItem, Integer endItem, SessionData sessionData) {
+                                                Integer startItem, Integer endItem, SessionData sessionData) {
     final Map<String, String> headers = getBaseHeaders();
 
     final RequestsRequestData requestsRequestData = new RequestsRequestData("itemId", itemId,
-        requestType, startItem, endItem, headers, sessionData);
+      requestType, startItem, endItem, headers, sessionData);
     final Future<IResource> result = resourceProvider.retrieveResource(requestsRequestData);
 
     return result.otherwise(() -> null).map(IResource::getResource);
+  }
+
+  private String onSucessTest(JsonObject resource) {
+    System.out.println("resource is "+resource.toString());
+    System.out.println("onSucess working");
+    return "onSucessTestData";
   }
 
   /**
@@ -436,4 +479,90 @@ public class CirculationRepository {
       return appendLimits(path).toString();
     }
   }
+
+  //SIP2 changes
+  private class ItemRequestData extends SearchRequestData {
+    private final String basePath = "/search/instances?limit=1&query=";
+
+    private String itemBarcode;
+
+    private ItemRequestData(JsonObject body, Map<String, String> headers,
+                            SessionData sessionData,String itemBarcode) {
+      super(body, null, null, headers, sessionData);
+      this.itemBarcode = itemBarcode;
+    }
+
+    @Override
+    public String getPath() {
+
+      final StringBuilder qSb = new StringBuilder()
+        .append(basePath)
+        .append("(items.barcode")
+        .append("==")
+        .append(itemBarcode).append(")");
+      /*
+      final StringBuilder urlSb = new StringBuilder()
+        .append(basePath)
+        .append(Utils.encode(qSb.toString()));
+        return urlSb.toString();
+       */
+      return qSb.toString();
+    }
+  }
+
+  private abstract class SearchRequestData implements IRequestData {
+    private final JsonObject body;
+    private final Integer startItem;
+    private final Integer endItem;
+    private final Map<String, String> headers;
+    private final SessionData sessionData;
+
+    private SearchRequestData(
+      JsonObject body,
+      Integer startItem,
+      Integer endItem,
+      Map<String, String> headers,
+      SessionData sessionData) {
+      this.body = body;
+      this.startItem = startItem;
+      this.endItem = endItem;
+      this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
+      this.sessionData = sessionData;
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return headers;
+    }
+
+    @Override
+    public JsonObject getBody() {
+      return body;
+    }
+
+    @Override
+    public SessionData getSessionData() {
+      return sessionData;
+    }
+
+    protected StringBuilder appendLimits(StringBuilder sb) {
+      final int offset;
+      if (startItem != null) {
+        offset = startItem.intValue() - 1; // expects a 1-based count, FOLIO is 0
+        sb.append("&offset=").append(offset);
+      } else {
+        offset = 0;
+      }
+
+      if (endItem != null) {
+        final int limit = endItem.intValue() - offset;
+        sb.append("&limit=").append(limit);
+      }
+
+      return sb;
+    }
+  }
+
+  //end
+
 }
