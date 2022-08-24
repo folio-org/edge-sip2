@@ -498,6 +498,7 @@ public class CirculationRepositoryTests {
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
 
+
     when(mockFolioProvider.createResource(any()))
         .thenReturn(Future.failedFuture(new FolioRequestThrowable(errorMessage)));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
@@ -532,6 +533,81 @@ public class CirculationRepositoryTests {
 
           testContext.completeNow();
         })));
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideCirculationErrors")
+  void cannotCheckoutGetTitleFailed(String errorMessage, List<String> expectedErrors, Vertx vertx,
+                      VertxTestContext testContext,
+                      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+                      @Mock PasswordVerifier mockPasswordVerifier) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final OffsetDateTime nbDueDate = OffsetDateTime.now().plusDays(30);
+    final String patronIdentifier = "1029384756";
+    final String itemIdentifier = "453987605438";
+    final Checkout checkout = Checkout.builder()
+      .scRenewalPolicy(FALSE)
+      .noBlock(FALSE)
+      .transactionDate(OffsetDateTime.now())
+      .nbDueDate(nbDueDate)
+      .institutionId("diku")
+      .patronIdentifier(patronIdentifier)
+      .itemIdentifier(itemIdentifier)
+      .terminalPassword("1234")
+      .itemProperties("Some property of this item")
+      .patronPassword("7890")
+      .feeAcknowledged(FALSE)
+      .cancel(FALSE)
+      .build();
+
+    final JsonObject response = new JsonObject()
+      .put("instances", new JsonArray()
+        .add(new JsonObject()
+          .put("id", "7fbd5d84-62d1-44c6-9c45-6cb173998bbd")
+          .put("title","Bridget Jones's Baby: the diaries")
+          .put("contributors", new JsonArray().add(new JsonObject().put("name","Fielding, Helen")))))
+      .put("totalRecords", 1);
+
+    final String expectedPath = "/search/instances?limit=1&query=%28items.barcode%3D%3D453987605438%29";
+
+    when(mockFolioProvider.retrieveResource(any()))
+      .thenReturn(Future.failedFuture(new Exception("Failed while calling mod-search")));
+
+
+    when(mockFolioProvider.createResource(any()))
+      .thenReturn(Future.failedFuture(new FolioRequestThrowable(errorMessage)));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
+      .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    final CirculationRepository circulationRepository = new CirculationRepository(
+      mockFolioProvider, mockPasswordVerifier, clock);
+    circulationRepository.performCheckoutCommand(checkout, sessionData).onComplete(
+      testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
+        assertNotNull(checkoutResponse);
+        assertFalse(checkoutResponse.getOk());
+        assertFalse(checkoutResponse.getRenewalOk());
+        assertNull(checkoutResponse.getMagneticMedia());
+        assertFalse(checkoutResponse.getDesensitize());
+        assertEquals(OffsetDateTime.now(clock), checkoutResponse.getTransactionDate());
+        assertEquals("diku", checkoutResponse.getInstitutionId());
+        assertEquals(patronIdentifier, checkoutResponse.getPatronIdentifier());
+        assertEquals(itemIdentifier, checkoutResponse.getItemIdentifier());
+        assertEquals("TITLE NOT FOUND", checkoutResponse.getTitleIdentifier());
+        assertEquals(OffsetDateTime.now(clock), checkoutResponse.getDueDate());
+        assertNull(checkoutResponse.getFeeType());
+        assertNull(checkoutResponse.getSecurityInhibit());
+        assertNull(checkoutResponse.getCurrencyType());
+        assertNull(checkoutResponse.getFeeAmount());
+        assertNull(checkoutResponse.getMediaType());
+        assertNull(checkoutResponse.getItemProperties());
+        assertNull(checkoutResponse.getTransactionId());
+        assertEquals(expectedErrors, checkoutResponse.getScreenMessage());
+        assertNull(checkoutResponse.getPrintLine());
+
+        testContext.completeNow();
+      })));
   }
 
   @Test

@@ -12,13 +12,7 @@ import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.*;
 import javax.inject.Inject;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
@@ -152,6 +146,7 @@ public class CirculationRepository {
 
           return result
               .otherwise(Utils::handleErrors)
+              .compose(res -> addTitleIfNotFound(sessionData, itemIdentifier, res))
               .map(resource -> {
                 final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
 
@@ -170,7 +165,8 @@ public class CirculationRepository {
                     .patronIdentifier(patronIdentifier)
                     .itemIdentifier(itemIdentifier)
                     .titleIdentifier(response.map(
-                        v -> getChildString(v, "item", "title", UNKNOWN)).orElseGet(()->getTitle(itemIdentifier,sessionData)))
+                        v -> getChildString(v, "item", "title", UNKNOWN))
+                      .orElse(resource.getTitle()))
                     .dueDate(dueDate)
                     .screenMessage(Optional.of(resource.getErrorMessages())
                         .filter(v -> !v.isEmpty())
@@ -180,33 +176,61 @@ public class CirculationRepository {
         });
   }
 
-  private String getTitle(String itemIdentifier, SessionData sessionData) {
+  private Future<IResource> addTitleIfNotFound(SessionData sessionData,
+                                               String itemIdentifier, IResource res) {
+    if (res.getErrorMessages().isEmpty()) {
+      return Future.succeededFuture(res);
+    }
+    return getTitle(itemIdentifier, sessionData).map(titleResult -> getiResourceFromTitle(titleResult, res));
+  }
+
+  private IResource getiResourceFromTitle(String title, IResource finalRes) {
+    IResource res;
+    res = new IResource() {
+      @Override
+      public JsonObject getResource() {
+        return null;
+      }
+
+      @Override
+      public String getTitle() {
+        return title;
+      }
+
+      @Override
+      public List<String> getErrorMessages() {
+        return finalRes.getErrorMessages();
+      }
+    };
+    return res;
+  }
+
+  private Future<String> getTitle(String itemIdentifier, SessionData sessionData) {
 
     final Map<String, String> headers = getBaseHeaders();
     final ItemRequestData itemRequestData =
-      new ItemRequestData(null, headers, sessionData,itemIdentifier);
-
-    AtomicReference<String> title = new AtomicReference<>("");
+      new ItemRequestData(null, headers, sessionData, itemIdentifier);
 
     final Future<IResource> result = resourceProvider.retrieveResource(itemRequestData);
-    if(Optional.ofNullable(result).isPresent())
-      result.onSuccess(items-> title.set(getTitelFromJson(items.getResource()))).onFailure(e->{
-        title.set(TITLE_NOT_FOUND);
-      });
 
-    return title.get();
+    return result
+      .otherwise(Utils::handleErrors)
+      .map(this::getTitelFromJson);
   }
 
-  private String getTitelFromJson(JsonObject resource) {
+  private String getTitelFromJson(IResource resource) {
+    if (!resource.getErrorMessages().isEmpty())
+      return TITLE_NOT_FOUND;
+
     String title = "";
-    final Optional<JsonObject> response = Optional.ofNullable(resource);
-    if(response.isEmpty())
+    final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
+    if (response.isEmpty()) {
       return "";
+    }
 
     final String instances = "instances";
     JsonArray instanceArray = response.get().getJsonArray(instances);
-    if(instanceArray.size()>0)
-    {
+    if (instanceArray.size() > 0) {
       title = instanceArray.getJsonObject(0).getString("title");
     }
     return title;

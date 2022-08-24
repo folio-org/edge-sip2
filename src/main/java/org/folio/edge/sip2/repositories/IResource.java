@@ -44,4 +44,12 @@ public interface IResource {
   default List<String> getErrorMessages() {
     return Collections.emptyList();
   }
+
+  /**
+   * Returns title & used if error response does not contains title
+   *
+   * @return strings
+   */
+  default String getTitle() { return ""; }
+
 }
