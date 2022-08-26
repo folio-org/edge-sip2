@@ -107,84 +107,85 @@ public class CirculationRepository {
    * @return the checkout response domain object
    */
   public Future<CheckoutResponse> performCheckoutCommand(Checkout checkout,
-      SessionData sessionData) {
+                                                         SessionData sessionData) {
     final String institutionId = checkout.getInstitutionId();
     final String patronIdentifier = checkout.getPatronIdentifier();
     final String itemIdentifier = checkout.getItemIdentifier();
     final String patronPassword = checkout.getPatronPassword();
 
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
-        .compose(verification -> {
-          if (FALSE.equals(verification.getPasswordVerified())) {
-            return Future.succeededFuture(CheckoutResponse.builder()
-                .ok(FALSE)
-                .renewalOk(FALSE)
-                .magneticMedia(null)
-                .desensitize(FALSE)
-                .transactionDate(OffsetDateTime.now(clock))
-                .institutionId(institutionId)
-                .patronIdentifier(patronIdentifier)
-                .itemIdentifier(itemIdentifier)
-                .titleIdentifier(UNKNOWN)
-                .dueDate(OffsetDateTime.now(clock))
-                .screenMessage(verification.getErrorMessages())
-                .build());
-          }
+      .compose(verification -> {
+        if (FALSE.equals(verification.getPasswordVerified())) {
+          return Future.succeededFuture(CheckoutResponse.builder()
+            .ok(FALSE)
+            .renewalOk(FALSE)
+            .magneticMedia(null)
+            .desensitize(FALSE)
+            .transactionDate(OffsetDateTime.now(clock))
+            .institutionId(institutionId)
+            .patronIdentifier(patronIdentifier)
+            .itemIdentifier(itemIdentifier)
+            .titleIdentifier(UNKNOWN)
+            .dueDate(OffsetDateTime.now(clock))
+            .screenMessage(verification.getErrorMessages())
+            .build());
+        }
 
-          final User user = verification.getUser();
-          final JsonObject body = new JsonObject()
-              .put("itemBarcode", itemIdentifier)
-              .put("userBarcode", user != null ? user.getBarcode() : patronIdentifier)
-              .put("servicePointId", sessionData.getScLocation());
+        final User user = verification.getUser();
+        final JsonObject body = new JsonObject()
+          .put("itemBarcode", itemIdentifier)
+          .put("userBarcode", user != null ? user.getBarcode() : patronIdentifier)
+          .put("servicePointId", sessionData.getScLocation());
 
-          final Map<String, String> headers = getBaseHeaders();
+        final Map<String, String> headers = getBaseHeaders();
 
-          final CheckoutRequestData checkoutRequestData =
-              new CheckoutRequestData(body, headers, sessionData);
+        final CheckoutRequestData checkoutRequestData =
+          new CheckoutRequestData(body, headers, sessionData);
 
-          final Future<IResource> result = resourceProvider.createResource(checkoutRequestData);
+        final Future<IResource> result = resourceProvider.createResource(checkoutRequestData);
 
-          return result
-              .otherwise(Utils::handleErrors)
-              .compose(res -> addTitleIfNotFound(sessionData, itemIdentifier, res))
-              .map(resource -> {
-                final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
+        return result
+          .otherwise(Utils::handleErrors)
+          .compose(res -> addTitleIfNotFound(sessionData, itemIdentifier, res))
+          .map(resource -> {
+            final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
 
-                final OffsetDateTime dueDate = response
-                    .map(v -> v.getString("dueDate"))
-                    .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
-                    .orElse(OffsetDateTime.now(clock));
+            final OffsetDateTime dueDate = response
+              .map(v -> v.getString("dueDate"))
+              .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
+              .orElse(OffsetDateTime.now(clock));
 
-                return CheckoutResponse.builder()
-                    .ok(Boolean.valueOf(response.isPresent()))
-                    .renewalOk(FALSE)
-                    .magneticMedia(null)
-                    .desensitize(Boolean.valueOf(response.isPresent()))
-                    .transactionDate(OffsetDateTime.now(clock))
-                    .institutionId(institutionId)
-                    .patronIdentifier(patronIdentifier)
-                    .itemIdentifier(itemIdentifier)
-                    .titleIdentifier(response.map(
-                        v -> getChildString(v, "item", "title", UNKNOWN))
-                      .orElse(resource.getTitle()))
-                    .dueDate(dueDate)
-                    .screenMessage(Optional.of(resource.getErrorMessages())
-                        .filter(v -> !v.isEmpty())
-                        .orElse(null))
-                    .build();
-              });
-        });
+            return CheckoutResponse.builder()
+              .ok(Boolean.valueOf(response.isPresent()))
+              .renewalOk(FALSE)
+              .magneticMedia(null)
+              .desensitize(Boolean.valueOf(response.isPresent()))
+              .transactionDate(OffsetDateTime.now(clock))
+              .institutionId(institutionId)
+              .patronIdentifier(patronIdentifier)
+              .itemIdentifier(itemIdentifier)
+              .titleIdentifier(response.map(
+                  v -> getChildString(v, "item", "title", UNKNOWN))
+                .orElse(resource.getTitle()))
+              .dueDate(dueDate)
+              .screenMessage(Optional.of(resource.getErrorMessages())
+                .filter(v -> !v.isEmpty())
+                .orElse(null))
+              .build();
+
+          });
+      });
   }
 
   private Future<IResource> addTitleIfNotFound(SessionData sessionData,
-                                               String itemIdentifier, IResource res) {
-    if (res.getErrorMessages().isEmpty()) {
-      return Future.succeededFuture(res);
+                                               String itemIdentifier, IResource circRes) {
+    if (circRes.getErrorMessages().isEmpty()) {
+      return Future.succeededFuture(circRes);
     }
-    return getTitle(itemIdentifier, sessionData).map(titleResult -> getiResourceFromTitle(titleResult, res));
+    return getTitle(itemIdentifier, sessionData, circRes.getErrorMessages());
   }
 
-  private IResource getiResourceFromTitle(String title, IResource finalRes) {
+  private IResource getiResourceFromTitle(String title, IResource searchResult, List<String> circErrorMessages) {
     IResource res;
     res = new IResource() {
       @Override
@@ -199,13 +200,20 @@ public class CirculationRepository {
 
       @Override
       public List<String> getErrorMessages() {
-        return finalRes.getErrorMessages();
+        List<String> tempError = new ArrayList<>(circErrorMessages);
+        if(TITLE_NOT_FOUND.equals(title))
+        {
+          tempError.add("Title Not Found");
+          return tempError;
+        }
+        else
+          return tempError;
       }
     };
     return res;
   }
 
-  private Future<String> getTitle(String itemIdentifier, SessionData sessionData) {
+  private Future<IResource> getTitle(String itemIdentifier, SessionData sessionData, List<String> circErrorMessages) {
 
     final Map<String, String> headers = getBaseHeaders();
     final ItemRequestData itemRequestData =
@@ -214,26 +222,28 @@ public class CirculationRepository {
     final Future<IResource> result = resourceProvider.retrieveResource(itemRequestData);
 
     return result
-      .otherwise(Utils::handleErrors)
-      .map(this::getTitelFromJson);
+      .otherwise(Utils.handleSearchErrors(result.cause(), circErrorMessages))
+      .map(searchResult -> getTitelFromJson(searchResult, circErrorMessages));
   }
 
-  private String getTitelFromJson(IResource resource) {
-    if (!resource.getErrorMessages().isEmpty())
-      return TITLE_NOT_FOUND;
 
-    String title = "";
+  private IResource getTitelFromJson(IResource resource, List<String> circErrorMessages) {
+    if (!resource.getErrorMessages().isEmpty())
+      return resource;
+
+    String title = TITLE_NOT_FOUND;
     final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
     if (response.isEmpty()) {
-      return "";
+      return resource;
     }
 
     final String instances = "instances";
     JsonArray instanceArray = response.get().getJsonArray(instances);
     if (instanceArray.size() > 0) {
       title = instanceArray.getJsonObject(0).getString("title");
-    }
-    return title;
+      return getiResourceFromTitle(title, resource, circErrorMessages);
+    } else
+      return getiResourceFromTitle(title, resource, circErrorMessages);
   }
 
   /**

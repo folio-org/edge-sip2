@@ -7,11 +7,14 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.folio.edge.sip2.repositories.IResource;
 import org.folio.edge.sip2.repositories.RequestThrowable;
+
+import static org.folio.edge.sip2.repositories.CirculationRepository.TITLE_NOT_FOUND;
 
 /**
  * Utils for the repository implementations.
@@ -107,5 +110,31 @@ public final class Utils {
 
   public static String encode(String url) {
     return URLEncoder.encode(url, StandardCharsets.UTF_8);
+  }
+
+  public static IResource handleSearchErrors(Throwable cause, List<String> errorMessages) {
+    IResource temp = new IResource() {
+      @Override
+      public JsonObject getResource() {
+        return null;
+      }
+
+      @Override
+      public String getTitle(){
+        return TITLE_NOT_FOUND;
+      }
+      @Override
+      public List<String> getErrorMessages() {
+        List<String> temp = new ArrayList<>(errorMessages);
+        if (cause instanceof RequestThrowable) {
+          errorMessages.addAll(((RequestThrowable) cause).getErrorMessages());
+          return errorMessages;
+        } else {
+          temp.add(cause.getMessage());
+          return temp;
+        }
+      }
+    };
+    return temp;
   }
 }

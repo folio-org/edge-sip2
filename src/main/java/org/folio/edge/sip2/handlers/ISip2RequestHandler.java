@@ -21,6 +21,8 @@ public interface ISip2RequestHandler {
    * @param response SIP response for the passed in request
    */
   default void writeHistory(SessionData sessionData, Message<Object> request, String response) {
+    /* added one check in default method as none of the implementation implementing it */
+    if(request!=null && (request.getSequenceNumber()!=null && request.getChecksumsString()!=null) )
     sessionData.setPreviousMessage(new PreviousMessage(request, response));
   }
 }
