@@ -234,7 +234,7 @@ public class CirculationRepository {
     String title = TITLE_NOT_FOUND;
     final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
     if (response.isEmpty()) {
-      return resource;
+      return getiResourceFromTitle(title, circErrorMessages);
     }
 
     final String instances = "instances";
