@@ -550,16 +550,11 @@ public class CirculationRepository {
       Integer endItem,
       Map<String, String> headers,
       SessionData sessionData) {
-      this.body = body;
       this.startItem = startItem;
-      this.endItem = endItem;
       this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
       this.sessionData = sessionData;
-    }
-
-    @Override
-    public Map<String, String> getHeaders() {
-      return headers;
+      this.endItem = endItem;
+      this.body = body;
     }
 
     @Override
@@ -570,6 +565,11 @@ public class CirculationRepository {
     @Override
     public SessionData getSessionData() {
       return sessionData;
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return headers;
     }
 
   }
