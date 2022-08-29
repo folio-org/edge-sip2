@@ -214,8 +214,7 @@ public class CirculationRepository {
           tempError.add("Title Not Found");
           return tempError;
         }
-        else
-          return tempError;
+        return tempError;
       }
     };
     return res;
@@ -250,7 +249,7 @@ public class CirculationRepository {
     if (instanceArray.size() > 0) {
       title = instanceArray.getJsonObject(0).getString(TITLE);
       return getiResourceFromTitle(title, circErrorMessages);
-    } else
+    }
       return getiResourceFromTitle(title, circErrorMessages);
   }
 

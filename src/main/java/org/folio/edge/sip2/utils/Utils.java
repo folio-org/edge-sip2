@@ -113,7 +113,7 @@ public final class Utils {
   }
 
   public static IResource handleSearchErrors(Throwable cause, List<String> errorMessages) {
-    IResource temp = new IResource() {
+    return new IResource() {
       @Override
       public JsonObject getResource() {
         return null;
@@ -131,6 +131,5 @@ public final class Utils {
           return temp;
         }
     };
-    return temp;
   }
 }
