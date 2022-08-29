@@ -22,7 +22,9 @@ public interface ISip2RequestHandler {
    */
   default void writeHistory(SessionData sessionData, Message<Object> request, String response) {
     /* added one check in default method as none of the implementation implementing it */
-    if(request!=null && (request.getSequenceNumber()!=null && request.getChecksumsString()!=null) )
-    sessionData.setPreviousMessage(new PreviousMessage(request, response));
+    if ((request != null) &&
+      (request.getSequenceNumber() != null) && request.getChecksumsString() != null) {
+      sessionData.setPreviousMessage(new PreviousMessage(request, response));
+    }
   }
 }

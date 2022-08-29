@@ -185,7 +185,7 @@ public class CirculationRepository {
     return getTitle(itemIdentifier, sessionData, circRes.getErrorMessages());
   }
 
-  private IResource getiResourceFromTitle(String title, IResource searchResult, List<String> circErrorMessages) {
+  private IResource getiResourceFromTitle(String title, List<String> circErrorMessages) {
     IResource res;
     res = new IResource() {
       @Override
@@ -241,9 +241,9 @@ public class CirculationRepository {
     JsonArray instanceArray = response.get().getJsonArray(instances);
     if (instanceArray.size() > 0) {
       title = instanceArray.getJsonObject(0).getString("title");
-      return getiResourceFromTitle(title, resource, circErrorMessages);
+      return getiResourceFromTitle(title, circErrorMessages);
     } else
-      return getiResourceFromTitle(title, resource, circErrorMessages);
+      return getiResourceFromTitle(title, circErrorMessages);
   }
 
   /**
@@ -527,12 +527,6 @@ public class CirculationRepository {
         .append("(items.barcode")
         .append("==")
         .append(itemBarcode).append(")");
-      /*
-      final StringBuilder urlSb = new StringBuilder()
-        .append(basePath)
-        .append(Utils.encode(qSb.toString()));
-        return urlSb.toString();
-       */
       return qSb.toString();
     }
   }
