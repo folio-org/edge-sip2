@@ -39,6 +39,7 @@ public class CirculationRepository {
   // Should consider letting the template take care of required fields with missing values
   private static final String UNKNOWN = "";
   public static final String TITLE_NOT_FOUND = "TITLE NOT FOUND";
+  public static final String TITLE = "title";
   private final IResourceProvider<IRequestData> resourceProvider;
   private final PasswordVerifier passwordVerifier;
   private final Clock clock;
@@ -97,7 +98,7 @@ public class CirculationRepository {
               // this allows the kiosk to show something related to the item that could be used
               // by the patron to identify which item this checkin response applies to.
               .titleIdentifier(resource.getResource() == null ? itemIdentifier
-                  : getChildString(resource.getResource(), "item", "title", itemIdentifier))
+                  : getChildString(resource.getResource(), "item", TITLE, itemIdentifier))
               // this is probably not the permanent location
               // this might require a call to inventory
               .permanentLocation(
@@ -172,7 +173,7 @@ public class CirculationRepository {
               .patronIdentifier(patronIdentifier)
               .itemIdentifier(itemIdentifier)
               .titleIdentifier(response.map(
-                  v -> getChildString(v, "item", "title", UNKNOWN))
+                  v -> getChildString(v, "item", TITLE, UNKNOWN))
                 .orElse(resource.getTitle()))
               .dueDate(dueDate)
               .screenMessage(Optional.of(resource.getErrorMessages())
@@ -247,7 +248,7 @@ public class CirculationRepository {
     final String instances = "instances";
     JsonArray instanceArray = response.get().getJsonArray(instances);
     if (instanceArray.size() > 0) {
-      title = instanceArray.getJsonObject(0).getString("title");
+      title = instanceArray.getJsonObject(0).getString(TITLE);
       return getiResourceFromTitle(title, circErrorMessages);
     } else
       return getiResourceFromTitle(title, circErrorMessages);
@@ -515,7 +516,7 @@ public class CirculationRepository {
   }
 
   private class ItemRequestData extends SearchRequestData {
-    private final String basePath = "/search/instances?limit=1&query=";
+    private static final String basePath = "/search/instances?limit=1&query=";
 
     private String itemBarcode;
 
@@ -572,24 +573,6 @@ public class CirculationRepository {
       return sessionData;
     }
 
-    protected StringBuilder appendLimits(StringBuilder sb) {
-      final int offset;
-      if (startItem != null) {
-        offset = startItem.intValue() - 1; // expects a 1-based count, FOLIO is 0
-        sb.append("&offset=").append(offset);
-      } else {
-        offset = 0;
-      }
-
-      if (endItem != null) {
-        final int limit = endItem.intValue() - offset;
-        sb.append("&limit=").append(limit);
-      }
-
-      return sb;
-    }
   }
-
-  //end
 
 }

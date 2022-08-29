@@ -29,6 +29,7 @@ import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -535,7 +536,8 @@ public class CirculationRepositoryTests {
     final String expectedPath = "/search/instances?limit=1&query=(items.barcode==453987605438)";
 
     when(mockFolioProvider.retrieveResource(
-      argThat((IRequestData data) -> data.getPath().equals(expectedPath))))
+      argThat((IRequestData data) -> data.getPath().equals(expectedPath) &&
+        data.getHeaders().get("accept").equals("application/json"))))
       .thenReturn(Future.succeededFuture(new FolioResource(response,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
