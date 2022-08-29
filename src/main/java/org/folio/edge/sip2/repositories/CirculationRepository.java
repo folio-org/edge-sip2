@@ -12,7 +12,14 @@ import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import javax.inject.Inject;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
@@ -507,7 +514,6 @@ public class CirculationRepository {
     }
   }
 
-  //SIP2 changes
   private class ItemRequestData extends SearchRequestData {
     private final String basePath = "/search/instances?limit=1&query=";
 

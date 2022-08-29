@@ -123,17 +123,13 @@ public final class Utils {
       public String getTitle(){
         return TITLE_NOT_FOUND;
       }
+
       @Override
       public List<String> getErrorMessages() {
         List<String> temp = new ArrayList<>(errorMessages);
-        if (cause instanceof RequestThrowable) {
-          errorMessages.addAll(((RequestThrowable) cause).getErrorMessages());
-          return errorMessages;
-        } else {
           temp.add(cause.getMessage());
           return temp;
         }
-      }
     };
     return temp;
   }
