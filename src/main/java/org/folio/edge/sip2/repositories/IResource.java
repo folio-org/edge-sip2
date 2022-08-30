@@ -46,10 +46,12 @@ public interface IResource {
   }
 
   /**
-   * Returns title & used if error response does not contains title
+   * Returns title & used if error response does not contains title.
    *
    * @return strings
    */
-  default String getTitle() { return ""; }
+  default String getTitle() {
+    return "";
+  }
 
 }

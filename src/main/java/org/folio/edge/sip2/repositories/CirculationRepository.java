@@ -12,11 +12,11 @@ import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -141,14 +141,14 @@ public class CirculationRepository {
 
         final User user = verification.getUser();
         final JsonObject body = new JsonObject()
-          .put("itemBarcode", itemIdentifier)
-          .put("userBarcode", user != null ? user.getBarcode() : patronIdentifier)
-          .put("servicePointId", sessionData.getScLocation());
+            .put("itemBarcode", itemIdentifier)
+            .put("userBarcode", user != null ? user.getBarcode() : patronIdentifier)
+            .put("servicePointId", sessionData.getScLocation());
 
         final Map<String, String> headers = getBaseHeaders();
 
         final CheckoutRequestData checkoutRequestData =
-          new CheckoutRequestData(body, headers, sessionData);
+            new CheckoutRequestData(body, headers, sessionData);
 
         final Future<IResource> result = resourceProvider.createResource(checkoutRequestData);
 
@@ -159,9 +159,9 @@ public class CirculationRepository {
             final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
 
             final OffsetDateTime dueDate = response
-              .map(v -> v.getString("dueDate"))
-              .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
-              .orElse(OffsetDateTime.now(clock));
+                .map(v -> v.getString("dueDate"))
+                .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
+                .orElse(OffsetDateTime.now(clock));
 
             return CheckoutResponse.builder()
               .ok(Boolean.valueOf(response.isPresent()))
@@ -209,8 +209,7 @@ public class CirculationRepository {
       @Override
       public List<String> getErrorMessages() {
         List<String> tempError = new ArrayList<>(circErrorMessages);
-        if(TITLE_NOT_FOUND.equals(title))
-        {
+        if (TITLE_NOT_FOUND.equals(title)) {
           tempError.add("Title Not Found");
           return tempError;
         }
@@ -220,11 +219,12 @@ public class CirculationRepository {
     return res;
   }
 
-  private Future<IResource> getTitle(String itemIdentifier, SessionData sessionData, List<String> circErrorMessages) {
+  private Future<IResource> getTitle(String itemIdentifier, SessionData sessionData,
+                                     List<String> circErrorMessages) {
 
     final Map<String, String> headers = getBaseHeaders();
     final ItemRequestData itemRequestData =
-      new ItemRequestData(null, headers, sessionData, itemIdentifier);
+        new ItemRequestData(null, headers, sessionData, itemIdentifier);
 
     final Future<IResource> result = resourceProvider.retrieveResource(itemRequestData);
 
@@ -235,8 +235,9 @@ public class CirculationRepository {
 
 
   private IResource getTitelFromJson(IResource resource, List<String> circErrorMessages) {
-    if (!resource.getErrorMessages().isEmpty())
+    if (!resource.getErrorMessages().isEmpty()) {
       return resource;
+    }
 
     String title = TITLE_NOT_FOUND;
     final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
@@ -250,7 +251,7 @@ public class CirculationRepository {
       title = instanceArray.getJsonObject(0).getString(TITLE);
       return getiResourceFromTitle(title, circErrorMessages);
     }
-      return getiResourceFromTitle(title, circErrorMessages);
+    return getiResourceFromTitle(title, circErrorMessages);
   }
 
   /**
@@ -285,11 +286,12 @@ public class CirculationRepository {
    * @return a list of open requests for the specified item
    */
   public Future<JsonObject> getRequestsByItemId(String itemId, String requestType,
-                                                Integer startItem, Integer endItem, SessionData sessionData) {
+                                                Integer startItem, Integer endItem,
+                                                SessionData sessionData) {
     final Map<String, String> headers = getBaseHeaders();
 
     final RequestsRequestData requestsRequestData = new RequestsRequestData("itemId", itemId,
-      requestType, startItem, endItem, headers, sessionData);
+        requestType, startItem, endItem, headers, sessionData);
     final Future<IResource> result = resourceProvider.retrieveResource(requestsRequestData);
 
     return result.otherwise(() -> null).map(IResource::getResource);
@@ -529,10 +531,10 @@ public class CirculationRepository {
     public String getPath() {
 
       final StringBuilder qSb = new StringBuilder()
-        .append(basePath)
-        .append("(items.barcode")
-        .append("==")
-        .append(itemBarcode).append(")");
+          .append(basePath)
+          .append("(items.barcode")
+          .append("==")
+          .append(itemBarcode).append(")");
       return qSb.toString();
     }
   }
@@ -545,11 +547,11 @@ public class CirculationRepository {
     private final SessionData sessionData;
 
     private SearchRequestData(
-      JsonObject body,
-      Integer startItem,
-      Integer endItem,
-      Map<String, String> headers,
-      SessionData sessionData) {
+        JsonObject body,
+        Integer startItem,
+        Integer endItem,
+        Map<String, String> headers,
+        SessionData sessionData) {
       this.startItem = startItem;
       this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
       this.sessionData = sessionData;

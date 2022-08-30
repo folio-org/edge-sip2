@@ -11,10 +11,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.folio.edge.sip2.repositories.CirculationRepository;
 import org.folio.edge.sip2.repositories.IResource;
 import org.folio.edge.sip2.repositories.RequestThrowable;
-
-import static org.folio.edge.sip2.repositories.CirculationRepository.TITLE_NOT_FOUND;
 
 /**
  * Utils for the repository implementations.
@@ -112,6 +111,12 @@ public final class Utils {
     return URLEncoder.encode(url, StandardCharsets.UTF_8);
   }
 
+  /**
+   * Utility method to handle mod-search errors.
+   * @param cause - a throwable object
+   * @param errorMessages - a List of error Message from previous chain
+   * @return - IResource
+   */
   public static IResource handleSearchErrors(Throwable cause, List<String> errorMessages) {
     return new IResource() {
       @Override
@@ -120,8 +125,8 @@ public final class Utils {
       }
 
       @Override
-      public String getTitle(){
-        return TITLE_NOT_FOUND;
+      public String getTitle() {
+        return CirculationRepository.TITLE_NOT_FOUND;
       }
 
       @Override
