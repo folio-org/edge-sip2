@@ -542,8 +542,6 @@ public class CirculationRepositoryTests {
         .thenReturn(Future.succeededFuture(new FolioResource(response,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
-
-
     when(mockFolioProvider.createResource(any()))
         .thenReturn(Future.failedFuture(new FolioRequestThrowable(errorMessage)));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
@@ -575,7 +573,6 @@ public class CirculationRepositoryTests {
           assertNull(checkoutResponse.getTransactionId());
           assertEquals(expectedErrors, checkoutResponse.getScreenMessage());
           assertNull(checkoutResponse.getPrintLine());
-
           testContext.completeNow();
         })));
   }
@@ -647,7 +644,6 @@ public class CirculationRepositoryTests {
           assertNull(checkoutResponse.getTransactionId());
           assertEquals(expectedErrors, checkoutResponse.getScreenMessage());
           assertNull(checkoutResponse.getPrintLine());
-
           testContext.completeNow();
         })));
   }
@@ -718,7 +714,6 @@ public class CirculationRepositoryTests {
           assertNull(checkoutResponse.getTransactionId());
           assertEquals(expectedErrors, checkoutResponse.getScreenMessage());
           assertNull(checkoutResponse.getPrintLine());
-
           testContext.completeNow();
         })));
   }
@@ -855,7 +850,6 @@ public class CirculationRepositoryTests {
     circulationRepository.getLoansByUserId(userId, null, null, sessionData).onComplete(
         testContext.succeeding(loansResponse -> testContext.verify(() -> {
           assertNull(loansResponse);
-
           testContext.completeNow();
         })));
   }
@@ -902,7 +896,6 @@ public class CirculationRepositoryTests {
           assertNotNull(loan);
           assertEquals(userId, loan.getString("userId"));
           assertEquals(itemId, loan.getString("itemId"));
-
           testContext.completeNow();
         })));
   }
@@ -926,7 +919,6 @@ public class CirculationRepositoryTests {
     circulationRepository.getOverdueLoansByUserId(userId, OffsetDateTime.now(clock), null, null,
         sessionData).onComplete(testContext.succeeding(loansResponse -> testContext.verify(() -> {
           assertNull(loansResponse);
-
           testContext.completeNow();
         })));
   }
@@ -973,7 +965,6 @@ public class CirculationRepositoryTests {
           assertNotNull(request);
           assertEquals(userId, request.getString("requesterId"));
           assertEquals(itemId, request.getString("itemId"));
-
           testContext.completeNow();
         })));
   }

@@ -180,7 +180,6 @@ public class CirculationRepository {
                 .filter(v -> !v.isEmpty())
                 .orElse(null))
               .build();
-
           });
       });
   }
@@ -194,8 +193,7 @@ public class CirculationRepository {
   }
 
   private IResource getiResourceFromTitle(String title, List<String> circErrorMessages) {
-    IResource res;
-    res = new IResource() {
+    return new IResource() {
       @Override
       public JsonObject getResource() {
         return null;
@@ -216,7 +214,6 @@ public class CirculationRepository {
         return tempError;
       }
     };
-    return res;
   }
 
   private Future<IResource> getTitle(String itemIdentifier, SessionData sessionData,
@@ -230,11 +227,10 @@ public class CirculationRepository {
 
     return result
       .otherwise(Utils.handleSearchErrors(result.cause(), circErrorMessages))
-      .map(searchResult -> getTitelFromJson(searchResult, circErrorMessages));
+      .map(searchResult -> getTitleFromJson(searchResult, circErrorMessages));
   }
 
-
-  private IResource getTitelFromJson(IResource resource, List<String> circErrorMessages) {
+  private IResource getTitleFromJson(IResource resource, List<String> circErrorMessages) {
     if (!resource.getErrorMessages().isEmpty()) {
       return resource;
     }
@@ -575,5 +571,4 @@ public class CirculationRepository {
     }
 
   }
-
 }
