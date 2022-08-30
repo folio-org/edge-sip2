@@ -22,6 +22,10 @@
     {
       "id": "feesfines",
       "version": "15.0 16.0 17.0"
+    },
+    {
+      "id": "search",
+      "version": "0.6"
     }
   ],
   "permissionSets": [],
