@@ -1,6 +1,10 @@
+
+## 2.4.0 IN-PROGRESS 
+
+* [SIP2-116] (https://issues.folio.org/browse/SIP2-116): Supports users interface versions 15.0 16.0
+
 ## 2.3.0 2022-09-07
 * [SIP2-115](https://issues.folio.org/browse/SIP2-115): Always populate the "title identifier" field for checked out response
-
 
 ## 2.2.0 2022-03-09
 * [SIP2-106](https://issues.folio.org/browse/SIP2-106): Adapt module to title level requests (TLR)
