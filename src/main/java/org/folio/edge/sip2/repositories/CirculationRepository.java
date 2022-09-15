@@ -6,14 +6,17 @@ import static org.folio.edge.sip2.utils.JsonUtils.getChildString;
 import static org.folio.edge.sip2.utils.JsonUtils.getSubChildString;
 
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,9 +38,12 @@ import org.folio.edge.sip2.utils.Utils;
 public class CirculationRepository {
   // Should consider letting the template take care of required fields with missing values
   private static final String UNKNOWN = "";
+  public static final String TITLE_NOT_FOUND = "TITLE NOT FOUND";
+  public static final String TITLE = "title";
   private final IResourceProvider<IRequestData> resourceProvider;
   private final PasswordVerifier passwordVerifier;
   private final Clock clock;
+
 
   @Inject
   CirculationRepository(IResourceProvider<IRequestData> resourceProvider,
@@ -92,7 +98,7 @@ public class CirculationRepository {
               // this allows the kiosk to show something related to the item that could be used
               // by the patron to identify which item this checkin response applies to.
               .titleIdentifier(resource.getResource() == null ? itemIdentifier
-                  : getChildString(resource.getResource(), "item", "title", itemIdentifier))
+                  : getChildString(resource.getResource(), "item", TITLE, itemIdentifier))
               // this is probably not the permanent location
               // this might require a call to inventory
               .permanentLocation(
@@ -109,71 +115,139 @@ public class CirculationRepository {
    * @return the checkout response domain object
    */
   public Future<CheckoutResponse> performCheckoutCommand(Checkout checkout,
-      SessionData sessionData) {
+                                                         SessionData sessionData) {
     final String institutionId = checkout.getInstitutionId();
     final String patronIdentifier = checkout.getPatronIdentifier();
     final String itemIdentifier = checkout.getItemIdentifier();
     final String patronPassword = checkout.getPatronPassword();
 
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
-        .compose(verification -> {
-          if (FALSE.equals(verification.getPasswordVerified())) {
-            return Future.succeededFuture(CheckoutResponse.builder()
-                .ok(FALSE)
-                .renewalOk(FALSE)
-                .magneticMedia(null)
-                .desensitize(FALSE)
-                .transactionDate(OffsetDateTime.now(clock))
-                .institutionId(institutionId)
-                .patronIdentifier(patronIdentifier)
-                .itemIdentifier(itemIdentifier)
-                .titleIdentifier(UNKNOWN)
-                .dueDate(OffsetDateTime.now(clock))
-                .screenMessage(verification.getErrorMessages())
-                .build());
-          }
+      .compose(verification -> {
+        if (FALSE.equals(verification.getPasswordVerified())) {
+          return Future.succeededFuture(CheckoutResponse.builder()
+            .ok(FALSE)
+            .renewalOk(FALSE)
+            .magneticMedia(null)
+            .desensitize(FALSE)
+            .transactionDate(OffsetDateTime.now(clock))
+            .institutionId(institutionId)
+            .patronIdentifier(patronIdentifier)
+            .itemIdentifier(itemIdentifier)
+            .titleIdentifier(UNKNOWN)
+            .dueDate(OffsetDateTime.now(clock))
+            .screenMessage(verification.getErrorMessages())
+            .build());
+        }
 
-          final User user = verification.getUser();
-          final JsonObject body = new JsonObject()
-              .put("itemBarcode", itemIdentifier)
-              .put("userBarcode", user != null ? user.getBarcode() : patronIdentifier)
-              .put("servicePointId", sessionData.getScLocation());
+        final User user = verification.getUser();
+        final JsonObject body = new JsonObject()
+            .put("itemBarcode", itemIdentifier)
+            .put("userBarcode", user != null ? user.getBarcode() : patronIdentifier)
+            .put("servicePointId", sessionData.getScLocation());
 
-          final Map<String, String> headers = getBaseHeaders();
+        final Map<String, String> headers = getBaseHeaders();
 
-          final CheckoutRequestData checkoutRequestData =
-              new CheckoutRequestData(body, headers, sessionData);
+        final CheckoutRequestData checkoutRequestData =
+            new CheckoutRequestData(body, headers, sessionData);
 
-          final Future<IResource> result = resourceProvider.createResource(checkoutRequestData);
+        final Future<IResource> result = resourceProvider.createResource(checkoutRequestData);
 
-          return result
-              .otherwise(Utils::handleErrors)
-              .map(resource -> {
-                final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
+        return result
+          .otherwise(Utils::handleErrors)
+          .compose(res -> addTitleIfNotFound(sessionData, itemIdentifier, res))
+          .map(resource -> {
+            final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
 
-                final OffsetDateTime dueDate = response
-                    .map(v -> v.getString("dueDate"))
-                    .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
-                    .orElse(OffsetDateTime.now(clock));
+            final OffsetDateTime dueDate = response
+                .map(v -> v.getString("dueDate"))
+                .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
+                .orElse(OffsetDateTime.now(clock));
 
-                return CheckoutResponse.builder()
-                    .ok(Boolean.valueOf(response.isPresent()))
-                    .renewalOk(FALSE)
-                    .magneticMedia(null)
-                    .desensitize(Boolean.valueOf(response.isPresent()))
-                    .transactionDate(OffsetDateTime.now(clock))
-                    .institutionId(institutionId)
-                    .patronIdentifier(patronIdentifier)
-                    .itemIdentifier(itemIdentifier)
-                    .titleIdentifier(response.map(
-                        v -> getChildString(v, "item", "title", UNKNOWN)).orElse(UNKNOWN))
-                    .dueDate(dueDate)
-                    .screenMessage(Optional.of(resource.getErrorMessages())
-                        .filter(v -> !v.isEmpty())
-                        .orElse(null))
-                    .build();
-              });
-        });
+            return CheckoutResponse.builder()
+              .ok(Boolean.valueOf(response.isPresent()))
+              .renewalOk(FALSE)
+              .magneticMedia(null)
+              .desensitize(Boolean.valueOf(response.isPresent()))
+              .transactionDate(OffsetDateTime.now(clock))
+              .institutionId(institutionId)
+              .patronIdentifier(patronIdentifier)
+              .itemIdentifier(itemIdentifier)
+              .titleIdentifier(response.map(
+                  v -> getChildString(v, "item", TITLE, UNKNOWN))
+                .orElse(resource.getTitle()))
+              .dueDate(dueDate)
+              .screenMessage(Optional.of(resource.getErrorMessages())
+                .filter(v -> !v.isEmpty())
+                .orElse(null))
+              .build();
+          });
+      });
+  }
+
+  private Future<IResource> addTitleIfNotFound(SessionData sessionData,
+                                               String itemIdentifier, IResource circRes) {
+    if (circRes.getErrorMessages().isEmpty()) {
+      return Future.succeededFuture(circRes);
+    }
+    return getTitle(itemIdentifier, sessionData, circRes.getErrorMessages());
+  }
+
+  private IResource getiResourceFromTitle(String title, List<String> circErrorMessages) {
+    return new IResource() {
+      @Override
+      public JsonObject getResource() {
+        return null;
+      }
+
+      @Override
+      public String getTitle() {
+        return title;
+      }
+
+      @Override
+      public List<String> getErrorMessages() {
+        List<String> tempError = new ArrayList<>(circErrorMessages);
+        if (TITLE_NOT_FOUND.equals(title)) {
+          tempError.add("Title Not Found");
+          return tempError;
+        }
+        return tempError;
+      }
+    };
+  }
+
+  private Future<IResource> getTitle(String itemIdentifier, SessionData sessionData,
+                                     List<String> circErrorMessages) {
+
+    final Map<String, String> headers = getBaseHeaders();
+    final ItemRequestData itemRequestData =
+        new ItemRequestData(null, headers, sessionData, itemIdentifier);
+
+    final Future<IResource> result = resourceProvider.retrieveResource(itemRequestData);
+
+    return result
+      .otherwise(Utils.handleSearchErrors(result.cause(), circErrorMessages))
+      .map(searchResult -> getTitleFromJson(searchResult, circErrorMessages));
+  }
+
+  private IResource getTitleFromJson(IResource resource, List<String> circErrorMessages) {
+    if (!resource.getErrorMessages().isEmpty()) {
+      return resource;
+    }
+
+    String title = TITLE_NOT_FOUND;
+    final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
+    if (response.isEmpty()) {
+      return getiResourceFromTitle(title, circErrorMessages);
+    }
+
+    final String instances = "instances";
+    JsonArray instanceArray = response.get().getJsonArray(instances);
+    if (instanceArray.size() > 0) {
+      title = instanceArray.getJsonObject(0).getString(TITLE);
+      return getiResourceFromTitle(title, circErrorMessages);
+    }
+    return getiResourceFromTitle(title, circErrorMessages);
   }
 
   /**
@@ -208,7 +282,8 @@ public class CirculationRepository {
    * @return a list of open requests for the specified item
    */
   public Future<JsonObject> getRequestsByItemId(String itemId, String requestType,
-      Integer startItem, Integer endItem, SessionData sessionData) {
+                                                Integer startItem, Integer endItem,
+                                                SessionData sessionData) {
     final Map<String, String> headers = getBaseHeaders();
 
     final RequestsRequestData requestsRequestData = new RequestsRequestData("itemId", itemId,
@@ -435,5 +510,65 @@ public class CirculationRepository {
 
       return appendLimits(path).toString();
     }
+  }
+
+  private class ItemRequestData extends SearchRequestData {
+    private static final String basePath = "/search/instances?limit=1&query=";
+
+    private String itemBarcode;
+
+    private ItemRequestData(JsonObject body, Map<String, String> headers,
+                            SessionData sessionData,String itemBarcode) {
+      super(body, null, null, headers, sessionData);
+      this.itemBarcode = itemBarcode;
+    }
+
+    @Override
+    public String getPath() {
+
+      final StringBuilder qSb = new StringBuilder()
+          .append(basePath)
+          .append("(items.barcode")
+          .append("==")
+          .append(itemBarcode).append(")");
+      return qSb.toString();
+    }
+  }
+
+  private abstract class SearchRequestData implements IRequestData {
+    private final JsonObject body;
+    private final Integer startItem;
+    private final Integer endItem;
+    private final Map<String, String> headers;
+    private final SessionData sessionData;
+
+    private SearchRequestData(
+        JsonObject body,
+        Integer startItem,
+        Integer endItem,
+        Map<String, String> headers,
+        SessionData sessionData) {
+      this.startItem = startItem;
+      this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
+      this.sessionData = sessionData;
+      this.endItem = endItem;
+      this.body = body;
+    }
+
+    @Override
+    public JsonObject getBody() {
+      return body;
+    }
+
+    @Override
+    public SessionData getSessionData() {
+      return sessionData;
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return headers;
+    }
+
   }
 }
