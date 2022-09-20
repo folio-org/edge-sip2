@@ -153,8 +153,14 @@ public class PatronRepositoryTests {
     final JsonObject openLoansResponse = new JsonObject(openLoansResponseJson);
     final String recallsResponseJson = getJsonFromFile("json/recall_requests_response.json");
     final JsonObject recallsResponse = new JsonObject(recallsResponseJson);
+
+    final String accountResponseJson = getJsonFromFile("json/account_request_response.json");
+    final JsonObject accountResponse = new JsonObject(accountResponseJson);
+
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(overdueResponse));
     when(mockCirculationRepository.getRequestsByUserId(
@@ -184,8 +190,8 @@ public class PatronRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(2, patronInformationResponse.getHoldItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
-          assertNull(patronInformationResponse.getChargedItemsCount());
-          assertNull(patronInformationResponse.getFineItemsCount());
+          assertEquals(1,patronInformationResponse.getChargedItemsCount());
+          assertEquals(1,patronInformationResponse.getFineItemsCount());
           assertEquals(1, patronInformationResponse.getRecallItemsCount());
           assertNull(patronInformationResponse.getUnavailableHoldsCount());
           assertEquals("diku", patronInformationResponse.getInstitutionId());
@@ -255,9 +261,13 @@ public class PatronRepositoryTests {
     final JsonObject openLoansResponse = new JsonObject(openLoansResponseJson);
     final String recallsResponseJson = getJsonFromFile("json/recall_requests_response.json");
     final JsonObject recallsResponse = new JsonObject(recallsResponseJson);
+    final String accountResponseJson = getJsonFromFile("json/account_request_response.json");
+    final JsonObject accountResponse = new JsonObject(accountResponseJson);
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(overdueResponse));
     when(mockCirculationRepository.getRequestsByUserId(
@@ -287,8 +297,10 @@ public class PatronRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(2, patronInformationResponse.getHoldItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
-          assertNull(patronInformationResponse.getChargedItemsCount());
-          assertNull(patronInformationResponse.getFineItemsCount());
+          assertEquals(1,patronInformationResponse.getChargedItemsCount());
+          assertEquals(1,patronInformationResponse.getFineItemsCount());
+          assertNotNull(patronInformationResponse.getChargedItemsCount());
+          assertNotNull(patronInformationResponse.getFineItemsCount());
           assertEquals(1, patronInformationResponse.getRecallItemsCount());
           assertNull(patronInformationResponse.getUnavailableHoldsCount());
           assertEquals("diku", patronInformationResponse.getInstitutionId());
@@ -358,9 +370,13 @@ public class PatronRepositoryTests {
     final JsonObject openLoansResponse = new JsonObject(openLoansResponseJson);
     final String recallsResponseJson = getJsonFromFile("json/recall_requests_response.json");
     final JsonObject recallsResponse = new JsonObject(recallsResponseJson);
+    final String accountResponseJson = getJsonFromFile("json/account_request_response.json");
+    final JsonObject accountResponse = new JsonObject(accountResponseJson);
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(overdueResponse));
     when(mockCirculationRepository.getRequestsByUserId(
@@ -390,8 +406,10 @@ public class PatronRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(2, patronInformationResponse.getHoldItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
-          assertNull(patronInformationResponse.getChargedItemsCount());
-          assertNull(patronInformationResponse.getFineItemsCount());
+          assertEquals(1,patronInformationResponse.getChargedItemsCount());
+          assertEquals(1,patronInformationResponse.getFineItemsCount());
+          assertNotNull(patronInformationResponse.getChargedItemsCount());
+          assertNotNull(patronInformationResponse.getFineItemsCount());
           assertEquals(1, patronInformationResponse.getRecallItemsCount());
           assertNull(patronInformationResponse.getUnavailableHoldsCount());
           assertEquals("diku", patronInformationResponse.getInstitutionId());
@@ -459,8 +477,13 @@ public class PatronRepositoryTests {
     final JsonObject openLoansResponse = new JsonObject(openLoansResponseJson);
     final String recallsResponseJson = getJsonFromFile("json/recall_requests_response.json");
     final JsonObject recallsResponse = new JsonObject(recallsResponseJson);
+    final String accountResponseJson = getJsonFromFile("json/account_request_response.json");
+    final JsonObject accountResponse = new JsonObject(accountResponseJson);
+
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(overdueResponse));
     when(mockCirculationRepository.getRequestsByUserId(
@@ -494,8 +517,10 @@ public class PatronRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(2, patronInformationResponse.getHoldItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
-          assertNull(patronInformationResponse.getChargedItemsCount());
-          assertNull(patronInformationResponse.getFineItemsCount());
+          assertEquals(1,patronInformationResponse.getChargedItemsCount());
+          assertEquals(1,patronInformationResponse.getFineItemsCount());
+          assertNotNull(patronInformationResponse.getChargedItemsCount());
+          assertNotNull(patronInformationResponse.getFineItemsCount());
           assertEquals(1, patronInformationResponse.getRecallItemsCount());
           assertNull(patronInformationResponse.getUnavailableHoldsCount());
           assertEquals("diku", patronInformationResponse.getInstitutionId());
@@ -593,8 +618,12 @@ public class PatronRepositoryTests {
     final JsonObject openLoansResponse = new JsonObject(openLoansResponseJson);
     final String recallsResponseJson = getJsonFromFile("json/recall_requests_response.json");
     final JsonObject recallsResponse = new JsonObject(recallsResponseJson);
+    final String accountResponseJson = getJsonFromFile("json/account_request_response.json");
+    final JsonObject accountResponse = new JsonObject(accountResponseJson);
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(overdueResponse));
     when(mockCirculationRepository.getRequestsByUserId(
@@ -624,8 +653,10 @@ public class PatronRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(2, patronInformationResponse.getHoldItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
-          assertNull(patronInformationResponse.getChargedItemsCount());
-          assertNull(patronInformationResponse.getFineItemsCount());
+          assertEquals(1,patronInformationResponse.getChargedItemsCount());
+          assertEquals(1,patronInformationResponse.getFineItemsCount());
+          assertNotNull(patronInformationResponse.getChargedItemsCount());
+          assertNotNull(patronInformationResponse.getFineItemsCount());
           assertEquals(1, patronInformationResponse.getRecallItemsCount());
           assertNull(patronInformationResponse.getUnavailableHoldsCount());
           assertEquals("diku", patronInformationResponse.getInstitutionId());
@@ -700,8 +731,12 @@ public class PatronRepositoryTests {
     final JsonObject recallsResponse1 = new JsonObject(recallsResponse1Json);
     final String recallsResponse2Json = getJsonFromFile("json/recall_requests_response2.json");
     final JsonObject recallsResponse2 = new JsonObject(recallsResponse2Json);
+    final String accountResponseJson = getJsonFromFile("json/account_request_response.json");
+    final JsonObject accountResponse = new JsonObject(accountResponseJson);
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(overdueResponse));
     when(mockCirculationRepository.getRequestsByUserId(
@@ -735,8 +770,10 @@ public class PatronRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(2, patronInformationResponse.getHoldItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
-          assertNull(patronInformationResponse.getChargedItemsCount());
-          assertNull(patronInformationResponse.getFineItemsCount());
+          assertEquals(1, patronInformationResponse.getOverdueItemsCount());
+          assertEquals(1,patronInformationResponse.getChargedItemsCount());
+          assertNotNull(patronInformationResponse.getChargedItemsCount());
+          assertNotNull(patronInformationResponse.getFineItemsCount());
           assertEquals(3, patronInformationResponse.getRecallItemsCount());
           assertNull(patronInformationResponse.getUnavailableHoldsCount());
           assertEquals("diku", patronInformationResponse.getInstitutionId());
@@ -1017,6 +1054,8 @@ public class PatronRepositoryTests {
     final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getRequestsByUserId(
@@ -1041,8 +1080,8 @@ public class PatronRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(0, patronInformationResponse.getHoldItemsCount());
           assertEquals(0, patronInformationResponse.getOverdueItemsCount());
-          assertNull(patronInformationResponse.getChargedItemsCount());
-          assertNull(patronInformationResponse.getFineItemsCount());
+          assertNotNull(patronInformationResponse.getChargedItemsCount());
+          assertNotNull(patronInformationResponse.getFineItemsCount());
           assertEquals(0, patronInformationResponse.getRecallItemsCount());
           assertNull(patronInformationResponse.getUnavailableHoldsCount());
           assertEquals("diku", patronInformationResponse.getInstitutionId());
@@ -1105,6 +1144,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getRequestsByUserId(
@@ -1133,8 +1174,10 @@ public class PatronRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(0, patronInformationResponse.getHoldItemsCount());
           assertEquals(0, patronInformationResponse.getOverdueItemsCount());
-          assertNull(patronInformationResponse.getChargedItemsCount());
-          assertNull(patronInformationResponse.getFineItemsCount());
+          assertEquals(0, patronInformationResponse.getOverdueItemsCount());
+          assertEquals(0,patronInformationResponse.getChargedItemsCount());
+          assertNotNull(patronInformationResponse.getChargedItemsCount());
+          assertNotNull(patronInformationResponse.getFineItemsCount());
           assertEquals(0, patronInformationResponse.getRecallItemsCount());
           assertNull(patronInformationResponse.getUnavailableHoldsCount());
           assertEquals("diku", patronInformationResponse.getInstitutionId());
@@ -1197,6 +1240,10 @@ public class PatronRepositoryTests {
     final User userResponse = Json.decodeValue(userResponseJson, User.class);
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    final String accountResponseJson = getJsonFromFile("json/account_request_response.json");
+    final JsonObject accountResponse = new JsonObject(accountResponseJson);
+    when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getRequestsByUserId(
@@ -1221,8 +1268,10 @@ public class PatronRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(0, patronInformationResponse.getHoldItemsCount());
           assertEquals(0, patronInformationResponse.getOverdueItemsCount());
-          assertNull(patronInformationResponse.getChargedItemsCount());
-          assertNull(patronInformationResponse.getFineItemsCount());
+          assertEquals(1,patronInformationResponse.getChargedItemsCount());
+          assertEquals(1,patronInformationResponse.getFineItemsCount());
+          assertNotNull(patronInformationResponse.getChargedItemsCount());
+          assertNotNull(patronInformationResponse.getFineItemsCount());
           assertEquals(0, patronInformationResponse.getRecallItemsCount());
           assertNull(patronInformationResponse.getUnavailableHoldsCount());
           assertEquals("diku", patronInformationResponse.getInstitutionId());

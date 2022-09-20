@@ -51,6 +51,32 @@ public class FeeFinesRepository {
         .map(IResource::getResource);
   }
 
+  /**
+   * Get a patron's account.
+   *
+   * @param userId the user's ID
+   * @param sessionData session data
+   * @return the manual blocks list in raw JSON or {@code null} if there was an error
+   */
+  public Future<JsonObject> getAccountDataByUserId(
+      String userId,
+      SessionData sessionData) {
+    Objects.requireNonNull(userId, "userId cannot be null");
+    Objects.requireNonNull(sessionData, "sessionData cannot be null");
+
+    final Map<String, String> headers = new HashMap<>();
+    headers.put("accept", "application/json");
+
+    final GetAccountByUserIdRequestData getAccountByUserIdRequestData =
+        new GetAccountByUserIdRequestData(userId, headers, sessionData);
+    final Future<IResource> result =
+        resourceProvider.retrieveResource(getAccountByUserIdRequestData);
+
+    return result
+      .otherwise(() -> null)
+      .map(IResource::getResource);
+  }
+
   private class GetManualBlocksByUserIdRequestData implements IRequestData {
     private final String userId;
     private final Map<String, String> headers;
@@ -66,6 +92,38 @@ public class FeeFinesRepository {
     @Override
     public String getPath() {
       return "/manualblocks?query=" + Utils.encode("userId==" + userId);
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return headers;
+    }
+
+    @Override
+    public SessionData getSessionData() {
+      return sessionData;
+    }
+  }
+
+  private class GetAccountByUserIdRequestData implements IRequestData {
+    private final String userId;
+    private final Map<String, String> headers;
+    private final SessionData sessionData;
+
+    private GetAccountByUserIdRequestData(String userId, Map<String, String> headers,
+                                               SessionData sessionData) {
+      this.userId = userId;
+      this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
+      this.sessionData = sessionData;
+    }
+
+    @Override
+    public String getPath() {
+      final StringBuilder qSb = new StringBuilder()
+          .append("/accounts?query=")
+          .append("(userId==")
+          .append(userId).append(")").append("&limit=1000");
+      return qSb.toString();
     }
 
     @Override

@@ -159,6 +159,10 @@ public class PatronRepository {
     final Future<PatronInformationResponseBuilder> manualBlocksFuture = feeFinesRepository
         .getManualBlocksByUserId(userId, sessionData)
         .map(blocks -> buildPatronStatus(blocks, builder));
+    // add fine count and charged count
+    final Future<PatronInformationResponseBuilder> accountFuture = feeFinesRepository
+        .getAccountDataByUserId(userId, sessionData)
+        .map(accounts -> populateFinesAndChargedCount(accounts,builder));
     // Get holds data (count and items) and store it in the builder
     final Future<PatronInformationResponseBuilder> holdsFuture = circulationRepository
         .getRequestsByUserId(userId, "Hold", startItem, endItem, sessionData).map(
@@ -175,13 +179,14 @@ public class PatronRepository {
         getRecalls(userId, sessionData).compose(recalls -> addRecalls(recalls, startItem, endItem,
             patronInformation.getSummary() == RECALL_ITEMS, builder));
     // When all operations complete, build and return the final PatronInformationResponse
-    return CompositeFuture.all(manualBlocksFuture, holdsFuture, overdueFuture, recallsFuture)
+    return CompositeFuture.all(manualBlocksFuture, accountFuture, holdsFuture,
+        overdueFuture, recallsFuture)
         .map(result -> builder
             // Get tenant language from config along with the timezone
             .language(patronInformation.getLanguage())
             .transactionDate(OffsetDateTime.now(clock))
-            .chargedItemsCount(null)
-            .fineItemsCount(null)
+            //.chargedItemsCount(null)
+            //.fineItemsCount(null)
             .unavailableHoldsCount(null)
             .institutionId(patronInformation.getInstitutionId())
             .patronIdentifier(patronInformation.getPatronIdentifier())
@@ -189,6 +194,18 @@ public class PatronRepository {
             .validPatronPassword(validPassword)
             .build()
         );
+  }
+
+  private PatronInformationResponseBuilder populateFinesAndChargedCount(JsonObject accounts,
+                                                PatronInformationResponseBuilder builder) {
+    final int fineAndChargedItemsCount;
+    if (accounts != null) {
+      fineAndChargedItemsCount = Math.min(getTotalRecords(accounts), 9999);
+    } else {
+      fineAndChargedItemsCount = 0;
+    }
+    return builder.chargedItemsCount(fineAndChargedItemsCount)
+          .fineItemsCount(fineAndChargedItemsCount);
   }
 
   private Future<PatronInformationResponse> invalidPatron(
