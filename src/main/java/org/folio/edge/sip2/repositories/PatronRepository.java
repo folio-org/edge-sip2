@@ -162,7 +162,14 @@ public class PatronRepository {
     // add fine count and charged count
     final Future<PatronInformationResponseBuilder> accountFuture = feeFinesRepository
         .getAccountDataByUserId(userId, sessionData)
-        .map(accounts -> populateFinesAndChargedCount(accounts,builder));
+        .map(accounts -> populateFinesCount(accounts,builder));
+
+    //add
+    final Future<PatronInformationResponseBuilder> loansFuture = circulationRepository
+        .getLoansByUserId(userId, null, null, sessionData)
+        .map(loans -> populateChargedCount(loans,builder));
+    //end
+
     // Get holds data (count and items) and store it in the builder
     final Future<PatronInformationResponseBuilder> holdsFuture = circulationRepository
         .getRequestsByUserId(userId, "Hold", startItem, endItem, sessionData).map(
@@ -180,7 +187,7 @@ public class PatronRepository {
             patronInformation.getSummary() == RECALL_ITEMS, builder));
     // When all operations complete, build and return the final PatronInformationResponse
     return CompositeFuture.all(manualBlocksFuture, accountFuture, holdsFuture,
-        overdueFuture, recallsFuture)
+        overdueFuture, recallsFuture, loansFuture)
         .map(result -> builder
             // Get tenant language from config along with the timezone
             .language(patronInformation.getLanguage())
@@ -196,16 +203,26 @@ public class PatronRepository {
         );
   }
 
-  private PatronInformationResponseBuilder populateFinesAndChargedCount(JsonObject accounts,
-                                                PatronInformationResponseBuilder builder) {
-    final int fineAndChargedItemsCount;
-    if (accounts != null) {
-      fineAndChargedItemsCount = Math.min(getTotalRecords(accounts), 9999);
+  private PatronInformationResponseBuilder populateChargedCount(JsonObject loans,
+                                      PatronInformationResponseBuilder builder) {
+    final int chargedItemsCount;
+    if (loans != null) {
+      chargedItemsCount = Math.min(getTotalRecords(loans), 9999);
     } else {
-      fineAndChargedItemsCount = 0;
+      chargedItemsCount = 0;
     }
-    return builder.chargedItemsCount(fineAndChargedItemsCount)
-          .fineItemsCount(fineAndChargedItemsCount);
+    return builder.chargedItemsCount(chargedItemsCount);
+  }
+
+  private PatronInformationResponseBuilder populateFinesCount(JsonObject accounts,
+                                                PatronInformationResponseBuilder builder) {
+    final int fineItemsCount;
+    if (accounts != null) {
+      fineItemsCount = Math.min(getTotalRecords(accounts), 9999);
+    } else {
+      fineItemsCount = 0;
+    }
+    return builder.fineItemsCount(fineItemsCount);
   }
 
   private Future<PatronInformationResponse> invalidPatron(

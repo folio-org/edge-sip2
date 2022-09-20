@@ -190,7 +190,7 @@ public class PatronRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(2, patronInformationResponse.getHoldItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
-          assertEquals(1,patronInformationResponse.getChargedItemsCount());
+          assertEquals(3,patronInformationResponse.getChargedItemsCount());
           assertEquals(1,patronInformationResponse.getFineItemsCount());
           assertEquals(1, patronInformationResponse.getRecallItemsCount());
           assertNull(patronInformationResponse.getUnavailableHoldsCount());
@@ -297,7 +297,7 @@ public class PatronRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(2, patronInformationResponse.getHoldItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
-          assertEquals(1,patronInformationResponse.getChargedItemsCount());
+          assertEquals(3,patronInformationResponse.getChargedItemsCount());
           assertEquals(1,patronInformationResponse.getFineItemsCount());
           assertNotNull(patronInformationResponse.getChargedItemsCount());
           assertNotNull(patronInformationResponse.getFineItemsCount());
@@ -406,7 +406,7 @@ public class PatronRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(2, patronInformationResponse.getHoldItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
-          assertEquals(1,patronInformationResponse.getChargedItemsCount());
+          assertEquals(3,patronInformationResponse.getChargedItemsCount());
           assertEquals(1,patronInformationResponse.getFineItemsCount());
           assertNotNull(patronInformationResponse.getChargedItemsCount());
           assertNotNull(patronInformationResponse.getFineItemsCount());
@@ -517,7 +517,7 @@ public class PatronRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(2, patronInformationResponse.getHoldItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
-          assertEquals(1,patronInformationResponse.getChargedItemsCount());
+          assertEquals(3,patronInformationResponse.getChargedItemsCount());
           assertEquals(1,patronInformationResponse.getFineItemsCount());
           assertNotNull(patronInformationResponse.getChargedItemsCount());
           assertNotNull(patronInformationResponse.getFineItemsCount());
@@ -653,7 +653,7 @@ public class PatronRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(2, patronInformationResponse.getHoldItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
-          assertEquals(1,patronInformationResponse.getChargedItemsCount());
+          assertEquals(3,patronInformationResponse.getChargedItemsCount());
           assertEquals(1,patronInformationResponse.getFineItemsCount());
           assertNotNull(patronInformationResponse.getChargedItemsCount());
           assertNotNull(patronInformationResponse.getFineItemsCount());
@@ -771,7 +771,7 @@ public class PatronRepositoryTests {
           assertEquals(2, patronInformationResponse.getHoldItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
           assertEquals(1, patronInformationResponse.getOverdueItemsCount());
-          assertEquals(1,patronInformationResponse.getChargedItemsCount());
+          assertEquals(3,patronInformationResponse.getChargedItemsCount());
           assertNotNull(patronInformationResponse.getChargedItemsCount());
           assertNotNull(patronInformationResponse.getFineItemsCount());
           assertEquals(3, patronInformationResponse.getRecallItemsCount());
@@ -1268,7 +1268,7 @@ public class PatronRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
           assertEquals(0, patronInformationResponse.getHoldItemsCount());
           assertEquals(0, patronInformationResponse.getOverdueItemsCount());
-          assertEquals(1,patronInformationResponse.getChargedItemsCount());
+          assertEquals(0,patronInformationResponse.getChargedItemsCount());
           assertEquals(1,patronInformationResponse.getFineItemsCount());
           assertNotNull(patronInformationResponse.getChargedItemsCount());
           assertNotNull(patronInformationResponse.getFineItemsCount());
