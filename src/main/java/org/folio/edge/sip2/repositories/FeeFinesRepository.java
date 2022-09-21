@@ -56,7 +56,7 @@ public class FeeFinesRepository {
    *
    * @param userId the user's ID
    * @param sessionData session data
-   * @return the manual blocks list in raw JSON or {@code null} if there was an error
+   * @return the account data list in raw JSON or {@code null} if there was an error
    */
   public Future<JsonObject> getAccountDataByUserId(
       String userId,
