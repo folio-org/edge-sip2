@@ -44,6 +44,8 @@ public class PatronInformationHandlerTests {
     final Integer holdItemsCount = Integer.valueOf(5);
     final Integer overdueItemsCount = Integer.valueOf(1);
     final Integer recallItemsCount = Integer.valueOf(1);
+    final Integer chargedItemsCount = 3;
+    final Integer fineItemsCount = 1;
     final String personalName = "Some Guy";
     final List<String> holdItems = Arrays.asList("Book2", "Book3", "Book4");
     final String homeAddress = "1234 Fake St., Anytown US";
@@ -69,8 +71,8 @@ public class PatronInformationHandlerTests {
             .transactionDate(OffsetDateTime.now(clock).plusSeconds(5))
             .holdItemsCount(holdItemsCount)
             .overdueItemsCount(overdueItemsCount)
-            .chargedItemsCount(null)
-            .fineItemsCount(null)
+            .chargedItemsCount(3)
+            .fineItemsCount(1)
             .recallItemsCount(recallItemsCount)
             .unavailableHoldsCount(null)
             .institutionId(institutionId)
@@ -106,15 +108,15 @@ public class PatronInformationHandlerTests {
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "64              001"
               + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock).plusSeconds(5))
-              + String.format("%04d%04d        %04d    ",
-                  holdItemsCount, overdueItemsCount, recallItemsCount)
+              + String.format("%04d%04d%04d%04d%04d    ",
+                  holdItemsCount, overdueItemsCount, chargedItemsCount,
+                  fineItemsCount, recallItemsCount)
               + String.format("AO%s|AA%s|AE%s|BLY|", institutionId, patronIdentifier, personalName)
               + String.format("AS%s|AS%s|AS%s|", holdItems.toArray(new Object[holdItems.size()]))
               + String.format("BD%s|BE%s|BF%s|", homeAddress, emailAddress, homePhoneNumber)
               + String.format("AF%s|AG%s|", screenMessage, printLine);
 
           assertEquals(expectedString, sipMessage);
-
           testContext.completeNow();
         })));
   }

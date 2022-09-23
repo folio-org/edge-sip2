@@ -1,0 +1,34 @@
+{
+  "accounts": [
+    {
+      "amount": 1.0,
+      "remaining": 1.0,
+      "status": {
+        "name": "Open"
+      },
+      "paymentStatus": {
+        "name": "Outstanding"
+      },
+      "feeFineType": "Test",
+      "feeFineOwner": "Test",
+      "callNumber": "",
+      "metadata": {
+        "createdDate": "2022-09-19T11:26:22.857+00:00",
+        "createdByUserId": "90b20de8-71b8-5eb9-9c3e-92fbedac3bed",
+        "updatedDate": "2022-09-19T11:26:22.857+00:00",
+        "updatedByUserId": "90b20de8-71b8-5eb9-9c3e-92fbedac3bed"
+      },
+      "userId": "2205005b-ca51-4a04-87fd-938eefa8f6de",
+      "feeFineId": "78b549ec-607c-4d67-805a-828d5e0968da",
+      "ownerId": "8bc51678-06c4-40be-8db5-b40e30fa4daa",
+      "id": "e62cac18-e677-41c3-a6fb-b7cfe8ad9a46",
+      "contributors": []
+    }
+  ],
+  "totalRecords": 1,
+  "resultInfo": {
+    "totalRecords": 1,
+    "facets": [],
+    "diagnostics": []
+  }
+}
