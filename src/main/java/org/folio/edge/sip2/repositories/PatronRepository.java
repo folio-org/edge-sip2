@@ -159,15 +159,15 @@ public class PatronRepository {
     final Future<PatronInformationResponseBuilder> manualBlocksFuture = feeFinesRepository
         .getManualBlocksByUserId(userId, sessionData)
         .map(blocks -> buildPatronStatus(blocks, builder));
-    // add fine count
+    // Add fine count
     final Future<PatronInformationResponseBuilder> accountFuture = feeFinesRepository
         .getAccountDataByUserId(userId, sessionData)
-        .map(accounts -> populateFinesCount(accounts,builder));
+        .map(accounts -> populateFinesCount(accounts, builder));
 
-    //add charged count
+    // Add charged count
     final Future<PatronInformationResponseBuilder> loansFuture = circulationRepository
         .getLoansByUserId(userId, null, null, sessionData)
-        .map(loans -> populateChargedCount(loans,builder));
+        .map(loans -> populateChargedCount(loans, builder));
 
     // Get holds data (count and items) and store it in the builder
     final Future<PatronInformationResponseBuilder> holdsFuture = circulationRepository
@@ -204,6 +204,7 @@ public class PatronRepository {
                                       PatronInformationResponseBuilder builder) {
     final int chargedItemsCount;
     if (loans != null) {
+      // Get minimum of total loan count & 9999
       chargedItemsCount = Math.min(getTotalRecords(loans), 9999);
     } else {
       chargedItemsCount = 0;
@@ -215,6 +216,7 @@ public class PatronRepository {
                                                 PatronInformationResponseBuilder builder) {
     final int fineItemsCount;
     if (accounts != null) {
+      // Get minimum of total fine count & 9999
       fineItemsCount = Math.min(getTotalRecords(accounts), 9999);
     } else {
       fineItemsCount = 0;
