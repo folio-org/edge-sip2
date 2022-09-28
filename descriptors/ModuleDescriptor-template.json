@@ -28,7 +28,29 @@
       "version": "0.7"
     }
   ],
-  "permissionSets": [],
+  "permissionSets": [
+    {
+      "permissionName" : "edge-sip.all",
+      "displayName" : "All permission associated with edge-sip2",
+      "description" : "All permissions edge-sip scope",
+      "subPermissions" : [
+        "circulation.check-in-by-barcode.post",
+        "circulation.check-out-by-barcode.post",
+        "circulation.requests.collection.get",
+        "search.instances.collection.get",
+        "search.instances.ids.collection.get",
+        "circulation.loans.collection.get",
+        "configuration.entries.collection.get",
+        "configuration.entries.item.get",
+        "manualblocks.collection.get",
+        "manualblocks.item.get",
+        "accounts.collection.get",
+        "accounts.item.get",
+        "users.collection.get",
+        "users.item.get"
+      ]
+    }
+  ],
   "launchDescriptor": {
     "dockerImage": "${artifactId}:${version}",
     "dockerPull": false,
