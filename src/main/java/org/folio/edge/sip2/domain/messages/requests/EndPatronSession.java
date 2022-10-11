@@ -107,6 +107,18 @@ public final class EndPatronSession {
   }
 
   /**
+   * Returns Formatted Log Message.
+   * @return String.
+   */
+  public String getPatronSessionLogInfo() {
+    return new StringBuilder()
+      .append("EndPatronSession [transactionDate=").append(transactionDate)
+      .append(", institutionId=").append(institutionId)
+      .append(", patronIdentifier=").append(patronIdentifier)
+      .append(']').toString();
+  }
+
+  /**
    * Builder for {@code EndPatronSession}.
    */
   public static class EndPatronSessionBuilder {

@@ -187,6 +187,25 @@ public final class Checkout {
   }
 
   /**
+   * Returns Formatted Log Message.
+   * @return String.
+   */
+  public String getCheckOutLogInfo() {
+    return new StringBuilder()
+      .append("Checkout [scRenewalPolicy=").append(scRenewalPolicy)
+      .append(", noBlock=").append(noBlock)
+      .append(", transactionDate=").append(transactionDate)
+      .append(", nbDueDate=").append(nbDueDate)
+      .append(", institutionId=").append(institutionId)
+      .append(", itemIdentifier=").append(itemIdentifier)
+      .append(", patronIdentifier=").append(patronIdentifier)
+      .append(", itemProperties=").append(itemProperties)
+      .append(", feeAcknowledged=").append(feeAcknowledged)
+      .append(", cancel=").append(cancel)
+      .append(']').toString();
+  }
+
+  /**
    * Builder for {@code Checkout}.
    */
   public static class CheckoutBuilder {

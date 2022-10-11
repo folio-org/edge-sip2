@@ -35,7 +35,7 @@ public class PatronInformationHandler implements ISip2RequestHandler {
   public Future<String> execute(Object message, SessionData sessionData) {
     final PatronInformation patronInformation = (PatronInformation) message;
 
-    log.debug("Patron Information: {}", () -> patronInformation);
+    log.info("Patron Information: {}", patronInformation::getPatronLogInfo);
 
     // We need to collect data from the following places:
     // - mod-users

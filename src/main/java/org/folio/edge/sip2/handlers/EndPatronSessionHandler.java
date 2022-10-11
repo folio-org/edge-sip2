@@ -37,7 +37,7 @@ public class EndPatronSessionHandler implements ISip2RequestHandler {
   public Future<String> execute(Object message, SessionData sessionData) {
 
     final EndPatronSession endPatronSession = (EndPatronSession) message;
-    log.debug("EndPatronSession: {}", () -> endPatronSession);
+    log.info("EndPatronSession: {}", endPatronSession::getPatronSessionLogInfo);
 
     final Future<EndSessionResponse> endPatronSessionFuture =
         patronRepository.performEndPatronSessionCommand(endPatronSession, sessionData);
