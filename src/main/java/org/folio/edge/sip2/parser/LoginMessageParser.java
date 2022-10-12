@@ -30,7 +30,7 @@ public final class LoginMessageParser extends MessageParser {
    * @return the decoded Login message.
    */
   public Login parse(String message) {
-    log.info("Login Message "+ message);
+    log.info("Login Message " + message);
     final LoginBuilder builder = builder();
     final char [] messageChars = message.toCharArray();
 
