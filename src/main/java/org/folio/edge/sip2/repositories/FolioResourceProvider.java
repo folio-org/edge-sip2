@@ -50,10 +50,11 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   @Override
   public Future<IResource> retrieveResource(IRequestData requestData) {
     log.info("retrieve resource {}", requestData::getPath);
-
+    log.info("OKAPIURL {}", okapiUrl);
     final HttpRequest<Buffer> request =
         client.getAbs(okapiUrl + requestData.getPath());
 
+    log.info("Request {}", request);
     setHeaders(requestData.getHeaders(), request,
         Objects.requireNonNull(requestData.getSessionData(), "SessionData cannot be null"));
 
