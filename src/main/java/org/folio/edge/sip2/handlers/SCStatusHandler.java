@@ -41,6 +41,7 @@ public class SCStatusHandler implements ISip2RequestHandler {
   @Override
   public Future<String> execute(Object message, SessionData sessionData)  {
 
+    log.info("Execute SCStatus Handler");
     SCStatus scStatus = (SCStatus)message;
     sessionData.setMaxPrintWidth(scStatus.getMaxPrintWidth());
 

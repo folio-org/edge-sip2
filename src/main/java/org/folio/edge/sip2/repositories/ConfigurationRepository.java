@@ -137,6 +137,7 @@ public class ConfigurationRepository {
         return Future.succeededFuture(resultJsonConfigs);
 
       } else {
+        log.info("Before error log");
         log.error("Unable to find all necessary configuration(s). Found {} of {}",
                       totalConfigs, configParameters.size());
         return Future.failedFuture("Unable to find all necessary configuration(s). Found "
