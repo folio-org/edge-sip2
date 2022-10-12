@@ -244,6 +244,7 @@ public class ConfigurationRepository {
         pathStringBuilder.append(Utils.buildQueryString(configQueryParams.get(i), " AND ", "=="));
         pathStringBuilder.append(")");
       }
+      log.info("pathStringBuilder: {} ", pathStringBuilder);
       String path =  "/configurations/entries?query=" + Utils.encode(pathStringBuilder.toString());
 
       log.info("Parsed mod-config path: {}", path);
