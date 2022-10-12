@@ -245,7 +245,7 @@ public class ConfigurationRepository {
       }
       String path =  "/configurations/entries?query=" + Utils.encode(pathStringBuilder.toString());
 
-      log.debug("Parsed mod-config path: {}", path);
+      log.info("Parsed mod-config path: {}", path);
 
       return path;
     }
