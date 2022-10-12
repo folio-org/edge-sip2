@@ -32,16 +32,16 @@ public class DefaultResourceProvider implements IResourceProvider<IRequestData> 
     JsonObject jsonFile = null;
 
     URL configurationResource = ClassLoader.getSystemResource(fileName);
-
+    log.info("Over here --------");
     try (InputStream inputStream = configurationResource.openStream();
          InputStreamReader isr = new InputStreamReader(inputStream);
          BufferedReader br = new BufferedReader(isr)) {
 
-      log.debug("Config file location: {}", configurationResource);
+      log.info("Config file location: {}", configurationResource);
       String fileContent = br.lines().collect(Collectors.joining("\n"));
       br.lines().close();
 
-      log.debug(fileContent);
+      log.info(fileContent);
       jsonFile = new JsonObject(fileContent);
 
     } catch (Exception ex) {

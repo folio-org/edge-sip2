@@ -107,7 +107,7 @@ public class ConfigurationRepository {
 
     ConfigurationRequestData requestData = new ConfigurationRequestData(null,
         headers, sessionData, configParameters);
-
+    log.info("Retrieve Configuration log message");
     Future<IResource> future = resourceProvider.retrieveResource(requestData);
     return future.compose(resource -> {
       final JsonObject scConfiguration = resource.getResource();
