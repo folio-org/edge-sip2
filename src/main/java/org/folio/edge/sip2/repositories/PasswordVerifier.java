@@ -6,6 +6,9 @@ import static java.lang.Boolean.TRUE;
 import io.vertx.core.Future;
 import java.util.Objects;
 import javax.inject.Inject;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.session.SessionData;
 
@@ -17,6 +20,8 @@ import org.folio.edge.sip2.session.SessionData;
 public class PasswordVerifier {
   private final UsersRepository usersRepository;
   private final LoginRepository loginRepository;
+
+  private final Logger log = LogManager.getLogger();
 
   @Inject
   PasswordVerifier(UsersRepository usersRepository, LoginRepository loginRepository) {
@@ -43,7 +48,11 @@ public class PasswordVerifier {
 
     final Future<PatronPasswordVerificationRecords> loginFuture;
 
+    log.info("PatronIdentifier {}", patronIdentifier);
+    log.info("PatronPassword {}", patronPassword);
+
     if (sessionData.isPatronPasswordVerificationRequired()) {
+      log.info("Inside password verification.");
       loginFuture = usersRepository.getUserById(patronIdentifier, sessionData)
           .compose(user -> {
             if (user == null) {
@@ -66,6 +75,7 @@ public class PasswordVerifier {
                 });
           });
     } else {
+      log.info("User Verified.");
       loginFuture = usersRepository.getUserById(patronIdentifier, sessionData).compose(user -> {
         if (user != null) {
           return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
