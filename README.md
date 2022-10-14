@@ -287,7 +287,7 @@ All permission associated with edge-sip2
     accounts.item.get
     users.collection.get
     users.item.get
-    
+    automated-patron-blocks.collection.get
 ```
 
 #### Security concerns for developers
