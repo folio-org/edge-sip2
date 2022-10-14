@@ -60,6 +60,7 @@ public final class Checkin {
     this.cancel = builder.cancel;
   }
 
+
   /**
    * Returns a builder used to construct a {@code Checkin}.
    * @return A checkin builder.
@@ -147,6 +148,23 @@ public final class Checkin {
         .append(", itemProperties=").append(itemProperties)
         .append(", cancel=").append(cancel)
         .append(']').toString();
+  }
+
+  /**
+   * Returns Formatted Log Message.
+   * @return String.
+   */
+  public String getCheckInLogInfo() {
+    return new StringBuilder()
+      .append("Checkin [noBlock=").append(noBlock)
+      .append(", transactionDate=").append(transactionDate)
+      .append(", returnDate=").append(returnDate)
+      .append(", currentLocation=").append(currentLocation)
+      .append(", institutionId=").append(institutionId)
+      .append(", itemIdentifier=").append(itemIdentifier)
+      .append(", itemProperties=").append(itemProperties)
+      .append(", cancel=").append(cancel)
+      .append(']').toString();
   }
 
   /**

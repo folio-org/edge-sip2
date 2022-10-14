@@ -107,6 +107,19 @@ public final class Login {
   }
 
   /**
+   * Returns Formatted Log Message.
+   * @return String.
+   */
+  public String getLoginLogInfo() {
+    return new StringBuilder()
+      .append("Login [uidAlgorithm=").append(uidAlgorithm)
+      .append(", pwdAlgorithm=").append(pwdAlgorithm)
+      .append(", loginUserId=").append(loginUserId)
+      .append(", locationCode=").append(locationCode)
+      .append(']').toString();
+  }
+
+  /**
    * Builder for {@code Login}.
    */
   public static class LoginBuilder {

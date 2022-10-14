@@ -147,6 +147,22 @@ public final class PatronInformation {
   }
 
   /**
+   * Returns Formatted Log Message.
+   * @return String.
+   */
+  public String getPatronLogInfo() {
+    return new StringBuilder()
+      .append("PatronInformation [language=").append(language)
+      .append(", transactionDate=").append(transactionDate)
+      .append(", summary=").append(summary)
+      .append(", institutionId=").append(institutionId)
+      .append(", patronIdentifier=").append(patronIdentifier)
+      .append(", startItem=").append(startItem)
+      .append(", endItem=").append(endItem)
+      .append(']').toString();
+  }
+
+  /**
    * Builder for {@code PatronInformation}.
    */
   public static class PatronInformationBuilder {

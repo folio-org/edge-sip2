@@ -33,7 +33,7 @@ public class LoginHandler implements ISip2RequestHandler {
   public Future<String> execute(Object message, SessionData sessionData) {
     final Login login = (Login) message;
 
-    log.debug("Login: {}", () -> login);
+    log.info("Login: {}", login::getLoginLogInfo);
 
     final Future<LoginResponse> responseFuture = loginRepository.login(login, sessionData);
 
