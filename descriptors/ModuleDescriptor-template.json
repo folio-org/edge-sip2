@@ -47,7 +47,8 @@
         "accounts.collection.get",
         "accounts.item.get",
         "users.collection.get",
-        "users.item.get"
+        "users.item.get",
+        "automated-patron-blocks.collection.get"
       ]
     }
   ],
