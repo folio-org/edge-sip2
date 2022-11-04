@@ -1,10 +1,8 @@
+## 2.5.0 IN-PROGRESS
+
 ## 2.4.0 2022-11-02
 * [SIP2-116](https://issues.folio.org/browse/SIP2-116): Upgrade Users interface to 16.0
 * [SIP2-130](https://issues.folio.org/browse/SIP2-130): Update dependencies for Nolana (MODINNREACH-322)
-
-## 2.4.0 IN-PROGRESS 
-
-* [SIP2-116] (https://issues.folio.org/browse/SIP2-116): Supports users interface versions 15.0 16.0
 
 ## 2.3.0 2022-09-07
 * [SIP2-115](https://issues.folio.org/browse/SIP2-115): Always populate the "title identifier" field for checked out response
