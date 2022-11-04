@@ -1,3 +1,6 @@
+## 2.4.0 2022-11-02
+* [SIP2-116](https://issues.folio.org/browse/SIP2-116): Upgrade Users interface to 16.0
+* [SIP2-130](https://issues.folio.org/browse/SIP2-130): Update dependencies for Nolana (MODINNREACH-322)
 
 ## 2.4.0 IN-PROGRESS 
 
