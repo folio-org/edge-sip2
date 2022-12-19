@@ -33,15 +33,16 @@ public class CheckinHandler implements ISip2RequestHandler {
 
   @Override
   public Future<String> execute(Object message, SessionData sessionData) {
+    log.debug("CheckinHandler :: execute message:{} sessionData:{}",message,sessionData);
     final Checkin checkin = (Checkin) message;
 
-    log.info("Checkin: {}", checkin::getCheckInLogInfo);
+    log.info("CheckinHandler :: execute Checkin: {}", checkin::getCheckInLogInfo);
 
     final Future<CheckinResponse> circulationFuture =
         circulationRepository.performCheckinCommand(checkin, sessionData);
 
     return circulationFuture.compose(checkinResponse -> {
-      log.debug("CheckinResponse: {}", () -> checkinResponse);
+      log.info("CheckinHandler :: execute CheckinResponse: {}", () -> checkinResponse);
 
       final Map<String, Object> root = new HashMap<>();
       root.put("formatDateTime", new FormatDateTimeMethodModel());
@@ -52,7 +53,7 @@ public class CheckinHandler implements ISip2RequestHandler {
       final String response = FreemarkerUtils
           .executeFreemarkerTemplate(root, commandTemplate);
 
-      log.debug("SIP checkin response: {}", response);
+      log.info("CheckinHandler :: execute SIP checkin response: {}", response);
 
       return Future.succeededFuture(response);
     });

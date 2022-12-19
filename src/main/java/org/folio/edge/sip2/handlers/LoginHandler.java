@@ -31,9 +31,10 @@ public class LoginHandler implements ISip2RequestHandler {
 
   @Override
   public Future<String> execute(Object message, SessionData sessionData) {
+    log.debug("LoginHandler :: execute message:{} sessionData:{}",message,sessionData);
     final Login login = (Login) message;
 
-    log.info("Login: {}", login::getLoginLogInfo);
+    log.info("LoginHandler :: execute Login: {}", login::getLoginLogInfo);
 
     final Future<LoginResponse> responseFuture = loginRepository.login(login, sessionData);
 
@@ -48,7 +49,7 @@ public class LoginHandler implements ISip2RequestHandler {
       final String response = FreemarkerUtils
           .executeFreemarkerTemplate(root, commandTemplate);
 
-      log.debug("SIP login response: {}", response);
+      log.info("LoginHandler :: execute SIP login response: {}", response);
 
       return Future.succeededFuture(response);
     });
