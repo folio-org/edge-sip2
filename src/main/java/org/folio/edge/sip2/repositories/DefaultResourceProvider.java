@@ -28,6 +28,7 @@ public class DefaultResourceProvider implements IResourceProvider<IRequestData> 
 
   @Override
   public Future<IResource> retrieveResource(IRequestData key) {
+    log.debug("retrieveResource key:{}",key);
 
     JsonObject jsonFile = null;
 
@@ -41,7 +42,7 @@ public class DefaultResourceProvider implements IResourceProvider<IRequestData> 
       String fileContent = br.lines().collect(Collectors.joining("\n"));
       br.lines().close();
 
-      log.debug(fileContent);
+      log.info("retrieveResource fileContent:{}",fileContent);
       jsonFile = new JsonObject(fileContent);
 
     } catch (Exception ex) {

@@ -56,7 +56,7 @@ public class ConfigurationRepository {
    * @return ACSStatus object
    */
   public Future<ACSStatus> getACSStatus(SessionData sessionData) {
-
+    log.debug("getACSStatus sessionData:{}",sessionData);
     LinkedHashMap<String, String> tenantLevelQueryParams = new LinkedHashMap<>();
     tenantLevelQueryParams.put(KEY_CONFIG_MODULE, CONFIG_MODULE);
     tenantLevelQueryParams.put(KEY_CONFIG_NAME, TENANT_CONFIG_NAME);
@@ -90,7 +90,10 @@ public class ConfigurationRepository {
                                      configKeyLocale, builder,
                                      sessionData));
 
-    return acsStatusBuilderFuture.map(result -> builder.build());
+    return acsStatusBuilderFuture.map(result -> {
+      log.info("getACSStatus ACSStatusBuilder:{}",result);
+      return builder.build();
+    });
   }
 
   /**

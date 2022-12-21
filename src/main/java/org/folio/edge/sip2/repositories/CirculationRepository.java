@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.domain.messages.responses.CheckinResponse;
@@ -37,6 +39,8 @@ import org.folio.edge.sip2.utils.Utils;
  */
 public class CirculationRepository {
   // Should consider letting the template take care of required fields with missing values
+  private static final Logger log = LogManager.getLogger();
+
   private static final String UNKNOWN = "";
   public static final String TITLE_NOT_FOUND = "TITLE NOT FOUND";
   public static final String TITLE = "title";
@@ -62,6 +66,7 @@ public class CirculationRepository {
    * @return the checkin response domain object
    */
   public Future<CheckinResponse> performCheckinCommand(Checkin checkin, SessionData sessionData) {
+    log.debug("performCheckinCommand checkin:{}",checkin);
     // We'll need to convert this date properly. It is likely that it will not include timezone
     // information, so we'll need to use the tenant/SC timezone as the basis and convert to UTC.
     final OffsetDateTime returnDate = checkin.getReturnDate();
@@ -85,7 +90,9 @@ public class CirculationRepository {
 
     return result
         .otherwise(() -> null)
-        .compose(resource -> Future.succeededFuture(
+        .compose(resource -> {
+          log.info("performCheckinCommand resource:{}",resource);
+          return Future.succeededFuture(
             CheckinResponse.builder()
               .ok(resource.getResource() == null ? FALSE : TRUE)
               .resensitize(resource.getResource() == null ? FALSE : TRUE)
@@ -105,7 +112,9 @@ public class CirculationRepository {
                   resource.getResource() == null ? UNKNOWN
                       : getSubChildString(resource.getResource(),
                           Arrays.asList("item", "location"), "name", UNKNOWN))
-              .build()));
+              .build());
+              }
+          );
   }
 
   /**
@@ -116,6 +125,7 @@ public class CirculationRepository {
    */
   public Future<CheckoutResponse> performCheckoutCommand(Checkout checkout,
                                                          SessionData sessionData) {
+    log.debug("performCheckoutCommand checkout:{} sessionData:{}",checkout,sessionData);
     final String institutionId = checkout.getInstitutionId();
     final String patronIdentifier = checkout.getPatronIdentifier();
     final String itemIdentifier = checkout.getItemIdentifier();
@@ -123,6 +133,7 @@ public class CirculationRepository {
 
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
       .compose(verification -> {
+        log.info("performCheckoutCommand verification:{}",verification);
         if (FALSE.equals(verification.getPasswordVerified())) {
           return Future.succeededFuture(CheckoutResponse.builder()
             .ok(FALSE)
@@ -156,6 +167,7 @@ public class CirculationRepository {
           .otherwise(Utils::handleErrors)
           .compose(res -> addTitleIfNotFound(sessionData, itemIdentifier, res))
           .map(resource -> {
+            log.info("performCheckoutCommand resource:{}",resource.getResource());
             final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
 
             final OffsetDateTime dueDate = response

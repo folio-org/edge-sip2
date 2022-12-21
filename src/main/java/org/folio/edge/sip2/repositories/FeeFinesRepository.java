@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
 
@@ -17,6 +19,9 @@ import org.folio.edge.sip2.utils.Utils;
  *
  */
 public class FeeFinesRepository {
+
+  private static final Logger log = LogManager.getLogger();
+
   private final IResourceProvider<IRequestData> resourceProvider;
 
   @Inject
@@ -37,6 +42,7 @@ public class FeeFinesRepository {
       SessionData sessionData) {
     Objects.requireNonNull(userId, "userId cannot be null");
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
+    log.debug("getManualBlocksByUserId userId:{}",userId);
 
     final Map<String, String> headers = new HashMap<>();
     headers.put("accept", "application/json");
@@ -48,7 +54,11 @@ public class FeeFinesRepository {
 
     return result
         .otherwise(() -> null)
-        .map(IResource::getResource);
+        .map(resultResource -> {
+          log.debug("getManualBlocksByUserId iResource:{}",resultResource.getResource());
+          return resultResource.getResource();
+              }
+          );
   }
 
   /**

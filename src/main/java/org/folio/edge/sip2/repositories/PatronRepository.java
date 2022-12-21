@@ -89,6 +89,8 @@ public class PatronRepository {
       SessionData sessionData) {
     Objects.requireNonNull(patronInformation, "patronInformation cannot be null");
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
+    log.debug("performPatronInformationCommand patronIdentifier:{}",
+        patronInformation.getPatronIdentifier());
 
     final String patronIdentifier = patronInformation.getPatronIdentifier();
     final String patronPassword = patronInformation.getPatronPassword();
@@ -149,6 +151,10 @@ public class PatronRepository {
 
   private Future<PatronInformationResponse> validPatron(String userId, Personal personal,
       PatronInformation patronInformation, SessionData sessionData, Boolean validPassword) {
+    if (personal != null) {
+      log.debug("validPatron userId:{} firstName:{} lastName:{}",
+          userId,personal.getFirstName(),personal.getLastName());
+    }
     // Now that we have a valid patron, we can retrieve data from circulation
     final PatronInformationResponseBuilder builder = PatronInformationResponse.builder();
     // Store patron data in the builder
@@ -187,7 +193,10 @@ public class PatronRepository {
     // When all operations complete, build and return the final PatronInformationResponse
     return CompositeFuture.all(manualBlocksFuture, accountFuture, holdsFuture,
         overdueFuture, recallsFuture, loansFuture)
-        .map(result -> builder
+        .map(result -> {
+          log.info("validPatron language:{} institutionId:{}",
+              patronInformation.getLanguage(),patronInformation.getInstitutionId());
+          return builder
             // Get tenant language from config along with the timezone
             .language(patronInformation.getLanguage())
             .transactionDate(OffsetDateTime.now(clock))
@@ -196,7 +205,8 @@ public class PatronRepository {
             .patronIdentifier(patronInformation.getPatronIdentifier())
             .validPatron(TRUE)
             .validPatronPassword(validPassword)
-            .build()
+            .build();
+          }
         );
   }
 
