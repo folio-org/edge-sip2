@@ -33,15 +33,16 @@ public class CheckoutHandler implements ISip2RequestHandler {
 
   @Override
   public Future<String> execute(Object message, SessionData sessionData) {
+    log.debug("CheckoutHandler :: execute message:{} sessionData:{}",message,sessionData);
     final Checkout checkout = (Checkout) message;
 
-    log.info("Checkout: {}", checkout::getCheckOutLogInfo);
+    log.info("CheckoutHandler :: execute Checkout: {}", checkout::getCheckOutLogInfo);
 
     final Future<CheckoutResponse> circulationFuture =
         circulationRepository.performCheckoutCommand(checkout, sessionData);
 
     return circulationFuture.compose(checkoutResponse -> {
-      log.debug("CheckoutResponse: {}", () -> checkoutResponse);
+      log.info("CheckoutHandler :: execute CheckoutResponse: {}", () -> checkoutResponse);
 
       final Map<String, Object> root = new HashMap<>();
       root.put("formatDateTime", new FormatDateTimeMethodModel());
@@ -51,7 +52,7 @@ public class CheckoutHandler implements ISip2RequestHandler {
 
       final String response = FreemarkerUtils.executeFreemarkerTemplate(root, commandTemplate);
 
-      log.debug("SIP checkout response: {}", response);
+      log.info("CheckoutHandler :: execute SIP checkout response: {}", response);
 
       return Future.succeededFuture(response);
     });

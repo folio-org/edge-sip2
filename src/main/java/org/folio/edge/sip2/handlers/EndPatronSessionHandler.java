@@ -35,15 +35,18 @@ public class EndPatronSessionHandler implements ISip2RequestHandler {
 
   @Override
   public Future<String> execute(Object message, SessionData sessionData) {
+    log.debug("EndPatronSessionHandler :: execute message:{} sessionData:{}", message,sessionData);
 
     final EndPatronSession endPatronSession = (EndPatronSession) message;
-    log.info("EndPatronSession: {}", endPatronSession::getPatronSessionLogInfo);
+    log.info("EndPatronSessionHandler :: execute EndPatronSession: {}",
+        endPatronSession::getPatronSessionLogInfo);
 
     final Future<EndSessionResponse> endPatronSessionFuture =
         patronRepository.performEndPatronSessionCommand(endPatronSession, sessionData);
 
     return endPatronSessionFuture.map(endSessionResponse -> {
-      log.debug("EndSessionResponse: {}", () -> endSessionResponse);
+      log.info("EndPatronSessionHandler :: execute EndSessionResponse: {}",
+          () -> endSessionResponse);
 
       final Map<String, Object> root = new HashMap<>();
       root.put("formatDateTime", new FormatDateTimeMethodModel());
@@ -54,7 +57,7 @@ public class EndPatronSessionHandler implements ISip2RequestHandler {
       final String response = FreemarkerUtils
           .executeFreemarkerTemplate(root, commandTemplate);
 
-      log.debug("SIP end session response: {}", response);
+      log.info("EndPatronSessionHandler :: execute SIP end session response: {}", response);
 
       return response;
     });

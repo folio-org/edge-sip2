@@ -40,6 +40,7 @@ public class SCStatusHandler implements ISip2RequestHandler {
 
   @Override
   public Future<String> execute(Object message, SessionData sessionData)  {
+    log.debug("SCStatusHandler :: execute message:{} sessionData:{}",message,sessionData);
 
     SCStatus scStatus = (SCStatus)message;
     sessionData.setMaxPrintWidth(scStatus.getMaxPrintWidth());
@@ -60,17 +61,18 @@ public class SCStatusHandler implements ISip2RequestHandler {
         root.put("timezone", sessionData.getTimeZone());
 
         if (template == null) {
-          log.error("Unable to locate Freemarker template for the command: " + ACS_STATUS.name());
+          log.warn("Unable to locate Freemarker template for the command:{}", ACS_STATUS.name());
           return Future.failedFuture("");
         }
 
         String acsSipStatusMessage = FreemarkerUtils.executeFreemarkerTemplate(root, template);
-        log.debug("Sip2 ACSStatus message: " + acsSipStatusMessage);
+        log.info("SCStatusHandler :: execute Sip2 ACSStatus message:{}", acsSipStatusMessage);
 
         return Future.succeededFuture(acsSipStatusMessage);
       });
     } else {
-      log.error("SC at location {} status is {}", sessionData.getScLocation(), scStatusCode);
+      log.warn("SCStatusHandler :: execute SC at location: {} status is :{}",
+          sessionData.getScLocation(), scStatusCode);
       return Future.failedFuture("Cannot service this request because SC is " + scStatusCode);
     }
   }
