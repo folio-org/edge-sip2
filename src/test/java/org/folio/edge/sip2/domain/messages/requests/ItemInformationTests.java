@@ -3,9 +3,8 @@ package org.folio.edge.sip2.domain.messages.requests;
 import static org.folio.edge.sip2.domain.messages.requests.ItemInformation.builder;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
 import org.junit.jupiter.api.Test;
@@ -87,8 +86,8 @@ class ItemInformationTests {
         .itemIdentifier(itemIdentifier)
         .terminalPassword(terminalPassword)
         .build();
-    assertTrue(ii1.equals(ii2));
-    assertTrue(ii2.equals(ii1));
+    assertEquals(ii1,ii2);
+    assertEquals(ii2,ii1);
   }
 
   @Test
@@ -105,8 +104,8 @@ class ItemInformationTests {
         .itemIdentifier("0987654321")
         .terminalPassword("0000")
         .build();
-    assertFalse(ii1.equals(ii2));
-    assertFalse(ii2.equals(ii1));
+    assertNotEquals(ii1,ii2);
+    assertNotEquals(ii2,ii1);
   }
 
   @Test

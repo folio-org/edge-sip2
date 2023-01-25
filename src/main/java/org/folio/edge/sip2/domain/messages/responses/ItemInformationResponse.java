@@ -57,6 +57,18 @@ public final class ItemInformationResponse {
   private final String currentLocation;
   /** Specific item information that can be user for identification. */
   private final String itemProperties;
+  /** The patron ID on the next hold for this item. */
+  private final String destinationInstitutionId;
+  /** The patron ID on the next hold for this item. */
+  private final String holdPatronId;
+  /** The patron name on the next hold for this item. */
+  private final String holdPatronName;
+  /** The author for the instance. */
+  private final String author;
+  /** The summary for the instance. */
+  private final String summary;
+  /** The isbn(s) for the instance. */
+  private final List<String> isbn;
   /** A message to show the patron. */
   private final List<String> screenMessage;
   /** A message to print via the SC's printer. */
@@ -84,11 +96,17 @@ public final class ItemInformationResponse {
     this.mediaType = builder.mediaType;
     this.permanentLocation = builder.permanentLocation;
     this.currentLocation = builder.currentLocation;
+    this.destinationInstitutionId = builder.destinationInstitutionId;
+    this.holdPatronId = builder.holdPatronId;
+    this.holdPatronName = builder.holdPatronName;
+    this.author = builder.author;
+    this.summary = builder.summary;
+    this.isbn = builder.isbn;
     this.itemProperties = builder.itemProperties;
     this.screenMessage = builder.screenMessage == null ? null
-        : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
+      : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
     this.printLine = builder.printLine == null ? null
-        : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
+      : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
   }
 
   /**
@@ -167,6 +185,30 @@ public final class ItemInformationResponse {
     return itemProperties;
   }
 
+  public String getDestinationInstitutionId() {
+    return destinationInstitutionId;
+  }
+
+  public String getHoldPatronId() {
+    return holdPatronId;
+  }
+
+  public String getHoldPatronName() {
+    return holdPatronName;
+  }
+
+  public String getAuthor() {
+    return author;
+  }
+
+  public String getSummary() {
+    return summary;
+  }
+
+  public List<String> getIsbn() {
+    return isbn;
+  }
+
   public List<String> getScreenMessage() {
     return screenMessage;
   }
@@ -178,10 +220,11 @@ public final class ItemInformationResponse {
   @Override
   public int hashCode() {
     return Objects.hash(circulationStatus, currencyType, currentLocation,
-        dueDate, feeAmount, feeType, holdPickupDate, holdQueueLength,
-        itemIdentifier, itemProperties, mediaType, owner, permanentLocation,
-        printLine, recallDate, screenMessage, securityMarker, titleIdentifier,
-        transactionDate);
+      dueDate, feeAmount, feeType, holdPickupDate, holdQueueLength,
+      itemIdentifier, itemProperties, mediaType, owner, permanentLocation,
+      printLine, recallDate, destinationInstitutionId, holdPatronId, holdPatronName,
+      author, summary, isbn,
+      screenMessage, securityMarker, titleIdentifier, transactionDate);
   }
 
   @Override
@@ -197,49 +240,61 @@ public final class ItemInformationResponse {
     }
     ItemInformationResponse other = (ItemInformationResponse) obj;
     return circulationStatus == other.circulationStatus
-        && currencyType == other.currencyType
-        && Objects.equals(currentLocation, other.currentLocation)
-        && Objects.equals(dueDate, other.dueDate)
-        && Objects.equals(feeAmount, other.feeAmount)
-        && feeType == other.feeType
-        && Objects.equals(holdPickupDate, other.holdPickupDate)
-        && Objects.equals(holdQueueLength, other.holdQueueLength)
-        && Objects.equals(itemIdentifier, other.itemIdentifier)
-        && Objects.equals(itemProperties, other.itemProperties)
-        && mediaType == other.mediaType
-        && Objects.equals(owner, other.owner)
-        && Objects.equals(permanentLocation, other.permanentLocation)
-        && Objects.equals(printLine, other.printLine)
-        && Objects.equals(recallDate, other.recallDate)
-        && Objects.equals(screenMessage, other.screenMessage)
-        && securityMarker == other.securityMarker
-        && Objects.equals(titleIdentifier, other.titleIdentifier)
-        && Objects.equals(transactionDate, other.transactionDate);
+      && currencyType == other.currencyType
+      && Objects.equals(currentLocation, other.currentLocation)
+      && Objects.equals(dueDate, other.dueDate)
+      && Objects.equals(feeAmount, other.feeAmount)
+      && feeType == other.feeType
+      && Objects.equals(holdPickupDate, other.holdPickupDate)
+      && Objects.equals(holdQueueLength, other.holdQueueLength)
+      && Objects.equals(itemIdentifier, other.itemIdentifier)
+      && Objects.equals(itemProperties, other.itemProperties)
+      && mediaType == other.mediaType
+      && Objects.equals(owner, other.owner)
+      && Objects.equals(permanentLocation, other.permanentLocation)
+      && Objects.equals(printLine, other.printLine)
+      && Objects.equals(recallDate, other.recallDate)
+      && Objects.equals(destinationInstitutionId, other.destinationInstitutionId)
+      && Objects.equals(holdPatronId, other.holdPatronId)
+      && Objects.equals(holdPatronName, other.holdPatronName)
+      && Objects.equals(author, other.author)
+      && Objects.equals(summary, other.summary)
+      && Objects.equals(isbn, other.isbn)
+      && Objects.equals(screenMessage, other.screenMessage)
+      && securityMarker == other.securityMarker
+      && Objects.equals(titleIdentifier, other.titleIdentifier)
+      && Objects.equals(transactionDate, other.transactionDate);
   }
 
   @Override
   public String toString() {
     return new StringBuilder()
-        .append("ItemInformationResponse [circulationStatus=").append(circulationStatus)
-        .append(", securityMarker=").append(securityMarker)
-        .append(", feeType=").append(feeType)
-        .append(", transactionDate=").append(transactionDate)
-        .append(", holdQueueLength=").append(holdQueueLength)
-        .append(", dueDate=").append(dueDate)
-        .append(", recallDate=").append(recallDate)
-        .append(", holdPickupDate=").append(holdPickupDate)
-        .append(", itemIdentifier=").append(itemIdentifier)
-        .append(", titleIdentifier=").append(titleIdentifier)
-        .append(", owner=").append(owner)
-        .append(", currencyType=").append(currencyType)
-        .append(", feeAmount=").append(feeAmount)
-        .append(", mediaType=").append(mediaType)
-        .append(", permanentLocation=").append(permanentLocation)
-        .append(", currentLocation=").append(currentLocation)
-        .append(", itemProperties=").append(itemProperties)
-        .append(", screenMessage=").append(screenMessage)
-        .append(", printLine=").append(printLine)
-        .append(']').toString();
+      .append("ItemInformationResponse [circulationStatus=").append(circulationStatus)
+      .append(", securityMarker=").append(securityMarker)
+      .append(", feeType=").append(feeType)
+      .append(", transactionDate=").append(transactionDate)
+      .append(", holdQueueLength=").append(holdQueueLength)
+      .append(", dueDate=").append(dueDate)
+      .append(", recallDate=").append(recallDate)
+      .append(", holdPickupDate=").append(holdPickupDate)
+      .append(", itemIdentifier=").append(itemIdentifier)
+      .append(", titleIdentifier=").append(titleIdentifier)
+      .append(", owner=").append(owner)
+      .append(", currencyType=").append(currencyType)
+      .append(", feeAmount=").append(feeAmount)
+      .append(", mediaType=").append(mediaType)
+      .append(", permanentLocation=").append(permanentLocation)
+      .append(", currentLocation=").append(currentLocation)
+      .append(", itemProperties=").append(itemProperties)
+      .append(", destinationInstitutionId=").append(destinationInstitutionId)
+      .append(", holdPatronId=").append(holdPatronId)
+      .append(", holdPatronName=").append(holdPatronName)
+      .append(", author=").append(author)
+      .append(", summary=").append(summary)
+      .append(", isbn=").append(isbn)
+      .append(", screenMessage=").append(screenMessage)
+      .append(", printLine=").append(printLine)
+      .append(']').toString();
   }
 
   /**
@@ -263,6 +318,12 @@ public final class ItemInformationResponse {
     private String permanentLocation;
     private String currentLocation;
     private String itemProperties;
+    private String destinationInstitutionId;
+    private String holdPatronId;
+    private String holdPatronName;
+    private String author;
+    private String summary;
+    private List<String> isbn;
     private List<String> screenMessage;
     private List<String> printLine;
 
@@ -355,15 +416,44 @@ public final class ItemInformationResponse {
       return this;
     }
 
-    public ItemInformationResponseBuilder currentLocation(
-        String currentLocation) {
+    public ItemInformationResponseBuilder currentLocation(String currentLocation) {
       this.currentLocation = currentLocation;
       return this;
     }
 
-    public ItemInformationResponseBuilder itemProperties(
-        String itemProperties) {
+    public ItemInformationResponseBuilder itemProperties(String itemProperties) {
       this.itemProperties = itemProperties;
+      return this;
+    }
+
+    public ItemInformationResponseBuilder destinationInstitutionId(
+        String destinationInstitutionId) {
+      this.destinationInstitutionId = destinationInstitutionId;
+      return this;
+    }
+
+    public ItemInformationResponseBuilder holdPatronId(String holdPatronId) {
+      this.holdPatronId = holdPatronId;
+      return this;
+    }
+
+    public ItemInformationResponseBuilder holdPatronName(String holdPatronName) {
+      this.holdPatronName = holdPatronName;
+      return this;
+    }
+
+    public ItemInformationResponseBuilder author(String author) {
+      this.author = author;
+      return this;
+    }
+
+    public ItemInformationResponseBuilder summary(String summary) {
+      this.summary = summary;
+      return this;
+    }
+
+    public ItemInformationResponseBuilder isbn(List<String> isbn) {
+      this.isbn = isbn;
       return this;
     }
 

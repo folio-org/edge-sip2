@@ -64,7 +64,7 @@ public final class ItemInformation {
   @Override
   public int hashCode() {
     return Objects.hash(institutionId, itemIdentifier, terminalPassword,
-        transactionDate);
+      transactionDate);
   }
 
   @Override
@@ -80,19 +80,19 @@ public final class ItemInformation {
     }
     ItemInformation other = (ItemInformation) obj;
     return Objects.equals(institutionId, other.institutionId)
-        && Objects.equals(itemIdentifier, other.itemIdentifier)
-        && Objects.equals(terminalPassword, other.terminalPassword)
-        && Objects.equals(transactionDate, other.transactionDate);
+      && Objects.equals(itemIdentifier, other.itemIdentifier)
+      && Objects.equals(terminalPassword, other.terminalPassword)
+      && Objects.equals(transactionDate, other.transactionDate);
   }
 
   @Override
   public String toString() {
     return new StringBuilder()
-        .append("ItemInformation [transactionDate=").append(transactionDate)
-        .append(", institutionId=").append(institutionId)
-        .append(", itemIdentifier=").append(itemIdentifier)
-        .append(", terminalPassword=").append(terminalPassword)
-        .append(']').toString();
+      .append("ItemInformation [transactionDate=").append(transactionDate)
+      .append(", institutionId=").append(institutionId)
+      .append(", itemIdentifier=").append(itemIdentifier)
+      .append(", terminalPassword=").append(terminalPassword)
+      .append(']').toString();
   }
 
   /**

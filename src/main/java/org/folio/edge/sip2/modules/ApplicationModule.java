@@ -18,6 +18,7 @@ import org.folio.edge.sip2.repositories.FeeFinesRepository;
 import org.folio.edge.sip2.repositories.FolioResourceProvider;
 import org.folio.edge.sip2.repositories.IRequestData;
 import org.folio.edge.sip2.repositories.IResourceProvider;
+import org.folio.edge.sip2.repositories.ItemRepository;
 import org.folio.edge.sip2.repositories.LoginRepository;
 import org.folio.edge.sip2.repositories.PasswordVerifier;
 import org.folio.edge.sip2.repositories.UsersRepository;
@@ -39,6 +40,7 @@ public class ApplicationModule extends AbstractModule {
     bind(LoginRepository.class);
     bind(UsersRepository.class);
     bind(PasswordVerifier.class);
+    bind(ItemRepository.class);
   }
 
   @Provides

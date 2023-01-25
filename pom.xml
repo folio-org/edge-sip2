@@ -247,7 +247,7 @@
           <groupId>com.github.mikelee2082</groupId>
           <artifactId>vertx-config-s3</artifactId>
           <version>0.2.0</version>
-          <scope>runtime</scope>
+<!--          <scope>runtime</scope>-->
         </dependency>
       </dependencies>
       <repositories>
