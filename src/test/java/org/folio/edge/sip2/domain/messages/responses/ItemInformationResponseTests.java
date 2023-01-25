@@ -14,8 +14,8 @@ import static org.folio.edge.sip2.domain.messages.enumerations.SecurityMarker.WH
 import static org.folio.edge.sip2.domain.messages.responses.ItemInformationResponse.builder;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
@@ -25,6 +25,7 @@ import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.FeeType;
 import org.folio.edge.sip2.domain.messages.enumerations.MediaType;
 import org.folio.edge.sip2.domain.messages.enumerations.SecurityMarker;
+import org.junit.jupiter.api.AssertionsKt;
 import org.junit.jupiter.api.Test;
 
 class ItemInformationResponseTests {
@@ -45,6 +46,12 @@ class ItemInformationResponseTests {
   final String permanentLocation = "circ_desk";
   final String currentLocation = "another_circ_desk";
   final String itemProperties = "Directors Cut";
+  final String destinationInstitutionId = "That branch";
+  final String holdPatronId = "Very Id ";
+  final String holdPatronName = "Very Name";
+  final String author = "That girl";
+  final String summary = "Very descriptive";
+  final List<String> isbn = asList("1011011101101");
   final List<String> screenMessage = asList("Please rewind");
   final List<String> printLine = asList("Enjoy!");
 
@@ -70,6 +77,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -96,6 +105,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -120,6 +131,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -146,6 +159,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -172,6 +187,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -196,6 +213,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -222,6 +241,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -248,6 +269,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -274,6 +297,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -300,6 +325,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -324,6 +351,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -350,6 +379,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -374,6 +405,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -398,6 +431,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -424,6 +459,8 @@ class ItemInformationResponseTests {
     assertEquals(permanentLocation, iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -450,6 +487,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertEquals(currentLocation, iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -476,6 +515,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertEquals(itemProperties, iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -500,6 +541,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertEquals(screenMessage, iir.getScreenMessage());
     assertNull(iir.getPrintLine());
   }
@@ -524,6 +567,8 @@ class ItemInformationResponseTests {
     assertNull(iir.getPermanentLocation());
     assertNull(iir.getCurrentLocation());
     assertNull(iir.getItemProperties());
+    assertNull(iir.getHoldPatronId());
+    assertNull(iir.getHoldPatronName());
     assertNull(iir.getScreenMessage());
     assertEquals(printLine, iir.getPrintLine());
   }
@@ -548,6 +593,9 @@ class ItemInformationResponseTests {
         .permanentLocation(permanentLocation)
         .currentLocation(currentLocation)
         .itemProperties(itemProperties)
+        .destinationInstitutionId(destinationInstitutionId)
+        .holdPatronId(holdPatronId)
+        .holdPatronName(holdPatronName)
         .screenMessage(screenMessage)
         .printLine(printLine)
         .build();
@@ -569,6 +617,9 @@ class ItemInformationResponseTests {
         () -> assertEquals(permanentLocation, iir.getPermanentLocation()),
         () -> assertEquals(currentLocation, iir.getCurrentLocation()),
         () -> assertEquals(itemProperties, iir.getItemProperties()),
+        () -> assertEquals(destinationInstitutionId, iir.getDestinationInstitutionId()),
+        () -> assertEquals(holdPatronId, iir.getHoldPatronId()),
+        () -> assertEquals(holdPatronName, iir.getHoldPatronName()),
         () -> assertEquals(screenMessage, iir.getScreenMessage()),
         () -> assertEquals(printLine, iir.getPrintLine())
     );
@@ -577,97 +628,121 @@ class ItemInformationResponseTests {
   @Test
   void testEqualsObject() {
     final ItemInformationResponse iir1 = builder()
-        .circulationStatus(circulationStatus)
-        .securityMarker(securityMarker)
-        .feeType(feeType)
-        .transactionDate(transactionDate)
-        .holdQueueLength(holdQueueLength)
-        .dueDate(dueDate)
-        .recallDate(recallDate)
-        .holdPickupDate(holdPickupDate)
-        .itemIdentifier(itemIdentifier)
-        .titleIdentifier(titleIdentifier)
-        .owner(owner)
-        .currencyType(currencyType)
-        .feeAmount(feeAmount)
-        .mediaType(mediaType)
-        .permanentLocation(permanentLocation)
-        .currentLocation(currentLocation)
-        .itemProperties(itemProperties)
-        .screenMessage(screenMessage)
-        .printLine(printLine)
-        .build();
+          .circulationStatus(circulationStatus)
+          .securityMarker(securityMarker)
+          .feeType(feeType)
+          .transactionDate(transactionDate)
+          .holdQueueLength(holdQueueLength)
+          .dueDate(dueDate)
+          .recallDate(recallDate)
+          .holdPickupDate(holdPickupDate)
+          .itemIdentifier(itemIdentifier)
+          .titleIdentifier(titleIdentifier)
+          .owner(owner)
+          .currencyType(currencyType)
+          .feeAmount(feeAmount)
+          .mediaType(mediaType)
+          .permanentLocation(permanentLocation)
+          .currentLocation(currentLocation)
+          .itemProperties(itemProperties)
+          .destinationInstitutionId(destinationInstitutionId)
+          .holdPatronId(holdPatronId)
+          .holdPatronName(holdPatronName)
+          .author(author)
+          .summary(summary)
+          .isbn(isbn)
+          .screenMessage(screenMessage)
+          .printLine(printLine)
+          .build();
     final ItemInformationResponse iir2 = builder()
-        .circulationStatus(circulationStatus)
-        .securityMarker(securityMarker)
-        .feeType(feeType)
-        .transactionDate(transactionDate)
-        .holdQueueLength(holdQueueLength)
-        .dueDate(dueDate)
-        .recallDate(recallDate)
-        .holdPickupDate(holdPickupDate)
-        .itemIdentifier(itemIdentifier)
-        .titleIdentifier(titleIdentifier)
-        .owner(owner)
-        .currencyType(currencyType)
-        .feeAmount(feeAmount)
-        .mediaType(mediaType)
-        .permanentLocation(permanentLocation)
-        .currentLocation(currentLocation)
-        .itemProperties(itemProperties)
-        .screenMessage(screenMessage)
-        .printLine(printLine)
-        .build();
-    assertTrue(iir1.equals(iir2));
-    assertTrue(iir1.equals(iir2));
+          .circulationStatus(circulationStatus)
+          .securityMarker(securityMarker)
+          .feeType(feeType)
+          .transactionDate(transactionDate)
+          .holdQueueLength(holdQueueLength)
+          .dueDate(dueDate)
+          .recallDate(recallDate)
+          .holdPickupDate(holdPickupDate)
+          .itemIdentifier(itemIdentifier)
+          .titleIdentifier(titleIdentifier)
+          .owner(owner)
+          .currencyType(currencyType)
+          .feeAmount(feeAmount)
+          .mediaType(mediaType)
+          .permanentLocation(permanentLocation)
+          .currentLocation(currentLocation)
+          .itemProperties(itemProperties)
+          .destinationInstitutionId(destinationInstitutionId)
+          .holdPatronId(holdPatronId)
+          .holdPatronName(holdPatronName)
+          .author(author)
+          .summary(summary)
+          .isbn(isbn)
+          .screenMessage(screenMessage)
+          .printLine(printLine)
+          .build();
+    assertEquals(iir1,iir2);
+    assertEquals(iir1,iir2);
   }
 
   @Test
   void testNotEqualsObject() {
     final ItemInformationResponse iir1 = builder()
-        .circulationStatus(circulationStatus)
-        .securityMarker(securityMarker)
-        .feeType(feeType)
-        .transactionDate(transactionDate)
-        .holdQueueLength(holdQueueLength)
-        .dueDate(dueDate)
-        .recallDate(recallDate)
-        .holdPickupDate(holdPickupDate)
-        .itemIdentifier(itemIdentifier)
-        .titleIdentifier(titleIdentifier)
-        .owner(owner)
-        .currencyType(currencyType)
-        .feeAmount(feeAmount)
-        .mediaType(mediaType)
-        .permanentLocation(permanentLocation)
-        .currentLocation(currentLocation)
-        .itemProperties(itemProperties)
-        .screenMessage(screenMessage)
-        .printLine(printLine)
-        .build();
+          .circulationStatus(circulationStatus)
+          .securityMarker(securityMarker)
+          .feeType(feeType)
+          .transactionDate(transactionDate)
+          .holdQueueLength(holdQueueLength)
+          .dueDate(dueDate)
+          .recallDate(recallDate)
+          .holdPickupDate(holdPickupDate)
+          .itemIdentifier(itemIdentifier)
+          .titleIdentifier(titleIdentifier)
+          .owner(owner)
+          .currencyType(currencyType)
+          .feeAmount(feeAmount)
+          .mediaType(mediaType)
+          .permanentLocation(permanentLocation)
+          .currentLocation(currentLocation)
+          .itemProperties(itemProperties)
+          .destinationInstitutionId(destinationInstitutionId)
+          .holdPatronId(holdPatronId)
+          .holdPatronName(holdPatronName)
+          .author(author)
+          .summary(summary)
+          .isbn(isbn)
+          .screenMessage(screenMessage)
+          .printLine(printLine)
+          .build();
     final ItemInformationResponse iir2 = builder()
-        .circulationStatus(MISSING)
-        .securityMarker(WHISPER_TAPE)
-        .feeType(DAMAGE)
-        .transactionDate(OffsetDateTime.now())
-        .holdQueueLength(Integer.valueOf(10))
-        .dueDate(OffsetDateTime.now().plusDays(5))
-        .recallDate(OffsetDateTime.now().plusDays(6))
-        .holdPickupDate(OffsetDateTime.now().plusDays(7))
-        .itemIdentifier("222222222")
-        .titleIdentifier("ou812")
-        .owner("Some Other Library")
-        .currencyType(GBP)
-        .feeAmount("125.00")
-        .mediaType(OTHER)
-        .permanentLocation("basement")
-        .currentLocation("stolen")
-        .itemProperties("Testing")
-        .screenMessage(asList("This is a test"))
-        .printLine(asList("This is a print test"))
-        .build();
-    assertFalse(iir1.equals(iir2));
-    assertFalse(iir1.equals(iir2));
+          .circulationStatus(MISSING)
+          .securityMarker(WHISPER_TAPE)
+          .feeType(DAMAGE)
+          .transactionDate(OffsetDateTime.now())
+          .holdQueueLength(Integer.valueOf(10))
+          .dueDate(OffsetDateTime.now().plusDays(5))
+          .recallDate(OffsetDateTime.now().plusDays(6))
+          .holdPickupDate(OffsetDateTime.now().plusDays(7))
+          .itemIdentifier("222222222")
+          .titleIdentifier("ou812")
+          .owner("Some Other Library")
+          .currencyType(GBP)
+          .feeAmount("125.00")
+          .mediaType(OTHER)
+          .permanentLocation("basement")
+          .currentLocation("stolen")
+          .itemProperties("Testing")
+          .destinationInstitutionId("Testing branch")
+          .holdPatronId("Other Id")
+          .holdPatronName("Other Name")
+          .author("That guy")
+          .summary("not descriptive enouhg")
+          .isbn(asList("0001110001110"))
+          .screenMessage(asList("This is a test"))
+          .printLine(asList("This is a print test"))
+          .build();
+    assertNotEquals(iir1,iir2);
+    assertNotEquals(iir1,iir2);
   }
 
   @Test
@@ -690,6 +765,12 @@ class ItemInformationResponseTests {
         .append(", permanentLocation=").append(permanentLocation)
         .append(", currentLocation=").append(currentLocation)
         .append(", itemProperties=").append(itemProperties)
+        .append(", destinationInstitutionId=").append(destinationInstitutionId)
+        .append(", holdPatronId=").append(holdPatronId)
+        .append(", holdPatronName=").append(holdPatronName)
+        .append(", author=").append(author)
+        .append(", summary=").append(summary)
+        .append(", isbn=").append(isbn)
         .append(", screenMessage=").append(screenMessage)
         .append(", printLine=").append(printLine)
         .append(']').toString();
@@ -711,6 +792,12 @@ class ItemInformationResponseTests {
         .permanentLocation(permanentLocation)
         .currentLocation(currentLocation)
         .itemProperties(itemProperties)
+        .destinationInstitutionId(destinationInstitutionId)
+        .holdPatronId(holdPatronId)
+        .holdPatronName(holdPatronName)
+        .author(author)
+        .summary(summary)
+        .isbn(isbn)
         .screenMessage(screenMessage)
         .printLine(printLine)
         .build();
