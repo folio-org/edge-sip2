@@ -14,9 +14,8 @@ import static org.folio.edge.sip2.domain.messages.enumerations.SecurityMarker.WH
 import static org.folio.edge.sip2.domain.messages.responses.ItemInformationResponse.builder;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.time.OffsetDateTime;
 import java.util.List;
