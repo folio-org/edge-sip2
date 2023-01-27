@@ -198,7 +198,7 @@ public class ItemRepository {
 
     public String getPath() {
       String uri = "/circulation/loans?query=(itemId==" + itemId
-          + " and status.name==Open) sortby status&";
+          + " and status.name==Open) sortby status";
       return uri;
     }
 
