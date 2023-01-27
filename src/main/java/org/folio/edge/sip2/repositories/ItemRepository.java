@@ -160,15 +160,9 @@ public class ItemRepository {
     }
 
     public String getPath() {
-      // Map<String,String> qsMap = new HashMap<String, String>();
-      // qsMap.put("limit", "1");
-      // qsMap.put("key2", "value2");
-      // qsMap.put("key3", "value3");
-      String uri = "/circulation/requests?limit=1&query=status=="
-          + "(Open - Awaiting pickup or Open - In Transit) and itemId=="
-          + itemUuid;
-      log.info("URI: {}", () -> uri);
-      return uri;
+      String query = Utils.encode("status==(Open - Awaiting pickup or Open - In Transit)"
+          + "(itemId==" + itemUuid + " and status.name=Open)");
+      return "/circulation/requests?limit=1&query=" + query;
     }
 
     public Map<String, String> getHeaders() {
