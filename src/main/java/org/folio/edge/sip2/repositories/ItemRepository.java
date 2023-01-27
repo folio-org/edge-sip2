@@ -160,8 +160,8 @@ public class ItemRepository {
     }
 
     public String getPath() {
-      String query = Utils.encode("status==(Open - Awaiting pickup or Open - In Transit)"
-          + "(itemId==" + itemUuid + " and status.name=Open)");
+      String query = Utils.encode("status==(Open - Awaiting pickup or Open - In Transit) and "
+          + "(itemId==" + itemUuid);
       return "/circulation/requests?limit=1&query=" + query;
     }
 
