@@ -354,9 +354,13 @@ public class ItemRepository {
       .retrieveResource(itemInformationRequestData)
       .compose(itemResource -> {
         JsonObject item = itemResource.getResource();
+        log.info("The requested item is " + item);
+        log.info("The specific json " +item
+          .getJsonArray("items").getJsonObject(0) );
         return Future.succeededFuture(item
           .getJsonArray("items").getJsonObject(0));
       });
+
   }
 
   private Future<JsonObject> getHoldings(HoldingsRequestData holdingsRequestData) {
