@@ -228,6 +228,7 @@ public class ItemRepository {
     return getItemView(itemInformationRequestData)
       .otherwiseEmpty()
       .compose(itemView -> {
+        log.info("itemView1: {}", () -> itemView);
         JsonObject item = itemView.getJsonObject("item");
         JsonObject holding = itemView.getJsonObject("holding");
         JsonObject instance = itemView.getJsonObject("instance");
@@ -307,6 +308,7 @@ public class ItemRepository {
     return getItem(itemInformationRequestData)
         .compose(itemResult -> {
           itemJson.mergeIn(itemResult);
+          log.info("After merge item json " + itemJson);
           String itemId = itemResult.getString("id");
           String holdingsId = itemResult.getString("holdingsRecordId");
           HoldingsRequestData holdingsRequestData =
@@ -339,6 +341,10 @@ public class ItemRepository {
               });
         })
         .compose(ar -> {
+          log.info("Item Json" + itemJson);
+          log.info("holding Json" + holdingJson);
+          log.info("instance Json" + instanceJson);
+          log.info("loan Json" + loanJson);
           JsonObject viewJson = new JsonObject();
           viewJson
               .put("item", itemJson)
