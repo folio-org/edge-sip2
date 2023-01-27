@@ -197,9 +197,8 @@ public class ItemRepository {
     }
 
     public String getPath() {
-      String uri = "/circulation/loans?query=(itemId==" + itemId
-          + " and status.name==Open)";
-      return uri;
+      String query = Utils.encode("(itemId==" + itemId + " and status.name=Open)");
+      return "/circulation/loans?query=" + query;
     }
 
     public Map<String, String> getHeaders() {
