@@ -49,7 +49,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
   @Override
   public Future<IResource> retrieveResource(IRequestData requestData) {
-    log.debug("retrieve resource {}", requestData::getPath);
+    log.info("retrieve resource {}", requestData::getPath);
 
     final HttpRequest<Buffer> request =
         client.getAbs(okapiUrl + requestData.getPath());
@@ -126,7 +126,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   }
 
   private static IResource toIResource(HttpResponse<JsonObject> httpResponse) {
-    log.debug("FOLIO response body: {}", () -> httpResponse.body().encodePrettily());
+    log.info("FOLIO response body: {}", () -> httpResponse.body().encodePrettily());
     return new FolioResource(httpResponse.body(), httpResponse.headers());
   }
 
