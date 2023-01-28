@@ -10,6 +10,8 @@
     transaction date: 18-char, fixed-length required field: YYYYMMDDZZZZHHMMSS
 -->
 <@lib.transactionDate value=itemInformationResponse.transactionDate/>
+<#-- hold queue lenght: optional -->
+<@lib.holdQueueLength value=itemInformationResponse.holdQueueLength!"" required=false/>
 <#-- due date: 18-char, fixed-length field: YYYYMMDDZZZZHHMMS -->
 <@lib.dueDate value=itemInformationResponse.dueDate!"" required=false/>
 <#-- recall date: 18-char, fixed-lengt  field: YYYYMMDDZZZZHHMMSS -->
@@ -24,6 +26,8 @@
 <@lib.owner value=itemInformationResponse.owner!""/>
 <#-- currency type: variable-length required field -->
 <@lib.currencyType value=itemInformationResponse.currencyType!"USD"/>
+<#-- fee amount: variable-length required field -->
+<@lib.feeAmount value=itemInformationResponse.feeAmount!"" required=false/>
 <#-- media type: 3-char, fixed-length optional field -->
 <@lib.mediaType value=itemInformationResponse.mediaType!""/>
 <#-- permanent location: variable-length required field -->
@@ -39,8 +43,6 @@
 <#-- hold patron name: variable-length optional field -->
 <@lib.holdPatronName value=itemInformationResponse.holdPatronName!""/>
 <#-- materialType: variable-length optional field -->
-<@lib.materialType value=itemInformationResponse.materialType!"" required=false/>
-<#-- author: variable-length optional field -->
 <@lib.author value=itemInformationResponse.author!"" required=false/>
 <#-- summary: variable-length optional field -->
 <@lib.summary value=itemInformationResponse.summary!"" required=false/>
