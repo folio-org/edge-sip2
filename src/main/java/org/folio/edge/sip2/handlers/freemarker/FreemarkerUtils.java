@@ -42,7 +42,7 @@ public class FreemarkerUtils {
       log.error("Error applying template to data: " + ex.getMessage());
     }
 
-    log.debug("Data = {} Template = {}",
+    log.info("Data = {} Template = {}",
         () -> data == null ? "" : data.toString(),
         template::getName);
 

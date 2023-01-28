@@ -9,6 +9,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.edge.sip2.domain.messages.enumerations.CirculationStatus;
 import org.folio.edge.sip2.domain.messages.requests.ItemInformation;
 import org.folio.edge.sip2.domain.messages.responses.ItemInformationResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
@@ -46,6 +47,7 @@ public class ItemInformationHandler implements ISip2RequestHandler {
       final Map<String, Object> root = new HashMap<>();
       root.put("formatDateTime", new FormatDateTimeMethodModel());
       root.put("delimiter", sessionData.getFieldDelimiter());
+      itemInformationResponse.setCirculationStatus(CirculationStatus.AVAILABLE);
       root.put("itemInformationResponse", itemInformationResponse);
       root.put("timezone", sessionData.getTimeZone());
 
