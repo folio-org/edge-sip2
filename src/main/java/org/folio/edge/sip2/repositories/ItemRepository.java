@@ -255,7 +255,7 @@ public class ItemRepository {
                   .destinationInstitutionId(
                       item.getJsonObject("effectiveLocation").getString("name"))
                   .isbn(getIsbn(instance.getJsonArray("identifiers")))
-                  .author(getAuthor(instance.getJsonArray("contributors")))
+                  .author("test")
                   .summary(getSummary(instance.getJsonArray("notes")))
                   .screenMessage(Collections.singletonList(
                       item.getJsonObject("status").getString("name")));
