@@ -1,9 +1,9 @@
 <#import "lib.ftl" as lib>
 18<#t>
 <#-- circulationStatus: 2-char, fixed-length required field: 00 thru 99 -->
-<@lib.circulationStatus value=itemInformationResponse.circulationStatus/>
+<@lib.circulationStatus value=itemInformationResponse.circulationStatus!"" required=false/>
 <#-- securityMarker: 2-char, fixed-length required field: 00 thru 99-->
-<@lib.securityMarker value=itemInformationResponse.securityMarker/>
+<@lib.securityMarker value=itemInformationResponse.securityMarker!"" required=false/>
 <#-- securityMarker: 2-char, fixed-length required field: 01 thru 99-->
 <@lib.feeType value=itemInformationResponse.feeType!"OTHER_UNKNOWN"/>
 <#--
@@ -42,8 +42,6 @@
 <@lib.holdPatronId value=itemInformationResponse.holdPatronId!""/>
 <#-- hold patron name: variable-length optional field -->
 <@lib.holdPatronName value=itemInformationResponse.holdPatronName!""/>
-<#-- materialType: variable-length optional field -->
-<@lib.author value=itemInformationResponse.author!"" required=false/>
 <#-- summary: variable-length optional field -->
 <@lib.summary value=itemInformationResponse.summary!"" required=false/>
 <#-- isbn: variable-length optional field -->
