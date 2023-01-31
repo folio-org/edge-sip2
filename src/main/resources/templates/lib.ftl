@@ -556,3 +556,24 @@
     CQ<@booleanToYorN value=value/>${delimiter}<#t>
   </#if>
 </#macro>
+
+<#macro securityMarker value>
+  <#if value?has_content>
+    <#switch value>
+      <#case "OTHER">
+        01<#t>
+        <#break>
+      <#case "NONE">
+        02<#t>
+        <#break>
+      <#case "TATTLE_TAPE_SECURITY_STRIP">
+        03<#t>
+        <#break>
+      <#case "WHISPER_TAPE">
+        04<#t>
+        <#break>
+      <#default>
+        01<#t>
+    </#switch>
+  </#if>
+</#macro>
