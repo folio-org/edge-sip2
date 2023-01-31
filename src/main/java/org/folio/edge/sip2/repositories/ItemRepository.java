@@ -249,9 +249,7 @@ public class ItemRepository {
                 );
               }
               builder
-                  .circulationStatus(
-                      lookupCirculationStatus(item.getJsonObject("status")
-                        .getString("name")).ordinal())
+                  .circulationStatus("10")
                   .securityMarker(SecurityMarker.NONE)
                   .transactionDate(OffsetDateTime.now(clock))
                   .dueDate(dueDate)
