@@ -184,6 +184,54 @@
   </#if>
 </#macro>
 
+<#macro circulationStatus value>
+  <#if value?has_content>
+    <#switch value>
+      <#case "OTHER">
+        01<#t>
+        <#break>
+      <#case "ON_ORDER">
+        02<#t>
+        <#break>
+      <#case "AVAILABLE">
+        03<#t>
+        <#break>
+      <#case "CHARGED">
+        04<#t>
+        <#break>
+      <#case "CHARGED_NOT_TO_BE_RECALLED_UNTIL_EARLIEST_RECALL_DATE">
+        05<#t>
+        <#break>
+      <#case "IN_PROCESS">
+        06<#t>
+        <#break>
+      <#case "RECALLED">
+        07<#t>
+        <#break>
+      <#case "WAITING_ON_HOLD_SHELF">
+        08<#t>
+        <#break>
+      <#case "WAITING_TO_BE_RESHELVED">
+        09<#t>
+        <#break>
+      <#case "IN_TRANSIT_BETWEEN_LIBRARY_LOCATIONS">
+        10<#t>
+        <#break>
+      <#case "CLAIMED_RETURNED">
+        11<#t>
+        <#break>
+      <#case "LOST">
+        12<#t>
+        <#break>
+      <#case "MISSING">
+        13<#t>
+        <#break>
+      <#default>
+        01<#t>
+    </#switch>
+  </#if>
+</#macro>
+
 <#macro fineItems value>
   <@variableLengthListField id="AV" value=value/>
 </#macro>

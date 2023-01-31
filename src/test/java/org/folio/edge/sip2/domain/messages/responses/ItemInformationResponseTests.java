@@ -57,9 +57,9 @@ class ItemInformationResponseTests {
   @Test
   void testGetCirculationStatus() {
     final ItemInformationResponse iir = builder()
-        .circulationStatus(String.valueOf(circulationStatus.ordinal()))
+        .circulationStatus(circulationStatus)
         .build();
-    assertEquals(String.valueOf(circulationStatus.ordinal()), iir.getCirculationStatus());
+    assertEquals(circulationStatus, iir.getCirculationStatus());
     assertNull(iir.getSecurityMarker());
     assertNull(iir.getFeeType());
     assertNull(iir.getTransactionDate());
@@ -575,7 +575,7 @@ class ItemInformationResponseTests {
   @Test
   void testCompleteItemInformationResponse() {
     final ItemInformationResponse iir = builder()
-        .circulationStatus(String.valueOf(circulationStatus.ordinal()))
+        .circulationStatus(circulationStatus)
         .securityMarker(securityMarker)
         .feeType(feeType)
         .transactionDate(transactionDate)
@@ -599,7 +599,7 @@ class ItemInformationResponseTests {
         .printLine(printLine)
         .build();
     assertAll("ItemInformationResponse",
-        () -> assertEquals(String.valueOf(circulationStatus.ordinal()), iir.getCirculationStatus()),
+        () -> assertEquals(circulationStatus, iir.getCirculationStatus()),
         () -> assertEquals(securityMarker, iir.getSecurityMarker()),
         () -> assertEquals(feeType, iir.getFeeType()),
         () -> assertEquals(transactionDate, iir.getTransactionDate()),
@@ -627,7 +627,7 @@ class ItemInformationResponseTests {
   @Test
   void testEqualsObject() {
     final ItemInformationResponse iir1 = builder()
-          .circulationStatus(String.valueOf(circulationStatus.ordinal()))
+          .circulationStatus(circulationStatus)
           .securityMarker(securityMarker)
           .feeType(feeType)
           .transactionDate(transactionDate)
@@ -654,7 +654,7 @@ class ItemInformationResponseTests {
           .printLine(printLine)
           .build();
     final ItemInformationResponse iir2 = builder()
-          .circulationStatus(String.valueOf(circulationStatus.ordinal()))
+          .circulationStatus(circulationStatus)
           .securityMarker(securityMarker)
           .feeType(feeType)
           .transactionDate(transactionDate)
@@ -680,14 +680,14 @@ class ItemInformationResponseTests {
           .screenMessage(screenMessage)
           .printLine(printLine)
           .build();
-    //assertEquals(iir1,iir2);
-    //assertEquals(iir1,iir2);
+    assertEquals(iir1,iir2);
+    assertEquals(iir1,iir2);
   }
 
   @Test
   void testNotEqualsObject() {
     final ItemInformationResponse iir1 = builder()
-          .circulationStatus(String.valueOf(circulationStatus.ordinal()))
+          .circulationStatus(circulationStatus)
           .securityMarker(securityMarker)
           .feeType(feeType)
           .transactionDate(transactionDate)
@@ -714,7 +714,7 @@ class ItemInformationResponseTests {
           .printLine(printLine)
           .build();
     final ItemInformationResponse iir2 = builder()
-          .circulationStatus(String.valueOf(MISSING.ordinal()))
+          .circulationStatus(MISSING)
           .securityMarker(WHISPER_TAPE)
           .feeType(DAMAGE)
           .transactionDate(OffsetDateTime.now())
@@ -747,7 +747,7 @@ class ItemInformationResponseTests {
   @Test
   void testToString() {
     final String expectedString = new StringBuilder()
-        .append("ItemInformationResponse [circulationStatus=").append(circulationStatus.ordinal())
+        .append("ItemInformationResponse [circulationStatus=").append(circulationStatus)
         .append(", securityMarker=").append(securityMarker)
         .append(", feeType=").append(feeType)
         .append(", transactionDate=").append(transactionDate)
@@ -774,7 +774,7 @@ class ItemInformationResponseTests {
         .append(", printLine=").append(printLine)
         .append(']').toString();
     final ItemInformationResponse iir = builder()
-        .circulationStatus(String.valueOf(circulationStatus.ordinal()))
+        .circulationStatus(circulationStatus)
         .securityMarker(securityMarker)
         .feeType(feeType)
         .transactionDate(transactionDate)
