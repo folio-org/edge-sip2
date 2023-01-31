@@ -47,7 +47,6 @@ public class ItemInformationHandler implements ISip2RequestHandler {
       final Map<String, Object> root = new HashMap<>();
       root.put("formatDateTime", new FormatDateTimeMethodModel());
       root.put("delimiter", sessionData.getFieldDelimiter());
-      itemInformationResponse.setCirculationStatus(CirculationStatus.AVAILABLE);
       root.put("itemInformationResponse", itemInformationResponse);
       root.put("timezone", sessionData.getTimeZone());
 

@@ -57,9 +57,9 @@ class ItemInformationResponseTests {
   @Test
   void testGetCirculationStatus() {
     final ItemInformationResponse iir = builder()
-        .circulationStatus(circulationStatus)
+        .circulationStatus(circulationStatus.ordinal())
         .build();
-    assertEquals(circulationStatus, iir.getCirculationStatus());
+    assertEquals(circulationStatus.ordinal(), iir.getCirculationStatus());
     assertNull(iir.getSecurityMarker());
     assertNull(iir.getFeeType());
     assertNull(iir.getTransactionDate());
@@ -575,7 +575,7 @@ class ItemInformationResponseTests {
   @Test
   void testCompleteItemInformationResponse() {
     final ItemInformationResponse iir = builder()
-        .circulationStatus(circulationStatus)
+        .circulationStatus(circulationStatus.ordinal())
         .securityMarker(securityMarker)
         .feeType(feeType)
         .transactionDate(transactionDate)
@@ -599,7 +599,7 @@ class ItemInformationResponseTests {
         .printLine(printLine)
         .build();
     assertAll("ItemInformationResponse",
-        () -> assertEquals(circulationStatus, iir.getCirculationStatus()),
+        () -> assertEquals(circulationStatus.ordinal(), iir.getCirculationStatus()),
         () -> assertEquals(securityMarker, iir.getSecurityMarker()),
         () -> assertEquals(feeType, iir.getFeeType()),
         () -> assertEquals(transactionDate, iir.getTransactionDate()),
@@ -627,7 +627,7 @@ class ItemInformationResponseTests {
   @Test
   void testEqualsObject() {
     final ItemInformationResponse iir1 = builder()
-          .circulationStatus(circulationStatus)
+          .circulationStatus(circulationStatus.ordinal())
           .securityMarker(securityMarker)
           .feeType(feeType)
           .transactionDate(transactionDate)
@@ -654,7 +654,7 @@ class ItemInformationResponseTests {
           .printLine(printLine)
           .build();
     final ItemInformationResponse iir2 = builder()
-          .circulationStatus(circulationStatus)
+          .circulationStatus(circulationStatus.ordinal())
           .securityMarker(securityMarker)
           .feeType(feeType)
           .transactionDate(transactionDate)
@@ -687,7 +687,7 @@ class ItemInformationResponseTests {
   @Test
   void testNotEqualsObject() {
     final ItemInformationResponse iir1 = builder()
-          .circulationStatus(circulationStatus)
+          .circulationStatus(circulationStatus.ordinal())
           .securityMarker(securityMarker)
           .feeType(feeType)
           .transactionDate(transactionDate)
@@ -714,7 +714,7 @@ class ItemInformationResponseTests {
           .printLine(printLine)
           .build();
     final ItemInformationResponse iir2 = builder()
-          .circulationStatus(MISSING)
+          .circulationStatus(MISSING.ordinal())
           .securityMarker(WHISPER_TAPE)
           .feeType(DAMAGE)
           .transactionDate(OffsetDateTime.now())
@@ -747,7 +747,7 @@ class ItemInformationResponseTests {
   @Test
   void testToString() {
     final String expectedString = new StringBuilder()
-        .append("ItemInformationResponse [circulationStatus=").append(circulationStatus)
+        .append("ItemInformationResponse [circulationStatus=").append(circulationStatus.ordinal())
         .append(", securityMarker=").append(securityMarker)
         .append(", feeType=").append(feeType)
         .append(", transactionDate=").append(transactionDate)
@@ -774,7 +774,7 @@ class ItemInformationResponseTests {
         .append(", printLine=").append(printLine)
         .append(']').toString();
     final ItemInformationResponse iir = builder()
-        .circulationStatus(circulationStatus)
+        .circulationStatus(circulationStatus.ordinal())
         .securityMarker(securityMarker)
         .feeType(feeType)
         .transactionDate(transactionDate)

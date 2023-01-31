@@ -24,7 +24,7 @@ import org.folio.edge.sip2.domain.messages.enumerations.SecurityMarker;
  */
 public final class ItemInformationResponse {
   /** The circulation status of the item. */
-  private CirculationStatus circulationStatus;
+  private Integer circulationStatus;
   /** The security marker on the item. */
   private final SecurityMarker securityMarker;
   /** The type of fee associated with checking out this item. */
@@ -117,11 +117,11 @@ public final class ItemInformationResponse {
     return new ItemInformationResponseBuilder();
   }
 
-  public CirculationStatus getCirculationStatus() {
+  public Integer getCirculationStatus() {
     return circulationStatus;
   }
 
-  public void setCirculationStatus(CirculationStatus circulationStatus) {
+  public void setCirculationStatus(Integer circulationStatus) {
     this.circulationStatus = circulationStatus;
   }
 
@@ -305,7 +305,7 @@ public final class ItemInformationResponse {
    * Builder for {@code ItemInformationResponse}.
    */
   public static class ItemInformationResponseBuilder {
-    private CirculationStatus circulationStatus;
+    private Integer circulationStatus;
     private SecurityMarker securityMarker;
     private FeeType feeType;
     private OffsetDateTime transactionDate;
@@ -336,7 +336,7 @@ public final class ItemInformationResponse {
     }
 
     public ItemInformationResponseBuilder circulationStatus(
-        CirculationStatus circulationStatus) {
+        int circulationStatus) {
       this.circulationStatus = circulationStatus;
       return this;
     }

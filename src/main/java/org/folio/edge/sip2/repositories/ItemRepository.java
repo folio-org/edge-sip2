@@ -213,6 +213,11 @@ public class ItemRepository {
    */
   public Future<ItemInformationResponse> performItemInformationCommand(
       ItemInformation itemInformation, SessionData sessionData) {
+    Objects.requireNonNull(itemInformation, "itemInformation cannot be null");
+    Objects.requireNonNull(sessionData, "sessionData cannot be null");
+    log.debug("performItemInformationCommand itemIdentifier:{}",
+        itemInformation.getItemIdentifier());
+
     final String itemIdentifier = itemInformation.getItemIdentifier();
 
     ItemInformationRequestData itemInformationRequestData =
@@ -245,7 +250,8 @@ public class ItemRepository {
               }
               builder
                   .circulationStatus(
-                      lookupCirculationStatus(item.getJsonObject("status").getString("name")))
+                      lookupCirculationStatus(item.getJsonObject("status")
+                        .getString("name")).ordinal())
                   .securityMarker(SecurityMarker.NONE)
                   .transactionDate(OffsetDateTime.now(clock))
                   .dueDate(dueDate)
