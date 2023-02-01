@@ -226,9 +226,7 @@ public class ItemRepository {
     return getItemView(itemInformationRequestData)
       //.otherwiseEmpty()
       .compose(itemView -> {
-        log.info("HERE !!!!!!!!");
         if (itemView != null) {
-          log.info("Not null item");
           JsonObject item = itemView.getJsonObject("item");
           JsonObject holding = itemView.getJsonObject("holding");
           JsonObject instance = itemView.getJsonObject("instance");
@@ -244,7 +242,7 @@ public class ItemRepository {
               .otherwise(Utils::handleErrors)
               .compose(holdResource -> {
                 final ItemInformationResponseBuilder builder = ItemInformationResponse.builder();
-                OffsetDateTime dueDate = OffsetDateTime.now(clock);
+                OffsetDateTime dueDate = null;
                 if (!loan.isEmpty()) {
                   dueDate = OffsetDateTime.from(
                       Utils.getFolioDateTimeFormatter().parse(loan.getString("dueDate"))
@@ -259,24 +257,19 @@ public class ItemRepository {
                     .itemIdentifier(itemIdentifier)
                     .titleIdentifier(item.getString("title"))
                     .permanentLocation(item.getJsonObject("effectiveLocation").getString("name"))
-                    .destinationInstitutionId(
-                        item.getJsonObject("effectiveLocation").getString("name"))
-                    .isbn(getIsbn(instance.getJsonArray("identifiers")))
-                    .author("test")
-                    .summary(getSummary(instance.getJsonArray("notes")))
                     .screenMessage(Collections.singletonList(
                         item.getJsonObject("status").getString("name")));
                 JsonObject holdResponse = holdResource.getResource();
-
+                log.info("Hold REsponse " + holdResponse);
                 if (holdResponse.getJsonArray("requests").size() > 0) {
                   JsonObject nextHold = holdResponse.getJsonArray("requests").getJsonObject(0);
                   JsonObject holdPatron = nextHold.getJsonObject("requester");
                   JsonObject holdLocation = nextHold.getJsonObject("pickupServicePoint");
-                  builder
-                      .destinationInstitutionId(holdLocation.getString("name"))
-                      .holdPatronId(holdPatron.getString("barcode"))
-                      .holdPatronName(holdPatron.getString("lastName") + ", "
-                        + holdPatron.getString("firstName"));
+                  //                  builder
+                  //                      .destinationInstitutionId(holdLocation.getString("name"))
+                  //                      .holdPatronId(holdPatron.getString("barcode"))
+                  //                      .holdPatronName(holdPatron.getString("lastName") + ", "
+                  //                        + holdPatron.getString("firstName"));
                 }
                 if (item.getJsonObject("status")
                     .getString("name").equals(ItemStatus.CHECKED_OUT.getValue())) {
