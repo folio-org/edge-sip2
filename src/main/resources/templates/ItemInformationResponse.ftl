@@ -26,11 +26,11 @@
 <#-- title identifier: variable-length optional field -->
 <@lib.titleIdentifier value=itemInformationResponse.titleIdentifier!""/>
 <#-- owner: variable-length field -->
-<@lib.owner value=itemInformationResponse.owner!""/>
+<@lib.owner value=itemInformationResponse.owner!"" required=false/>
 <#-- currency type: variable-length required field -->
 <@lib.currencyType value=itemInformationResponse.currencyType!"USD"/>
 <#-- fee amount: variable-length required field -->
-<@lib.feeAmount value=itemInformationResponse.feeAmount!"" required=false/>
+<@lib.feeAmount value=itemInformationResponse.feeAmount!""/>
 <#-- media type: 3-char, fixed-length optional field -->
 <@lib.mediaType value=itemInformationResponse.mediaType!""/>
 <#-- permanent location: variable-length required field -->

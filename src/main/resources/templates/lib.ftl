@@ -590,12 +590,16 @@
   </#if>
 </#macro>
 
-<#macro holdQueueLength value>
+<#macro holdQueueLength value required=false>
+ <#if required || value?has_content>
   <@variableLengthField id="CF" value=value/>
+ </#if>
 </#macro>
 
-<#macro owner value>
+<#macro owner value required=false>
+<#if required || value?has_content>
   <@variableLengthListField id="BG" value=value/>
+</#if>
 </#macro>
 
 <#macro currentLocation value>
