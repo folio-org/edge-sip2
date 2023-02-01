@@ -1,14 +1,11 @@
 package org.folio.edge.sip2.repositories;
 
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.time.Clock;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
@@ -23,8 +20,6 @@ import org.folio.edge.sip2.domain.messages.responses.ItemInformationResponse.Ite
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
 
-//import org.folio.edge.sip2.utils.Utils.buildQueryString;
-
 
 /**
  * Provides interaction with the Items service.
@@ -35,7 +30,7 @@ import org.folio.edge.sip2.utils.Utils;
 public class ItemRepository {
   private static final Logger log = LogManager.getLogger();
   private final IResourceProvider<IRequestData> resourceProvider;
-  private Clock clock;
+  private final Clock clock;
 
   @Inject
   ItemRepository(IResourceProvider<IRequestData> resourceProvider,
@@ -67,11 +62,10 @@ public class ItemRepository {
     }
 
     public String getPath() {
-      String uri = "/inventory/items?limit=1&query=barcode==" + itemIdentifier;
-      log.info("URI: {}", () -> uri);
-      return uri;
+      return "/inventory/items?limit=1&query=barcode==" + itemIdentifier;
     }
 
+    @Override
     public Map<String, String> getHeaders() {
       return headers;
     }
@@ -103,6 +97,7 @@ public class ItemRepository {
       return uri;
     }
 
+    @Override
     public Map<String, String> getHeaders() {
       return headers;
     }
@@ -134,6 +129,7 @@ public class ItemRepository {
       return uri;
     }
 
+    @Override
     public Map<String, String> getHeaders() {
       return headers;
     }
@@ -165,6 +161,7 @@ public class ItemRepository {
       return "/circulation/requests?limit=1&query=" + query;
     }
 
+    @Override
     public Map<String, String> getHeaders() {
       return headers;
     }
@@ -195,6 +192,7 @@ public class ItemRepository {
       return "/circulation/loans?query=" + query;
     }
 
+    @Override
     public Map<String, String> getHeaders() {
       return headers;
     }
@@ -227,8 +225,6 @@ public class ItemRepository {
       .compose(itemView -> {
         if (itemView != null) {
           JsonObject item = itemView.getJsonObject("item");
-          JsonObject holding = itemView.getJsonObject("holding");
-          JsonObject instance = itemView.getJsonObject("instance");
           JsonObject loan = itemView.getJsonObject("loan");
           log.debug("itemView1: {}", () -> itemView);
           NextHoldRequestData nextHoldRequestData =
@@ -373,58 +369,36 @@ public class ItemRepository {
    * @return the CirculationStatus enum item
    */
   public CirculationStatus lookupCirculationStatus(String folioString) {
+    ItemStatus itemStatus = ItemStatus.from(folioString);
 
-    if (ItemStatus.AVAILABLE.getValue().equals(folioString)) {
-      return CirculationStatus.AVAILABLE;
+    switch ((itemStatus)){
+      case AVAILABLE:
+         return CirculationStatus.AVAILABLE;
+      case AWAITING_PICKUP:
+        return CirculationStatus.WAITING_ON_HOLD_SHELF;
+      case AWAITING_DELIVERY:
+      case IN_TRANSIT:
+        return CirculationStatus.IN_TRANSIT_BETWEEN_LIBRARY_LOCATIONS;
+      case CHECKED_OUT:
+        return CirculationStatus.CHARGED;
+      case PAGED:
+        return CirculationStatus.RECALLED;
+      case ON_ORDER:
+        return CirculationStatus.ON_ORDER;
+      case IN_PROCESS:
+      case IN_PROCESS_NON_REQUESTABLE:
+        return CirculationStatus.IN_PROCESS;
+      case CLAIMED_RETURNED:
+        return CirculationStatus.CLAIMED_RETURNED;
+      case LOST_AND_PAID:
+      case AGED_TO_LOST:
+      case DECLARED_LOST:
+        return CirculationStatus.LOST;
+      case LONG_MISSING:
+        return CirculationStatus.MISSING;
+      default:
+        return CirculationStatus.OTHER;
     }
-    if (ItemStatus.AWAITING_PICKUP.getValue().equals(folioString)) {
-      return CirculationStatus.WAITING_ON_HOLD_SHELF;
-    }
-    if (ItemStatus.AWAITING_DELIVERY.getValue().equals(folioString)) {
-      return CirculationStatus.IN_TRANSIT_BETWEEN_LIBRARY_LOCATIONS;
-    }
-    if (ItemStatus.CHECKED_OUT.getValue().equals(folioString)) {
-      return CirculationStatus.CHARGED;
-    }
-    if (ItemStatus.IN_TRANSIT.getValue().equals(folioString)) {
-      return CirculationStatus.IN_TRANSIT_BETWEEN_LIBRARY_LOCATIONS;
-    }
-    if (ItemStatus.PAGED.getValue().equals(folioString)) {
-      return CirculationStatus.RECALLED;
-    }
-    if (ItemStatus.ON_ORDER.getValue().equals(folioString)) {
-      return CirculationStatus.ON_ORDER;
-    }
-    if (ItemStatus.IN_PROCESS.getValue().equals(folioString)) {
-      return CirculationStatus.IN_PROCESS;
-    }
-    if (ItemStatus.DECLARED_LOST.getValue().equals(folioString)) {
-      return CirculationStatus.LOST;
-    }
-    if (ItemStatus.CLAIMED_RETURNED.getValue().equals(folioString)) {
-      return CirculationStatus.CLAIMED_RETURNED;
-    }
-    if (ItemStatus.LOST_AND_PAID.getValue().equals(folioString)) {
-      return CirculationStatus.LOST;
-    }
-    if (ItemStatus.INTELLECTUAL_ITEM.getValue().equals(folioString)) {
-      return CirculationStatus.OTHER;
-    }
-    if (ItemStatus.IN_PROCESS_NON_REQUESTABLE.getValue().equals(folioString)) {
-      return CirculationStatus.IN_PROCESS;
-    }
-    if (ItemStatus.LONG_MISSING.getValue().equals(folioString)) {
-      return CirculationStatus.MISSING;
-    }
-    if (ItemStatus.UNAVAILABLE.getValue().equals(folioString)) {
-      return CirculationStatus.OTHER;
-    }
-    if (ItemStatus.RESTRICTED.getValue().equals(folioString)) {
-      return CirculationStatus.OTHER;
-    }
-    if (ItemStatus.AGED_TO_LOST.getValue().equals(folioString)) {
-      return CirculationStatus.LOST;
-    }
-    return CirculationStatus.OTHER;
+
   }
 }
