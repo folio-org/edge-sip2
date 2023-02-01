@@ -224,9 +224,11 @@ public class ItemRepository {
         new ItemInformationRequestData(itemIdentifier, getBaseHeaders(), sessionData);
 
     return getItemView(itemInformationRequestData)
-      .otherwiseEmpty()
+      //.otherwiseEmpty()
       .compose(itemView -> {
+        log.info("HERE !!!!!!!!");
         if (itemView != null) {
+          log.info("Not null item");
           JsonObject item = itemView.getJsonObject("item");
           JsonObject holding = itemView.getJsonObject("holding");
           JsonObject instance = itemView.getJsonObject("instance");
@@ -289,6 +291,7 @@ public class ItemRepository {
               }
             );
         }
+        log.info("REturning null from here");
               return null;
             }
 
