@@ -309,7 +309,7 @@ public class ItemRepository {
       .otherwiseEmpty()
         .compose(itemResult -> {
           log.info("itemResult -- " + itemResult);
-          if (itemResult.getJsonArray("items").size() > 0) {
+          if (itemResult != null) {
             log.info("GONE IN");
             itemJson.mergeIn(itemResult);
             String itemId = itemResult.getString("id");
