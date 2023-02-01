@@ -41,6 +41,10 @@ public class ItemInformationHandler implements ISip2RequestHandler {
     final Future<ItemInformationResponse> itemInformationFuture =
         itemRepository.performItemInformationCommand(itemInformation, sessionData);
 
+    if (itemInformationFuture == null) {
+      return Future.failedFuture("Item does not exists.");
+    }
+
     return itemInformationFuture.compose(itemInformationResponse -> {
       log.info("ItemInformationResponse: {}", () -> itemInformationResponse);
 

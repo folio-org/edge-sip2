@@ -226,74 +226,73 @@ public class ItemRepository {
     return getItemView(itemInformationRequestData)
       .otherwiseEmpty()
       .compose(itemView -> {
-        log.info("itemView1: {}", () -> itemView);
-        JsonObject item = itemView.getJsonObject("item");
-        JsonObject holding = itemView.getJsonObject("holding");
-        JsonObject instance = itemView.getJsonObject("instance");
-        JsonObject loan = itemView.getJsonObject("loan");
-        log.debug("itemView1: {}", () -> itemView);
-        NextHoldRequestData nextHoldRequestData =
-            new NextHoldRequestData(item.getString("id"), getBaseHeaders(), sessionData);
+        if (itemView != null) {
+          JsonObject item = itemView.getJsonObject("item");
+          JsonObject holding = itemView.getJsonObject("holding");
+          JsonObject instance = itemView.getJsonObject("instance");
+          JsonObject loan = itemView.getJsonObject("loan");
+          log.debug("itemView1: {}", () -> itemView);
+          NextHoldRequestData nextHoldRequestData =
+              new NextHoldRequestData(item.getString("id"), getBaseHeaders(), sessionData);
 
-        Future<IResource> nextHoldResult;
-        nextHoldResult = resourceProvider.retrieveResource(nextHoldRequestData);
+          Future<IResource> nextHoldResult;
+          nextHoldResult = resourceProvider.retrieveResource(nextHoldRequestData);
 
-        return nextHoldResult
-            .otherwise(Utils::handleErrors)
-            .compose(holdResource -> {
-              final ItemInformationResponseBuilder builder = ItemInformationResponse.builder();
-              OffsetDateTime dueDate = OffsetDateTime.now(clock);
-              if (!loan.isEmpty()) {
-                dueDate = OffsetDateTime.from(
-                    Utils.getFolioDateTimeFormatter().parse(loan.getString("dueDate"))
-                );
-              }
-              builder
-                  .circulationStatus(lookupCirculationStatus(item.getJsonObject("status")
-                        .getString("name")))
-                  .securityMarker(SecurityMarker.NONE)
-                  .transactionDate(OffsetDateTime.now(clock))
-                  .dueDate(dueDate)
-                  .itemIdentifier(itemIdentifier)
-                  .titleIdentifier(item.getString("title"))
-                  .permanentLocation(item.getJsonObject("effectiveLocation").getString("name"))
-                  .destinationInstitutionId(
-                      item.getJsonObject("effectiveLocation").getString("name"))
-                  .isbn(getIsbn(instance.getJsonArray("identifiers")))
-                  .author("test")
-                  .summary(getSummary(instance.getJsonArray("notes")))
-                  .screenMessage(Collections.singletonList(
-                      item.getJsonObject("status").getString("name")));
-              JsonObject holdResponse = holdResource.getResource();
-
-              if (holdResponse.getJsonArray("requests").size() > 0) {
-                JsonObject nextHold = holdResponse.getJsonArray("requests").getJsonObject(0);
-                JsonObject holdPatron = nextHold.getJsonObject("requester");
-                JsonObject holdLocation = nextHold.getJsonObject("pickupServicePoint");
+          return nextHoldResult
+              .otherwise(Utils::handleErrors)
+              .compose(holdResource -> {
+                final ItemInformationResponseBuilder builder = ItemInformationResponse.builder();
+                OffsetDateTime dueDate = OffsetDateTime.now(clock);
+                if (!loan.isEmpty()) {
+                  dueDate = OffsetDateTime.from(
+                      Utils.getFolioDateTimeFormatter().parse(loan.getString("dueDate"))
+                  );
+                }
                 builder
-                    .destinationInstitutionId(holdLocation.getString("name"))
-                    .holdPatronId(holdPatron.getString("barcode"))
-                    .holdPatronName(holdPatron.getString("lastName") + ", "
-                      + holdPatron.getString("firstName"));
-              }
-              if (item.getJsonObject("status")
-                  .getString("name").equals(ItemStatus.CHECKED_OUT.getValue())) {
-                    LoanRequestData loanRequestData =
-                        new LoanRequestData(item.getString("id"), getBaseHeaders(), sessionData);
-                    Future<IResource> loansResult = resourceProvider
-                        .retrieveResource(loanRequestData);
-                    //   loansResult
-                    //       .otherwiseEmpty()
-                    //       .map(IResource::getResource)
-                    //       .compose(loansResource -> {
-                    //         JsonArray loans = loansResource.getJsonArray("loans");
-                    //       }); //end compose
-              }
+                    .circulationStatus(lookupCirculationStatus(item.getJsonObject("status")
+                          .getString("name")))
+                    .securityMarker(SecurityMarker.NONE)
+                    .transactionDate(OffsetDateTime.now(clock))
+                    .dueDate(dueDate)
+                    .itemIdentifier(itemIdentifier)
+                    .titleIdentifier(item.getString("title"))
+                    .permanentLocation(item.getJsonObject("effectiveLocation").getString("name"))
+                    .destinationInstitutionId(
+                        item.getJsonObject("effectiveLocation").getString("name"))
+                    .isbn(getIsbn(instance.getJsonArray("identifiers")))
+                    .author("test")
+                    .summary(getSummary(instance.getJsonArray("notes")))
+                    .screenMessage(Collections.singletonList(
+                        item.getJsonObject("status").getString("name")));
+                JsonObject holdResponse = holdResource.getResource();
 
-              return Future.succeededFuture(builder.build());
+                if (holdResponse.getJsonArray("requests").size() > 0) {
+                  JsonObject nextHold = holdResponse.getJsonArray("requests").getJsonObject(0);
+                  JsonObject holdPatron = nextHold.getJsonObject("requester");
+                  JsonObject holdLocation = nextHold.getJsonObject("pickupServicePoint");
+                  builder
+                      .destinationInstitutionId(holdLocation.getString("name"))
+                      .holdPatronId(holdPatron.getString("barcode"))
+                      .holdPatronName(holdPatron.getString("lastName") + ", "
+                        + holdPatron.getString("firstName"));
+                }
+                if (item.getJsonObject("status")
+                    .getString("name").equals(ItemStatus.CHECKED_OUT.getValue())) {
+                      LoanRequestData loanRequestData =
+                          new LoanRequestData(item.getString("id"), getBaseHeaders(), sessionData);
+                      Future<IResource> loansResult = resourceProvider
+                          .retrieveResource(loanRequestData);
+
+                }
+
+                return Future.succeededFuture(builder.build());
+              }
+            );
+        }
+              return null;
             }
-          );
-      }); // end compose
+
+      ); // end compose
   }
 
   private Future<JsonObject> getItemView(ItemInformationRequestData itemInformationRequestData) {
@@ -307,7 +306,6 @@ public class ItemRepository {
       .otherwiseEmpty()
         .compose(itemResult -> {
           itemJson.mergeIn(itemResult);
-          log.info("After merge item json " + itemJson);
           String itemId = itemResult.getString("id");
           String holdingsId = itemResult.getString("holdingsRecordId");
           HoldingsRequestData holdingsRequestData =
@@ -328,7 +326,6 @@ public class ItemRepository {
                 return getInstance(instanceRequestData)
                     .compose(instanceResult -> {
                       instanceJson.mergeIn(instanceResult);
-                      //JsonArray identifiers = instanceResult.getJsonArray("identifiers");
                       return getLoan(loanRequestData)
                         .compose(loanResult -> {
                           log.debug("LoanResult: {}", () -> loanResult);
@@ -340,10 +337,6 @@ public class ItemRepository {
               });
         })
         .compose(ar -> {
-          log.info("Item Json" + itemJson);
-          log.info("holding Json" + holdingJson);
-          log.info("instance Json" + instanceJson);
-          log.info("loan Json" + loanJson);
           JsonObject viewJson = new JsonObject();
           viewJson
               .put("item", itemJson)
