@@ -292,7 +292,7 @@ public class ItemRepository {
             );
         }
         log.info("REturning null from here");
-              return null;
+        return Future.failedFuture("Item does not exists.");
             }
 
       ); // end compose
@@ -342,7 +342,7 @@ public class ItemRepository {
 
                 });
           }
-          return null;
+          return Future.failedFuture("Item does not exists.");
         })
           .compose(ar -> {
             JsonObject viewJson = new JsonObject();
