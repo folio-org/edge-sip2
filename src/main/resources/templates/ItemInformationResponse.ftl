@@ -28,7 +28,7 @@
 <#-- owner: variable-length field -->
 <@lib.owner value=itemInformationResponse.owner!"" required=false/>
 <#-- currency type: variable-length required field -->
-<@lib.currencyType value=itemInformationResponse.currencyType!"USD"/>
+<@lib.currencyType value=itemInformationResponse.currencyType!""/>
 <#-- fee amount: variable-length required field -->
 <@lib.feeAmount value=itemInformationResponse.feeAmount!""/>
 <#-- media type: 3-char, fixed-length optional field -->

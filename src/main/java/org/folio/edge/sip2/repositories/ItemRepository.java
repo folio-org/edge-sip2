@@ -302,8 +302,9 @@ public class ItemRepository {
     JsonObject holdingJson = new JsonObject();
     JsonObject instanceJson = new JsonObject();
     JsonObject loanJson = new JsonObject();
-    //TODO this should be refactored for concurrency not sequential, holds and loans
+
     return getItem(itemInformationRequestData)
+      .otherwiseEmpty()
         .compose(itemResult -> {
           itemJson.mergeIn(itemResult);
           log.info("After merge item json " + itemJson);
@@ -358,9 +359,6 @@ public class ItemRepository {
       .retrieveResource(itemInformationRequestData)
       .compose(itemResource -> {
         JsonObject item = itemResource.getResource();
-        log.info("The requested item is " + item);
-        log.info("The specific json " + item
-            .getJsonArray("items").getJsonObject(0));
         return Future.succeededFuture(item
           .getJsonArray("items").getJsonObject(0));
       });
