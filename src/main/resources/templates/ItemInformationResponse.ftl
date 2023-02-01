@@ -10,7 +10,7 @@
     fee type: 2-char, fixed-length optional field (01 thru 99)
     The type of fee associated with checking out this item
 -->
-<@lib.feeType value=checkoutResponse.feeType!""/>
+<@lib.feeType value=itemInformationResponse.feeType!""/>
 <#--
     transaction date: 18-char, fixed-length required field: YYYYMMDDZZZZHHMMSS
 -->
