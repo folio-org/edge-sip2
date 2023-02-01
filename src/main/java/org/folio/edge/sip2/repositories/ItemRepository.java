@@ -308,46 +308,51 @@ public class ItemRepository {
     return getItem(itemInformationRequestData)
       .otherwiseEmpty()
         .compose(itemResult -> {
-          itemJson.mergeIn(itemResult);
-          String itemId = itemResult.getString("id");
-          String holdingsId = itemResult.getString("holdingsRecordId");
-          HoldingsRequestData holdingsRequestData =
-              new HoldingsRequestData(holdingsId, getBaseHeaders(),
-                itemInformationRequestData.sessionData);
-          LoanRequestData loanRequestData =
-              new LoanRequestData(itemId, getBaseHeaders(),
-                itemInformationRequestData.sessionData);
+          log.info("itemResult -- " + itemResult);
+          if (itemResult.getJsonArray("items").size() > 0) {
+            log.info("GONE IN");
+            itemJson.mergeIn(itemResult);
+            String itemId = itemResult.getString("id");
+            String holdingsId = itemResult.getString("holdingsRecordId");
+            HoldingsRequestData holdingsRequestData =
+                new HoldingsRequestData(holdingsId, getBaseHeaders(),
+                  itemInformationRequestData.sessionData);
+            LoanRequestData loanRequestData =
+                new LoanRequestData(itemId, getBaseHeaders(),
+                  itemInformationRequestData.sessionData);
 
-          return getHoldings(holdingsRequestData)
-              .compose(holdingsResult -> {
-                holdingJson.mergeIn(holdingsResult);
-                String instanceId = holdingsResult.getString("instanceId");
-                InstanceRequestData instanceRequestData =
-                    new InstanceRequestData(instanceId, getBaseHeaders(),
-                      holdingsRequestData.sessionData);
+            return getHoldings(holdingsRequestData)
+                .compose(holdingsResult -> {
+                  holdingJson.mergeIn(holdingsResult);
+                  String instanceId = holdingsResult.getString("instanceId");
+                  InstanceRequestData instanceRequestData =
+                      new InstanceRequestData(instanceId, getBaseHeaders(),
+                        holdingsRequestData.sessionData);
 
-                return getInstance(instanceRequestData)
-                    .compose(instanceResult -> {
-                      instanceJson.mergeIn(instanceResult);
-                      return getLoan(loanRequestData)
-                        .compose(loanResult -> {
-                          log.debug("LoanResult: {}", () -> loanResult);
-                          loanJson.mergeIn(loanResult);
-                          return Future.succeededFuture(loanResult);
-                        });
-                    });
+                  return getInstance(instanceRequestData)
+                      .compose(instanceResult -> {
+                        instanceJson.mergeIn(instanceResult);
+                        return getLoan(loanRequestData)
+                          .compose(loanResult -> {
+                            log.debug("LoanResult: {}", () -> loanResult);
+                            loanJson.mergeIn(loanResult);
+                            return Future.succeededFuture(loanResult);
+                          });
+                      });
 
-              });
+                });
+          }
+          return null;
         })
-        .compose(ar -> {
-          JsonObject viewJson = new JsonObject();
-          viewJson
-              .put("item", itemJson)
-              .put("holding", holdingJson)
-              .put("instance", instanceJson)
-              .put("loan", loanJson);
-          return Future.succeededFuture(viewJson);
-        });
+          .compose(ar -> {
+            JsonObject viewJson = new JsonObject();
+            viewJson
+                .put("item", itemJson)
+                .put("holding", holdingJson)
+                .put("instance", instanceJson)
+                .put("loan", loanJson);
+            return Future.succeededFuture(viewJson);
+          });
   }
 
   private Future<JsonObject> getItem(ItemInformationRequestData itemInformationRequestData) {

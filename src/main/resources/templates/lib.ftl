@@ -573,16 +573,16 @@
   <#if value?has_content>
     <#switch value>
       <#case "OTHER">
-        01<#t>
+        00<#t>
         <#break>
       <#case "NONE">
-        02<#t>
+        01<#t>
         <#break>
       <#case "TATTLE_TAPE_SECURITY_STRIP">
-        03<#t>
+        02<#t>
         <#break>
       <#case "WHISPER_TAPE">
-        04<#t>
+        03<#t>
         <#break>
       <#default>
         01<#t>
