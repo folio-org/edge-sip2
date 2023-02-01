@@ -58,18 +58,6 @@ public final class ItemInformationResponse {
   /** Specific item information that can be user for identification. */
   private final String itemProperties;
   /** The patron ID on the next hold for this item. */
-  private final String destinationInstitutionId;
-  /** The patron ID on the next hold for this item. */
-  private final String holdPatronId;
-  /** The patron name on the next hold for this item. */
-  private final String holdPatronName;
-  /** The author for the instance. */
-  private final String author;
-  /** The summary for the instance. */
-  private final String summary;
-  /** The isbn(s) for the instance. */
-  private final List<String> isbn;
-  /** A message to show the patron. */
   private final List<String> screenMessage;
   /** A message to print via the SC's printer. */
   private final List<String> printLine;
@@ -96,12 +84,6 @@ public final class ItemInformationResponse {
     this.mediaType = builder.mediaType;
     this.permanentLocation = builder.permanentLocation;
     this.currentLocation = builder.currentLocation;
-    this.destinationInstitutionId = builder.destinationInstitutionId;
-    this.holdPatronId = builder.holdPatronId;
-    this.holdPatronName = builder.holdPatronName;
-    this.author = builder.author;
-    this.summary = builder.summary;
-    this.isbn = builder.isbn;
     this.itemProperties = builder.itemProperties;
     this.screenMessage = builder.screenMessage == null ? null
       : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
@@ -185,30 +167,6 @@ public final class ItemInformationResponse {
     return itemProperties;
   }
 
-  public String getDestinationInstitutionId() {
-    return destinationInstitutionId;
-  }
-
-  public String getHoldPatronId() {
-    return holdPatronId;
-  }
-
-  public String getHoldPatronName() {
-    return holdPatronName;
-  }
-
-  public String getAuthor() {
-    return author;
-  }
-
-  public String getSummary() {
-    return summary;
-  }
-
-  public List<String> getIsbn() {
-    return isbn;
-  }
-
   public List<String> getScreenMessage() {
     return screenMessage;
   }
@@ -222,8 +180,7 @@ public final class ItemInformationResponse {
     return Objects.hash(circulationStatus, currencyType, currentLocation,
       dueDate, feeAmount, feeType, holdPickupDate, holdQueueLength,
       itemIdentifier, itemProperties, mediaType, owner, permanentLocation,
-      printLine, recallDate, destinationInstitutionId, holdPatronId, holdPatronName,
-      author, summary, isbn,
+      printLine, recallDate,
       screenMessage, securityMarker, titleIdentifier, transactionDate);
   }
 
@@ -254,12 +211,6 @@ public final class ItemInformationResponse {
       && Objects.equals(permanentLocation, other.permanentLocation)
       && Objects.equals(printLine, other.printLine)
       && Objects.equals(recallDate, other.recallDate)
-      && Objects.equals(destinationInstitutionId, other.destinationInstitutionId)
-      && Objects.equals(holdPatronId, other.holdPatronId)
-      && Objects.equals(holdPatronName, other.holdPatronName)
-      && Objects.equals(author, other.author)
-      && Objects.equals(summary, other.summary)
-      && Objects.equals(isbn, other.isbn)
       && Objects.equals(screenMessage, other.screenMessage)
       && securityMarker == other.securityMarker
       && Objects.equals(titleIdentifier, other.titleIdentifier)
@@ -286,12 +237,6 @@ public final class ItemInformationResponse {
       .append(", permanentLocation=").append(permanentLocation)
       .append(", currentLocation=").append(currentLocation)
       .append(", itemProperties=").append(itemProperties)
-      .append(", destinationInstitutionId=").append(destinationInstitutionId)
-      .append(", holdPatronId=").append(holdPatronId)
-      .append(", holdPatronName=").append(holdPatronName)
-      .append(", author=").append(author)
-      .append(", summary=").append(summary)
-      .append(", isbn=").append(isbn)
       .append(", screenMessage=").append(screenMessage)
       .append(", printLine=").append(printLine)
       .append(']').toString();
@@ -318,12 +263,6 @@ public final class ItemInformationResponse {
     private String permanentLocation;
     private String currentLocation;
     private String itemProperties;
-    private String destinationInstitutionId;
-    private String holdPatronId;
-    private String holdPatronName;
-    private String author;
-    private String summary;
-    private List<String> isbn;
     private List<String> screenMessage;
     private List<String> printLine;
 
@@ -423,37 +362,6 @@ public final class ItemInformationResponse {
 
     public ItemInformationResponseBuilder itemProperties(String itemProperties) {
       this.itemProperties = itemProperties;
-      return this;
-    }
-
-    public ItemInformationResponseBuilder destinationInstitutionId(
-        String destinationInstitutionId) {
-      this.destinationInstitutionId = destinationInstitutionId;
-      return this;
-    }
-
-    public ItemInformationResponseBuilder holdPatronId(String holdPatronId) {
-      this.holdPatronId = holdPatronId;
-      return this;
-    }
-
-    public ItemInformationResponseBuilder holdPatronName(String holdPatronName) {
-      this.holdPatronName = holdPatronName;
-      return this;
-    }
-
-    public ItemInformationResponseBuilder author(String author) {
-      this.author = author;
-      return this;
-    }
-
-    public ItemInformationResponseBuilder summary(String summary) {
-      this.summary = summary;
-      return this;
-    }
-
-    public ItemInformationResponseBuilder isbn(List<String> isbn) {
-      this.isbn = isbn;
       return this;
     }
 

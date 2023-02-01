@@ -224,7 +224,6 @@ public class ItemRepository {
         new ItemInformationRequestData(itemIdentifier, getBaseHeaders(), sessionData);
 
     return getItemView(itemInformationRequestData)
-      //.otherwiseEmpty()
       .compose(itemView -> {
         if (itemView != null) {
           JsonObject item = itemView.getJsonObject("item");
@@ -259,32 +258,10 @@ public class ItemRepository {
                     .permanentLocation(item.getJsonObject("effectiveLocation").getString("name"))
                     .screenMessage(Collections.singletonList(
                         item.getJsonObject("status").getString("name")));
-                JsonObject holdResponse = holdResource.getResource();
-                log.info("Hold REsponse " + holdResponse);
-                if (holdResponse.getJsonArray("requests").size() > 0) {
-                  JsonObject nextHold = holdResponse.getJsonArray("requests").getJsonObject(0);
-                  JsonObject holdPatron = nextHold.getJsonObject("requester");
-                  JsonObject holdLocation = nextHold.getJsonObject("pickupServicePoint");
-                  //                  builder
-                  //                      .destinationInstitutionId(holdLocation.getString("name"))
-                  //                      .holdPatronId(holdPatron.getString("barcode"))
-                  //                      .holdPatronName(holdPatron.getString("lastName") + ", "
-                  //                        + holdPatron.getString("firstName"));
-                }
-                if (item.getJsonObject("status")
-                    .getString("name").equals(ItemStatus.CHECKED_OUT.getValue())) {
-                      LoanRequestData loanRequestData =
-                          new LoanRequestData(item.getString("id"), getBaseHeaders(), sessionData);
-                      Future<IResource> loansResult = resourceProvider
-                          .retrieveResource(loanRequestData);
-
-                }
-
                 return Future.succeededFuture(builder.build());
               }
             );
         }
-        log.info("REturning null from here");
         return Future.failedFuture("Item does not exists.");
             }
 
@@ -301,9 +278,7 @@ public class ItemRepository {
     return getItem(itemInformationRequestData)
       .otherwiseEmpty()
         .compose(itemResult -> {
-          log.info("itemResult -- " + itemResult);
           if (itemResult != null) {
-            log.info("GONE IN");
             itemJson.mergeIn(itemResult);
             String itemId = itemResult.getString("id");
             String holdingsId = itemResult.getString("holdingsRecordId");
@@ -389,53 +364,6 @@ public class ItemRepository {
         }
         return Future.succeededFuture(loan.getJsonArray("loans").getJsonObject(0));
       });
-  }
-
-  // private Future<JsonObject> getLoan(LoanRequestData loanRequestData) {
-  //   final Future<IResource> result = resourceProvider.createResource(loanRequestData);
-  //   return result
-  //     .map(resource -> {
-  //       final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
-
-  //       final OffsetDateTime dueDate = response
-  //           .map(v -> v.getString("dueDate"))
-  //           .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
-  //           .orElse(OffsetDateTime.now(clock));
-  //     });
-  // }
-
-
-
-  private String getAuthor(JsonArray contributers) {
-    for (int i = 0;i < contributers.size();i++) {
-      if (contributers.getJsonObject(i).getBoolean("primary").equals(true)) {
-        return contributers.getJsonObject(i).getString("name");
-      }
-    }
-    return "Not Found";
-  }
-
-  private List<String> getIsbn(JsonArray identifiers) {
-    List<String> list = new ArrayList<String>();
-    for (int i = 0;i < identifiers.size();i++) {
-      if (identifiers
-          .getJsonObject(i)
-          .getString("identifierTypeId").equals("8261054f-be78-422d-bd51-4ed9f33c3422")) {
-        list.add(identifiers.getJsonObject(i).getString("value"));
-      }
-    }
-    return list;
-  }
-
-  private String getSummary(JsonArray notes) {
-    for (int i = 0;i < notes.size();i++) {
-      if (notes
-          .getJsonObject(i)
-          .getString("instanceNoteTypeId").equals("10e2e11b-450f-45c8-b09b-0f819999966e")) {
-        return notes.getJsonObject(i).getString("note");
-      }
-    }
-    return "";
   }
 
   /**
