@@ -371,9 +371,9 @@ public class ItemRepository {
   public CirculationStatus lookupCirculationStatus(String folioString) {
     ItemStatus itemStatus = ItemStatus.from(folioString);
 
-    switch ((itemStatus)){
+    switch ((itemStatus)) {
       case AVAILABLE:
-         return CirculationStatus.AVAILABLE;
+        return CirculationStatus.AVAILABLE;
       case AWAITING_PICKUP:
         return CirculationStatus.WAITING_ON_HOLD_SHELF;
       case AWAITING_DELIVERY:
