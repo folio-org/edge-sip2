@@ -126,6 +126,18 @@
   </#if>
 </#macro>
 
+<#macro recallDate value required=false>
+  <#if required || value?has_content>
+    <@variableLengthDateField id="CJ" value=value/>
+  </#if>
+</#macro>
+
+<#macro holdPickupDate value required=false>
+  <#if required || value?has_content>
+    <@variableLengthDateTimeField id="CM" value=value/>
+  </#if>
+</#macro>
+
 <#macro endSession value>
   <@booleanToYorN value=value/><#t>
 </#macro>
@@ -576,4 +588,16 @@
         01<#t>
     </#switch>
   </#if>
+</#macro>
+
+<#macro holdQueueLength value>
+  <@variableLengthField id="CF" value=value/>
+</#macro>
+
+<#macro owner value>
+  <@variableLengthListField id="BG" value=value/>
+</#macro>
+
+<#macro currentLocation value>
+  <@variableLengthField id="AP" value=value/>
 </#macro>

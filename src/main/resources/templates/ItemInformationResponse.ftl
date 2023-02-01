@@ -2,14 +2,19 @@
 18<#t>
 <#-- circulation Status: 2-char, fixed-length required field: 00 thru 99 -->
 <@lib.circulationStatus value=itemInformationResponse.circulationStatus/>
+<#-- hold queue length: optional -->
+<@lib.holdQueueLength value=itemInformationResponse.holdQueueLength!"" required=false/>
 <#-- security Marker: 2-char, fixed-length required field: 00 thru 99-->
 <@lib.securityMarker value=itemInformationResponse.securityMarker/>
+<#--
+    fee type: 2-char, fixed-length optional field (01 thru 99)
+    The type of fee associated with checking out this item
+-->
+<@lib.feeType value=checkoutResponse.feeType!""/>
 <#--
     transaction date: 18-char, fixed-length required field: YYYYMMDDZZZZHHMMSS
 -->
 <@lib.transactionDate value=itemInformationResponse.transactionDate/>
-<#-- hold queue length: optional -->
-<@lib.holdQueueLength value=itemInformationResponse.holdQueueLength!"" required=false/>
 <#-- due date: 18-char, fixed-length field: YYYYMMDDZZZZHHMMS -->
 <@lib.dueDate value=itemInformationResponse.dueDate!"" required=false/>
 <#-- recall date: 18-char, fixed-lengt  field: YYYYMMDDZZZZHHMMSS -->
@@ -34,16 +39,6 @@
 <@lib.currentLocation value=itemInformationResponse.currentLocation!""/>
 <#-- item properties: variable-length optional field -->
 <@lib.itemProperties value=itemInformationResponse.itemProperties!""/>
-<#-- destination Institution Id: variable-length optional field -->
-<@lib.destinationInstitutionId value=itemInformationResponse.destinationInstitutionId!""/>
-<#-- hold patron id: variable-length optional field -->
-<@lib.holdPatronId value=itemInformationResponse.holdPatronId!""/>
-<#-- hold patron name: variable-length optional field -->
-<@lib.holdPatronName value=itemInformationResponse.holdPatronName!""/>
-<#-- summary: variable-length optional field -->
-<@lib.summary value=itemInformationResponse.summary!"" required=false/>
-<#-- isbn: variable-length optional field -->
-<@lib.isbn value=itemInformationResponse.isbn!"" required=false/>
 <#-- screen message: variable-length optional field -->
 <@lib.screen Message value=itemInformationResponse.screenMessage!""/>
 <#-- print Line: variable-length optional field -->
