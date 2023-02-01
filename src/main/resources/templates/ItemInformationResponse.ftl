@@ -40,6 +40,6 @@
 <#-- item properties: variable-length optional field -->
 <@lib.itemProperties value=itemInformationResponse.itemProperties!""/>
 <#-- screen message: variable-length optional field -->
-<@lib.screenMessage Message value=itemInformationResponse.screenMessage!""/>
+<@lib.screenMessage value=itemInformationResponse.screenMessage!""/>
 <#-- print Line: variable-length optional field -->
 <@lib.printLine value=itemInformationResponse.printLine!""/>
