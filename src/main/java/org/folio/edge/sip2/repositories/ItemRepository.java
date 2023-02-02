@@ -13,7 +13,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.CirculationStatus;
 import org.folio.edge.sip2.domain.messages.enumerations.ItemStatus;
-import org.folio.edge.sip2.domain.messages.enumerations.SecurityMarker;
 import org.folio.edge.sip2.domain.messages.requests.ItemInformation;
 import org.folio.edge.sip2.domain.messages.responses.ItemInformationResponse;
 import org.folio.edge.sip2.domain.messages.responses.ItemInformationResponse.ItemInformationResponseBuilder;
@@ -246,7 +245,6 @@ public class ItemRepository {
                 builder
                     .circulationStatus(lookupCirculationStatus(item.getJsonObject("status")
                           .getString("name")))
-                    .securityMarker(SecurityMarker.NONE)
                     .transactionDate(OffsetDateTime.now(clock))
                     .dueDate(dueDate)
                     .itemIdentifier(itemIdentifier)
