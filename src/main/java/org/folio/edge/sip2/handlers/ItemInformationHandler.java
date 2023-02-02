@@ -46,7 +46,7 @@ public class ItemInformationHandler implements ISip2RequestHandler {
     }
 
     return itemInformationFuture.compose(itemInformationResponse -> {
-      log.info("ItemInformationResponse: {}", () -> itemInformationResponse);
+      log.debug("ItemInformationResponse: {}", () -> itemInformationResponse);
 
       final Map<String, Object> root = new HashMap<>();
       root.put("formatDateTime", new FormatDateTimeMethodModel());
@@ -57,7 +57,7 @@ public class ItemInformationHandler implements ISip2RequestHandler {
       final String response = FreemarkerUtils
           .executeFreemarkerTemplate(root, commandTemplate);
 
-      log.debug("SIP itemInformation response: {}", response);
+      log.info("SIP itemInformation response: {}", response);
 
       return Future.succeededFuture(response);
     });

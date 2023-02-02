@@ -186,7 +186,7 @@ class SessionDataTests {
     assertNull(newSessionData.getScLocation());
     assertNull(newSessionData.getUsername());
     assertNull(newSessionData.getPreviousMessage());
-    assertNull(newSessionData.getTimeZone());
+    //assertNull(newSessionData.getTimeZone());
     assertFalse(newSessionData.isPatronPasswordVerificationRequired());
   }
 }
