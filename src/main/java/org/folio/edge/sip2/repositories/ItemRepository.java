@@ -91,9 +91,7 @@ public class ItemRepository {
     }
 
     public String getPath() {
-      String uri = "/holdings-storage/holdings/" + holdingsId;
-      log.info("URI: {}", () -> uri);
-      return uri;
+      return "/holdings-storage/holdings/" + holdingsId;
     }
 
     @Override

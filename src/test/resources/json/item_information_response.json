@@ -1,0 +1,69 @@
+{
+  "items" : [{
+  "id": "47f6a8da-993a-4b7f-9b76-6a7936073c17",
+  "_version": "8",
+  "status": {
+    "name": "Awaiting pickup",
+    "date": "2023-01-09T12:56:19.709+00:00"
+  },
+  "administrativeNotes": [],
+  "title": "Fool moon",
+  "hrid": "it00000000112",
+  "contributorNames": [
+    {
+      "name": "Butcher, Jim, 1971-"
+    },
+    {
+      "name": "Copyright Paperback Collection (Library of Congress)"
+    }
+  ],
+  "formerIds": [],
+  "discoverySuppress": null,
+  "holdingsRecordId": "5f0140c5-96c7-44e1-845b-853e2d7cdf13",
+  "barcode": "230317",
+  "notes": [],
+  "circulationNotes": [],
+  "tags": {
+    "tagList": []
+  },
+  "yearCaption": [],
+  "electronicAccess": [],
+  "statisticalCodeIds": [],
+  "purchaseOrderLineIdentifier": null,
+  "materialType": {
+    "id": "1a54b431-2e4f-452d-9cae-9cee66c9a892",
+    "name": "book"
+  },
+  "permanentLoanType": {
+    "id": "2b94c631-fca9-4892-a730-03ee529ffe27",
+    "name": "Can circulate"
+  },
+  "permanentLocation": {
+    "id": "184aae84-a5bf-4c6a-85ba-4a7c73026cd5",
+    "name": "Online"
+  },
+  "metadata": {
+    "createdDate": "2022-07-12T06:58:59.750+00:00",
+    "createdByUserId": "8e75dcb2-db5f-53a7-a09e-7084c47b7ece",
+    "updatedDate": "2023-01-09T12:56:19.704+00:00",
+    "updatedByUserId": "8e75dcb2-db5f-53a7-a09e-7084c47b7ece"
+  },
+  "lastCheckIn": {
+    "servicePointId": "3a40852d-49fd-4df2-a1f9-6e2641a6e91f",
+    "staffMemberId": "8e75dcb2-db5f-53a7-a09e-7084c47b7ece",
+    "dateTime": "2023-01-09T12:56:19.204Z"
+  },
+  "effectiveCallNumberComponents": {
+    "callNumber": null,
+    "prefix": null,
+    "suffix": null,
+    "typeId": null
+  },
+  "isBoundWith": false,
+  "effectiveLocation": {
+    "id": "184aae84-a5bf-4c6a-85ba-4a7c73026cd5",
+    "name": "Online"
+  }
+}],
+  "loans" : [{}]
+  }

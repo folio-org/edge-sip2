@@ -1,0 +1,111 @@
+{
+  "id": "6fb880bc-236d-4d03-b3fc-98cfaa081246",
+  "_version": "13",
+  "hrid": "in00000000051",
+  "source": "MARC",
+  "title": "Fool moon / Jim Butcher.",
+  "administrativeNotes": [],
+  "indexTitle": "Fool moon /",
+  "parentInstances": [],
+  "childInstances": [],
+  "isBoundWith": false,
+  "alternativeTitles": [],
+  "editions": [],
+  "series": [
+    "Butcher, Jim, 1971- Dresden files ; bk. 2."
+  ],
+  "identifiers": [
+    {
+      "identifierTypeId": "c858e4f2-2b6b-4385-842b-60732ee14abb",
+      "value": "2002561991"
+    },
+    {
+      "identifierTypeId": "8261054f-be78-422d-bd51-4ed9f33c3422",
+      "value": "0451458125"
+    },
+    {
+      "identifierTypeId": "7e591197-f335-4afb-bc6d-a6d76ca3bace",
+      "value": "(LoC)12673071"
+    }
+  ],
+  "contributors": [
+    {
+      "contributorNameTypeId": "2b94c631-fca9-4892-a730-03ee529ffe2a",
+      "name": "Butcher, Jim, 1971-",
+      "contributorTypeId": null,
+      "contributorTypeText": null,
+      "authorityId": null,
+      "primary": true
+    },
+    {
+      "contributorNameTypeId": "2e48e713-17f3-4c13-a9f8-23845bb210aa",
+      "name": "Copyright Paperback Collection (Library of Congress)",
+      "contributorTypeId": null,
+      "contributorTypeText": null,
+      "authorityId": null,
+      "primary": false
+    }
+  ],
+  "subjects": [
+    "Dresden, Harry (Fictitious character)--Fiction",
+    "Wizards--Fiction",
+    "Fantasy fiction",
+    "Occult fiction"
+  ],
+  "classifications": [
+    {
+      "classificationNumber": "CPB Box no. 1853 vol. 14",
+      "classificationTypeId": "ce176ace-a53e-4b4d-aa89-725ed7b2edac"
+    }
+  ],
+  "publication": [
+    {
+      "publisher": "New American Library",
+      "place": "New York, N.Y.",
+      "dateOfPublication": "c2001",
+      "role": null
+    }
+  ],
+  "publicationFrequency": [],
+  "publicationRange": [],
+  "electronicAccess": [],
+  "instanceTypeId": "30fffe0e-e985-4144-b2e2-1e8179bdb41f",
+  "instanceFormatIds": [],
+  "physicalDescriptions": [
+    "342 p. ; 18 cm."
+  ],
+  "languages": [
+    "eng"
+  ],
+  "notes": [
+    {
+      "instanceNoteTypeId": "6a2533a7-4de2-4e64-8466-074c2fa9308c",
+      "note": "\"A ROC book.\"",
+      "staffOnly": false
+    },
+    {
+      "instanceNoteTypeId": "6a2533a7-4de2-4e64-8466-074c2fa9308c",
+      "note": "\"ROC fantasy\"--Spine",
+      "staffOnly": false
+    }
+  ],
+  "modeOfIssuanceId": "9d18a02f-5897-4c31-9106-c9abb5c7ae8b",
+  "previouslyHeld": false,
+  "discoverySuppress": false,
+  "statisticalCodeIds": [
+    "b5968c9e-cddc-4576-99e3-8e60aed8b0dd"
+  ],
+  "statusUpdatedDate": "2022-02-22T22:44:37.120+0000",
+  "metadata": {
+    "createdDate": "2022-02-22T22:44:37.120+00:00",
+    "createdByUserId": "8e75dcb2-db5f-53a7-a09e-7084c47b7ece",
+    "updatedDate": "2022-06-27T13:52:30.983+00:00",
+    "updatedByUserId": "8e75dcb2-db5f-53a7-a09e-7084c47b7ece"
+  },
+  "tags": {
+    "tagList": []
+  },
+  "natureOfContentTermIds": [],
+  "precedingTitles": [],
+  "succeedingTitles": []
+}
