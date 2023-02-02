@@ -1,7 +1,7 @@
 package org.folio.edge.sip2.session;
 
 import org.folio.edge.sip2.domain.PreviousMessage;
-import org.folio.edge.sip2.utils.Utils;
+
 
 public class SessionData {
   private final char fieldDelimiter;
@@ -17,8 +17,6 @@ public class SessionData {
   private PreviousMessage previousMessage;
   private String timeZone;
   private boolean patronPasswordVerificationRequired;
-
-  private static final String DEFAULT_TIMEZONE = "Etc/UTC";
 
   private SessionData(String tenant, char fieldDelimiter,
       boolean errorDetectionEnabled, String charset) {
@@ -93,8 +91,7 @@ public class SessionData {
   }
 
   public String getTimeZone() {
-    //return timeZone;
-    return Utils.isStringNullOrEmpty(timeZone) ? DEFAULT_TIMEZONE : timeZone;
+    return timeZone;
   }
 
   public void setTimeZone(String timeZone) {
