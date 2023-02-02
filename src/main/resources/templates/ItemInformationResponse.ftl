@@ -5,7 +5,7 @@
 <#-- hold queue length: optional -->
 <@lib.holdQueueLength value=itemInformationResponse.holdQueueLength!"" required=false/>
 <#-- security Marker: 2-char, fixed-length required field: 00 thru 99-->
-<@lib.securityMarker value=itemInformationResponse.securityMarker!"OTHER"/>
+<@lib.securityMarker value=itemInformationResponse.securityMarker!""/>
 <#--
     fee type: 2-char, fixed-length optional field (01 thru 99)
     The type of fee associated with checking out this item
