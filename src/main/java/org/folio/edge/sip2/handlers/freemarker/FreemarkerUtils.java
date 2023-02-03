@@ -35,14 +35,14 @@ public class FreemarkerUtils {
       template.process(data, out);
       outputString = out.toString();
     } catch (TemplateException e) {
-      log.error("Having problems finding and loading template: " + e.getMessage());
+      log.error("Having problems finding and loading template: {} ", e.getMessage());
     } catch (IOException ioEx) {
-      log.error("Having problems applying template to data: " + ioEx.getMessage());
+      log.error("Having problems applying template to data: {} ", ioEx.getMessage());
     } catch (Exception ex) {
-      log.error("Error applying template to data: " + ex.getMessage());
+      log.error("Error applying template to data: {} ", ex.getMessage());
     }
 
-    log.info("Data = {} Template = {}",
+    log.debug("Data = {} Template = {}",
         () -> data == null ? "" : data.toString(),
         template::getName);
 
