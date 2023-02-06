@@ -9,7 +9,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.folio.edge.sip2.domain.messages.enumerations.CirculationStatus;
 import org.folio.edge.sip2.domain.messages.requests.ItemInformation;
 import org.folio.edge.sip2.domain.messages.responses.ItemInformationResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
