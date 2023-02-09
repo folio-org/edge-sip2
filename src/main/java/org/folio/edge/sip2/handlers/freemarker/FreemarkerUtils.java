@@ -5,6 +5,7 @@ import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.HashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,6 +36,13 @@ public class FreemarkerUtils {
       template.process(data, out);
       outputString = out.toString();
     } catch (TemplateException e) {
+      if (data instanceof HashMap) {
+        HashMap<String, Object> dataMap = (HashMap<String, Object>) data;
+        if (dataMap.containsKey("timezone") && (dataMap.get("timezone") == null)) {
+          log.error("The timezone value is set to null. "
+                + "It is advice to configure the localeSettings by invoking SC Status Command.");
+        }
+      }
       log.error("Having problems finding and loading template: {} ", e.getMessage());
     } catch (IOException ioEx) {
       log.error("Having problems applying template to data: {} ", ioEx.getMessage());
