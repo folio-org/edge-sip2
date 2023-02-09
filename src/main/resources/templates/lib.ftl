@@ -126,6 +126,18 @@
   </#if>
 </#macro>
 
+<#macro recallDate value required=false>
+  <#if required || value?has_content>
+    <@variableLengthDateField id="CJ" value=value/>
+  </#if>
+</#macro>
+
+<#macro holdPickupDate value required=false>
+  <#if required || value?has_content>
+    <@variableLengthDateTimeField id="CM" value=value/>
+  </#if>
+</#macro>
+
 <#macro endSession value>
   <@booleanToYorN value=value/><#t>
 </#macro>
@@ -181,6 +193,54 @@
         01<#t>
     </#switch>
     ${delimiter}<#t>
+  </#if>
+</#macro>
+
+<#macro circulationStatus value>
+  <#if value?has_content>
+    <#switch value>
+      <#case "OTHER">
+        01<#t>
+        <#break>
+      <#case "ON_ORDER">
+        02<#t>
+        <#break>
+      <#case "AVAILABLE">
+        03<#t>
+        <#break>
+      <#case "CHARGED">
+        04<#t>
+        <#break>
+      <#case "CHARGED_NOT_TO_BE_RECALLED_UNTIL_EARLIEST_RECALL_DATE">
+        05<#t>
+        <#break>
+      <#case "IN_PROCESS">
+        06<#t>
+        <#break>
+      <#case "RECALLED">
+        07<#t>
+        <#break>
+      <#case "WAITING_ON_HOLD_SHELF">
+        08<#t>
+        <#break>
+      <#case "WAITING_TO_BE_RESHELVED">
+        09<#t>
+        <#break>
+      <#case "IN_TRANSIT_BETWEEN_LIBRARY_LOCATIONS">
+        10<#t>
+        <#break>
+      <#case "CLAIMED_RETURNED">
+        11<#t>
+        <#break>
+      <#case "LOST">
+        12<#t>
+        <#break>
+      <#case "MISSING">
+        13<#t>
+        <#break>
+      <#default>
+        01<#t>
+    </#switch>
   </#if>
 </#macro>
 
@@ -507,4 +567,41 @@
   <#if value?has_content>
     CQ<@booleanToYorN value=value/>${delimiter}<#t>
   </#if>
+</#macro>
+
+<#macro securityMarker value>
+  <#if value?has_content>
+    <#switch value>
+      <#case "OTHER">
+        00<#t>
+        <#break>
+      <#case "NONE">
+        01<#t>
+        <#break>
+      <#case "TATTLE_TAPE_SECURITY_STRIP">
+        02<#t>
+        <#break>
+      <#case "WHISPER_TAPE">
+        03<#t>
+        <#break>
+      <#default>
+        01<#t>
+    </#switch>
+  </#if>
+</#macro>
+
+<#macro holdQueueLength value required=false>
+ <#if required || value?has_content>
+  <@variableLengthField id="CF" value=value/>
+ </#if>
+</#macro>
+
+<#macro owner value required=false>
+<#if required || value?has_content>
+  <@variableLengthListField id="BG" value=value/>
+</#if>
+</#macro>
+
+<#macro currentLocation value>
+  <@variableLengthField id="AP" value=value/>
 </#macro>

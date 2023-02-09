@@ -4,6 +4,7 @@ import static org.folio.edge.sip2.parser.Command.ACS_STATUS;
 import static org.folio.edge.sip2.parser.Command.CHECKIN_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.CHECKOUT_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.END_SESSION_RESPONSE;
+import static org.folio.edge.sip2.parser.Command.ITEM_INFORMATION_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.LOGIN_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
@@ -66,6 +67,7 @@ public class FreemarkerRepository {
     addTemplate(LOGIN_RESPONSE, "LoginResponse.ftl", configuration);
     addTemplate(PATRON_INFORMATION_RESPONSE, "PatronInformationResponse.ftl", configuration);
     addTemplate(END_SESSION_RESPONSE, "EndSessionResponse.ftl", configuration);
+    addTemplate(ITEM_INFORMATION_RESPONSE, "ItemInformationResponse.ftl", configuration);
   }
 
   private void addTemplate(Command commmand, String templateName, Configuration configuration) {
@@ -77,7 +79,7 @@ public class FreemarkerRepository {
       template.setBooleanFormat("Y,N");
       templates.put(commmand, template);
     } catch (IOException e) {
-      log.error("Error loading template: " + templateName);
+      log.error("Error loading template: {}", templateName);
     }
   }
 }

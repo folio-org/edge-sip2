@@ -288,6 +288,7 @@ All permission associated with edge-sip2
     users.collection.get
     users.item.get
     automated-patron-blocks.collection.get
+    inventory.items.collection.get
 ```
 
 #### Security concerns for developers

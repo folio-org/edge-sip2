@@ -2,6 +2,7 @@ package org.folio.edge.sip2.session;
 
 import org.folio.edge.sip2.domain.PreviousMessage;
 
+
 public class SessionData {
   private final char fieldDelimiter;
   private final String tenant;

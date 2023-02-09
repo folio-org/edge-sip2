@@ -28,6 +28,7 @@ public class ItemInformationMessageParser extends MessageParser {
    * @return the decoded Item Information message.
    */
   public ItemInformation parse(String message) {
+    log.debug("Inside ItemInformation Parse {} ", message);
     final ItemInformationBuilder iiBuilder = builder();
     final char [] messageChars = message.toCharArray();
 

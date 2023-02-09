@@ -3,6 +3,7 @@ package org.folio.edge.sip2.modules;
 import static org.folio.edge.sip2.parser.Command.CHECKIN_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.CHECKOUT_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.END_SESSION_RESPONSE;
+import static org.folio.edge.sip2.parser.Command.ITEM_INFORMATION_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.LOGIN_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION_RESPONSE;
 
@@ -18,6 +19,7 @@ import org.folio.edge.sip2.repositories.FeeFinesRepository;
 import org.folio.edge.sip2.repositories.FolioResourceProvider;
 import org.folio.edge.sip2.repositories.IRequestData;
 import org.folio.edge.sip2.repositories.IResourceProvider;
+import org.folio.edge.sip2.repositories.ItemRepository;
 import org.folio.edge.sip2.repositories.LoginRepository;
 import org.folio.edge.sip2.repositories.PasswordVerifier;
 import org.folio.edge.sip2.repositories.UsersRepository;
@@ -39,6 +41,7 @@ public class ApplicationModule extends AbstractModule {
     bind(LoginRepository.class);
     bind(UsersRepository.class);
     bind(PasswordVerifier.class);
+    bind(ItemRepository.class);
   }
 
   @Provides
@@ -69,5 +72,11 @@ public class ApplicationModule extends AbstractModule {
   @Named("endSessionResponse")
   Template provideEndSessionResponseTemplate() {
     return FreemarkerRepository.getInstance().getFreemarkerTemplate(END_SESSION_RESPONSE);
+  }
+
+  @Provides
+  @Named("itemInformationResponse")
+  Template provideItemInformationResponseTemplate() {
+    return FreemarkerRepository.getInstance().getFreemarkerTemplate(ITEM_INFORMATION_RESPONSE);
   }
 }

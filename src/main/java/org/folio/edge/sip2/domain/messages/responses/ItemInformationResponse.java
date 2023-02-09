@@ -57,7 +57,7 @@ public final class ItemInformationResponse {
   private final String currentLocation;
   /** Specific item information that can be user for identification. */
   private final String itemProperties;
-  /** A message to show the patron. */
+  /** The patron ID on the next hold for this item. */
   private final List<String> screenMessage;
   /** A message to print via the SC's printer. */
   private final List<String> printLine;
@@ -86,9 +86,9 @@ public final class ItemInformationResponse {
     this.currentLocation = builder.currentLocation;
     this.itemProperties = builder.itemProperties;
     this.screenMessage = builder.screenMessage == null ? null
-        : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
+      : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
     this.printLine = builder.printLine == null ? null
-        : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
+      : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
   }
 
   /**
@@ -178,10 +178,10 @@ public final class ItemInformationResponse {
   @Override
   public int hashCode() {
     return Objects.hash(circulationStatus, currencyType, currentLocation,
-        dueDate, feeAmount, feeType, holdPickupDate, holdQueueLength,
-        itemIdentifier, itemProperties, mediaType, owner, permanentLocation,
-        printLine, recallDate, screenMessage, securityMarker, titleIdentifier,
-        transactionDate);
+      dueDate, feeAmount, feeType, holdPickupDate, holdQueueLength,
+      itemIdentifier, itemProperties, mediaType, owner, permanentLocation,
+      printLine, recallDate,
+      screenMessage, securityMarker, titleIdentifier, transactionDate);
   }
 
   @Override
@@ -197,49 +197,49 @@ public final class ItemInformationResponse {
     }
     ItemInformationResponse other = (ItemInformationResponse) obj;
     return circulationStatus == other.circulationStatus
-        && currencyType == other.currencyType
-        && Objects.equals(currentLocation, other.currentLocation)
-        && Objects.equals(dueDate, other.dueDate)
-        && Objects.equals(feeAmount, other.feeAmount)
-        && feeType == other.feeType
-        && Objects.equals(holdPickupDate, other.holdPickupDate)
-        && Objects.equals(holdQueueLength, other.holdQueueLength)
-        && Objects.equals(itemIdentifier, other.itemIdentifier)
-        && Objects.equals(itemProperties, other.itemProperties)
-        && mediaType == other.mediaType
-        && Objects.equals(owner, other.owner)
-        && Objects.equals(permanentLocation, other.permanentLocation)
-        && Objects.equals(printLine, other.printLine)
-        && Objects.equals(recallDate, other.recallDate)
-        && Objects.equals(screenMessage, other.screenMessage)
-        && securityMarker == other.securityMarker
-        && Objects.equals(titleIdentifier, other.titleIdentifier)
-        && Objects.equals(transactionDate, other.transactionDate);
+      && currencyType == other.currencyType
+      && Objects.equals(currentLocation, other.currentLocation)
+      && Objects.equals(dueDate, other.dueDate)
+      && Objects.equals(feeAmount, other.feeAmount)
+      && feeType == other.feeType
+      && Objects.equals(holdPickupDate, other.holdPickupDate)
+      && Objects.equals(holdQueueLength, other.holdQueueLength)
+      && Objects.equals(itemIdentifier, other.itemIdentifier)
+      && Objects.equals(itemProperties, other.itemProperties)
+      && mediaType == other.mediaType
+      && Objects.equals(owner, other.owner)
+      && Objects.equals(permanentLocation, other.permanentLocation)
+      && Objects.equals(printLine, other.printLine)
+      && Objects.equals(recallDate, other.recallDate)
+      && Objects.equals(screenMessage, other.screenMessage)
+      && securityMarker == other.securityMarker
+      && Objects.equals(titleIdentifier, other.titleIdentifier)
+      && Objects.equals(transactionDate, other.transactionDate);
   }
 
   @Override
   public String toString() {
     return new StringBuilder()
-        .append("ItemInformationResponse [circulationStatus=").append(circulationStatus)
-        .append(", securityMarker=").append(securityMarker)
-        .append(", feeType=").append(feeType)
-        .append(", transactionDate=").append(transactionDate)
-        .append(", holdQueueLength=").append(holdQueueLength)
-        .append(", dueDate=").append(dueDate)
-        .append(", recallDate=").append(recallDate)
-        .append(", holdPickupDate=").append(holdPickupDate)
-        .append(", itemIdentifier=").append(itemIdentifier)
-        .append(", titleIdentifier=").append(titleIdentifier)
-        .append(", owner=").append(owner)
-        .append(", currencyType=").append(currencyType)
-        .append(", feeAmount=").append(feeAmount)
-        .append(", mediaType=").append(mediaType)
-        .append(", permanentLocation=").append(permanentLocation)
-        .append(", currentLocation=").append(currentLocation)
-        .append(", itemProperties=").append(itemProperties)
-        .append(", screenMessage=").append(screenMessage)
-        .append(", printLine=").append(printLine)
-        .append(']').toString();
+      .append("ItemInformationResponse [circulationStatus=").append(circulationStatus)
+      .append(", securityMarker=").append(securityMarker)
+      .append(", feeType=").append(feeType)
+      .append(", transactionDate=").append(transactionDate)
+      .append(", holdQueueLength=").append(holdQueueLength)
+      .append(", dueDate=").append(dueDate)
+      .append(", recallDate=").append(recallDate)
+      .append(", holdPickupDate=").append(holdPickupDate)
+      .append(", itemIdentifier=").append(itemIdentifier)
+      .append(", titleIdentifier=").append(titleIdentifier)
+      .append(", owner=").append(owner)
+      .append(", currencyType=").append(currencyType)
+      .append(", feeAmount=").append(feeAmount)
+      .append(", mediaType=").append(mediaType)
+      .append(", permanentLocation=").append(permanentLocation)
+      .append(", currentLocation=").append(currentLocation)
+      .append(", itemProperties=").append(itemProperties)
+      .append(", screenMessage=").append(screenMessage)
+      .append(", printLine=").append(printLine)
+      .append(']').toString();
   }
 
   /**
@@ -355,14 +355,12 @@ public final class ItemInformationResponse {
       return this;
     }
 
-    public ItemInformationResponseBuilder currentLocation(
-        String currentLocation) {
+    public ItemInformationResponseBuilder currentLocation(String currentLocation) {
       this.currentLocation = currentLocation;
       return this;
     }
 
-    public ItemInformationResponseBuilder itemProperties(
-        String itemProperties) {
+    public ItemInformationResponseBuilder itemProperties(String itemProperties) {
       this.itemProperties = itemProperties;
       return this;
     }

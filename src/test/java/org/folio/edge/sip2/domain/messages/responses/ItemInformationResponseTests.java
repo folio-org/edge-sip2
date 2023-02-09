@@ -14,9 +14,8 @@ import static org.folio.edge.sip2.domain.messages.enumerations.SecurityMarker.WH
 import static org.folio.edge.sip2.domain.messages.responses.ItemInformationResponse.builder;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -25,6 +24,7 @@ import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.FeeType;
 import org.folio.edge.sip2.domain.messages.enumerations.MediaType;
 import org.folio.edge.sip2.domain.messages.enumerations.SecurityMarker;
+import org.junit.jupiter.api.AssertionsKt;
 import org.junit.jupiter.api.Test;
 
 class ItemInformationResponseTests {
@@ -45,6 +45,12 @@ class ItemInformationResponseTests {
   final String permanentLocation = "circ_desk";
   final String currentLocation = "another_circ_desk";
   final String itemProperties = "Directors Cut";
+  final String destinationInstitutionId = "That branch";
+  final String holdPatronId = "Very Id ";
+  final String holdPatronName = "Very Name";
+  final String author = "That girl";
+  final String summary = "Very descriptive";
+  final List<String> isbn = asList("1011011101101");
   final List<String> screenMessage = asList("Please rewind");
   final List<String> printLine = asList("Enjoy!");
 
@@ -577,97 +583,97 @@ class ItemInformationResponseTests {
   @Test
   void testEqualsObject() {
     final ItemInformationResponse iir1 = builder()
-        .circulationStatus(circulationStatus)
-        .securityMarker(securityMarker)
-        .feeType(feeType)
-        .transactionDate(transactionDate)
-        .holdQueueLength(holdQueueLength)
-        .dueDate(dueDate)
-        .recallDate(recallDate)
-        .holdPickupDate(holdPickupDate)
-        .itemIdentifier(itemIdentifier)
-        .titleIdentifier(titleIdentifier)
-        .owner(owner)
-        .currencyType(currencyType)
-        .feeAmount(feeAmount)
-        .mediaType(mediaType)
-        .permanentLocation(permanentLocation)
-        .currentLocation(currentLocation)
-        .itemProperties(itemProperties)
-        .screenMessage(screenMessage)
-        .printLine(printLine)
-        .build();
+          .circulationStatus(circulationStatus)
+          .securityMarker(securityMarker)
+          .feeType(feeType)
+          .transactionDate(transactionDate)
+          .holdQueueLength(holdQueueLength)
+          .dueDate(dueDate)
+          .recallDate(recallDate)
+          .holdPickupDate(holdPickupDate)
+          .itemIdentifier(itemIdentifier)
+          .titleIdentifier(titleIdentifier)
+          .owner(owner)
+          .currencyType(currencyType)
+          .feeAmount(feeAmount)
+          .mediaType(mediaType)
+          .permanentLocation(permanentLocation)
+          .currentLocation(currentLocation)
+          .itemProperties(itemProperties)
+          .screenMessage(screenMessage)
+          .printLine(printLine)
+          .build();
     final ItemInformationResponse iir2 = builder()
-        .circulationStatus(circulationStatus)
-        .securityMarker(securityMarker)
-        .feeType(feeType)
-        .transactionDate(transactionDate)
-        .holdQueueLength(holdQueueLength)
-        .dueDate(dueDate)
-        .recallDate(recallDate)
-        .holdPickupDate(holdPickupDate)
-        .itemIdentifier(itemIdentifier)
-        .titleIdentifier(titleIdentifier)
-        .owner(owner)
-        .currencyType(currencyType)
-        .feeAmount(feeAmount)
-        .mediaType(mediaType)
-        .permanentLocation(permanentLocation)
-        .currentLocation(currentLocation)
-        .itemProperties(itemProperties)
-        .screenMessage(screenMessage)
-        .printLine(printLine)
-        .build();
-    assertTrue(iir1.equals(iir2));
-    assertTrue(iir1.equals(iir2));
+          .circulationStatus(circulationStatus)
+          .securityMarker(securityMarker)
+          .feeType(feeType)
+          .transactionDate(transactionDate)
+          .holdQueueLength(holdQueueLength)
+          .dueDate(dueDate)
+          .recallDate(recallDate)
+          .holdPickupDate(holdPickupDate)
+          .itemIdentifier(itemIdentifier)
+          .titleIdentifier(titleIdentifier)
+          .owner(owner)
+          .currencyType(currencyType)
+          .feeAmount(feeAmount)
+          .mediaType(mediaType)
+          .permanentLocation(permanentLocation)
+          .currentLocation(currentLocation)
+          .itemProperties(itemProperties)
+          .screenMessage(screenMessage)
+          .printLine(printLine)
+          .build();
+    assertEquals(iir1,iir2);
+    assertEquals(iir1,iir2);
   }
 
   @Test
   void testNotEqualsObject() {
     final ItemInformationResponse iir1 = builder()
-        .circulationStatus(circulationStatus)
-        .securityMarker(securityMarker)
-        .feeType(feeType)
-        .transactionDate(transactionDate)
-        .holdQueueLength(holdQueueLength)
-        .dueDate(dueDate)
-        .recallDate(recallDate)
-        .holdPickupDate(holdPickupDate)
-        .itemIdentifier(itemIdentifier)
-        .titleIdentifier(titleIdentifier)
-        .owner(owner)
-        .currencyType(currencyType)
-        .feeAmount(feeAmount)
-        .mediaType(mediaType)
-        .permanentLocation(permanentLocation)
-        .currentLocation(currentLocation)
-        .itemProperties(itemProperties)
-        .screenMessage(screenMessage)
-        .printLine(printLine)
-        .build();
+          .circulationStatus(circulationStatus)
+          .securityMarker(securityMarker)
+          .feeType(feeType)
+          .transactionDate(transactionDate)
+          .holdQueueLength(holdQueueLength)
+          .dueDate(dueDate)
+          .recallDate(recallDate)
+          .holdPickupDate(holdPickupDate)
+          .itemIdentifier(itemIdentifier)
+          .titleIdentifier(titleIdentifier)
+          .owner(owner)
+          .currencyType(currencyType)
+          .feeAmount(feeAmount)
+          .mediaType(mediaType)
+          .permanentLocation(permanentLocation)
+          .currentLocation(currentLocation)
+          .itemProperties(itemProperties)
+          .screenMessage(screenMessage)
+          .printLine(printLine)
+          .build();
     final ItemInformationResponse iir2 = builder()
-        .circulationStatus(MISSING)
-        .securityMarker(WHISPER_TAPE)
-        .feeType(DAMAGE)
-        .transactionDate(OffsetDateTime.now())
-        .holdQueueLength(Integer.valueOf(10))
-        .dueDate(OffsetDateTime.now().plusDays(5))
-        .recallDate(OffsetDateTime.now().plusDays(6))
-        .holdPickupDate(OffsetDateTime.now().plusDays(7))
-        .itemIdentifier("222222222")
-        .titleIdentifier("ou812")
-        .owner("Some Other Library")
-        .currencyType(GBP)
-        .feeAmount("125.00")
-        .mediaType(OTHER)
-        .permanentLocation("basement")
-        .currentLocation("stolen")
-        .itemProperties("Testing")
-        .screenMessage(asList("This is a test"))
-        .printLine(asList("This is a print test"))
-        .build();
-    assertFalse(iir1.equals(iir2));
-    assertFalse(iir1.equals(iir2));
+          .circulationStatus(MISSING)
+          .securityMarker(WHISPER_TAPE)
+          .feeType(DAMAGE)
+          .transactionDate(OffsetDateTime.now())
+          .holdQueueLength(Integer.valueOf(10))
+          .dueDate(OffsetDateTime.now().plusDays(5))
+          .recallDate(OffsetDateTime.now().plusDays(6))
+          .holdPickupDate(OffsetDateTime.now().plusDays(7))
+          .itemIdentifier("222222222")
+          .titleIdentifier("ou812")
+          .owner("Some Other Library")
+          .currencyType(GBP)
+          .feeAmount("125.00")
+          .mediaType(OTHER)
+          .permanentLocation("basement")
+          .currentLocation("stolen")
+          .itemProperties("Testing")
+          .screenMessage(asList("This is a test"))
+          .printLine(asList("This is a print test"))
+          .build();
+    assertNotEquals(iir1,iir2);
+    assertNotEquals(iir1,iir2);
   }
 
   @Test
