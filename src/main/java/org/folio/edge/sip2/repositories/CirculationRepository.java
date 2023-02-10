@@ -167,7 +167,7 @@ public class CirculationRepository {
           .otherwise(Utils::handleErrors)
           .compose(res -> addTitleIfNotFound(sessionData, itemIdentifier, res))
           .map(resource -> {
-            log.info("performCheckoutCommand resource:{}",resource.getResource());
+            log.debug("performCheckoutCommand resource:{}",resource.getResource());
             final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
 
             final OffsetDateTime dueDate = response
@@ -525,8 +525,6 @@ public class CirculationRepository {
   }
 
   private class ItemRequestData extends SearchRequestData {
-    private static final String basePath = "/search/instances?limit=1&query=";
-
     private String itemBarcode;
 
     private ItemRequestData(JsonObject body, Map<String, String> headers,
@@ -539,7 +537,7 @@ public class CirculationRepository {
     public String getPath() {
 
       final StringBuilder qSb = new StringBuilder()
-          .append(basePath)
+          .append("/search/instances?limit=1&query=")
           .append("(items.barcode")
           .append("==")
           .append(itemBarcode).append(")");
@@ -549,8 +547,8 @@ public class CirculationRepository {
 
   private abstract class SearchRequestData implements IRequestData {
     private final JsonObject body;
-    private final Integer startItem;
-    private final Integer endItem;
+    final Integer startItem;
+    final Integer endItem;
     private final Map<String, String> headers;
     private final SessionData sessionData;
 

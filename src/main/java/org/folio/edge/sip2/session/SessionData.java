@@ -1,5 +1,7 @@
 package org.folio.edge.sip2.session;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.PreviousMessage;
 
 
@@ -18,8 +20,11 @@ public class SessionData {
   private String timeZone;
   private boolean patronPasswordVerificationRequired;
 
+  private static final Logger log = LogManager.getLogger();
+  private static final String DEFAULT_TIMEZONE = "Etc/UTC";
+
   private SessionData(String tenant, char fieldDelimiter,
-      boolean errorDetectionEnabled, String charset) {
+                      boolean errorDetectionEnabled, String charset) {
     this.tenant = tenant;
     this.fieldDelimiter = fieldDelimiter;
     this.errorDetectionEnabled = errorDetectionEnabled;
@@ -91,10 +96,18 @@ public class SessionData {
   }
 
   public String getTimeZone() {
-    return timeZone;
+    return timeZone != null ? timeZone : DEFAULT_TIMEZONE;
   }
 
+  /**
+   * Set the time zone.
+   * timeZone The timeZone value.
+   */
   public void setTimeZone(String timeZone) {
+    if (timeZone == null) {
+      log.warn("The timezone value is null and therefore "
+          + "default value {} will be used.", DEFAULT_TIMEZONE);
+    }
     this.timeZone = timeZone;
   }
 
@@ -107,8 +120,8 @@ public class SessionData {
   }
 
   public static SessionData createSession(String tenant, char fieldDelimiter,
-      boolean errorDetectionEnabled, String charset) {
+                                          boolean errorDetectionEnabled, String charset) {
     return new SessionData(tenant, fieldDelimiter, errorDetectionEnabled,
-        charset);
+      charset);
   }
 }
