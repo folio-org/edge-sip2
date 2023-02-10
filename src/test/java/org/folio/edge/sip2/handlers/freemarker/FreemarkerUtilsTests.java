@@ -4,13 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import freemarker.template.Template;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import org.folio.edge.sip2.parser.Command;
 import org.junit.jupiter.api.Test;
 
 
-public class FreemarkerUtilsTests {
+class FreemarkerUtilsTests {
   @Test
-  public void cannotExecuteFreemarkerTemplateGivenNullData() {
+  void cannotExecuteFreemarkerTemplateGivenNullData() {
     Template acsStatusTemplate = FreemarkerRepository.getInstance()
                                     .getFreemarkerTemplate(Command.ACS_STATUS);
     String result = FreemarkerUtils.executeFreemarkerTemplate(null, acsStatusTemplate);
@@ -18,11 +20,12 @@ public class FreemarkerUtilsTests {
   }
 
   @Test
-  public void cannotExecuteFreemarkerTemplateGivenInvalidData() {
+  void cannotExecuteFreemarkerTemplateGivenInvalidData() {
     Object data = new Date(); //give it some bogus class
     Template acsStatusTemplate = FreemarkerRepository.getInstance()
                                     .getFreemarkerTemplate(Command.ACS_STATUS);
     String result = FreemarkerUtils.executeFreemarkerTemplate(data, acsStatusTemplate);
     assertEquals("", result);
   }
+
 }

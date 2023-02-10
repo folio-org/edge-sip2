@@ -2,6 +2,7 @@ package org.folio.edge.sip2.session;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
@@ -139,6 +140,12 @@ class SessionDataTests {
     assertEquals("America/Chicago", sessionData.getTimeZone());
   }
 
+  @Test
+  void testSetNullTimeZone() {
+    sessionData.setTimeZone(null);
+    assertEquals("Etc/UTC", sessionData.getTimeZone());
+  }
+
 
   @Test
   void testGetPatronPasswordVerificationRequired() {
@@ -186,7 +193,7 @@ class SessionDataTests {
     assertNull(newSessionData.getScLocation());
     assertNull(newSessionData.getUsername());
     assertNull(newSessionData.getPreviousMessage());
-    assertNull(newSessionData.getTimeZone());
+    assertNotNull(newSessionData.getTimeZone());
     assertFalse(newSessionData.isPatronPasswordVerificationRequired());
   }
 }
