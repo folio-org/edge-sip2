@@ -1,4 +1,9 @@
-## 2.5.0 IN-PROGRESS
+## 3.0.0 2023-02-23
+* [SIP2-123](https://issues.folio.org/browse/SIP2-123): SIP2: Item Information Response
+* [SIP2-125](https://issues.folio.org/browse/SIP2-125): Logging improvement
+* [SIP2-128](https://issues.folio.org/browse/SIP2-128): Logging improvement - Configuration
+* [SIP2-136](https://issues.folio.org/browse/SIP2-136): "finding and loading template" exception in transactionDate lib.ftl on missing "99 SC Status"
+* [SIP2-138](https://issues.folio.org/browse/SIP2-138): Align the module with API breaking change
 
 ## 2.4.0 2022-11-02
 * [SIP2-116](https://issues.folio.org/browse/SIP2-116): Upgrade Users interface to 16.0
