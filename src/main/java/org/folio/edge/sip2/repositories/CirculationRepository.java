@@ -539,6 +539,7 @@ public class CirculationRepository {
     if (renew.getItemIdentifier() == null && renew.getTitleIdentifier() == null) {
       return Future.succeededFuture(RenewResponse.builder()
         .ok(FALSE)
+        .renewalOk(FALSE)
         .transactionDate(OffsetDateTime.now(clock))
         .institutionId(renew.getInstitutionId())
         .screenMessage(Arrays.asList("Either or both of the 'item identifier' or "
@@ -557,6 +558,7 @@ public class CirculationRepository {
         if (FALSE.equals(verification.getPasswordVerified())) {
           return Future.succeededFuture(RenewResponse.builder()
             .ok(FALSE)
+            .renewalOk(FALSE)
             .transactionDate(OffsetDateTime.now(clock))
             .institutionId(institutionId)
             .screenMessage(verification.getErrorMessages())
