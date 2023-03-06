@@ -25,8 +25,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
+import org.folio.edge.sip2.domain.messages.requests.Renew;
 import org.folio.edge.sip2.domain.messages.responses.CheckinResponse;
 import org.folio.edge.sip2.domain.messages.responses.CheckoutResponse;
+import org.folio.edge.sip2.domain.messages.responses.RenewResponse;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
@@ -44,6 +46,8 @@ public class CirculationRepository {
   private static final String UNKNOWN = "";
   public static final String TITLE_NOT_FOUND = "TITLE NOT FOUND";
   public static final String TITLE = "title";
+  public static final String ITEM_BARCODE = "itemBarcode";
+  public static final String SERVICE_POINT_ID = "servicePointId";
   private final IResourceProvider<IRequestData> resourceProvider;
   private final PasswordVerifier passwordVerifier;
   private final Clock clock;
@@ -75,8 +79,8 @@ public class CirculationRepository {
     final String itemIdentifier = checkin.getItemIdentifier();
 
     final JsonObject body = new JsonObject()
-        .put("itemBarcode", itemIdentifier)
-        .put("servicePointId", scLocation)
+        .put(ITEM_BARCODE, itemIdentifier)
+        .put(SERVICE_POINT_ID, scLocation)
         .put("checkInDate", returnDate
             .withOffsetSameInstant(ZoneOffset.UTC)
             .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
@@ -152,9 +156,9 @@ public class CirculationRepository {
 
         final User user = verification.getUser();
         final JsonObject body = new JsonObject()
-            .put("itemBarcode", itemIdentifier)
+            .put(ITEM_BARCODE, itemIdentifier)
             .put("userBarcode", user != null ? user.getBarcode() : patronIdentifier)
-            .put("servicePointId", sessionData.getScLocation());
+            .put(SERVICE_POINT_ID, sessionData.getScLocation());
 
         final Map<String, String> headers = getBaseHeaders();
 
@@ -524,6 +528,89 @@ public class CirculationRepository {
     }
   }
 
+  /**
+   * Perform a renewal for all items on customer account.
+   *
+   * @param renew the checkout domain object
+   * @return the renewal response domain object
+   */
+  public Future<RenewResponse> performRenewCommand(Renew renew,
+                                                   SessionData sessionData) {
+    final String institutionId = renew.getInstitutionId();
+    final String patronIdentifier = renew.getPatronIdentifier();
+    final String patronPassword = renew.getPatronPassword();
+    final String barcode = renew.getItemIdentifier();
+
+    return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+      .compose(verification -> {
+        if (FALSE.equals(verification.getPasswordVerified())) {
+          return Future.succeededFuture(RenewResponse.builder()
+            .ok(FALSE)
+            .transactionDate(OffsetDateTime.now(clock))
+            .institutionId(institutionId)
+            .screenMessage(verification.getErrorMessages())
+            .build());
+        }
+
+        final JsonObject body = new JsonObject()
+            .put(SERVICE_POINT_ID, sessionData.getScLocation())
+            .put("userBarcode", patronIdentifier)
+            .put(ITEM_BARCODE, barcode);
+
+        final Map<String, String> headers = getBaseHeaders();
+
+        final RenewalRequestData renewalRequestData =
+            new RenewalRequestData(body, headers, sessionData);
+
+        final Future<IResource> result = resourceProvider.createResource(renewalRequestData);
+
+        return result
+          .otherwise(Utils::handleErrors)
+          .map(resource -> {
+            final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
+
+            final Boolean renewalOk = response
+                .map(v -> !v.getJsonObject("item").isEmpty())
+                .orElse(FALSE);
+            final OffsetDateTime dueDate = response
+                .map(v -> v.getString("dueDate"))
+                .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
+                .orElse(OffsetDateTime.now(clock));
+            final String instanceId = response
+                .map(v -> v.getJsonObject("item").getString("instanceId"))
+                .orElse("");
+
+            return RenewResponse.builder()
+              .ok(Boolean.valueOf(response.isPresent()))
+              .renewalOk(renewalOk)
+              .transactionDate(OffsetDateTime.now(clock))
+              .institutionId(institutionId)
+              .patronIdentifier(patronIdentifier)
+              .itemIdentifier(barcode)
+              .titleIdentifier(instanceId)
+
+              .dueDate(dueDate)
+              .screenMessage(Optional.of(resource.getErrorMessages())
+                .filter(v -> !v.isEmpty())
+                .orElse(null))
+              .build();
+          });
+      });
+  }
+
+  private class RenewalRequestData extends CirculationRequestData {
+    private RenewalRequestData(JsonObject body, Map<String, String> headers,
+                               SessionData sessionData) {
+      super(body, null, null, headers, sessionData);
+    }
+
+    @Override
+    public String getPath() {
+      return "/circulation/renew-by-barcode";
+    }
+  }
+
+
   private class ItemRequestData extends SearchRequestData {
     private String itemBarcode;
 
@@ -564,6 +651,7 @@ public class CirculationRepository {
       this.endItem = endItem;
       this.body = body;
     }
+
 
     @Override
     public JsonObject getBody() {

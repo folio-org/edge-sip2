@@ -1,3 +1,6 @@
+## 3.1.0 Draft
+* [SIP2-121](https://issues.folio.org/browse/SIP2-121): SIP2: Renew response
+
 ## 3.0.0 2023-02-23
 * [SIP2-123](https://issues.folio.org/browse/SIP2-123): SIP2: Item Information Response
 * [SIP2-125](https://issues.folio.org/browse/SIP2-125): Logging improvement
