@@ -536,6 +536,17 @@ public class CirculationRepository {
    */
   public Future<RenewResponse> performRenewCommand(Renew renew,
                                                    SessionData sessionData) {
+    if (renew.getItemIdentifier() == null && renew.getTitleIdentifier() == null) {
+      return Future.succeededFuture(RenewResponse.builder()
+        .ok(FALSE)
+        .transactionDate(OffsetDateTime.now(clock))
+        .institutionId(renew.getInstitutionId())
+        .screenMessage(Arrays.asList("Either or both of the 'item identifier' or "
+           + "'title identifier' fields must be present for the message to"
+           + " be useful."))
+        .build());
+    }
+
     final String institutionId = renew.getInstitutionId();
     final String patronIdentifier = renew.getPatronIdentifier();
     final String patronPassword = renew.getPatronPassword();
@@ -588,7 +599,6 @@ public class CirculationRepository {
               .patronIdentifier(patronIdentifier)
               .itemIdentifier(barcode)
               .titleIdentifier(instanceId)
-
               .dueDate(dueDate)
               .screenMessage(Optional.of(resource.getErrorMessages())
                 .filter(v -> !v.isEmpty())
