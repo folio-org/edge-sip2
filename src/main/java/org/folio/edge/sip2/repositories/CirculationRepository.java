@@ -542,7 +542,7 @@ public class CirculationRepository {
         .renewalOk(FALSE)
         .transactionDate(OffsetDateTime.now(clock))
         .institutionId(renew.getInstitutionId())
-        .screenMessage(Arrays.asList("Either or both of the 'item identifier' or "
+        .screenMessage(Collections.singletonList("Either or both of the 'item identifier' or "
            + "'title identifier' fields must be present for the message to"
            + " be useful."))
         .build());
