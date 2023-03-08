@@ -5,9 +5,8 @@ import static java.lang.Boolean.TRUE;
 import static org.folio.edge.sip2.domain.messages.requests.Renew.builder;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
 import org.junit.jupiter.api.Test;
@@ -292,8 +291,7 @@ class RenewTests {
         .itemProperties(itemProperties)
         .feeAcknowledged(feeAcknowledged)
         .build();
-    assertTrue(r1.equals(r2));
-    assertTrue(r1.equals(r2));
+    assertEquals(r1, r2);
   }
 
   @Test
@@ -326,8 +324,7 @@ class RenewTests {
         .itemProperties("Give me a book!")
         .feeAcknowledged(FALSE)
         .build();
-    assertFalse(r1.equals(r2));
-    assertFalse(r1.equals(r2));
+    assertNotEquals(r1, r2);
   }
 
   @Test
