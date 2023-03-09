@@ -290,6 +290,7 @@ All permission associated with edge-sip2
     automated-patron-blocks.collection.get
     inventory.items.collection.get
     circulation.renew-by-barcode.post
+    usergroups.collection.get
 ```
 
 #### Security concerns for developers
@@ -366,6 +367,10 @@ This example shows how to launch with the Prometheus binding. Since Prometheus n
 ### "Unable to find all necessary configuration(s). Found \<N\> of \<M\>"
 
 This log message happens when one or more of the FOLIO configuration key/value maps are missing when retrieved. Ensure that each set of properties is stored in FOLIO `configuration` and that the service point UUID for the kiosk configuration matches the "location code" in the SIP "Login" message. Another problem could be that the tenant locale settings may not be saved in the database. On the initial deployment of FOLIO, as of Edelweiss, the locale settings are defaulted by the UI and not stored in the database until the "save" button is pressed. Since the UI defaults to usable settings for many, it may be misleading that these settings are present for backend modules, like edge-sip2, to consume.
+
+### "Configuration error: please add a value to Location Code."
+
+This log message happens when the location code (CP) is missing when SC status command is attempted then the error message is printed in the logs.
 
 ## Additional information
 
