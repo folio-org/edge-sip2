@@ -140,10 +140,16 @@ public class ConfigurationRepository {
         return Future.succeededFuture(resultJsonConfigs);
 
       } else {
-        log.error("Unable to find all necessary configuration(s). Found {} of {}",
-                      totalConfigs, configParameters.size());
-        return Future.failedFuture("Unable to find all necessary configuration(s). Found "
-                      + totalConfigs + " of " + configParameters.size());
+        if (Utils.isStringNullOrEmpty(sessionData.getScLocation())) {
+          log.error("Configuration error: please add a value to Location Code.");
+          return Future.failedFuture("Configuration error: please add a value to Location Code.");
+        } else {
+          log.error("Unable to find all necessary configuration(s). Found {} of {}",
+              totalConfigs, configParameters.size());
+          return Future.failedFuture("Unable to find all necessary configuration(s). Found "
+            + totalConfigs + " of " + configParameters.size());
+        }
+
       }
     });
   }

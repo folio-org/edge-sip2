@@ -1,5 +1,6 @@
 ## 3.1.0 Draft
 * [SIP2-121](https://issues.folio.org/browse/SIP2-121): SIP2: Renew response
+* [SIP2-94](https://issues.folio.org/browse/SIP2-94): Non SIP2 protocol error occurs when faced with exceptional situations
 
 ## 3.0.0 2023-02-23
 * [SIP2-123](https://issues.folio.org/browse/SIP2-123): SIP2: Item Information Response

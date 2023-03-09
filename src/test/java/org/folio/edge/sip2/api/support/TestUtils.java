@@ -54,6 +54,19 @@ public class TestUtils {
     SessionData sessionData = SessionData.createSession("dikutest", '|', false, "IBM850");
     sessionData.setTimeZone(UTCTimeZone);
     sessionData.setMaxPrintWidth(100);
+    sessionData.setScLocation("testLocation");
+    return sessionData;
+  }
+
+  /**
+   * Returns a mocked session data without Location Code.
+   * @return SessionData object
+   */
+
+  public static SessionData getMockedSessionData1() {
+    SessionData sessionData = SessionData.createSession("dikutest", '|', false, "IBM850");
+    sessionData.setTimeZone(UTCTimeZone);
+    sessionData.setMaxPrintWidth(100);
     return sessionData;
   }
 
