@@ -129,75 +129,81 @@ public class CirculationRepository {
    */
   public Future<CheckoutResponse> performCheckoutCommand(Checkout checkout,
                                                          SessionData sessionData) {
-    log.info("performCheckoutCommand checkout:{} sessionData:{}, Thread name {}",checkout,sessionData,Thread.currentThread().getName());
-    final String institutionId = checkout.getInstitutionId();
-    final String patronIdentifier = checkout.getPatronIdentifier();
-    final String itemIdentifier = checkout.getItemIdentifier();
-    final String patronPassword = checkout.getPatronPassword();
+    try {
+      log.info("performCheckoutCommand checkout:{} sessionData:{}, Thread name {}", checkout, sessionData, Thread.currentThread().getName());
+      final String institutionId = checkout.getInstitutionId();
+      final String patronIdentifier = checkout.getPatronIdentifier();
+      final String itemIdentifier = checkout.getItemIdentifier();
+      final String patronPassword = checkout.getPatronPassword();
+      Thread.sleep(10000);
 
-    return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
-      .compose(verification -> {
-        log.info("performCheckoutCommand verification:{}",verification);
-        if (FALSE.equals(verification.getPasswordVerified())) {
-          return Future.succeededFuture(CheckoutResponse.builder()
-            .ok(FALSE)
-            .renewalOk(FALSE)
-            .magneticMedia(null)
-            .desensitize(FALSE)
-            .transactionDate(OffsetDateTime.now(clock))
-            .institutionId(institutionId)
-            .patronIdentifier(patronIdentifier)
-            .itemIdentifier(itemIdentifier)
-            .titleIdentifier(UNKNOWN)
-            .dueDate(OffsetDateTime.now(clock))
-            .screenMessage(verification.getErrorMessages())
-            .build());
-        }
-
-        final User user = verification.getUser();
-        final JsonObject body = new JsonObject()
-            .put(ITEM_BARCODE, itemIdentifier)
-            .put("userBarcode", user != null ? user.getBarcode() : patronIdentifier)
-            .put(SERVICE_POINT_ID, sessionData.getScLocation());
-
-        final Map<String, String> headers = getBaseHeaders();
-
-        final CheckoutRequestData checkoutRequestData =
-            new CheckoutRequestData(body, headers, sessionData);
-
-        final Future<IResource> result = resourceProvider.createResource(checkoutRequestData);
-
-        return result
-          .otherwise(Utils::handleErrors)
-          .compose(res -> addTitleIfNotFound(sessionData, itemIdentifier, res))
-          .map(resource -> {
-            log.debug("performCheckoutCommand resource:{}",resource.getResource());
-            final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
-
-            final OffsetDateTime dueDate = response
-                .map(v -> v.getString("dueDate"))
-                .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
-                .orElse(OffsetDateTime.now(clock));
-
-            return CheckoutResponse.builder()
-              .ok(Boolean.valueOf(response.isPresent()))
+      return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+        .compose(verification -> {
+          log.info("performCheckoutCommand verification:{}", verification);
+          if (FALSE.equals(verification.getPasswordVerified())) {
+            return Future.succeededFuture(CheckoutResponse.builder()
+              .ok(FALSE)
               .renewalOk(FALSE)
               .magneticMedia(null)
-              .desensitize(Boolean.valueOf(response.isPresent()))
+              .desensitize(FALSE)
               .transactionDate(OffsetDateTime.now(clock))
               .institutionId(institutionId)
               .patronIdentifier(patronIdentifier)
               .itemIdentifier(itemIdentifier)
-              .titleIdentifier(response.map(
-                  v -> getChildString(v, "item", TITLE, UNKNOWN))
-                .orElse(resource.getTitle()))
-              .dueDate(dueDate)
-              .screenMessage(Optional.of(resource.getErrorMessages())
-                .filter(v -> !v.isEmpty())
-                .orElse(null))
-              .build();
-          });
-      });
+              .titleIdentifier(UNKNOWN)
+              .dueDate(OffsetDateTime.now(clock))
+              .screenMessage(verification.getErrorMessages())
+              .build());
+          }
+
+          final User user = verification.getUser();
+          final JsonObject body = new JsonObject()
+            .put(ITEM_BARCODE, itemIdentifier)
+            .put("userBarcode", user != null ? user.getBarcode() : patronIdentifier)
+            .put(SERVICE_POINT_ID, sessionData.getScLocation());
+
+          final Map<String, String> headers = getBaseHeaders();
+
+          final CheckoutRequestData checkoutRequestData =
+            new CheckoutRequestData(body, headers, sessionData);
+
+          final Future<IResource> result = resourceProvider.createResource(checkoutRequestData);
+
+          return result
+            .otherwise(Utils::handleErrors)
+            .compose(res -> addTitleIfNotFound(sessionData, itemIdentifier, res))
+            .map(resource -> {
+              log.debug("performCheckoutCommand resource:{}", resource.getResource());
+              final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
+
+              final OffsetDateTime dueDate = response
+                .map(v -> v.getString("dueDate"))
+                .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
+                .orElse(OffsetDateTime.now(clock));
+
+              return CheckoutResponse.builder()
+                .ok(Boolean.valueOf(response.isPresent()))
+                .renewalOk(FALSE)
+                .magneticMedia(null)
+                .desensitize(Boolean.valueOf(response.isPresent()))
+                .transactionDate(OffsetDateTime.now(clock))
+                .institutionId(institutionId)
+                .patronIdentifier(patronIdentifier)
+                .itemIdentifier(itemIdentifier)
+                .titleIdentifier(response.map(
+                    v -> getChildString(v, "item", TITLE, UNKNOWN))
+                  .orElse(resource.getTitle()))
+                .dueDate(dueDate)
+                .screenMessage(Optional.of(resource.getErrorMessages())
+                  .filter(v -> !v.isEmpty())
+                  .orElse(null))
+                .build();
+            });
+        });
+    }catch (InterruptedException ex){
+      log.info("Inside interrupted");
+      throw new RuntimeException(ex);
+    }
   }
 
   private Future<IResource> addTitleIfNotFound(SessionData sessionData,
