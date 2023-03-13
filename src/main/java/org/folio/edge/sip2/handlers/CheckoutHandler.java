@@ -37,15 +37,12 @@ public class CheckoutHandler implements ISip2RequestHandler {
   @Override
   public Future<String> execute(Object message, SessionData sessionData) {
     log.info("CheckoutHandler :: execute message:{} sessionData:{}",message,sessionData);
-    log.info(this);
     final Checkout checkout = (Checkout) message;
 
     log.info("CheckoutHandler :: execute Checkout: {}", checkout::getCheckOutLogInfo);
     String syncValue = checkout.getPatronIdentifier()+sessionData.getScLocation();
     synchronized(syncValue) {
-      try {
         log.info("Inside Sync block with value {} , Thread name", syncValue,Thread.currentThread().getName());
-        Thread.sleep(10000);
         final Future<CheckoutResponse> circulationFuture =
           circulationRepository.performCheckoutCommand(checkout, sessionData);
 
@@ -65,10 +62,6 @@ public class CheckoutHandler implements ISip2RequestHandler {
 
           return Future.succeededFuture(response);
         });
-      } catch (InterruptedException e) {
-        log.info("Inside interrupted exception");
-        throw new RuntimeException(e);
-      }
     }
   }
 }
