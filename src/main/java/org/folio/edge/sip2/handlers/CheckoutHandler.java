@@ -42,33 +42,33 @@ public class CheckoutHandler implements ISip2RequestHandler {
 
     log.info("CheckoutHandler :: execute Checkout: {}", checkout::getCheckOutLogInfo);
     String syncValue = checkout.getPatronIdentifier()+sessionData.getScLocation();
-    log.info("checkout.getPatronIdentifier() , sessionData.getScLocation()",syncValue);
     synchronized(syncValue) {
       try {
-        log.info("Inside Sync block with value {}",syncValue);
+        log.info("Inside Sync block with value {} , Thread name", syncValue,Thread.currentThread().getName());
         Thread.sleep(10000);
+        final Future<CheckoutResponse> circulationFuture =
+          circulationRepository.performCheckoutCommand(checkout, sessionData);
+
+
+        return circulationFuture.compose(checkoutResponse -> {
+          log.info("CheckoutHandler :: execute CheckoutResponse: {}", () -> checkoutResponse);
+
+          final Map<String, Object> root = new HashMap<>();
+          root.put("formatDateTime", new FormatDateTimeMethodModel());
+          root.put("delimiter", sessionData.getFieldDelimiter());
+          root.put("checkoutResponse", checkoutResponse);
+          root.put("timezone", sessionData.getTimeZone());
+
+          final String response = FreemarkerUtils.executeFreemarkerTemplate(root, commandTemplate);
+
+          log.info("CheckoutHandler :: execute SIP checkout response: {}", response);
+
+          return Future.succeededFuture(response);
+        });
       } catch (InterruptedException e) {
+        log.info("Inside interrupted exception");
         throw new RuntimeException(e);
       }
-      final Future<CheckoutResponse> circulationFuture =
-        circulationRepository.performCheckoutCommand(checkout, sessionData);
-
-
-      return circulationFuture.compose(checkoutResponse -> {
-        log.info("CheckoutHandler :: execute CheckoutResponse: {}", () -> checkoutResponse);
-
-        final Map<String, Object> root = new HashMap<>();
-        root.put("formatDateTime", new FormatDateTimeMethodModel());
-        root.put("delimiter", sessionData.getFieldDelimiter());
-        root.put("checkoutResponse", checkoutResponse);
-        root.put("timezone", sessionData.getTimeZone());
-
-        final String response = FreemarkerUtils.executeFreemarkerTemplate(root, commandTemplate);
-
-        log.info("CheckoutHandler :: execute SIP checkout response: {}", response);
-
-        return Future.succeededFuture(response);
-      });
     }
   }
 }

@@ -129,7 +129,7 @@ public class CirculationRepository {
    */
   public Future<CheckoutResponse> performCheckoutCommand(Checkout checkout,
                                                          SessionData sessionData) {
-    log.info("performCheckoutCommand checkout:{} sessionData:{}",checkout,sessionData);
+    log.info("performCheckoutCommand checkout:{} sessionData:{}, Thread name {}",checkout,sessionData,Thread.currentThread().getName());
     final String institutionId = checkout.getInstitutionId();
     final String patronIdentifier = checkout.getPatronIdentifier();
     final String itemIdentifier = checkout.getItemIdentifier();
