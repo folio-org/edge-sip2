@@ -89,7 +89,7 @@ public class PatronRepository {
       SessionData sessionData) {
     Objects.requireNonNull(patronInformation, "patronInformation cannot be null");
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
-    log.debug("performPatronInformationCommand patronIdentifier:{}",
+    log.info("performPatronInformationCommand patronIdentifier:{}",
         patronInformation.getPatronIdentifier());
 
     final String patronIdentifier = patronInformation.getPatronIdentifier();
@@ -152,7 +152,7 @@ public class PatronRepository {
   private Future<PatronInformationResponse> validPatron(String userId, Personal personal,
       PatronInformation patronInformation, SessionData sessionData, Boolean validPassword) {
     if (personal != null) {
-      log.debug("validPatron userId:{} firstName:{} lastName:{}",
+      log.info("validPatron userId:{} firstName:{} lastName:{}",
           userId,personal.getFirstName(),personal.getLastName());
     }
     // Now that we have a valid patron, we can retrieve data from circulation

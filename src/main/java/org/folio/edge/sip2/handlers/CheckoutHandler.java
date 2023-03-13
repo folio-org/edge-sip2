@@ -41,9 +41,11 @@ public class CheckoutHandler implements ISip2RequestHandler {
     final Checkout checkout = (Checkout) message;
 
     log.info("CheckoutHandler :: execute Checkout: {}", checkout::getCheckOutLogInfo);
-
-    synchronized(checkout.getPatronIdentifier()+sessionData.getScLocation()) {
+    String syncValue = checkout.getPatronIdentifier()+sessionData.getScLocation();
+    log.info("checkout.getPatronIdentifier() , sessionData.getScLocation()",syncValue);
+    synchronized(syncValue) {
       try {
+        log.info("Inside Sync block with value {}",syncValue);
         Thread.sleep(10000);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
