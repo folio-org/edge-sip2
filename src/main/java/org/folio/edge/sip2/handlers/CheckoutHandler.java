@@ -17,6 +17,9 @@ import org.folio.edge.sip2.repositories.CirculationRepository;
 import org.folio.edge.sip2.session.SessionData;
 
 public class CheckoutHandler implements ISip2RequestHandler {
+  {
+    log.info("Inside CheckoutHandler");
+  }
   private static final Logger log = LogManager.getLogger();
 
   private final CirculationRepository circulationRepository;
@@ -34,11 +37,17 @@ public class CheckoutHandler implements ISip2RequestHandler {
   @Override
   public Future<String> execute(Object message, SessionData sessionData) {
     log.info("CheckoutHandler :: execute message:{} sessionData:{}",message,sessionData);
+    log.info(this);
     final Checkout checkout = (Checkout) message;
 
     log.info("CheckoutHandler :: execute Checkout: {}", checkout::getCheckOutLogInfo);
 
     synchronized(checkout.getPatronIdentifier()+sessionData.getScLocation()) {
+      try {
+        Thread.sleep(10000);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
       final Future<CheckoutResponse> circulationFuture =
         circulationRepository.performCheckoutCommand(checkout, sessionData);
 

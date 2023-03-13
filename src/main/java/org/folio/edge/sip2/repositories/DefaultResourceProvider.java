@@ -28,7 +28,7 @@ public class DefaultResourceProvider implements IResourceProvider<IRequestData> 
 
   @Override
   public Future<IResource> retrieveResource(IRequestData key) {
-    log.debug("retrieveResource key:{}",key);
+    log.info("retrieveResource key:{}",key);
 
     JsonObject jsonFile = null;
 

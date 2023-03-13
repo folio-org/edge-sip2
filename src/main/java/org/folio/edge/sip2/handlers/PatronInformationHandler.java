@@ -45,7 +45,7 @@ public class PatronInformationHandler implements ISip2RequestHandler {
         patronRepository.performPatronInformationCommand(patronInformation, sessionData);
 
     return patronFuture.compose(patronInformationResponse -> {
-      log.debug("PatronInformationResponse: {}", () -> patronInformationResponse);
+      log.info("PatronInformationResponse: {}", () -> patronInformationResponse);
 
       final Map<String, Object> root = new HashMap<>();
       root.put("formatDateTime", new FormatDateTimeMethodModel());
