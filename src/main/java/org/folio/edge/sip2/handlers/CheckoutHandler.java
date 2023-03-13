@@ -33,28 +33,31 @@ public class CheckoutHandler implements ISip2RequestHandler {
 
   @Override
   public Future<String> execute(Object message, SessionData sessionData) {
-    log.debug("CheckoutHandler :: execute message:{} sessionData:{}",message,sessionData);
+    log.info("CheckoutHandler :: execute message:{} sessionData:{}",message,sessionData);
     final Checkout checkout = (Checkout) message;
 
     log.info("CheckoutHandler :: execute Checkout: {}", checkout::getCheckOutLogInfo);
 
-    final Future<CheckoutResponse> circulationFuture =
+    synchronized(checkout.getPatronIdentifier()+sessionData.getScLocation()) {
+      final Future<CheckoutResponse> circulationFuture =
         circulationRepository.performCheckoutCommand(checkout, sessionData);
 
-    return circulationFuture.compose(checkoutResponse -> {
-      log.info("CheckoutHandler :: execute CheckoutResponse: {}", () -> checkoutResponse);
 
-      final Map<String, Object> root = new HashMap<>();
-      root.put("formatDateTime", new FormatDateTimeMethodModel());
-      root.put("delimiter", sessionData.getFieldDelimiter());
-      root.put("checkoutResponse", checkoutResponse);
-      root.put("timezone", sessionData.getTimeZone());
+      return circulationFuture.compose(checkoutResponse -> {
+        log.info("CheckoutHandler :: execute CheckoutResponse: {}", () -> checkoutResponse);
 
-      final String response = FreemarkerUtils.executeFreemarkerTemplate(root, commandTemplate);
+        final Map<String, Object> root = new HashMap<>();
+        root.put("formatDateTime", new FormatDateTimeMethodModel());
+        root.put("delimiter", sessionData.getFieldDelimiter());
+        root.put("checkoutResponse", checkoutResponse);
+        root.put("timezone", sessionData.getTimeZone());
 
-      log.info("CheckoutHandler :: execute SIP checkout response: {}", response);
+        final String response = FreemarkerUtils.executeFreemarkerTemplate(root, commandTemplate);
 
-      return Future.succeededFuture(response);
-    });
+        log.info("CheckoutHandler :: execute SIP checkout response: {}", response);
+
+        return Future.succeededFuture(response);
+      });
+    }
   }
 }

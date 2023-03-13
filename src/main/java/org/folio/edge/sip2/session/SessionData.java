@@ -124,4 +124,22 @@ public class SessionData {
     return new SessionData(tenant, fieldDelimiter, errorDetectionEnabled,
       charset);
   }
+
+  @Override
+  public String toString() {
+    return "SessionData{" +
+      "fieldDelimiter=" + fieldDelimiter +
+      ", tenant='" + tenant + '\'' +
+      ", errorDetectionEnabled=" + errorDetectionEnabled +
+      ", charset='" + charset + '\'' +
+      ", scLocation='" + scLocation + '\'' +
+      ", authenticationToken='" + authenticationToken + '\'' +
+      ", maxPrintWidth=" + maxPrintWidth +
+      ", username='" + username + '\'' +
+      ", password='" + password + '\'' +
+      ", previousMessage=" + previousMessage +
+      ", timeZone='" + timeZone + '\'' +
+      ", patronPasswordVerificationRequired=" + patronPasswordVerificationRequired +
+      '}';
+  }
 }
