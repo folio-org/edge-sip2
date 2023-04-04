@@ -37,6 +37,7 @@ import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.domain.messages.requests.Renew;
+import org.folio.edge.sip2.domain.messages.requests.RenewAll;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
@@ -481,6 +482,110 @@ class CirculationRepositoryTests {
 
           testContext.completeNow();
         })));
+  }
+
+  @Test 
+  void canRenewAll(Vertx vertx,
+    VertxTestContext testContext,
+    @Mock IResourceProvider<IRequestData> mockFolioProvider,
+    @Mock PasswordVerifier mockPasswordVerifier) {
+    final String patronIdentifier = "1029384756";
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final String title = "Some book";
+    final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
+    final String userId = UUID.randomUUID().toString();
+    final String itemId = UUID.randomUUID().toString();
+    final RenewAll renewAll = RenewAll.builder()
+        .transactionDate(OffsetDateTime.now())
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .patronPassword("7890")
+        .terminalPassword("1234")
+        .feeAcknowledged(FALSE)
+        .build();
+
+    
+    final JsonObject loansResponse = new JsonObject()
+        .put("loans", new JsonArray()
+            .add(new JsonObject()
+                .put("userId", userId)
+                .put("itemId", itemId)
+                .put("loanDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
+                .put("action", "checkedout")))
+        .put("totalRecords", 1);
+    
+    final JsonObject response = new JsonObject()
+        .put("item", new JsonObject()
+        .put("title", title))
+        .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+    
+    when(mockFolioProvider.createResource(any()))
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+    when(mockFolioProvider.retrieveResource(any()))
+        .thenReturn(Future.succeededFuture(new FolioResource(loansResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().user(
+            new User.Builder().id(userId).build()
+        ).build()));
+
+    
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    
+    final CirculationRepository circulationRepository = new CirculationRepository(
+        mockFolioProvider, mockPasswordVerifier, clock);
+    
+    circulationRepository.performRenewAllCommand(renewAll, sessionData).onComplete(
+        testContext.succeeding( renewAllResponse -> testContext.verify(() -> {
+            assertNotNull(renewAllResponse);
+            assertEquals("diku", renewAllResponse.getInstitutionId());
+            assertTrue(renewAllResponse.getOk());
+            testContext.completeNow();
+        }))
+    );
+        
+
+  }
+
+  @Test 
+  void cannotRenewAllWithBadPassword(Vertx vertx,
+    VertxTestContext testContext,
+    @Mock IResourceProvider<IRequestData> mockFolioProvider,
+    @Mock PasswordVerifier mockPasswordVerifier) {
+    final String patronIdentifier = "1029384756";
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final String title = "Some book";
+    final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
+    final String userId = UUID.randomUUID().toString();
+    final String itemId = UUID.randomUUID().toString();
+    final RenewAll renewAll = RenewAll.builder()
+        .transactionDate(OffsetDateTime.now())
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .patronPassword("7890")
+        .terminalPassword("1234")
+        .feeAcknowledged(FALSE)
+        .build();
+    
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+          .passwordVerified(false).build()));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    final CirculationRepository circulationRepository = new CirculationRepository(
+        mockFolioProvider, mockPasswordVerifier, clock);
+
+    circulationRepository.performRenewAllCommand(renewAll, sessionData).onComplete(
+        testContext.succeeding( renewAllResponse -> testContext.verify(() -> {
+            assertNotNull(renewAllResponse);
+            assertEquals("diku", renewAllResponse.getInstitutionId());
+            assertFalse(renewAllResponse.getOk());
+            testContext.completeNow();
+        }))
+    );
+    
   }
 
   @Test

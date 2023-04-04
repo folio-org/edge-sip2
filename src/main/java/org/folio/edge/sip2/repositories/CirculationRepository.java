@@ -661,7 +661,7 @@ public class CirculationRepository {
 
 
           loansFuture
-              .map(loans -> doRenewals(loans, builder));
+             .map(loans -> doRenewals(loans, builder));
 
           final RenewalRequestData renewalRequestData =
               new RenewalRequestData(body, headers, sessionData);
