@@ -486,9 +486,9 @@ class CirculationRepositoryTests {
 
   @Test 
   void canRenewAll(Vertx vertx,
-    VertxTestContext testContext,
-    @Mock IResourceProvider<IRequestData> mockFolioProvider,
-    @Mock PasswordVerifier mockPasswordVerifier) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final String patronIdentifier = "1029384756";
     final Clock clock = TestUtils.getUtcFixedClock();
     final String title = "Some book";
@@ -537,11 +537,14 @@ class CirculationRepositoryTests {
         mockFolioProvider, mockPasswordVerifier, clock);
     
     circulationRepository.performRenewAllCommand(renewAll, sessionData).onComplete(
-        testContext.succeeding( renewAllResponse -> testContext.verify(() -> {
-            assertNotNull(renewAllResponse);
-            assertEquals("diku", renewAllResponse.getInstitutionId());
-            assertTrue(renewAllResponse.getOk());
-            testContext.completeNow();
+        testContext.succeeding(renewAllResponse -> testContext.verify(() -> {
+          assertNotNull(renewAllResponse);
+          assertEquals("diku", renewAllResponse.getInstitutionId());
+          assertTrue(renewAllResponse.getOk());
+          assertTrue(renewAllResponse.getRenewedItems().isEmpty());
+          assertTrue(renewAllResponse.getUnrenewedItems().isEmpty());
+          assertNull(renewAllResponse.getPrintLine());
+          testContext.completeNow();
         }))
     );
         
@@ -550,9 +553,9 @@ class CirculationRepositoryTests {
 
   @Test 
   void cannotRenewAllWithBadPassword(Vertx vertx,
-    VertxTestContext testContext,
-    @Mock IResourceProvider<IRequestData> mockFolioProvider,
-    @Mock PasswordVerifier mockPasswordVerifier) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier) {
     final String patronIdentifier = "1029384756";
     final Clock clock = TestUtils.getUtcFixedClock();
     final String title = "Some book";
@@ -578,11 +581,12 @@ class CirculationRepositoryTests {
         mockFolioProvider, mockPasswordVerifier, clock);
 
     circulationRepository.performRenewAllCommand(renewAll, sessionData).onComplete(
-        testContext.succeeding( renewAllResponse -> testContext.verify(() -> {
-            assertNotNull(renewAllResponse);
-            assertEquals("diku", renewAllResponse.getInstitutionId());
-            assertFalse(renewAllResponse.getOk());
-            testContext.completeNow();
+        testContext.succeeding(renewAllResponse -> testContext.verify(() -> {
+          assertNotNull(renewAllResponse);
+          assertEquals("diku", renewAllResponse.getInstitutionId());
+          assertTrue(renewAllResponse.getRenewedItems().isEmpty());
+          assertFalse(renewAllResponse.getOk());
+          testContext.completeNow();
         }))
     );
     
