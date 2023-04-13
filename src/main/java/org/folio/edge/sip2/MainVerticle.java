@@ -89,11 +89,20 @@ public class MainVerticle extends AbstractVerticle {
     NetServer netServer = vertx.createNetServer(netServerOptions);
 
     netServer.connectHandler(socket -> {
-      JsonObject response = new JsonObject();
-      response.put("status", "UP");
-      socket.write(response.encode() + "\n");
-      log.info("health check response : {}",response.encodePrettily());
-    });
+      log.info("inside connect handler");
+      if (socket.remoteAddress().port() == HEALTH_CHECK_PORT) {
+        log.info("inside connect handler port");
+        socket.handler(buffer -> {
+          String request = buffer.toString();
+          JsonObject json = new JsonObject()
+            .put("status", "UP");
+          log.info("inside connect handler response : {}",json.encodePrettily());
+          if (request.startsWith("GET admin/health")) {
+            log.info("inside connect handler request");
+            socket.write("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n" + json);
+          }
+        });
+      }});
 
     netServer.listen(result -> {
       if (result.succeeded()) {
