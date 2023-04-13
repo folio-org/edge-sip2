@@ -106,7 +106,13 @@ public class MainVerticle extends AbstractVerticle {
       });
     });
 
-    netServer.listen();
+    netServer.listen(HEALTH_CHECK_PORT,result -> {
+      if (result.succeeded()) {
+        log.info("result.succeeded() : {}", result.succeeded());
+      } else {
+        log.info("result.succeeded() : {}" + result.succeeded());
+      }
+    });
 
     // We need to reduce the complexity of this method...
     if (handlers == null) {
