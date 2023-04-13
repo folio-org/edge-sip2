@@ -95,7 +95,13 @@ public class MainVerticle extends AbstractVerticle {
       log.info("health check response : {}",response.encodePrettily());
     });
 
-    netServer.listen();
+    netServer.listen(result -> {
+      if (result.succeeded()) {
+        log.info("result.succeeded() : {}", result.succeeded());
+      } else {
+        log.info("result.succeeded() : {}" + result.succeeded());
+      }
+    });
 
     // We need to reduce the complexity of this method...
     if (handlers == null) {
