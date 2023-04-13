@@ -85,11 +85,11 @@ public class MainVerticle extends AbstractVerticle {
   public void start(Promise<Void> startFuture) {
     log.debug("Startup configuration: {}", this::getSanitizedConfig);
 
-    NetServerOptions netServerOptions = new NetServerOptions().setPort(HEALTH_CHECK_PORT);
-    NetServer netServer = vertx.createNetServer(netServerOptions);
+    NetServer netServer = vertx.createNetServer();
 
     netServer.connectHandler(socket -> {
       log.info("inside connect handler");
+      log.info("port : {}",socket.remoteAddress().port());
       if (socket.remoteAddress().port() == HEALTH_CHECK_PORT) {
         log.info("inside connect handler port");
         socket.handler(buffer -> {
@@ -105,7 +105,7 @@ public class MainVerticle extends AbstractVerticle {
       }
     });
 
-    netServer.listen(result -> {
+    netServer.listen(HEALTH_CHECK_PORT,result -> {
       if (result.succeeded()) {
         log.info("result.succeeded() : {}", result.succeeded());
       } else {
