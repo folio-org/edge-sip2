@@ -97,7 +97,9 @@ public class MainVerticle extends AbstractVerticle {
         JsonObject json = new JsonObject()
             .put("status", "UP");
         log.info("inside connect handler response : {}",json.encodePrettily());
-        if (request.startsWith("GET admin/health")) {
+        log.info("request : {}",request);
+        log.info("GET /admin/health : {}",request.startsWith("GET /admin/health"));
+        if (request.startsWith("GET /admin/health")) {
           log.info("inside connect handler request");
           socket.write("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n" + json);
         }
