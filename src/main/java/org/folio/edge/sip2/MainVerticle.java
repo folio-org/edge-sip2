@@ -85,6 +85,36 @@ public class MainVerticle extends AbstractVerticle {
   public void start(Promise<Void> startFuture) {
     log.debug("Startup configuration: {}", this::getSanitizedConfig);
 
+    NetServerOptions netServerOptions = new NetServerOptions();
+    netServerOptions.setPort(HEALTH_CHECK_PORT);
+    NetServer netServer = vertx.createNetServer(netServerOptions);
+    netServer.connectHandler(socket -> {
+      log.info("inside connect handler");
+      log.info("port : {}",socket.remoteAddress().port());
+
+      log.info("inside connect handler port");
+      socket.handler(buffer -> {
+        String request = buffer.toString();
+        JsonObject json = new JsonObject()
+            .put("status", "UP");
+        log.info("inside connect handler response : {}",json.encodePrettily());
+        log.info("request : {}",request);
+        log.info("GET /admin/health : {}",request.startsWith("GET /admin/health"));
+        if (request.startsWith("GET /admin/health")) {
+          log.info("inside connect handler request");
+          socket.write("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n" + json);
+        }
+      });
+    });
+
+    netServer.listen(HEALTH_CHECK_PORT,result -> {
+      if (result.succeeded()) {
+        log.info("result.succeeded() : {}", result.succeeded());
+      } else {
+        log.info("result.succeeded() : {}" + result.succeeded());
+      }
+    });
+
     // We need to reduce the complexity of this method...
     if (handlers == null) {
       String okapiUrl = config().getString("okapiUrl");
@@ -133,18 +163,6 @@ public class MainVerticle extends AbstractVerticle {
       final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
 
       socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
-
-        String request = buffer.toString();
-        JsonObject json = new JsonObject()
-            .put("status", "UP");
-        log.info("inside connect handler response : {}",json.encodePrettily());
-        log.info("request : {}",request);
-        log.info("GET /admin/health : {}",request.startsWith("GET /admin/health"));
-        if (request.startsWith("GET /admin/health")) {
-          log.info("inside connect handler request");
-          socket.write("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n" + json);
-        }
-
         final Timer.Sample sample = metrics.sample();
 
         if (Objects.isNull(sessionData.getTenant())) {
