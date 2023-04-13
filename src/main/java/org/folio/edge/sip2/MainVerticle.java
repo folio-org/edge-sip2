@@ -92,9 +92,7 @@ public class MainVerticle extends AbstractVerticle {
       JsonObject response = new JsonObject();
       response.put("status", "UP");
       socket.write(response.encode() + "\n");
-      log.info("health check response");
-      log.info("{}",response.encodePrettily());
-      socket.close();
+      log.info("health check response : {}",response.encodePrettily());
     });
 
     netServer.listen();
