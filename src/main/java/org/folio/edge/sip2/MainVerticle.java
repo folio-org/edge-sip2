@@ -136,12 +136,12 @@ public class MainVerticle extends AbstractVerticle {
         if (requestString.startsWith("GET /admin/health")) {
           log.info("inside GET /admin/health");
           JsonObject responseJson = new JsonObject()
-            .put("status", "OK");
+              .put("status", "OK");
 
           Buffer responseBuffer = Buffer.buffer("HTTP/1.1 200 OK\n"
-            + "Content-Type: application/json\n"
-            + "Content-Length: " + responseJson.encode().length() + "\n\n"
-            + responseJson.encode() + "\n");
+              + "Content-Type: application/json\n"
+              + "Content-Length: " + responseJson.encode().length() + "\n\n"
+              + responseJson.encode() + "\n");
 
           socket.write(responseBuffer);
         }
