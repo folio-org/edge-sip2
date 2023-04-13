@@ -97,15 +97,7 @@ public class MainVerticle extends AbstractVerticle {
       socket.close();
     });
 
-    netServer.listen(result -> {
-      if (result.succeeded()) {
-        log.info("health check deployed successfuly, server is now listening!");
-        startFuture.complete();
-      } else {
-        log.error("Failed to deploy health check", result.cause());
-        startFuture.fail(result.cause());
-      }
-    });
+    netServer.listen();
 
     // We need to reduce the complexity of this method...
     if (handlers == null) {
