@@ -20,6 +20,7 @@ import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.pointer.JsonPointer;
 import io.vertx.core.net.NetServer;
@@ -129,6 +130,23 @@ public class MainVerticle extends AbstractVerticle {
           tenantConfig.getString("charset", "IBM850"));
       final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
 
+      socket.handler(buffer -> {
+        log.info("inside handler ");
+        String requestString = buffer.toString();
+        if (requestString.startsWith("GET /admin/health")) {
+          log.info("inside GET /admin/health");
+          JsonObject responseJson = new JsonObject()
+            .put("status", "OK");
+
+          Buffer responseBuffer = Buffer.buffer("HTTP/1.1 200 OK\n"
+            + "Content-Type: application/json\n"
+            + "Content-Length: " + responseJson.encode().length() + "\n\n"
+            + responseJson.encode() + "\n");
+
+          socket.write(responseBuffer);
+        }
+      });
+
       socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
         final Timer.Sample sample = metrics.sample();
 
@@ -217,7 +235,6 @@ public class MainVerticle extends AbstractVerticle {
           metrics.requestError();
         }
       }));
-
       socket.exceptionHandler(t -> {
         log.info("Socket exceptionHandler caught an issue, see error logs for more details");
         log.error("Socket exception", t);
