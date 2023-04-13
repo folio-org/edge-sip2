@@ -85,33 +85,29 @@ public class MainVerticle extends AbstractVerticle {
   public void start(Promise<Void> startFuture) {
     log.debug("Startup configuration: {}", this::getSanitizedConfig);
 
-    NetServerOptions netServerOptions = new NetServerOptions();
-    netServerOptions.setPort(HEALTH_CHECK_PORT);
-    NetServer netServer = vertx.createNetServer(netServerOptions);
+    NetServer netServer = vertx.createNetServer();
     netServer.connectHandler(socket -> {
       log.info("inside connect handler");
-      log.info("port : {}",socket.remoteAddress().port());
-
-      log.info("inside connect handler port");
       socket.handler(buffer -> {
-        String request = buffer.toString();
-        JsonObject json = new JsonObject()
-            .put("status", "UP");
-        log.info("inside connect handler response : {}",json.encodePrettily());
-        log.info("request : {}",request);
-        log.info("GET /admin/health : {}",request.startsWith("GET /admin/health"));
-        if (request.startsWith("GET /admin/health")) {
-          log.info("inside connect handler request");
-          socket.write("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n" + json);
+        log.info("inside connect handler buffer");
+        String message = buffer.toString();
+        log.info("buffer message : {}",message);
+        log.info("message contains : {}",message.contains("GET /admin/health HTTP/1.1"));
+        if (message.contains("GET /admin/health HTTP/1.1")) {
+          log.info("contains message");
+          socket.write(Buffer.buffer("HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK"));
+        } else {
+          log.info("doesn't contain any message");
+          socket.close();
         }
       });
     });
 
-    netServer.listen(HEALTH_CHECK_PORT,result -> {
-      if (result.succeeded()) {
-        log.info("result.succeeded() : {}", result.succeeded());
+    netServer.listen(HEALTH_CHECK_PORT, res -> {
+      if (res.succeeded()) {
+        log.info("Health endpoint is now listening!");
       } else {
-        log.info("result.succeeded() : {}" + result.succeeded());
+        log.info("Failed to bind!");
       }
     });
 
