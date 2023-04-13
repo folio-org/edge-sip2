@@ -55,6 +55,8 @@ import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.TenantUtils;
 
 public class MainVerticle extends AbstractVerticle {
+
+  private static final int HEALTH_CHECK_PORT = 8081;
   private Map<Command, ISip2RequestHandler> handlers;
   private NetServer server;
   private final Logger log = LogManager.getLogger();
@@ -82,6 +84,28 @@ public class MainVerticle extends AbstractVerticle {
   @Override
   public void start(Promise<Void> startFuture) {
     log.debug("Startup configuration: {}", this::getSanitizedConfig);
+
+    NetServerOptions netServerOptions = new NetServerOptions().setPort(HEALTH_CHECK_PORT);
+    NetServer netServer = vertx.createNetServer(netServerOptions);
+
+    netServer.connectHandler(socket -> {
+      JsonObject response = new JsonObject();
+      response.put("status", "UP");
+      log.info("health check response");
+      socket.write(response.encode() + "\n");
+
+      socket.close();
+    });
+
+    netServer.listen(result -> {
+      if (result.succeeded()) {
+        log.info("health check deployed successfuly, server is now listening!");
+        startFuture.complete();
+      } else {
+        log.error("Failed to deploy health check", result.cause());
+        startFuture.fail(result.cause());
+      }
+    });
 
     // We need to reduce the complexity of this method...
     if (handlers == null) {
@@ -129,23 +153,6 @@ public class MainVerticle extends AbstractVerticle {
           tenantConfig.getBoolean("errorDetectionEnabled", FALSE),
           tenantConfig.getString("charset", "IBM850"));
       final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
-
-      socket.handler(buffer -> {
-        log.info("inside handler ");
-        String requestString = buffer.toString();
-        if (requestString.startsWith("GET /admin/health")) {
-          log.info("inside GET /admin/health");
-          JsonObject responseJson = new JsonObject()
-              .put("status", "OK");
-
-          Buffer responseBuffer = Buffer.buffer("HTTP/1.1 200 OK\n"
-              + "Content-Type: application/json\n"
-              + "Content-Length: " + responseJson.encode().length() + "\n\n"
-              + responseJson.encode() + "\n");
-
-          socket.write(responseBuffer);
-        }
-      });
 
       socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
         final Timer.Sample sample = metrics.sample();
