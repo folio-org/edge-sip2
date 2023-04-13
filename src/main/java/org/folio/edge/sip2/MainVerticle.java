@@ -91,9 +91,9 @@ public class MainVerticle extends AbstractVerticle {
     netServer.connectHandler(socket -> {
       JsonObject response = new JsonObject();
       response.put("status", "UP");
-      log.info("health check response");
       socket.write(response.encode() + "\n");
-
+      log.info("health check response");
+      log.info("{}",response.encodePrettily());
       socket.close();
     });
 
