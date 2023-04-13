@@ -95,14 +95,15 @@ public class MainVerticle extends AbstractVerticle {
         socket.handler(buffer -> {
           String request = buffer.toString();
           JsonObject json = new JsonObject()
-            .put("status", "UP");
+              .put("status", "UP");
           log.info("inside connect handler response : {}",json.encodePrettily());
           if (request.startsWith("GET admin/health")) {
             log.info("inside connect handler request");
             socket.write("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n" + json);
           }
         });
-      }});
+      }
+    });
 
     netServer.listen(result -> {
       if (result.succeeded()) {
