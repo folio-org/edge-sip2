@@ -102,11 +102,15 @@ public class MainVerticle extends AbstractVerticle {
         if (request.startsWith("GET /admin/health")) {
           log.info("inside connect handler request");
           socket.write("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n" + json);
+          socket.close();
+        } else {
+          socket.write(Buffer.buffer("HTTP/1.1 404 Not Found\n\n"));
+          socket.close();
         }
       });
     });
 
-    netServer.listen(HEALTH_CHECK_PORT,result -> {
+    netServer.listen(result -> {
       if (result.succeeded()) {
         log.info("result.succeeded() : {}", result.succeeded());
       } else {
