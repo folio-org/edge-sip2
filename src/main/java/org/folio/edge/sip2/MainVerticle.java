@@ -264,15 +264,13 @@ public class MainVerticle extends AbstractVerticle {
   private void healthCheck() {
     NetServer netServer = vertx.createNetServer();
     netServer.connectHandler(socket -> {
-      log.info("inside connect handler");
       socket.handler(buffer -> {
-        log.info("inside connect handler buffer");
-        String message = buffer.toString();
-        log.info("buffer message : {}",message);
-        log.info("message contains : {}",message.contains("GET /admin/health HTTP/1.1"));
-        if (message.contains("GET /admin/health HTTP/1.1")) {
+        String request = buffer.toString();
+        log.info("request :{}",request);
+        String response = "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK";
+        if (request.contains("GET /admin/health HTTP/1.1")) {
           log.info("contains message");
-          socket.write(Buffer.buffer("HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK"));
+          socket.write(Buffer.buffer(response));
         } else {
           log.info("doesn't contain any message");
           socket.close();
