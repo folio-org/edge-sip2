@@ -85,7 +85,24 @@ public class MainVerticle extends AbstractVerticle {
   public void start(Promise<Void> startFuture) {
     log.debug("Startup configuration: {}", this::getSanitizedConfig);
 
-    healthCheck();
+    NetServer netServer = vertx.createNetServer(new NetServerOptions().setPort(8081));
+    netServer.connectHandler(socket -> {
+      log.info("inside connect handler");
+      socket.handler(buffer -> {
+        log.info("inside connect handler buffer");
+        String message = buffer.toString();
+        log.info("message contains : {}",message.contains("GET /admin/health HTTP/1.1"));
+        if (message.contains("GET /admin/health HTTP/1.1")) {
+          log.info("contains message");
+          socket.write(Buffer.buffer("HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK"));
+        } else {
+          log.info("doesn't contain any message");
+          socket.close();
+        }
+      });
+    });
+
+    netServer.listen(8081);
 
     // We need to reduce the complexity of this method...
     if (handlers == null) {
@@ -260,31 +277,6 @@ public class MainVerticle extends AbstractVerticle {
       log.info("Tenant config changed: {}", () -> multiTenantConfig.encodePrettily());
     });
 
-  }
-
-  private boolean healthCheck() {
-    AtomicBoolean flag = new AtomicBoolean(false);
-    NetServer netServer = vertx.createNetServer();
-    netServer.connectHandler(socket -> {
-      log.info("inside connect handler");
-      socket.handler(buffer -> {
-        log.info("inside connect handler buffer");
-        String message = buffer.toString();
-        log.info("buffer message : {}",message);
-        log.info("message contains : {}",message.contains("GET /admin/health HTTP/1.1"));
-        if (message.contains("GET /admin/health HTTP/1.1")) {
-          log.info("contains message");
-          socket.write(Buffer.buffer("HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK"));
-          flag.set(true);
-        } else {
-          log.info("doesn't contain any message");
-          socket.close();
-        }
-      });
-    });
-
-    netServer.listen();
-    return flag.get();
   }
 
   @Override
