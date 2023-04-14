@@ -57,7 +57,6 @@ import org.folio.edge.sip2.utils.TenantUtils;
 
 public class MainVerticle extends AbstractVerticle {
 
-  private static final int HEALTH_CHECK_PORT = 8081;
   private Map<Command, ISip2RequestHandler> handlers;
   private NetServer server;
   private final Logger log = LogManager.getLogger();
@@ -89,7 +88,10 @@ public class MainVerticle extends AbstractVerticle {
     NetServer netServer = vertx.createNetServer();
     netServer.connectHandler(socket -> {
       socket.handler(buffer -> {
+        log.info("inside connect handler buffer");
         String message = buffer.toString();
+        log.info("buffer message : {}",message);
+        log.info("message contains : {}",message.contains("GET /admin/health HTTP/1.1"));
         if (message.contains("GET /admin/health HTTP/1.1")) {
           log.info("contains message");
           socket.write(Buffer.buffer("HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK"));
