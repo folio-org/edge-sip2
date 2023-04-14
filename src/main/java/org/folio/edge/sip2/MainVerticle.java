@@ -33,6 +33,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.PreviousMessage;
@@ -261,16 +262,20 @@ public class MainVerticle extends AbstractVerticle {
 
   }
 
-  private void healthCheck() {
+  private boolean healthCheck() {
+    AtomicBoolean flag = new AtomicBoolean(false);
     NetServer netServer = vertx.createNetServer();
     netServer.connectHandler(socket -> {
+      log.info("inside connect handler");
       socket.handler(buffer -> {
-        String request = buffer.toString();
-        log.info("request :{}",request);
-        String response = "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK";
-        if (request.contains("GET /admin/health HTTP/1.1")) {
+        log.info("inside connect handler buffer");
+        String message = buffer.toString();
+        log.info("buffer message : {}",message);
+        log.info("message contains : {}",message.contains("GET /admin/health HTTP/1.1"));
+        if (message.contains("GET /admin/health HTTP/1.1")) {
           log.info("contains message");
-          socket.write(Buffer.buffer(response));
+          socket.write(Buffer.buffer("HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK"));
+          flag.set(true);
         } else {
           log.info("doesn't contain any message");
           socket.close();
@@ -279,6 +284,7 @@ public class MainVerticle extends AbstractVerticle {
     });
 
     netServer.listen();
+    return flag.get();
   }
 
   @Override
