@@ -57,6 +57,7 @@ import org.folio.edge.sip2.utils.TenantUtils;
 
 public class MainVerticle extends AbstractVerticle {
 
+  private static final int HEALTH_CHECK_PORT = 8081;
   private Map<Command, ISip2RequestHandler> handlers;
   private NetServer server;
   private final Logger log = LogManager.getLogger();
@@ -99,13 +100,7 @@ public class MainVerticle extends AbstractVerticle {
       });
     });
 
-    netServer.listen(res -> {
-      if (res.succeeded()) {
-        log.info("Health endpoint is now listening!");
-      } else {
-        log.info("Failed to bind!");
-      }
-    });
+    netServer.listen();
 
     // We need to reduce the complexity of this method...
     if (handlers == null) {
