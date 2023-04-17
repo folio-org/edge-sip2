@@ -90,20 +90,24 @@ public class MainVerticle extends AbstractVerticle {
     HttpServer httpServer = vertx.createHttpServer();
 
     httpServer.requestHandler(request -> {
-      log.info("request.uri() : {}",request.uri());
       log.info("request.path() : {}",request.path());
-      log.info("request.absoluteURI() : {}",request.absoluteURI());
       if (request.path().equals("/admin/health")) {
         HttpServerResponse response = request.response();
         response.setStatusCode(200);
         response.putHeader("Content-Type", "text/plain");
         response.end("OK");
-        log.info("response : {}",response);
-        log.info("response.toString() : {}",response.toString());
+        log.info("response statusCode : {}",response.getStatusCode());
+        log.info("response statusCode : {}",response.getStatusMessage());
       }
     });
 
-    httpServer.listen(HEALTH_CHECK_PORT);
+    httpServer.listen(HEALTH_CHECK_PORT, res -> {
+      if (res.succeeded()) {
+        log.info("Health endpoint is now listening!");
+      } else {
+        log.info("Failed to bind!");
+      }
+    });
 
     // We need to reduce the complexity of this method...
     if (handlers == null) {
