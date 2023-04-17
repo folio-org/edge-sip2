@@ -21,6 +21,8 @@ import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.pointer.JsonPointer;
 import io.vertx.core.net.NetServer;
@@ -85,34 +87,19 @@ public class MainVerticle extends AbstractVerticle {
   public void start(Promise<Void> startFuture) {
     log.debug("Startup configuration: {}", this::getSanitizedConfig);
 
-    NetServerOptions netServerOptions = new NetServerOptions().setPort(HEALTH_CHECK_PORT);
-    NetServer netServer = vertx.createNetServer(netServerOptions);
-    netServer.connectHandler(socket -> {
-      log.info("inside connect handler");
-      socket.handler(buffer -> {
-        log.info("inside connect handler buffer");
-        String message = buffer.toString();
-        log.info("buffer message : {}",message);
-        log.info("message contains : {}",message.contains("GET /admin/health HTTP/1.1"));
-        if (message.contains("GET /admin/health HTTP/1.1")) {
-          log.info("contains message");
-          log.info("writeHandlerID : {}",socket.writeHandlerID());
-          socket.write(Buffer.buffer("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nOK"));
-          socket.close();
-        } else {
-          log.info("doesn't contain any message");
-          socket.close();
-        }
-      });
-    });
+    HttpServer httpServer = vertx.createHttpServer();
 
-    netServer.listen(HEALTH_CHECK_PORT, res -> {
-      if (res.succeeded()) {
-        log.info("Health endpoint is now listening!");
-      } else {
-        log.info("Failed to bind!");
+    httpServer.requestHandler(request -> {
+      log.info("request.uri() : {}",request.uri());
+      if (request.uri().equals("/admin/health")) {
+        HttpServerResponse response = request.response();
+        response.setStatusCode(200);
+        response.putHeader("Content-Type", "text/plain");
+        response.end("OK");
       }
     });
+
+    httpServer.listen(HEALTH_CHECK_PORT);
 
     // We need to reduce the complexity of this method...
     if (handlers == null) {
