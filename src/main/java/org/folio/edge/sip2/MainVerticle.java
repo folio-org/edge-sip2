@@ -20,7 +20,6 @@ import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
@@ -105,7 +104,7 @@ public class MainVerticle extends AbstractVerticle {
       if (res.succeeded()) {
         log.info("Health endpoint is now listening!");
       } else {
-        log.info("Failed to bind!");
+        log.info("Failed!");
       }
     });
 
