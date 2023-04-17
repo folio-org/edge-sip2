@@ -33,7 +33,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.PreviousMessage;
@@ -97,7 +96,9 @@ public class MainVerticle extends AbstractVerticle {
         log.info("message contains : {}",message.contains("GET /admin/health HTTP/1.1"));
         if (message.contains("GET /admin/health HTTP/1.1")) {
           log.info("contains message");
-          socket.write(Buffer.buffer("HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK"));
+          log.info("writeHandlerID : {}",socket.writeHandlerID());
+          socket.write(Buffer.buffer("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nOK"));
+          socket.close();
         } else {
           log.info("doesn't contain any message");
           socket.close();
