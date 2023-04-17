@@ -90,14 +90,14 @@ public class MainVerticle extends AbstractVerticle {
     HttpServer httpServer = vertx.createHttpServer();
 
     httpServer.requestHandler(request -> {
-      log.info("request.path() : {}",request.path());
+      log.info("path : {}",request.path());
       if (request.path().equals("/admin/health")) {
         HttpServerResponse response = request.response();
         response.setStatusCode(200);
         response.putHeader("Content-Type", "text/plain");
         response.end("OK");
-        log.info("response statusCode : {}",response.getStatusCode());
-        log.info("response statusCode : {}",response.getStatusMessage());
+        log.info("statusCode : {}",response.getStatusCode());
+        log.info("message : {}",response.getStatusMessage());
       }
     });
 
