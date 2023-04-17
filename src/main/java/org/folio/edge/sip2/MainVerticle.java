@@ -91,11 +91,15 @@ public class MainVerticle extends AbstractVerticle {
 
     httpServer.requestHandler(request -> {
       log.info("request.uri() : {}",request.uri());
-      if (request.uri().equals("/admin/health")) {
+      log.info("request.path() : {}",request.path());
+      log.info("request.absoluteURI() : {}",request.absoluteURI());
+      if (request.path().equals("/admin/health")) {
         HttpServerResponse response = request.response();
         response.setStatusCode(200);
         response.putHeader("Content-Type", "text/plain");
         response.end("OK");
+        log.info("response : {}",response);
+        log.info("response.toString() : {}",response.toString());
       }
     });
 
