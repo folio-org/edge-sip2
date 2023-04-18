@@ -8,6 +8,7 @@ import static org.folio.edge.sip2.parser.Command.ITEM_INFORMATION;
 import static org.folio.edge.sip2.parser.Command.LOGIN;
 import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION;
 import static org.folio.edge.sip2.parser.Command.RENEW;
+import static org.folio.edge.sip2.parser.Command.RENEW_ALL;
 import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
@@ -44,6 +45,7 @@ import org.folio.edge.sip2.handlers.ItemInformationHandler;
 import org.folio.edge.sip2.handlers.LoginHandler;
 import org.folio.edge.sip2.handlers.PatronInformationHandler;
 import org.folio.edge.sip2.handlers.RenewHandler;
+import org.folio.edge.sip2.handlers.RenewAllHandler;
 import org.folio.edge.sip2.metrics.Metrics;
 import org.folio.edge.sip2.modules.ApplicationModule;
 import org.folio.edge.sip2.modules.FolioResourceProviderModule;
@@ -101,6 +103,7 @@ public class MainVerticle extends AbstractVerticle {
       handlers.put(END_PATRON_SESSION, injector.getInstance(EndPatronSessionHandler.class));
       handlers.put(ITEM_INFORMATION, injector.getInstance(ItemInformationHandler.class));
       handlers.put(RENEW,  injector.getInstance(RenewHandler.class));
+      handlers.put(RENEW_ALL,  injector.getInstance(RenewAllHandler.class));
     }
 
     //set Config object's defaults
