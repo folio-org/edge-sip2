@@ -58,6 +58,7 @@ import org.folio.edge.sip2.utils.TenantUtils;
 public class MainVerticle extends AbstractVerticle {
 
   private static final int HEALTH_CHECK_PORT = 8081;
+  private static final String  HEALTH_CHECK_PATH = "/admin/health";
   private Map<Command, ISip2RequestHandler> handlers;
   private NetServer server;
   private final Logger log = LogManager.getLogger();
@@ -86,27 +87,7 @@ public class MainVerticle extends AbstractVerticle {
   public void start(Promise<Void> startFuture) {
     log.debug("Startup configuration: {}", this::getSanitizedConfig);
 
-    HttpServer httpServer = vertx.createHttpServer();
-
-    httpServer.requestHandler(request -> {
-      log.info("path : {}",request.path());
-      if (request.path().equals("/admin/health")) {
-        HttpServerResponse response = request.response();
-        response.setStatusCode(200);
-        response.putHeader("Content-Type", "text/plain");
-        response.end("OK");
-        log.info("statusCode : {}",response.getStatusCode());
-        log.info("message : {}",response.getStatusMessage());
-      }
-    });
-
-    httpServer.listen(HEALTH_CHECK_PORT, res -> {
-      if (res.succeeded()) {
-        log.info("Health endpoint is now listening!");
-      } else {
-        log.info("Failed!");
-      }
-    });
+    startHealthCheckService();
 
     // We need to reduce the complexity of this method...
     if (handlers == null) {
@@ -281,6 +262,30 @@ public class MainVerticle extends AbstractVerticle {
       log.info("Tenant config changed: {}", () -> multiTenantConfig.encodePrettily());
     });
 
+  }
+
+  private void startHealthCheckService() {
+    HttpServer httpServer = vertx.createHttpServer();
+
+    httpServer.requestHandler(request -> {
+      log.debug("path : {}", request.path());
+      if (request.path().equals(HEALTH_CHECK_PATH)) {
+        HttpServerResponse response = request.response();
+        response.setStatusCode(200);
+        response.putHeader("Content-Type", "text/plain");
+        response.end("OK");
+        log.debug("statusCode : {}", response.getStatusCode());
+        log.info("message : {}", response.getStatusMessage());
+      }
+    });
+
+    httpServer.listen(HEALTH_CHECK_PORT, res -> {
+      if (res.succeeded()) {
+        log.info("Health endpoint is now listening!");
+      } else {
+        log.error("Failed to start the health endpoint. Cause : {}", res.cause().getMessage());
+      }
+    });
   }
 
   @Override
