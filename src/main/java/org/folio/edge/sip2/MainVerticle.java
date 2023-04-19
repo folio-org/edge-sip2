@@ -87,7 +87,7 @@ public class MainVerticle extends AbstractVerticle {
   public void start(Promise<Void> startFuture) {
     log.debug("Startup configuration: {}", this::getSanitizedConfig);
 
-    startHealthCheckService();
+    callAdminHealthCheckService();
 
     // We need to reduce the complexity of this method...
     if (handlers == null) {
@@ -264,7 +264,7 @@ public class MainVerticle extends AbstractVerticle {
 
   }
 
-  private void startHealthCheckService() {
+  private void callAdminHealthCheckService() {
     HttpServer httpServer = vertx.createHttpServer();
 
     httpServer.requestHandler(request -> {
@@ -275,7 +275,7 @@ public class MainVerticle extends AbstractVerticle {
         response.putHeader("Content-Type", "text/plain");
         response.end("OK");
         log.debug("statusCode : {}", response.getStatusCode());
-        log.info("message : {}", response.getStatusMessage());
+        log.info("Admin health check service response message : {}", response.getStatusMessage());
       }
     });
 
@@ -283,7 +283,8 @@ public class MainVerticle extends AbstractVerticle {
       if (res.succeeded()) {
         log.info("Health endpoint is now listening!");
       } else {
-        log.error("Failed to start the health endpoint. Cause : {}", res.cause().getMessage());
+        log.error("The call to admin health check service failed due to : {}",
+            res.cause().getMessage());
       }
     });
   }
