@@ -215,15 +215,32 @@ public class MainVerticleTests extends BaseTest {
 
   @Test
   @DisplayName("Test /admin/health endpoint")
-  public void testHealthCheck(
+  private void testHealthCheck(
       Vertx vertx, VertxTestContext testContext) {
 
     HttpClient client = vertx.createHttpClient();
     client.request(HttpMethod.GET, 8081, "localhost", "/admin/health")
         .compose(HttpClientRequest::send)
-        .compose(HttpClientResponse::body).onSuccess(body -> {
-          assertEquals("OK", body.toString());
+        .onComplete(testContext.succeeding(response -> {
+          assertEquals(200, response.statusCode());
+          response.bodyHandler(body -> {
+            assertEquals("OK", body.toString());
+            testContext.completeNow();
+          });
+        }));
+  }
+
+  @Test
+  @DisplayName("Test / endpoint")
+  private void testHealthCheckWithWrongPath(
+      Vertx vertx, VertxTestContext testContext) {
+
+    HttpClient client = vertx.createHttpClient();
+    client.request(HttpMethod.GET, 8081, "localhost", "/")
+        .compose(HttpClientRequest::send)
+        .onComplete(testContext.succeeding(response -> {
+          assertEquals(404, response.statusCode());
           testContext.completeNow();
-        });
+        }));
   }
 }

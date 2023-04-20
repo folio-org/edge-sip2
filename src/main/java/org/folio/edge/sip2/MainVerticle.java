@@ -269,24 +269,21 @@ public class MainVerticle extends AbstractVerticle {
 
     httpServer.requestHandler(request -> {
       log.debug("path : {}", request.path());
+      HttpServerResponse response = request.response();
       if (request.path().equals(HEALTH_CHECK_PATH)) {
-        HttpServerResponse response = request.response();
         response.setStatusCode(200);
         response.putHeader("Content-Type", "text/plain");
         response.end("OK");
-        log.debug("statusCode : {}", response.getStatusCode());
         log.info("Admin health check service response message : {}", response.getStatusMessage());
+      } else {
+        response.setStatusCode(404).end();
       }
     });
 
-    httpServer.listen(HEALTH_CHECK_PORT, res -> {
-      if (res.succeeded()) {
-        log.info("Health endpoint is now listening!");
-      } else {
-        log.error("The call to admin health check service failed due to : {}",
-            res.cause().getMessage());
-      }
-    });
+    httpServer.listen(HEALTH_CHECK_PORT)
+        .onSuccess(x -> log.info("Health endpoint is listening now"))
+        .onFailure(e -> log.error("The call to admin health check service "
+          + "failed due to : {}", e.getMessage(), e));
   }
 
   @Override
