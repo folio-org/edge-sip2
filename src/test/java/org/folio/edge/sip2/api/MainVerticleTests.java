@@ -215,7 +215,7 @@ public class MainVerticleTests extends BaseTest {
 
   @Test
   @DisplayName("Test /admin/health endpoint")
-  private void testHealthCheck(
+  public void testHealthCheck(
       Vertx vertx, VertxTestContext testContext) {
 
     HttpClient client = vertx.createHttpClient();
@@ -232,7 +232,7 @@ public class MainVerticleTests extends BaseTest {
 
   @Test
   @DisplayName("Test / endpoint")
-  private void testHealthCheckWithWrongPath(
+  public void testHealthCheckWithWrongPath(
       Vertx vertx, VertxTestContext testContext) {
 
     HttpClient client = vertx.createHttpClient();
