@@ -2,6 +2,7 @@ package org.folio.edge.sip2.handlers;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -72,9 +73,14 @@ public class RenewAllHandlerTests {
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
+    final String expectedString = "66" + "1" + "0000" + "0000" 
+        + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
+        + "AO" + "diku" + "|";
+        
     handler.execute(renewAll, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           assertNotNull(sipMessage);
+          assertEquals(expectedString, sipMessage);
           testContext.completeNow();
         }
     )));
