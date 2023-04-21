@@ -2,6 +2,7 @@ package org.folio.edge.sip2.repositories;
 
 import static org.folio.edge.sip2.api.support.TestUtils.getJsonFromFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -283,10 +284,66 @@ public class FeeFinesRepositoryTests {
         assertEquals(transactionId, feePaidResponse.getTransactionId());
         testContext.completeNow();
       }))
-    );
-
-  
-      
+    );      
     
+  }
+
+  @Test 
+  public void cannotPerformFeePaidCommandWithOverpay(Vertx vertx,
+    VertxTestContext testContext,
+    @Mock IResourceProvider<IRequestData> mockFolioProvider,
+    @Mock UsersRepository mockUsersRepository
+    ) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final String patronIdentifier = "1029384756";
+    final String feeIdentifier = "c78489bd-4d1b-4e4f-87d3-caa915946aa4";
+    final String transactionId = "7e15ba2d-cc85-4226-963d-d6c7d5c03f26";
+    final String accountId = "4bf0339e-8d4c-46ff-92c2-8a8f8735c30b";
+    final String userId = "62628aed-f753-462c-88ca-3def9f870e7a";
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    final String feeAmount = "35.00";
+    final JsonObject queryAccountResponse = new JsonObject()
+      .put("accounts", new JsonArray()
+        .add(new JsonObject()
+          .put("remaining", 20.43)
+          .put("id", accountId )
+        )
+      );
+
+    final FeePaid feePaid = FeePaid.builder()
+      .institutionId("diku")
+      .patronIdentifier(patronIdentifier)
+      .transactionId(transactionId)
+      .feeAmount(feeAmount)
+      .feeIdentifier(feeIdentifier)
+      .build();
+    
+    final User user = new User.Builder().id(userId).build();
+
+    when(mockUsersRepository.getUserById(anyString(), any()))
+      .thenReturn(Future.succeededFuture(user));
+
+    //when(mockFolioProvider.retrieveResource(any()))
+    when(mockFolioProvider.retrieveResource(
+        argThat(arg -> arg.getPath().endsWith(Utils.encode("userId==" + userId + "  and status.name==Open)")))))
+      .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
+      MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    /*
+    when(mockFolioProvider.createResource(any()))
+      .thenReturn(Future.succeededFuture(new FolioResource(accountPayResponse,
+      MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+    */
+
+    final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(
+        mockFolioProvider, mockUsersRepository, clock);
+
+    feeFinesRepository.performFeePaidCommand(feePaid, sessionData).onComplete(
+      testContext.succeeding(feePaidResponse -> testContext.verify(() -> {
+        assertNotNull(feePaidResponse);
+        assertFalse(feePaidResponse.getPaymentAccepted());
+        testContext.completeNow();
+      }))
+    );     
   }
 }
