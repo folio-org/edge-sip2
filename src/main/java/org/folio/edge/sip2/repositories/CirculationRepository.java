@@ -26,8 +26,11 @@ import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.domain.messages.requests.Renew;
+import org.folio.edge.sip2.domain.messages.requests.RenewAll;
 import org.folio.edge.sip2.domain.messages.responses.CheckinResponse;
 import org.folio.edge.sip2.domain.messages.responses.CheckoutResponse;
+import org.folio.edge.sip2.domain.messages.responses.RenewAllResponse;
+import org.folio.edge.sip2.domain.messages.responses.RenewAllResponse.RenewAllResponseBuilder;
 import org.folio.edge.sip2.domain.messages.responses.RenewResponse;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
@@ -609,6 +612,84 @@ public class CirculationRepository {
           });
       });
   }
+  
+  RenewAllResponseBuilder doRenewals(JsonObject jo, RenewAllResponseBuilder builder) {
+    log.debug(jo.toString());
+    return builder;
+  }
+
+
+  /**
+   * Perform a renewal for all items on customer account.
+   *
+   * @param renewAll the checkout domain object
+   * @return the renewal response domain object
+   */
+  public Future<RenewAllResponse> performRenewAllCommand(RenewAll renewAll,
+      SessionData sessionData) {
+    final String institutionId = renewAll.getInstitutionId();
+    final String patronIdentifier = renewAll.getPatronIdentifier();
+    final String patronPassword = renewAll.getPatronPassword();
+
+    List<String> emptyItems = new ArrayList<String>();
+
+    return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+        .compose(verification -> {
+          if (FALSE.equals(verification.getPasswordVerified())) {
+            return Future.succeededFuture(RenewAllResponse.builder()
+                .ok(FALSE)
+                .transactionDate(OffsetDateTime.now(clock))
+                .institutionId(institutionId)
+                .renewedCount(0)
+                .unrenewedCount(0)
+                .renewedItems(emptyItems)
+                .unrenewedItems(emptyItems)
+                .screenMessage(verification.getErrorMessages())
+                .build());
+          }
+
+          final User user = verification.getUser();
+          final JsonObject body = new JsonObject()
+              .put("servicePointId", sessionData.getScLocation());
+
+          final Map<String, String> headers = getBaseHeaders();
+          // Assume a sensible limit, or rewrite this method
+          final Future<JsonObject> loansFuture =
+              getLoansByUserId(user.getId(), null, null, sessionData);
+          
+          final RenewAllResponseBuilder builder = RenewAllResponse.builder();
+
+
+          loansFuture
+             .map(loans -> doRenewals(loans, builder));
+
+          final RenewalRequestData renewalRequestData =
+              new RenewalRequestData(body, headers, sessionData);
+
+          final Future<IResource> result = resourceProvider.createResource(renewalRequestData);
+
+          return result
+              .otherwise(Utils::handleErrors)
+              .map(resource -> {
+                final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
+
+                return RenewAllResponse.builder()
+                    .ok(Boolean.valueOf(response.isPresent()))
+                    .transactionDate(OffsetDateTime.now(clock))
+                    .institutionId(institutionId)
+                    .renewedCount(0)
+                    .unrenewedCount(0)
+                    .renewedItems(emptyItems)
+                    .unrenewedItems(emptyItems)
+                    .screenMessage(Optional.of(resource.getErrorMessages())
+                        .filter(v -> !v.isEmpty())
+                        .orElse(null))
+                    .build();
+              });
+        });
+  }
+
+
 
   private class RenewalRequestData extends CirculationRequestData {
     private RenewalRequestData(JsonObject body, Map<String, String> headers,
