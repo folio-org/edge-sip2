@@ -5,6 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.junit5.VertxTestContext;
 import java.text.SimpleDateFormat;
 import java.time.Clock;
@@ -15,6 +19,7 @@ import java.util.TimeZone;
 import org.folio.edge.sip2.api.support.BaseTest;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -206,5 +211,36 @@ public class MainVerticleTests extends BaseTest {
         "blank spaces substring is not as expected");
     assertEquals(expectedPostLocalTime, acsResponse.substring(32),
         "postLocalTime substring is not as expected");
+  }
+
+  @Test
+  @DisplayName("Test /admin/health endpoint")
+  public void testHealthCheck(
+      Vertx vertx, VertxTestContext testContext) {
+
+    HttpClient client = vertx.createHttpClient();
+    client.request(HttpMethod.GET, 8081, "localhost", "/admin/health")
+        .compose(HttpClientRequest::send)
+        .onComplete(testContext.succeeding(response -> {
+          assertEquals(200, response.statusCode());
+          response.bodyHandler(body -> {
+            assertEquals("OK", body.toString());
+            testContext.completeNow();
+          });
+        }));
+  }
+
+  @Test
+  @DisplayName("Test / endpoint")
+  public void testHealthCheckWithWrongPath(
+      Vertx vertx, VertxTestContext testContext) {
+
+    HttpClient client = vertx.createHttpClient();
+    client.request(HttpMethod.GET, 8081, "localhost", "/")
+        .compose(HttpClientRequest::send)
+        .onComplete(testContext.succeeding(response -> {
+          assertEquals(404, response.statusCode());
+          testContext.completeNow();
+        }));
   }
 }
