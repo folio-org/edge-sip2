@@ -6,15 +6,12 @@ import static java.lang.Boolean.TRUE;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import java.lang.String;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.Clock;
 import java.time.OffsetDateTime;
-// import java.time.ZoneOffset;
-// import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,7 +26,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.FeePaid;
 import org.folio.edge.sip2.domain.messages.responses.FeePaidResponse;
-// import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
 
@@ -136,6 +132,7 @@ public class FeeFinesRepository {
       return "/manualblocks?query=" + Utils.encode("userId==" + userId);
     }
 
+    @Override
     public Map<String, String> getHeaders() {
       return headers;
     }
@@ -162,9 +159,8 @@ public class FeeFinesRepository {
     }
     
     public String getPath() {
-      String uri = "/accounts?query="
+      return "/accounts?query="
           + Utils.encode("(userId==" + this.userId + "  and status.name==Open)");
-      return uri;
     }
 
     public Map<String, String> getHeaders() {
@@ -302,7 +298,7 @@ public class FeeFinesRepository {
       }
     }
     final String feeIdentifier = feeIdentifierMatch;
-    log.debug("feeIdentifier = " + feeIdentifier);
+    log.debug("feeIdentifier = {}", feeIdentifier);
 
     // This may need to be changed to passwordVerifier - GDG
     return usersRepository.getUserById(patronIdentifier, sessionData)
@@ -325,9 +321,9 @@ public class FeeFinesRepository {
               Float acctTotal = totalAmount(acctList);
               BigDecimal bdAmountPaid = new BigDecimal(moneyFormatter.format(amountPaid));
               BigDecimal bdAmountTotal = new BigDecimal(moneyFormatter.format(acctTotal));
-              log.debug("bdAmountPaid = " + bdAmountPaid);
-              log.debug("bdAmountTotal = " + bdAmountTotal);
-              log.debug("Amount difference = " + bdAmountPaid.compareTo(bdAmountTotal));
+              log.debug("bdAmountPaid = {}", bdAmountPaid);
+              log.debug("bdAmountTotal = {}", bdAmountTotal);
+              log.debug("Amount difference = {}", bdAmountPaid.compareTo(bdAmountTotal));
               // On overpayment return a FALSE Payment Accepted
               if (bdAmountPaid.compareTo(bdAmountTotal) > 0) {
                 List<String> scrnMsg = List.of("Paid amount ($"
@@ -358,7 +354,7 @@ public class FeeFinesRepository {
                   headers,
                   sessionData);
 
-              log.debug("Json for payment request is " + feePaymentRequestData.getBody().encode());
+              log.debug("Json for payment request is {}", feePaymentRequestData.getBody().encode());
 
               Future<IResource> payresult;
               payresult = resourceProvider
@@ -368,7 +364,7 @@ public class FeeFinesRepository {
                 .otherwiseEmpty()
                 .compose(payresource -> {
                   JsonObject paidResponse = payresource.getResource();
-                  log.debug("paidResponse = " + paidResponse.encode());
+                  log.debug("paidResponse = {}", paidResponse.encode());
                   return Future.succeededFuture(FeePaidResponse.builder()
                     .paymentAccepted(paidResponse == null ? FALSE : TRUE)
                     .transactionDate(OffsetDateTime.now(clock))
@@ -393,7 +389,7 @@ public class FeeFinesRepository {
   }
 
   private List<String> getAcctIdList(JsonArray arr) {
-    List<String> list = new ArrayList<String>();
+    List<String> list = new ArrayList<>();
     for (int i = 0;i < arr.size();i++) {
       list.add(arr.getJsonObject(i).getString("id"));
     }

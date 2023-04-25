@@ -32,7 +32,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class FeePaidHandlerTests {
   
   @Test
-  public void canPayFeeWithHandler(Vertx vertx,
+  void canPayFeeWithHandler(Vertx vertx,
       VertxTestContext testContext,
       @Mock FeeFinesRepository mockFeeFinesRepository) {
 
