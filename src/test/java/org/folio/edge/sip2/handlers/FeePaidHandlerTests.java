@@ -46,12 +46,12 @@ public class FeePaidHandlerTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final FeePaid feePaid = FeePaid.builder()
-      .institutionId("diku")
-      .patronIdentifier(patronIdentifier)
-      .transactionId(transactionId)
-      .feeAmount(feeAmount)
-      .feeIdentifier(feeIdentifier)
-      .build();
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .transactionId(transactionId)
+        .feeAmount(feeAmount)
+        .feeIdentifier(feeIdentifier)
+        .build();
 
     when(mockFeeFinesRepository.performFeePaidCommand(any(), any()))
         .thenReturn(Future.succeededFuture(FeePaidResponse.builder()
@@ -61,23 +61,22 @@ public class FeePaidHandlerTests {
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
         .build()
-      )
-    );
+      ));
 
     final FeePaidHandler handler = new FeePaidHandler(mockFeeFinesRepository,
-      FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.FEE_PAID_RESPONSE));
+        FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.FEE_PAID_RESPONSE));
 
     final String expectedString = "38" + "Y" 
         + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
-        + "AO" + "diku" + "|" + "AA" + patronIdentifier + "|" + 
-        "BK" + transactionId + "|";
+        + "AO" + "diku" + "|" + "AA" + patronIdentifier + "|" 
+        + "BK" + transactionId + "|";
 
     handler.execute(feePaid, sessionData).onComplete(
-      testContext.succeeding(sipMessage -> testContext.verify(() -> {
-        assertNotNull(sipMessage);
-        assertEquals(expectedString, sipMessage);
-        testContext.completeNow();
-      }
+        testContext.succeeding(sipMessage -> testContext.verify(() -> {
+          assertNotNull(sipMessage);
+          assertEquals(expectedString, sipMessage);
+          testContext.completeNow();
+        }
     )));
   }
 }

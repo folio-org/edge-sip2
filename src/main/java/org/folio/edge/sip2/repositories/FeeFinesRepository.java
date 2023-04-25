@@ -292,7 +292,7 @@ public class FeeFinesRepository {
     public SessionData getSessionData() {
       return sessionData;
     }
-}
+  }
 
 
   

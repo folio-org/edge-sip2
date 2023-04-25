@@ -10,8 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.argThat;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import io.vertx.core.Future;
@@ -22,11 +22,9 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-
 import java.time.Clock;
 import java.util.UUID;
 import java.util.concurrent.FutureTask;
-
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.FeePaid;
 import org.folio.edge.sip2.repositories.domain.User;
@@ -71,7 +69,8 @@ public class FeeFinesRepositoryTests {
       @Mock Clock clock) {
 
 
-    final String manualBlocksResponseJson = getJsonFromFile("json/no_manual_blocks_response.json");
+    final String manualBlocksResponseJson 
+        = getJsonFromFile("json/no_manual_blocks_response.json");
     final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
 
     when(mockFolioProvider.retrieveResource(any()))
@@ -80,7 +79,8 @@ public class FeeFinesRepositoryTests {
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
-    final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(mockFolioProvider, mockUsersRepository, clock);
+    final FeeFinesRepository feeFinesRepository 
+        = new FeeFinesRepository(mockFolioProvider, mockUsersRepository, clock);
     feeFinesRepository.getManualBlocksByUserId(UUID.randomUUID().toString(),
         sessionData).onComplete(
             testContext.succeeding(manualBlocks -> testContext.verify(() -> {
@@ -104,7 +104,8 @@ public class FeeFinesRepositoryTests {
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
-    final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(mockFolioProvider, mockUsersRepository, clock);
+    final FeeFinesRepository feeFinesRepository 
+        = new FeeFinesRepository(mockFolioProvider, mockUsersRepository, clock);
     feeFinesRepository.getManualBlocksByUserId(UUID.randomUUID().toString(),
         sessionData).onComplete(
             testContext.succeeding(manualBlocks -> testContext.verify(() -> {
@@ -133,7 +134,8 @@ public class FeeFinesRepositoryTests {
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
-    final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(mockFolioProvider, mockUsersRepository, clock);
+    final FeeFinesRepository feeFinesRepository 
+        = new FeeFinesRepository(mockFolioProvider, mockUsersRepository, clock);
     feeFinesRepository.getManualBlocksByUserId(userId, sessionData).onComplete(
         testContext.succeeding(manualBlocks -> testContext.verify(() -> {
           assertNotNull(manualBlocks);
@@ -160,9 +162,9 @@ public class FeeFinesRepositoryTests {
 
   @Test
   public void canGetAccountByUserIdWithNoBlocksApplied(Vertx vertx,
-    VertxTestContext testContext,
-    @Mock IResourceProvider<IRequestData> mockFolioProvider,
-    @Mock UsersRepository mockUsersRepository) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock UsersRepository mockUsersRepository) {
 
     Clock clock = mock(Clock.class);
 
@@ -175,7 +177,8 @@ public class FeeFinesRepositoryTests {
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
-    final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(mockFolioProvider, mockUsersRepository, clock);
+    final FeeFinesRepository feeFinesRepository 
+        = new FeeFinesRepository(mockFolioProvider, mockUsersRepository, clock);
     feeFinesRepository.getAccountDataByUserId(UUID.randomUUID().toString(),
         sessionData).onComplete(
           testContext.succeeding(account -> testContext.verify(() -> {
@@ -190,10 +193,10 @@ public class FeeFinesRepositoryTests {
 
   @Test
   public void canAccountByUserIdWithBlocksApplied(Vertx vertx,
-    VertxTestContext testContext,
-    @Mock IResourceProvider<IRequestData> mockFolioProvider,
-    @Mock UsersRepository mockUsersRepository,
-    @Mock Clock clock) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock Clock clock) {
 
     final String accountResponseJson = getJsonFromFile("json/account_request_response.json");
     final JsonObject accountResponse = new JsonObject(accountResponseJson);
@@ -209,7 +212,7 @@ public class FeeFinesRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(
-      mockFolioProvider, mockUsersRepository, clock);
+        mockFolioProvider, mockUsersRepository, clock);
     feeFinesRepository.getAccountDataByUserId(userId, sessionData).onComplete(
         testContext.succeeding(account -> testContext.verify(() -> {
           assertNotNull(account);
@@ -222,13 +225,13 @@ public class FeeFinesRepositoryTests {
 
   @Test 
   public void canPerformFeePaidCommand(Vertx vertx,
-    VertxTestContext testContext
-    //@Mock IResourceProvider<IRequestData> mockFolioProvider,
-    //@Mock UsersRepository mockUsersRepository,
-    ) {
+      VertxTestContext testContext
+  ) {
 
-    UsersRepository mockUsersRepository = mock(UsersRepository.class, withSettings().verboseLogging());
-    IResourceProvider<IRequestData> mockFolioProvider = mock(IResourceProvider.class, withSettings().verboseLogging());
+    UsersRepository mockUsersRepository 
+        = mock(UsersRepository.class, withSettings().verboseLogging());
+    IResourceProvider<IRequestData> mockFolioProvider 
+        = mock(IResourceProvider.class, withSettings().verboseLogging());
 
     final Clock clock = TestUtils.getUtcFixedClock();
     final String patronIdentifier = "1029384756";
@@ -239,61 +242,62 @@ public class FeeFinesRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
     final String feeAmount = "20.43";
     final JsonObject queryAccountResponse = new JsonObject()
-      .put("accounts", new JsonArray()
+        .put("accounts", new JsonArray()
         .add(new JsonObject()
           .put("remaining", 20.43)
-          .put("id", accountId )
+          .put("id", accountId)
         )
       );
     final JsonObject accountPayResponse = new JsonObject()
-      .put("accountId", accountId)
-      .put("amount", feeAmount)
-      .put("remainingAmount", "0");
+        .put("accountId", accountId)
+        .put("amount", feeAmount)
+        .put("remainingAmount", "0");
 
     final FeePaid feePaid = FeePaid.builder()
-      .institutionId("diku")
-      .patronIdentifier(patronIdentifier)
-      .transactionId(transactionId)
-      .feeAmount(feeAmount)
-      .feeIdentifier(feeIdentifier)
-      .build();
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .transactionId(transactionId)
+        .feeAmount(feeAmount)
+        .feeIdentifier(feeIdentifier)
+        .build();
 
     final User user = new User.Builder().id(userId).build();
 
     when(mockUsersRepository.getUserById(anyString(), any()))
-      .thenReturn(Future.succeededFuture(user));
+        .thenReturn(Future.succeededFuture(user));
 
     //when(mockFolioProvider.retrieveResource(any()))
     when(mockFolioProvider.retrieveResource(
-        argThat(arg -> arg.getPath().endsWith(Utils.encode("userId==" + userId + "  and status.name==Open)")))))
-      .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
-      MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+        argThat(arg -> arg.getPath()
+          .endsWith(Utils.encode("userId==" + userId + "  and status.name==Open)")))))
+        .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     when(mockFolioProvider.createResource(any()))
-      .thenReturn(Future.succeededFuture(new FolioResource(accountPayResponse,
-      MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+        .thenReturn(Future.succeededFuture(new FolioResource(accountPayResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(
         mockFolioProvider, mockUsersRepository, clock);
     
     feeFinesRepository.performFeePaidCommand(feePaid, sessionData).onComplete(
-      testContext.succeeding(feePaidResponse -> testContext.verify(() -> {
-        assertNotNull(feePaidResponse);
-        assertTrue(feePaidResponse.getPaymentAccepted());
-        assertNull(feePaidResponse.getScreenMessage());
-        assertEquals(transactionId, feePaidResponse.getTransactionId());
-        testContext.completeNow();
-      }))
+        testContext.succeeding(feePaidResponse -> testContext.verify(() -> {
+          assertNotNull(feePaidResponse);
+          assertTrue(feePaidResponse.getPaymentAccepted());
+          assertNull(feePaidResponse.getScreenMessage());
+          assertEquals(transactionId, feePaidResponse.getTransactionId());
+          testContext.completeNow();
+        }))
     );      
     
   }
 
   @Test 
   public void cannotPerformFeePaidCommandWithOverpay(Vertx vertx,
-    VertxTestContext testContext,
-    @Mock IResourceProvider<IRequestData> mockFolioProvider,
-    @Mock UsersRepository mockUsersRepository
-    ) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock UsersRepository mockUsersRepository
+  ) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String patronIdentifier = "1029384756";
     final String feeIdentifier = "c78489bd-4d1b-4e4f-87d3-caa915946aa4";
@@ -303,31 +307,32 @@ public class FeeFinesRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
     final String feeAmount = "35.00";
     final JsonObject queryAccountResponse = new JsonObject()
-      .put("accounts", new JsonArray()
+        .put("accounts", new JsonArray()
         .add(new JsonObject()
           .put("remaining", 20.43)
-          .put("id", accountId )
+          .put("id", accountId)
         )
       );
 
     final FeePaid feePaid = FeePaid.builder()
-      .institutionId("diku")
-      .patronIdentifier(patronIdentifier)
-      .transactionId(transactionId)
-      .feeAmount(feeAmount)
-      .feeIdentifier(feeIdentifier)
-      .build();
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .transactionId(transactionId)
+        .feeAmount(feeAmount)
+        .feeIdentifier(feeIdentifier)
+        .build();
     
     final User user = new User.Builder().id(userId).build();
 
     when(mockUsersRepository.getUserById(anyString(), any()))
-      .thenReturn(Future.succeededFuture(user));
+        .thenReturn(Future.succeededFuture(user));
 
     //when(mockFolioProvider.retrieveResource(any()))
     when(mockFolioProvider.retrieveResource(
-        argThat(arg -> arg.getPath().endsWith(Utils.encode("userId==" + userId + "  and status.name==Open)")))))
-      .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
-      MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+        argThat(arg -> arg.getPath()
+            .endsWith(Utils.encode("userId==" + userId + "  and status.name==Open)")))))
+        .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     /*
     when(mockFolioProvider.createResource(any()))
@@ -339,11 +344,11 @@ public class FeeFinesRepositoryTests {
         mockFolioProvider, mockUsersRepository, clock);
 
     feeFinesRepository.performFeePaidCommand(feePaid, sessionData).onComplete(
-      testContext.succeeding(feePaidResponse -> testContext.verify(() -> {
-        assertNotNull(feePaidResponse);
-        assertFalse(feePaidResponse.getPaymentAccepted());
-        testContext.completeNow();
-      }))
+        testContext.succeeding(feePaidResponse -> testContext.verify(() -> {
+          assertNotNull(feePaidResponse);
+          assertFalse(feePaidResponse.getPaymentAccepted());
+          testContext.completeNow();
+        }))
     );     
   }
 }
