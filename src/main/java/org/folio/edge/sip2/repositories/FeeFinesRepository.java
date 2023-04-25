@@ -7,7 +7,6 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.Clock;
@@ -158,11 +157,13 @@ public class FeeFinesRepository {
       this.sessionData = sessionData;
     }
     
+    @Override
     public String getPath() {
       return "/accounts?query="
           + Utils.encode("(userId==" + this.userId + "  and status.name==Open)");
     }
 
+    @Override
     public Map<String, String> getHeaders() {
       return headers;
     }
@@ -200,6 +201,7 @@ public class FeeFinesRepository {
       this.sessionData = sessionData;
     }
     
+    @Override
     public String getPath() {
       if (account.equals("")) {
         return "/accounts-bulk/pay";
@@ -208,6 +210,7 @@ public class FeeFinesRepository {
       return "/accounts/" + account + "/pay";
     }
 
+    @Override
     public Map<String, String> getHeaders() {
       return headers;
     }
@@ -217,8 +220,6 @@ public class FeeFinesRepository {
       JsonObject body = new JsonObject();
       body
           .put("amount", amount)
-          //.put("comments", itemIdentifier)
-          //.put("transactionInfo", feeIdentifier
           .put("notifyPatron", notifyPatron)
           .put("servicePointId", sessionData.getScLocation())
           .put("userName", sessionData.getUsername())
@@ -279,7 +280,6 @@ public class FeeFinesRepository {
   public Future<FeePaidResponse> performFeePaidCommand(FeePaid feePaid, SessionData sessionData) {
     // We'll need to convert this date properly. It is likely that it will not include timezone
     // information, so we'll need to use the tenant/SC timezone as the basis and convert to UTC.
-    // final String scLocation = sessionData.getScLocation();
     NumberFormat moneyFormatter = new DecimalFormat("0.00");
     
     final String institutionId = feePaid.getInstitutionId();

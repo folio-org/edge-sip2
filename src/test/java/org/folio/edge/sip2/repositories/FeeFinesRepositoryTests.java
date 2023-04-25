@@ -266,7 +266,6 @@ public class FeeFinesRepositoryTests {
     when(mockUsersRepository.getUserById(anyString(), any()))
         .thenReturn(Future.succeededFuture(user));
 
-    //when(mockFolioProvider.retrieveResource(any()))
     when(mockFolioProvider.retrieveResource(
         argThat(arg -> arg.getPath()
           .endsWith(Utils.encode("userId==" + userId + "  and status.name==Open)")))))
@@ -327,18 +326,12 @@ public class FeeFinesRepositoryTests {
     when(mockUsersRepository.getUserById(anyString(), any()))
         .thenReturn(Future.succeededFuture(user));
 
-    //when(mockFolioProvider.retrieveResource(any()))
     when(mockFolioProvider.retrieveResource(
         argThat(arg -> arg.getPath()
             .endsWith(Utils.encode("userId==" + userId + "  and status.name==Open)")))))
         .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
-    /*
-    when(mockFolioProvider.createResource(any()))
-      .thenReturn(Future.succeededFuture(new FolioResource(accountPayResponse,
-      MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
-    */
 
     final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(
         mockFolioProvider, mockUsersRepository, clock);
