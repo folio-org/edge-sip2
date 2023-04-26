@@ -36,13 +36,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class FeeFinesRepositoryTests {
+class FeeFinesRepositoryTests {
   private static final String FIELD_TOTAL_RECORDS = "totalRecords";
   private static final String FIELD_MANUALBLOCKS = "manualblocks";
   private static final String FIELD_ACCOUNT = "accounts";
 
   @Test
-  public void canCreateFeeFinesRepository(
+  void canCreateFeeFinesRepository(
       @Mock IResourceProvider<IRequestData> mockFolioResource,
       @Mock UsersRepository mockUsersRepository,
       @Mock Clock clock) {
@@ -53,7 +53,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test
-  public void cannotCreateFeeFinesRepositoryWhenResourceProviderIsNull() {
+  void cannotCreateFeeFinesRepositoryWhenResourceProviderIsNull() {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
         () -> new FeeFinesRepository(null, null, null));
@@ -62,7 +62,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test
-  public void canGetManualBlocksByUserIdWithNoBlocksApplied(Vertx vertx,
+  void canGetManualBlocksByUserIdWithNoBlocksApplied(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
       @Mock UsersRepository mockUsersRepository,
@@ -94,7 +94,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test
-  public void cannotGetManualBlocksByUserId(Vertx vertx,
+  void cannotGetManualBlocksByUserId(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
       @Mock UsersRepository mockUsersRepository,
@@ -116,7 +116,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test
-  public void canGetManualBlocksByUserIdWithBlocksApplied(Vertx vertx,
+  void canGetManualBlocksByUserIdWithBlocksApplied(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
       @Mock UsersRepository mockUsersRepository,
@@ -161,7 +161,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test
-  public void canGetAccountByUserIdWithNoBlocksApplied(Vertx vertx,
+  void canGetAccountByUserIdWithNoBlocksApplied(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
       @Mock UsersRepository mockUsersRepository) {
@@ -192,7 +192,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test
-  public void canAccountByUserIdWithBlocksApplied(Vertx vertx,
+  void canAccountByUserIdWithBlocksApplied(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
       @Mock UsersRepository mockUsersRepository,
@@ -224,7 +224,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test 
-  public void canPerformFeePaidCommand(Vertx vertx,
+  void canPerformFeePaidCommand(Vertx vertx,
       VertxTestContext testContext
   ) {
 
@@ -292,7 +292,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test 
-  public void cannotPerformFeePaidCommandWithOverpay(Vertx vertx,
+  void cannotPerformFeePaidCommandWithOverpay(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
       @Mock UsersRepository mockUsersRepository

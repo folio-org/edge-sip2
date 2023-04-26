@@ -614,8 +614,7 @@ public class CirculationRepository {
   }
   
   RenewAllResponseBuilder doRenewals(JsonObject jo, RenewAllResponseBuilder builder) {
-    
-    log.debug(jo != null ? jo.encode() : "Null json object passed to doRenewals");
+    log.debug("doRenewals: {} ", jo != null ? jo.encode() : null);
     return builder;
   }
 

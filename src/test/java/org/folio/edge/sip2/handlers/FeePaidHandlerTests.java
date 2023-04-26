@@ -29,7 +29,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class FeePaidHandlerTests {
+class FeePaidHandlerTests {
   
   @Test
   void canPayFeeWithHandler(Vertx vertx,

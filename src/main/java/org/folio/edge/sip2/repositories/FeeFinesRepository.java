@@ -36,9 +36,12 @@ import org.folio.edge.sip2.utils.Utils;
  */
 public class FeeFinesRepository {
   private static final Logger log = LogManager.getLogger();
+  private static final String HEADER_ACCEPT = "accept";
+  private static final String MIMETYPE_JSON = "application/json";
   private final IResourceProvider<IRequestData> resourceProvider;
   private final UsersRepository usersRepository;
   private Clock clock;
+  
 
   @Inject
   FeeFinesRepository(IResourceProvider<IRequestData> resourceProvider,
@@ -53,7 +56,7 @@ public class FeeFinesRepository {
 
   private Map<String, String> getBaseHeaders() {
     final Map<String, String> headers = new HashMap<>();
-    headers.put("accept", "application/json");
+    headers.put(HEADER_ACCEPT, MIMETYPE_JSON);
     return headers;
   }
 
@@ -71,7 +74,7 @@ public class FeeFinesRepository {
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
 
     final Map<String, String> headers = new HashMap<>();
-    headers.put("accept", "application/json");
+    headers.put(HEADER_ACCEPT, MIMETYPE_JSON);
 
     final GetManualBlocksByUserIdRequestData getManualBlocksByUserIdRequestData =
         new GetManualBlocksByUserIdRequestData(userId, headers, sessionData);
@@ -100,7 +103,7 @@ public class FeeFinesRepository {
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
 
     final Map<String, String> headers = new HashMap<>();
-    headers.put("accept", "application/json");
+    headers.put(HEADER_ACCEPT, MIMETYPE_JSON);
 
     final GetAccountByUserIdRequestData getAccountByUserIdRequestData =
         new GetAccountByUserIdRequestData(userId, headers, sessionData);
