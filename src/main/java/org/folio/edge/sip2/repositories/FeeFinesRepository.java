@@ -62,6 +62,33 @@ public class FeeFinesRepository {
   }
 
   /**
+   * Get a patron's total fee amount.
+   *
+   * @param userId the user's ID
+   * @param sessionData session data
+   * @return the accounts list in raw JSON or {@code null} if there was an error
+   */
+  public Future<JsonObject> getFeeAmountByUserId(
+      String userId,
+      SessionData sessionData) {
+    Objects.requireNonNull(userId, "userId cannot be null");
+    Objects.requireNonNull(sessionData, "sessionData cannot be null");
+
+    final Map<String, String> headers = new HashMap<>();
+    headers.put("accept", "application/json");
+
+    final FeePaymentAccountsRequestData getFeePaymentAccountsRequestData =
+        new FeePaymentAccountsRequestData(userId, headers, sessionData);
+    final Future<IResource> result =
+        resourceProvider.retrieveResource(getFeePaymentAccountsRequestData);
+
+    return result
+        .otherwise(() -> null)
+        .map(IResource::getResource);
+  }
+
+
+  /**
    * Get a patron's account.
    *
    * @param userId the user's ID
@@ -114,6 +141,38 @@ public class FeeFinesRepository {
       return sessionData;
     }
   }
+
+  private class FeePaymentAccountsRequestData implements IRequestData {
+
+    private String userId;
+    private final Map<String, String> headers;
+    private final SessionData sessionData;
+
+    private FeePaymentAccountsRequestData(
+        String userId,
+        Map<String, String> headers,
+        SessionData sessionData) {
+      this.userId = userId;
+      this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
+      this.sessionData = sessionData;
+    }
+    
+    public String getPath() {
+      String uri = "/accounts?query="
+          + Utils.encode("(userId==" + this.userId + "  and status.name==Open)");
+      return uri;
+    }
+
+    public Map<String, String> getHeaders() {
+      return headers;
+    }
+
+    @Override
+    public SessionData getSessionData() {
+      return sessionData;
+    }
+  }
+
 
   private class GetAccountByUserIdRequestData implements IRequestData {
     private final String userId;

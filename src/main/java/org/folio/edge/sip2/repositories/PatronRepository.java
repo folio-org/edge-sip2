@@ -33,9 +33,12 @@ import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
 import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
+import org.folio.edge.sip2.domain.messages.requests.PatronStatusRequest;
 import org.folio.edge.sip2.domain.messages.responses.EndSessionResponse;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse.PatronInformationResponseBuilder;
+import org.folio.edge.sip2.domain.messages.responses.PatronStatusResponse;
+import org.folio.edge.sip2.domain.messages.responses.PatronStatusResponse.PatronStatusResponseBuilder;
 import org.folio.edge.sip2.repositories.domain.Address;
 import org.folio.edge.sip2.repositories.domain.Personal;
 import org.folio.edge.sip2.repositories.domain.User;
@@ -116,6 +119,51 @@ public class PatronRepository {
               }
 
               return validPatron(userId, user.getPersonal(), patronInformation, sessionData,
+                  verification.getPasswordVerified());
+            }
+          });
+        });
+  }
+
+  /**
+   * Perform patron information.
+   *
+   * @param patronStatus the patron information domain object
+   * @return the patron information response domain object
+   */
+  public Future<PatronStatusResponse> performPatronStatusCommand(
+      PatronStatusRequest patronStatus,
+      SessionData sessionData) {
+    Objects.requireNonNull(patronStatus, "patronStatus cannot be null");
+    Objects.requireNonNull(sessionData, "sessionData cannot be null");
+
+    final String patronIdentifier = patronStatus.getPatronIdentifier();
+    final String patronPassword = patronStatus.getPatronPassword();
+    log.debug("IsPatronVerificationRequired just before forcing it:", 
+        sessionData.isPatronPasswordVerificationRequired());
+    sessionData.setPatronPasswordVerificationRequired(TRUE);
+
+    return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+        .compose(verification -> {
+          if (FALSE.equals(verification.getPasswordVerified())) {
+            return invalidPatron(patronStatus, FALSE);
+          }
+          //getUser is add in PasswordVerifier
+          final Future<User> userFuture = Future.succeededFuture(verification.getUser());
+
+          return userFuture.compose(user -> {
+            if (user == null || FALSE.equals(user.getActive())) {
+              return invalidPatron(patronStatus, null);
+            } else {
+              final String userId = user.getId();
+              if (userId == null) {
+                // Something is really messed up if the id is missing
+                log.error("User with patron identifier {} is missing the \"id\" field",
+                    patronIdentifier);
+                return invalidPatron(patronStatus, verification.getPasswordVerified());
+              }
+
+              return validPatron(userId, user.getPersonal(), patronStatus, sessionData,
                   verification.getPasswordVerified());
             }
           });
@@ -210,6 +258,38 @@ public class PatronRepository {
         );
   }
 
+  private Future<PatronStatusResponse> validPatron(String userId, Personal personal,
+          PatronStatusRequest patronStatus, SessionData sessionData, Boolean validPassword) {
+    // Now that we have a valid patron, we can retrieve data from circulation
+    final PatronStatusResponseBuilder builder = PatronStatusResponse.builder();
+    // Store patron data in the builder
+    final String personalName = getPatronPersonalName(personal, patronStatus.getPatronIdentifier());
+    builder.personalName(personalName);
+    //addPersonalData(personal, patronStatus.getPatronIdentifier(), builder);
+    // When all operations complete, build and return the final PatronInformationResponse
+    
+    final Future<PatronStatusResponseBuilder> getFeeAmountFuture = feeFinesRepository
+        .getFeeAmountByUserId(userId, sessionData)
+        .map(accounts -> { 
+          return totalAmount(accounts, builder);
+        }
+      );
+        
+    return getFeeAmountFuture.map(result -> {
+          return builder
+            .patronStatus(EnumSet.allOf(PatronStatus.class))
+            .language(patronStatus.getLanguage())
+            .transactionDate(OffsetDateTime.now(clock))
+            .institutionId(patronStatus.getInstitutionId())
+            .patronIdentifier(patronStatus.getPatronIdentifier())
+            .validPatron(TRUE)
+            .validPatronPassword(TRUE)
+            .build();
+        }
+    );
+  }
+
+
   private PatronInformationResponseBuilder populateChargedCount(JsonObject loans,
                                       PatronInformationResponseBuilder builder) {
     final int chargedItemsCount;
@@ -234,6 +314,21 @@ public class PatronRepository {
     return builder.fineItemsCount(fineItemsCount);
   }
 
+  private PatronStatusResponseBuilder totalAmount(
+      JsonObject jo,
+      PatronStatusResponseBuilder builder) {
+    
+    final JsonArray arr = jo.getJsonArray("accounts");
+    Float total = 0.0f;
+    for (int i = 0;i < arr.size();i++) {
+      total += arr.getJsonObject(i).getFloat("remaining");
+    }
+    log.debug(total.toString());
+    return builder.feeAmount(total.toString());
+  }
+
+
+
   private Future<PatronInformationResponse> invalidPatron(
       PatronInformation patronInformation,
       Boolean validPassword) {
@@ -255,6 +350,23 @@ public class PatronRepository {
         .screenMessage(Collections.singletonList(MESSAGE_INVALID_PATRON))
         .build());
   }
+
+  private Future<PatronStatusResponse> invalidPatron(
+      PatronStatusRequest patronStatus,
+      Boolean validPassword) {
+    return Future.succeededFuture(PatronStatusResponse.builder()
+        .patronStatus(EnumSet.allOf(PatronStatus.class))
+        .language(UNKNOWN)
+        .transactionDate(OffsetDateTime.now(clock))
+        .institutionId(patronStatus.getInstitutionId())
+        .patronIdentifier(patronStatus.getPatronIdentifier())
+        .personalName(patronStatus.getPatronIdentifier()) // required, using patron id for now
+        .validPatron(FALSE)
+        .validPatronPassword(FALSE)
+        .screenMessage(Collections.singletonList(MESSAGE_INVALID_PATRON))
+        .build());
+  }
+
 
   private PatronInformationResponseBuilder buildPatronStatus(JsonObject blocks,
       PatronInformationResponseBuilder builder) {
