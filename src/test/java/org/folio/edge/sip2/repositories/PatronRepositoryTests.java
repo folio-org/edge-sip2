@@ -619,6 +619,10 @@ public class PatronRepositoryTests {
     patronRepository.performPatronStatusCommand(patronStatus, sessionData).onComplete(
         testContext.succeeding(patronStatusResponse -> testContext.verify(() -> {
           assertNotNull(patronStatusResponse);
+          assertEquals(feeAmount.toString(), patronStatusResponse.getFeeAmount());
+          assertEquals("Joe Zee Blow", patronStatusResponse.getPersonalName());
+          assertEquals(true, patronStatusResponse.getValidPatron());
+          assertEquals(null, patronStatusResponse.getScreenMessage());
           testContext.completeNow();
         }))
     );

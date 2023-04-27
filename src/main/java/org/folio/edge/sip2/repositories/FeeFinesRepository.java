@@ -103,7 +103,7 @@ public class FeeFinesRepository {
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
 
     final Map<String, String> headers = new HashMap<>();
-    headers.put("accept", "application/json");
+    headers.put(HEADER_ACCEPT, MIMETYPE_JSON);
 
     final FeePaymentAccountsRequestData getFeePaymentAccountsRequestData =
         new FeePaymentAccountsRequestData(userId, headers, sessionData);
