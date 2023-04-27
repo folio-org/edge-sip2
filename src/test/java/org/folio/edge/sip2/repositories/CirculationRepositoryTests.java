@@ -1371,7 +1371,7 @@ class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
-    circulationRepository.getRequestsByItemId(itemId, "Hold", null, null, sessionData)
+    circulationRepository.getRequestsByUserId(userId, "Hold", null, null, sessionData)
         .onComplete(testContext.succeeding(requestsResponse -> testContext.verify(() -> {
           assertNotNull(requestsResponse);
           assertEquals(1, requestsResponse.getInteger("totalRecords"));
@@ -1401,7 +1401,7 @@ class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
-    circulationRepository.getRequestsByItemId(userId, "Hold", null, null,
+    circulationRepository.getRequestsByUserId(userId, "Hold", null, null,
         sessionData).onComplete(testContext.succeeding(
             requestsResponse -> testContext.verify(() -> {
               assertNull(requestsResponse);

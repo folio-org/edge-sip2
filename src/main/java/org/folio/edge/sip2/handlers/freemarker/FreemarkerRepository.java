@@ -4,6 +4,7 @@ import static org.folio.edge.sip2.parser.Command.ACS_STATUS;
 import static org.folio.edge.sip2.parser.Command.CHECKIN_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.CHECKOUT_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.END_SESSION_RESPONSE;
+import static org.folio.edge.sip2.parser.Command.FEE_PAID_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.ITEM_INFORMATION_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.LOGIN_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION_RESPONSE;
@@ -74,6 +75,7 @@ public class FreemarkerRepository {
     addTemplate(ITEM_INFORMATION_RESPONSE, "ItemInformationResponse.ftl", configuration);
     addTemplate(RENEW_RESPONSE, "RenewResponse.ftl", configuration);
     addTemplate(RENEW_ALL_RESPONSE, "RenewAllResponse.ftl", configuration);
+    addTemplate(FEE_PAID_RESPONSE, "FeePaidResponse.ftl", configuration);
 
   }
 

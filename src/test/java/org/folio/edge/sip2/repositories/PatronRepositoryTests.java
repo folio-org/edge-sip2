@@ -618,8 +618,8 @@ public class PatronRepositoryTests {
     
     patronRepository.performPatronStatusCommand(patronStatus, sessionData).onComplete(
         testContext.succeeding(patronStatusResponse -> testContext.verify(() -> {
-            assertNotNull(patronStatusResponse);
-            testContext.completeNow();
+          assertNotNull(patronStatusResponse);
+          testContext.completeNow();
         }))
     );
   }
