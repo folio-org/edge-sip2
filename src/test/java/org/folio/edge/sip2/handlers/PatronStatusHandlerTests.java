@@ -21,9 +21,9 @@ import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
 import org.folio.edge.sip2.domain.messages.requests.PatronStatusRequest;
 import org.folio.edge.sip2.domain.messages.responses.PatronStatusResponse;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
+import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.repositories.domain.Personal;
 import org.folio.edge.sip2.repositories.domain.User;
-import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -79,11 +79,11 @@ class PatronStatusHandlerTests {
         .build();
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
-    final String expectedString = "24" + "YYYYYYYYYYYYYY" + "000" + 
-      TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
-      + "AO" + institutionId + "|" + "AA" + patronIdentifier + "|"
-      + "AE" + "Joe Zee Blow" + "|" + "BL" + "Y" + "|" + "CQ" + "Y" + "|"
-      + "BV" + feeAmount.toString() + "|";
+    final String expectedString = "24" + "YYYYYYYYYYYYYY" + "000" 
+        + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
+        + "AO" + institutionId + "|" + "AA" + patronIdentifier + "|"
+        + "AE" + "Joe Zee Blow" + "|" + "BL" + "Y" + "|" + "CQ" + "Y" + "|"
+        + "BV" + feeAmount.toString() + "|";
 
     when(mockPatronRepository.performPatronStatusCommand(any(), any()))
         .thenReturn(Future.succeededFuture(patronStatusResponse));
@@ -93,8 +93,8 @@ class PatronStatusHandlerTests {
 
     handler.execute(patronStatus, sessionData).onComplete(testContext.succeeding(
         sipMessage -> testContext.verify(() -> {
-            assertEquals(expectedString, sipMessage);
-            testContext.completeNow();
+          assertEquals(expectedString, sipMessage);
+          testContext.completeNow();
         })));
   }
 
