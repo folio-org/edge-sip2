@@ -319,7 +319,7 @@ public class PatronRepository {
     for (int i = 0;i < arr.size();i++) {
       total += arr.getJsonObject(i).getFloat("remaining");
     }
-    log.debug("Total is {}", total != null ? total.toString() : null);
+    log.debug("Total is {}", total.toString());
     return builder.feeAmount(total.toString());
   }
 

@@ -628,6 +628,61 @@ public class PatronRepositoryTests {
     );
   }
 
+  @Test
+  void cannotPerformPatronStatusWithBadUser(Vertx vertx,
+        VertxTestContext testContext,
+        @Mock PasswordVerifier mockPasswordVerifier,
+        @Mock FeeFinesRepository mockFeeFinesRepository,
+        @Mock CirculationRepository mockCirculationRepository,
+        @Mock UsersRepository mockUsersRepository) {
+    final String patronIdentifier = "1029384756";
+    final String patronPassword = "1234";
+    final String institutionId = "diku";
+    final String userId = "99a81cee-d439-42c8-9860-2bd1de881c4a";
+    final String userBarcode = "2349871212";
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final Float feeAmount = 34.50f;
+    final Personal personal = new Personal.Builder()
+        .firstName("Joe")
+        .middleName("Zee")
+        .lastName("Blow")
+        .build();
+
+
+    final PatronStatusRequest patronStatus = PatronStatusRequest.builder()
+        .patronIdentifier(patronIdentifier)
+        .patronPassword(patronPassword)
+        .institutionId(institutionId)
+        .transactionDate(OffsetDateTime.now())
+        .build();
+
+    final JsonObject queryAccountResponse = new JsonObject()
+        .put("accounts", new JsonArray()
+        .add(new JsonObject()
+          .put("remaining", feeAmount)
+          .put("id", "2345")
+        )
+    );
+    
+    when(mockPasswordVerifier.verifyPatronPassword(anyString(), anyString(), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .user(null).build()));
+
+    PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier,
+        clock);
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    
+    patronRepository.performPatronStatusCommand(patronStatus, sessionData).onComplete(
+        testContext.succeeding(patronStatusResponse -> testContext.verify(() -> {
+          assertNotNull(patronStatusResponse);
+          assertEquals(false, patronStatusResponse.getValidPatron());
+          testContext.completeNow();
+        }))
+    );
+  }
+
   private static Stream<Arguments> providePatronInformationParams() {
     final List<String> l = Collections.emptyList();
     return Stream.of(
