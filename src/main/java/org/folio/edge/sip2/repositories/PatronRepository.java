@@ -63,6 +63,14 @@ public class PatronRepository {
       "Your library card number cannot be located. Please see a staff member for assistance.";
   static final String MESSAGE_BLOCKED_PATRON =
       "There are unresolved issues with your account. Please see a staff member for assistance.";
+  static final String NULL_CLOCK_MSG = "Clock cannot be null";
+  static final String NULL_CIRC_REPO_MSG = "Circulation repository cannot be null";
+  static final String NULL_FEE_REPO_MSG = "FeeFines repository cannot be null";
+  static final String NULL_PASS_VERIFY_MSG = "Password verifier cannot be null";
+  static final String NULL_PATRON_INFO_MSG = "PatronInformation cannot be null";
+  static final String NULL_SESSION_DATA_MSG = "SessionData cannot be null";
+  static final String NULL_END_PATRON_SESSION_MSG = "EndPatronSession cannot be null";
+  static final String NULL_PATRON_STATUS_MSG = "PatronStatus cannot be null";
 
   private final CirculationRepository circulationRepository;
   private final FeeFinesRepository feeFinesRepository;
@@ -72,13 +80,10 @@ public class PatronRepository {
   @Inject
   PatronRepository(UsersRepository usersRepository, CirculationRepository circulationRepository,
       FeeFinesRepository feeFinesRepository, PasswordVerifier passwordVerifier, Clock clock) {
-    this.circulationRepository = Objects.requireNonNull(circulationRepository,
-        "Circulation repository cannot be null");
-    this.feeFinesRepository = Objects.requireNonNull(feeFinesRepository,
-        "FeeFines repository cannot be null");
-    this.passwordVerifier = Objects.requireNonNull(passwordVerifier,
-        "Password verifier cannot be null");
-    this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
+    this.circulationRepository = Objects.requireNonNull(circulationRepository, NULL_CIRC_REPO_MSG);
+    this.feeFinesRepository = Objects.requireNonNull(feeFinesRepository, NULL_FEE_REPO_MSG);
+    this.passwordVerifier = Objects.requireNonNull(passwordVerifier, NULL_PASS_VERIFY_MSG);
+    this.clock = Objects.requireNonNull(clock, NULL_CLOCK_MSG);
   }
 
   /**
@@ -90,8 +95,8 @@ public class PatronRepository {
   public Future<PatronInformationResponse> performPatronInformationCommand(
       PatronInformation patronInformation,
       SessionData sessionData) {
-    Objects.requireNonNull(patronInformation, "patronInformation cannot be null");
-    Objects.requireNonNull(sessionData, "sessionData cannot be null");
+    Objects.requireNonNull(patronInformation, NULL_PATRON_INFO_MSG);
+    Objects.requireNonNull(sessionData, NULL_SESSION_DATA_MSG);
     log.debug("performPatronInformationCommand patronIdentifier:{}",
         patronInformation.getPatronIdentifier());
 
@@ -134,8 +139,8 @@ public class PatronRepository {
   public Future<PatronStatusResponse> performPatronStatusCommand(
       PatronStatusRequest patronStatus,
       SessionData sessionData) {
-    Objects.requireNonNull(patronStatus, "patronStatus cannot be null");
-    Objects.requireNonNull(sessionData, "sessionData cannot be null");
+    Objects.requireNonNull(patronStatus, NULL_PATRON_STATUS_MSG);
+    Objects.requireNonNull(sessionData, NULL_SESSION_DATA_MSG);
 
     final String patronIdentifier = patronStatus.getPatronIdentifier();
     final String patronPassword = patronStatus.getPatronPassword();
@@ -182,8 +187,8 @@ public class PatronRepository {
   public Future<EndSessionResponse> performEndPatronSessionCommand(
       EndPatronSession endPatronSession,
       SessionData sessionData) {
-    Objects.requireNonNull(endPatronSession, "endPatronSession cannot be null");
-    Objects.requireNonNull(sessionData, "sessionData cannot be null");
+    Objects.requireNonNull(endPatronSession, NULL_END_PATRON_SESSION_MSG);
+    Objects.requireNonNull(sessionData, NULL_SESSION_DATA_MSG);
 
     final String patronIdentifier = endPatronSession.getPatronIdentifier();
     final String patronPassword = endPatronSession.getPatronPassword();
@@ -271,8 +276,7 @@ public class PatronRepository {
         .getFeeAmountByUserId(userId, sessionData)
         .map(accounts -> totalAmount(accounts, builder));
         
-    return getFeeAmountFuture.map(result -> {
-          return builder
+    return getFeeAmountFuture.map(result -> builder
             .patronStatus(EnumSet.allOf(PatronStatus.class))
             .language(patronStatus.getLanguage())
             .transactionDate(OffsetDateTime.now(clock))
@@ -280,8 +284,8 @@ public class PatronRepository {
             .patronIdentifier(patronStatus.getPatronIdentifier())
             .validPatron(TRUE)
             .validPatronPassword(validPassword)
-            .build();
-        }
+            .build()
+        
     );
   }
 
@@ -319,7 +323,7 @@ public class PatronRepository {
     for (int i = 0;i < arr.size();i++) {
       total += arr.getJsonObject(i).getFloat("remaining");
     }
-    log.debug("Total is {}", total.toString());
+    log.debug("Total is {}", total);
     return builder.feeAmount(total.toString());
   }
 
