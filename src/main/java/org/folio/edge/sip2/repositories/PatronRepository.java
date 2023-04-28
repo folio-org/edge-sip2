@@ -139,7 +139,7 @@ public class PatronRepository {
 
     final String patronIdentifier = patronStatus.getPatronIdentifier();
     final String patronPassword = patronStatus.getPatronPassword();
-    log.debug("IsPatronVerificationRequired just before forcing it:", 
+    log.debug("IsPatronVerificationRequired just before forcing it: {}", 
         sessionData.isPatronPasswordVerificationRequired());
     sessionData.setPatronPasswordVerificationRequired(TRUE);
 
@@ -265,15 +265,11 @@ public class PatronRepository {
     // Store patron data in the builder
     final String personalName = getPatronPersonalName(personal, patronStatus.getPatronIdentifier());
     builder.personalName(personalName);
-    //addPersonalData(personal, patronStatus.getPatronIdentifier(), builder);
     // When all operations complete, build and return the final PatronInformationResponse
     
     final Future<PatronStatusResponseBuilder> getFeeAmountFuture = feeFinesRepository
         .getFeeAmountByUserId(userId, sessionData)
-        .map(accounts -> { 
-          return totalAmount(accounts, builder);
-        }
-      );
+        .map(accounts -> totalAmount(accounts, builder));
         
     return getFeeAmountFuture.map(result -> {
           return builder
@@ -283,7 +279,7 @@ public class PatronRepository {
             .institutionId(patronStatus.getInstitutionId())
             .patronIdentifier(patronStatus.getPatronIdentifier())
             .validPatron(TRUE)
-            .validPatronPassword(TRUE)
+            .validPatronPassword(validPassword)
             .build();
         }
     );
@@ -323,7 +319,7 @@ public class PatronRepository {
     for (int i = 0;i < arr.size();i++) {
       total += arr.getJsonObject(i).getFloat("remaining");
     }
-    log.debug(total.toString());
+    log.debug("Total is {}", total != null ? total.toString() : null);
     return builder.feeAmount(total.toString());
   }
 
@@ -362,7 +358,7 @@ public class PatronRepository {
         .patronIdentifier(patronStatus.getPatronIdentifier())
         .personalName(patronStatus.getPatronIdentifier()) // required, using patron id for now
         .validPatron(FALSE)
-        .validPatronPassword(FALSE)
+        .validPatronPassword(validPassword)
         .screenMessage(Collections.singletonList(MESSAGE_INVALID_PATRON))
         .build());
   }

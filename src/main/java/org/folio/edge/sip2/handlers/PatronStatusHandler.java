@@ -22,7 +22,6 @@ public class PatronStatusHandler implements ISip2RequestHandler {
 
   
   private final PatronRepository patronRepository;
-  //private final FeeFinesRepository feeFinesRepository;
   private final Template commandTemplate;
 
   @Inject
