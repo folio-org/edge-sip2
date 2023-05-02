@@ -15,9 +15,11 @@
 <#-- institution id: variable-length required field -->
 <@lib.institutionId value=renewResponse.institutionId/>
 <#-- patron identifier: variable-length required field -->
-<@lib.patronIdentifier value=renewResponse.patronIdentifier!""/>
+<@lib.patronIdentifier value=renewResponse.patronIdentifier/>
+<#-- item identifier: variable-length required field -->
+<@lib.itemIdentifier value=renewResponse.itemIdentifier/>
 <#-- title identifier: variable-length required field -->
-<@lib.titleIdentifier value=renewResponse.titleIdentifier!""/>
+<@lib.titleIdentifier value=renewResponse.titleIdentifier/>
 <#-- due date: variable-length required field -->
 <@lib.dueDate value=renewResponse.dueDate!""/>
 <#--
@@ -36,6 +38,8 @@
 <@lib.feeAmount value=renewResponse.feeAmount!""/>
 <#-- media type: 3-char, fixed-length optional field -->
 <@lib.mediaType value=renewResponse.mediaType!""/>
+<#-- item properties: variable-length optional field -->
+<@lib.itemProperties value=renewResponse.itemProperties!""/>
 <#--
     transaction id: variable-length optional field
     May be assigned by the ACS when renewing the item involves a fee
