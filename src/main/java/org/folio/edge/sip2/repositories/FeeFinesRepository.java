@@ -90,6 +90,33 @@ public class FeeFinesRepository {
 
 
   /**
+   * Get a patron's total fee amount.
+   *
+   * @param userId the user's ID
+   * @param sessionData session data
+   * @return the accounts list in raw JSON or {@code null} if there was an error
+   */
+  public Future<JsonObject> getFeeAmountByUserId(
+      String userId,
+      SessionData sessionData) {
+    Objects.requireNonNull(userId, "userId cannot be null");
+    Objects.requireNonNull(sessionData, "sessionData cannot be null");
+
+    final Map<String, String> headers = new HashMap<>();
+    headers.put(HEADER_ACCEPT, MIMETYPE_JSON);
+
+    final FeePaymentAccountsRequestData getFeePaymentAccountsRequestData =
+        new FeePaymentAccountsRequestData(userId, headers, sessionData);
+    final Future<IResource> result =
+        resourceProvider.retrieveResource(getFeePaymentAccountsRequestData);
+
+    return result
+        .otherwise(() -> null)
+        .map(IResource::getResource);
+  }
+
+
+  /**
    * Get a patron's account.
    *
    * @param userId the user's ID

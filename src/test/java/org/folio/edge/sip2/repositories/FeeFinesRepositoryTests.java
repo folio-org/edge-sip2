@@ -291,6 +291,36 @@ class FeeFinesRepositoryTests {
     
   }
 
+  @Test
+  void canGetFeeAmountByUserId(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock UsersRepository mockUsersRepository) {
+
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final String userId = "658d7aa7-0dce-4428-a1d0-fd287bbc8476";
+    final String accountId = "f6174778-e537-40ac-9389-eef982b4c179";
+    final JsonObject queryAccountResponse = new JsonObject()
+        .put("accounts", new JsonArray()
+        .add(new JsonObject()
+          .put("remaining", 20.43)
+          .put("id", accountId)
+        )
+      );
+
+    when(mockFolioProvider.retrieveResource(any()))
+        .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse, 
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+    final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(
+        mockFolioProvider, mockUsersRepository, clock);
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    feeFinesRepository.getFeeAmountByUserId(userId, sessionData).onComplete(
+        testContext.succeeding(feeAmount -> testContext.verify(() -> {
+          testContext.completeNow();
+        }))
+    );
+  }
+
   @Test 
   void cannotPerformFeePaidCommandWithOverpay(Vertx vertx,
       VertxTestContext testContext,

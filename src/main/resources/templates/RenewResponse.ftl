@@ -19,7 +19,7 @@
 <#-- item identifier: variable-length required field -->
 <@lib.itemIdentifier value=renewResponse.itemIdentifier!""/>
 <#-- title identifier: variable-length required field -->
-<@lib.titleIdentifier value=renewResponse.titleIdentifier!""/>
+<@lib.titleIdentifier value=renewResponse.titleIdentifier/>
 <#-- due date: variable-length required field -->
 <@lib.dueDate value=renewResponse.dueDate!""/>
 <#--
