@@ -7,6 +7,7 @@ import static org.folio.edge.sip2.parser.Command.FEE_PAID_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.ITEM_INFORMATION_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.LOGIN_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION_RESPONSE;
+import static org.folio.edge.sip2.parser.Command.PATRON_STATUS_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.RENEW_ALL_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.RENEW_RESPONSE;
 
@@ -63,6 +64,12 @@ public class ApplicationModule extends AbstractModule {
   @Named("loginResponse")
   Template provideLoginResponseTemplate() {
     return FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE);
+  }
+
+  @Provides
+  @Named("patronStatusResponse")
+  Template providePatronStatusResponseTemplate() {
+    return FreemarkerRepository.getInstance().getFreemarkerTemplate(PATRON_STATUS_RESPONSE);
   }
 
   @Provides
