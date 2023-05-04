@@ -1291,7 +1291,7 @@ class CirculationRepositoryTests {
                 .put("itemId", itemId)
                 .put("requestType", "Recall")
                 .put("requestDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
-                .put("fulfilmentPreference", "Hold Shelf")))
+                .put("fulfillmentPreference", "Hold Shelf")))
         .put("totalRecords", 1);
 
     final String expectedPath = "/circulation/requests?query="
@@ -1361,7 +1361,7 @@ class CirculationRepositoryTests {
                 .put("itemId", itemId)
                 .put("requestType", "Hold")
                 .put("requestDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
-                .put("fulfilmentPreference", "Hold Shelf")))
+                .put("fulfillmentPreference", "Hold Shelf")))
         .put("totalRecords", 1);
     when(mockFolioProvider.retrieveResource(any()))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
