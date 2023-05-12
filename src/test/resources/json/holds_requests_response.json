@@ -21,7 +21,7 @@
       "lastName" : "Auer",
       "barcode" : "997383903573496"
     },
-    "fulfilmentPreference" : "Hold Shelf",
+    "fulfillmentPreference" : "Hold Shelf",
     "pickupServicePointId" : "c4c90014-c8c9-4ade-8f24-b5e313319f4b",
     "metadata" : {
       "createdDate" : "2019-04-30T14:10:47.421+0000",
@@ -51,7 +51,7 @@
       "lastName" : "Auer",
       "barcode" : "997383903573496"
     },
-    "fulfilmentPreference" : "Hold Shelf",
+    "fulfillmentPreference" : "Hold Shelf",
     "pickupServicePointId" : "c4c90014-c8c9-4ade-8f24-b5e313319f4b",
     "metadata" : {
       "createdDate" : "2019-04-30T14:16:32.204+0000",
