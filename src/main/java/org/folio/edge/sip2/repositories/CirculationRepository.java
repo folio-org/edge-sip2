@@ -113,18 +113,9 @@ public class CirculationRepository {
               : null;
           JsonObject servicePointJson = itemJson != null
               ? itemJson.getJsonObject("inTransitDestinationServicePoint") : null;
-          String materialType = itemMaterialType != null
-              ? itemMaterialType.getString("name") : null;
-          MediaType mediaType;
-          if ("book".equals(materialType)) {
-            mediaType = MediaType.BOOK;
-          } else if ("dvd".equals(materialType)) {
-            mediaType = MediaType.VIDEO_TAPE;
-          } else if ("sound recording".equals(materialType)) {
-            mediaType = MediaType.AUDIO_TAPE;
-          } else {
-            mediaType = MediaType.OTHER;
-          }
+
+          MediaType mediaType = getMediaType(itemMaterialType);
+
           final Future<JsonObject> getRequestsResult = resourceJson != null
               ? getRequestsByItemId(itemIdentifier, null, null,
                   null, sessionData) : Future.succeededFuture(null);
@@ -136,12 +127,9 @@ public class CirculationRepository {
                   ? requestArray.getJsonObject(0) : null;
               final String requestState =
                   request != null ? request.getString("requestType") : null;
-              final boolean inTransit = itemStatus != null && itemStatus.equals("In transit")
-                  ? true : false;
-              final boolean holdItem = requestState != null && requestState.equals("Hold")
-                  ? true : false;
-              final boolean recallItem = requestState != null && requestState.equals("Recall")
-                  ? true : false;
+              final boolean inTransit = itemStatus != null && itemStatus.equals("In transit");
+              final boolean holdItem = requestState != null && requestState.equals("Hold");
+              final boolean recallItem = requestState != null && requestState.equals("Recall");
               final boolean alert = inTransit || holdItem || recallItem;
               String alertType;
               if (alert) {
@@ -824,5 +812,25 @@ public class CirculationRepository {
       return headers;
     }
 
+  }
+
+  private MediaType getMediaType(JsonObject materialTypeJson) {
+    if (materialTypeJson == null) {
+      return null;
+    }
+    MediaType mediaType;
+    String materialType = materialTypeJson.getString("name");
+    if (materialType == null) {
+      mediaType = null;
+    } else if ("book".equals(materialType)) {
+      mediaType = MediaType.BOOK;
+    } else if ("dvd".equals(materialType)) {
+      mediaType = MediaType.VIDEO_TAPE;
+    } else if ("sound recording".equals(materialType)) {
+      mediaType = MediaType.AUDIO_TAPE;
+    } else {
+      mediaType = MediaType.OTHER;
+    }
+    return mediaType;
   }
 }

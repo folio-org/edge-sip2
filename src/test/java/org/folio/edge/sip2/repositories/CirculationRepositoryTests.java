@@ -102,9 +102,9 @@ class CirculationRepositoryTests {
             .put("callNumber", callNumber)
             .put("title", titleIdentifier)
             .put("location", new JsonObject()
-                .put("name", "Main Library")))
+                .put("name", "Main Library"))
             .put("materialType", new JsonObject()
-                .put("name", "book"))
+                .put("name", "book")))
             .put("inTransitDestinationServicePoint", new JsonObject()
                 .put("name", "Annex"));
 
@@ -142,7 +142,7 @@ class CirculationRepositoryTests {
           assertEquals(titleIdentifier, checkinResponse.getTitleIdentifier());
           assertNull(checkinResponse.getSortBin());
           assertNull(checkinResponse.getPatronIdentifier());
-          assertEquals(checkinResponse.getMediaType(), MediaType.OTHER);
+          assertEquals(MediaType.BOOK, checkinResponse.getMediaType());
           assertNull(checkinResponse.getItemProperties());
           assertNull(checkinResponse.getScreenMessage());
           assertNull(checkinResponse.getPrintLine());
@@ -210,7 +210,7 @@ class CirculationRepositoryTests {
           assertEquals(itemIdentifier, checkinResponse.getTitleIdentifier());
           assertNull(checkinResponse.getSortBin());
           assertNull(checkinResponse.getPatronIdentifier());
-          assertEquals(checkinResponse.getMediaType(), MediaType.VIDEO_TAPE);
+          assertEquals(MediaType.VIDEO_TAPE, checkinResponse.getMediaType());
           assertNull(checkinResponse.getItemProperties());
           assertNull(checkinResponse.getScreenMessage());
           assertNull(checkinResponse.getPrintLine());
@@ -261,7 +261,7 @@ class CirculationRepositoryTests {
           assertEquals(itemIdentifier, checkinResponse.getTitleIdentifier());
           assertNull(checkinResponse.getSortBin());
           assertNull(checkinResponse.getPatronIdentifier());
-          assertEquals(checkinResponse.getMediaType(), MediaType.OTHER);
+          assertNull(checkinResponse.getMediaType());
           assertNull(checkinResponse.getItemProperties());
           assertNull(checkinResponse.getScreenMessage());
           assertNull(checkinResponse.getPrintLine());
