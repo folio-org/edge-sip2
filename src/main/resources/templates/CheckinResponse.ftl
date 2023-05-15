@@ -37,3 +37,7 @@
 <@lib.screenMessage value=checkinResponse.screenMessage!""/>
 <#-- screen message: variable-length optional field -->
 <@lib.printLine value=checkinResponse.printLine!""/>
+<#-- call number: variable-length optional field (extension) -->
+<@lib.callNumber value=checkinResponse.callNumber!""/>
+<#-- alert type: fixed-length optional field (extension) -->
+<@lib.alertType value=checkinResponse.alertType!""/>

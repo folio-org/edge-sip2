@@ -33,6 +33,9 @@ class CheckinResponseTests {
   final String itemProperties = "Directors Cut";
   final List<String> screenMessage = asList("Please rewind");
   final List<String> printLine = asList("Enjoy!");
+  final String callNumber = "34995.2345";
+  final String servicePoint = "Annex";
+  final String alertType = "01";
 
   @Test
   void testGetOk() {
@@ -482,6 +485,9 @@ class CheckinResponseTests {
         .append(", itemProperties=").append(itemProperties)
         .append(", screenMessage=").append(screenMessage)
         .append(", printLine=").append(printLine)
+        .append(", callNumber=").append(callNumber)
+        .append(", alertType=").append(alertType)
+        .append(", pickupServicePoint=").append(servicePoint)
         .append(']').toString();
     final CheckinResponse cir = builder()
         .ok(ok)
@@ -499,6 +505,9 @@ class CheckinResponseTests {
         .itemProperties(itemProperties)
         .screenMessage(screenMessage)
         .printLine(printLine)
+        .callNumber(callNumber)
+        .alertType(alertType)
+        .pickupServicePoint(servicePoint)
         .build();
     assertEquals(expectedString, cir.toString());
   }

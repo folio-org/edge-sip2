@@ -23,6 +23,7 @@ import java.util.Optional;
 import javax.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.edge.sip2.domain.messages.enumerations.MediaType;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.domain.messages.requests.Renew;
@@ -92,36 +93,98 @@ public class CirculationRepository {
 
     final CheckinRequestData checkinRequestData =
         new CheckinRequestData(body, headers, sessionData);
-    final Future<IResource> result = resourceProvider
+    final Future<IResource> checkinResult = resourceProvider
         .createResource(checkinRequestData);
 
-    return result
+    return checkinResult
         .otherwise(() -> null)
         .compose(resource -> {
-          log.info("performCheckinCommand resource:{}",resource);
-          return Future.succeededFuture(
-            CheckinResponse.builder()
-              .ok(resource.getResource() == null ? FALSE : TRUE)
-              .resensitize(resource.getResource() == null ? FALSE : TRUE)
-              .magneticMedia(null)
-              .alert(FALSE)
-              .transactionDate(OffsetDateTime.now(clock))
-              .institutionId(institutionId)
-              .itemIdentifier(itemIdentifier)
-              // if the title is not available, use the item identifier passed in to the checkin.
-              // this allows the kiosk to show something related to the item that could be used
-              // by the patron to identify which item this checkin response applies to.
-              .titleIdentifier(resource.getResource() == null ? itemIdentifier
-                  : getChildString(resource.getResource(), "item", TITLE, itemIdentifier))
-              // this is probably not the permanent location
-              // this might require a call to inventory
-              .permanentLocation(
-                  resource.getResource() == null ? UNKNOWN
-                      : getSubChildString(resource.getResource(),
-                          Arrays.asList("item", "location"), "name", UNKNOWN))
-              .build());
+          log.info("performCheckinCommand resource:{}", resource);
+          JsonObject resourceJson = resource.getResource();
+          JsonObject itemJson = resourceJson != null ? resourceJson.getJsonObject("item")
+              : null;
+          String callNumber = itemJson != null ? itemJson.getString("callNumber")
+              : null;
+          JsonObject itemStatusJson = itemJson != null ? itemJson.getJsonObject("status")
+              : null;
+          String itemStatus = itemStatusJson != null ? itemStatusJson.getString("name")
+              : null;
+          JsonObject itemMaterialType = itemJson != null ? itemJson.getJsonObject("materialType") :
+              null;
+          JsonObject servicePointJson = itemJson != null
+              ? itemJson.getJsonObject("inTransitDestinationServicePoint") : null;
+          String materialType = itemMaterialType != null
+              ? itemMaterialType.getString("name") : null;
+          MediaType mediaType;
+          if ("book".equals(materialType)) {
+            mediaType = MediaType.BOOK;
+          } else if ("dvd".equals(materialType)) {
+            mediaType = MediaType.VIDEO_TAPE;
+          } else if ("sound recording".equals(materialType)) {
+            mediaType = MediaType.AUDIO_TAPE;
+          } else {
+            mediaType = MediaType.OTHER;
+          }
+          final Future<JsonObject> getRequestsResult = resourceJson != null
+              ? getRequestsByItemId(itemIdentifier, null, null,
+                  null, sessionData) : Future.succeededFuture(null);
+          return getRequestsResult
+            .compose(requestsJson -> {
+              JsonArray requestArray =
+                  requestsJson != null ? requestsJson.getJsonArray("requests") : null;
+              JsonObject request = requestArray != null && !requestArray.isEmpty()
+                  ? requestArray.getJsonObject(0) : null;
+              final String requestState =
+                  request != null ? request.getString("requestType") : null;
+              final boolean inTransit = itemStatus != null && itemStatus.equals("In transit")
+                  ? true : false;
+              final boolean holdItem = requestState != null && requestState.equals("Hold")
+                  ? true : false;
+              final boolean recallItem = requestState != null && requestState.equals("Recall")
+                  ? true : false;
+              final boolean alert = inTransit || holdItem || recallItem;
+              String alertType;
+              if (alert) {
+                if (!inTransit) {
+                  alertType = "01";
+                } else if ((holdItem || recallItem) && inTransit) {
+                  alertType = "02";
+                } else {
+                  alertType = "03";
+                }
+              } else {
+                alertType = null;
               }
-          );
+              return Future.succeededFuture(
+                CheckinResponse.builder()
+                  .ok(resourceJson == null ? FALSE : TRUE)
+                  .resensitize(resourceJson == null ? FALSE : TRUE)
+                  .magneticMedia(null)
+                  .alert(alert)
+                  .alertType(alertType)
+                  .transactionDate(OffsetDateTime.now(clock))
+                  .institutionId(institutionId)
+                  .itemIdentifier(itemIdentifier)
+                  .callNumber(callNumber)
+                  .mediaType(mediaType)
+                  .pickupServicePoint(servicePointJson != null
+                      ? servicePointJson.getString("name") : null)
+                  // if the title is not available, use the item identifier passed in to the
+                  // checkin.
+                  // this allows the kiosk to show something related to the item that could be used
+                  // by the patron to identify which item this checkin response applies to.
+                  .titleIdentifier(resource.getResource() == null ? itemIdentifier
+                    : getChildString(resource.getResource(), "item", TITLE, itemIdentifier))
+                  // this is probably not the permanent location
+                  // this might require a call to inventory
+                  .permanentLocation(
+                    resource.getResource() == null ? UNKNOWN
+                      : getSubChildString(resource.getResource(),
+                      Arrays.asList("item", "location"), "name", UNKNOWN))
+                    .build());
+            });
+        }
+      );
   }
 
   /**
@@ -612,7 +675,7 @@ public class CirculationRepository {
           });
       });
   }
-  
+
   RenewAllResponseBuilder doRenewals(JsonObject jo, RenewAllResponseBuilder builder) {
     log.debug("doRenewals: {} ", jo != null ? jo.encode() : null);
     return builder;
@@ -656,7 +719,7 @@ public class CirculationRepository {
           // Assume a sensible limit, or rewrite this method
           final Future<JsonObject> loansFuture =
               getLoansByUserId(user.getId(), null, null, sessionData);
-          
+
           final RenewAllResponseBuilder builder = RenewAllResponse.builder();
 
 
