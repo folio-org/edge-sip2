@@ -109,8 +109,8 @@ public class CirculationRepository {
               : null;
           String itemStatus = itemStatusJson != null ? itemStatusJson.getString("name")
               : null;
-          JsonObject itemMaterialType = itemJson != null ? itemJson.getJsonObject("materialType") :
-              null;
+          JsonObject itemMaterialType = itemJson != null ? itemJson.getJsonObject("materialType")
+              : null;
           JsonObject servicePointJson = itemJson != null
               ? itemJson.getJsonObject("inTransitDestinationServicePoint") : null;
           String materialType = itemMaterialType != null

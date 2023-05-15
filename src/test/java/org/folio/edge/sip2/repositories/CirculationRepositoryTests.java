@@ -175,6 +175,8 @@ class CirculationRepositoryTests {
 
     final JsonObject checkinResponseJson = new JsonObject()
         .put("item", new JsonObject()
+          .put("materialType", new JsonObject()
+            .put("name", "dvd"))
             .put("location", new JsonObject()
                 .put("name", "Main Library")));
 
@@ -208,7 +210,7 @@ class CirculationRepositoryTests {
           assertEquals(itemIdentifier, checkinResponse.getTitleIdentifier());
           assertNull(checkinResponse.getSortBin());
           assertNull(checkinResponse.getPatronIdentifier());
-          assertEquals(checkinResponse.getMediaType(), MediaType.OTHER);
+          assertEquals(checkinResponse.getMediaType(), MediaType.VIDEO_TAPE);
           assertNull(checkinResponse.getItemProperties());
           assertNull(checkinResponse.getScreenMessage());
           assertNull(checkinResponse.getPrintLine());
