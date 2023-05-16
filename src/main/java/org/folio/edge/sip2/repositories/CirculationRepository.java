@@ -101,33 +101,22 @@ public class CirculationRepository {
         .compose(resource -> {
           log.info("performCheckinCommand resource:{}", resource);
           JsonObject resourceJson = resource.getResource();
-          JsonObject itemJson = resourceJson != null ? resourceJson.getJsonObject("item")
-              : null;
-          String callNumber = itemJson != null ? itemJson.getString("callNumber")
-              : null;
-          JsonObject itemStatusJson = itemJson != null ? itemJson.getJsonObject("status")
-              : null;
-          String itemStatus = itemStatusJson != null ? itemStatusJson.getString("name")
-              : null;
-          JsonObject itemMaterialType = itemJson != null ? itemJson.getJsonObject("materialType")
-              : null;
-          JsonObject servicePointJson = itemJson != null
-              ? itemJson.getJsonObject("inTransitDestinationServicePoint") : null;
-
-          MediaType mediaType = getMediaType(itemMaterialType);
 
           final Future<JsonObject> getRequestsResult = resourceJson != null
               ? getRequestsByItemId(itemIdentifier, null, null,
                   null, sessionData) : Future.succeededFuture(null);
           return getRequestsResult
             .compose(requestsJson -> {
+              JsonObject valuesJson = extractCheckinValues(resourceJson);
+              MediaType mediaType = getMediaType(valuesJson.getJsonObject("itemMaterialTypeJson"));
               JsonArray requestArray =
                   requestsJson != null ? requestsJson.getJsonArray("requests") : null;
               JsonObject request = requestArray != null && !requestArray.isEmpty()
                   ? requestArray.getJsonObject(0) : null;
               final String requestState =
                   request != null ? request.getString("requestType") : null;
-              final boolean inTransit = itemStatus != null && itemStatus.equals("In transit");
+              final boolean inTransit = valuesJson.getString("itemStatus") != null
+                  && valuesJson.getString("itemStatus").equals("In transit");
               final boolean holdItem = requestState != null && requestState.equals("Hold");
               final boolean recallItem = requestState != null && requestState.equals("Recall");
               final boolean alert = inTransit || holdItem || recallItem;
@@ -142,10 +131,9 @@ public class CirculationRepository {
                   .transactionDate(OffsetDateTime.now(clock))
                   .institutionId(institutionId)
                   .itemIdentifier(itemIdentifier)
-                  .callNumber(callNumber)
+                  .callNumber(valuesJson.getString("callNumber"))
                   .mediaType(mediaType)
-                  .pickupServicePoint(servicePointJson != null
-                      ? servicePointJson.getString("name") : null)
+                  .pickupServicePoint(valuesJson.getString("servicePoint"))
                   // if the title is not available, use the item identifier passed in to the
                   // checkin.
                   // this allows the kiosk to show something related to the item that could be used
@@ -828,14 +816,36 @@ public class CirculationRepository {
     if (inTransit || holdItem || recallItem) {
       if (!inTransit) {
         alertType = "01";
-      } else if ((holdItem || recallItem) && inTransit) {
+      } else if (holdItem || recallItem) {
         alertType = "02";
       } else {
-        alertType = "03";
+        alertType = "04";
       }
     } else {
       alertType = null;
     }
     return alertType;
+  }
+
+  private JsonObject extractCheckinValues(JsonObject resourceJson) {
+    JsonObject valuesJson = new JsonObject();
+    JsonObject itemJson = resourceJson != null ? resourceJson.getJsonObject("item")
+        : null;
+    valuesJson.put("callNumber", itemJson != null ? itemJson.getString("callNumber")
+        : null);
+    JsonObject itemStatusJson = itemJson != null ? itemJson.getJsonObject("status")
+        : null;
+    valuesJson.put("itemStatus", itemStatusJson != null ? itemStatusJson.getString("name")
+        : null);
+    JsonObject itemMaterialType = itemJson != null ? itemJson.getJsonObject("materialType")
+        : null;
+    valuesJson.put("itemMaterialTypeJson", itemMaterialType);
+    JsonObject servicePointJson = itemJson != null
+        ? itemJson.getJsonObject("inTransitDestinationServicePoint") : null;
+    valuesJson.put("servicePoint", servicePointJson != null ? servicePointJson.getString("name")
+        : null);
+
+    return valuesJson;
+
   }
 }
