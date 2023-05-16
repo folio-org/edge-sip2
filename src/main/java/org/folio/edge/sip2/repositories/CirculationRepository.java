@@ -846,6 +846,5 @@ public class CirculationRepository {
         : null);
 
     return valuesJson;
-
   }
 }
