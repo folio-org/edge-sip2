@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.folio.edge.sip2.api.support.TestUtils;
+import org.folio.edge.sip2.domain.messages.enumerations.MediaType;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.domain.messages.requests.Renew;
@@ -83,6 +84,7 @@ class CirculationRepositoryTests {
     final String currentLocation = UUID.randomUUID().toString();
     final String itemIdentifier = "1234567890";
     final String titleIdentifier = "Some Cool Book";
+    final String callNumber = "9983235487258";
     final Checkin checkin = Checkin.builder()
         .noBlock(FALSE)
         .transactionDate(OffsetDateTime.now())
@@ -95,13 +97,31 @@ class CirculationRepositoryTests {
         .cancel(FALSE)
         .build();
 
-    final JsonObject response = new JsonObject()
+    final JsonObject checkinResponseJson = new JsonObject()
         .put("item", new JsonObject()
+            .put("callNumber", callNumber)
             .put("title", titleIdentifier)
             .put("location", new JsonObject()
-                .put("name", "Main Library")));
+                .put("name", "Main Library"))
+            .put("materialType", new JsonObject()
+                .put("name", "book")))
+            .put("inTransitDestinationServicePoint", new JsonObject()
+                .put("name", "Annex"));
+
+
+    final JsonObject getRequestsResponseJson = new JsonObject()
+        .put("requests", new JsonArray()
+            .add(new JsonObject()
+                .put("requestType", "Hold")
+                .put("requestLevel", "Item")))
+        .put("totalRecords", 1);
+
     when(mockFolioProvider.createResource(any()))
-        .thenReturn(Future.succeededFuture(new FolioResource(response,
+        .thenReturn(Future.succeededFuture(new FolioResource(checkinResponseJson,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    when(mockFolioProvider.retrieveResource(any()))
+        .thenReturn(Future.succeededFuture(new FolioResource(getRequestsResponseJson,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
@@ -114,7 +134,7 @@ class CirculationRepositoryTests {
           assertTrue(checkinResponse.getOk());
           assertTrue(checkinResponse.getResensitize());
           assertNull(checkinResponse.getMagneticMedia());
-          assertFalse(checkinResponse.getAlert());
+          assertTrue(checkinResponse.getAlert());
           assertEquals(OffsetDateTime.now(clock), checkinResponse.getTransactionDate());
           assertEquals("diku", checkinResponse.getInstitutionId());
           assertEquals(itemIdentifier, checkinResponse.getItemIdentifier());
@@ -122,10 +142,11 @@ class CirculationRepositoryTests {
           assertEquals(titleIdentifier, checkinResponse.getTitleIdentifier());
           assertNull(checkinResponse.getSortBin());
           assertNull(checkinResponse.getPatronIdentifier());
-          assertNull(checkinResponse.getMediaType());
+          assertEquals(MediaType.BOOK, checkinResponse.getMediaType());
           assertNull(checkinResponse.getItemProperties());
           assertNull(checkinResponse.getScreenMessage());
           assertNull(checkinResponse.getPrintLine());
+          assertEquals(callNumber, checkinResponse.getCallNumber());
 
           testContext.completeNow();
         })));
@@ -152,13 +173,24 @@ class CirculationRepositoryTests {
         .cancel(FALSE)
         .build();
 
-    final JsonObject response = new JsonObject()
+    final JsonObject checkinResponseJson = new JsonObject()
         .put("item", new JsonObject()
+          .put("materialType", new JsonObject()
+            .put("name", "dvd"))
             .put("location", new JsonObject()
                 .put("name", "Main Library")));
+
+    final JsonObject getRequestsResponseJson = new JsonObject()
+        .put("requests", new JsonArray())
+        .put("totalRecords", 0);
+
     when(mockFolioProvider.createResource(any()))
-        .thenReturn(Future.succeededFuture(new FolioResource(response,
+        .thenReturn(Future.succeededFuture(new FolioResource(checkinResponseJson,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    when(mockFolioProvider.retrieveResource(any()))
+        .thenReturn(Future.succeededFuture(new FolioResource(getRequestsResponseJson,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -178,7 +210,7 @@ class CirculationRepositoryTests {
           assertEquals(itemIdentifier, checkinResponse.getTitleIdentifier());
           assertNull(checkinResponse.getSortBin());
           assertNull(checkinResponse.getPatronIdentifier());
-          assertNull(checkinResponse.getMediaType());
+          assertEquals(MediaType.VIDEO_TAPE, checkinResponse.getMediaType());
           assertNull(checkinResponse.getItemProperties());
           assertNull(checkinResponse.getScreenMessage());
           assertNull(checkinResponse.getPrintLine());
@@ -484,7 +516,7 @@ class CirculationRepositoryTests {
         })));
   }
 
-  @Test 
+  @Test
   void canRenewAll(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
@@ -504,7 +536,7 @@ class CirculationRepositoryTests {
         .feeAcknowledged(FALSE)
         .build();
 
-    
+
     final JsonObject loansResponse = new JsonObject()
         .put("loans", new JsonArray()
             .add(new JsonObject()
@@ -513,12 +545,12 @@ class CirculationRepositoryTests {
                 .put("loanDate", OffsetDateTime.now(clock).format(ISO_OFFSET_DATE_TIME))
                 .put("action", "checkedout")))
         .put("totalRecords", 1);
-    
+
     final JsonObject response = new JsonObject()
         .put("item", new JsonObject()
         .put("title", title))
         .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-    
+
     when(mockFolioProvider.createResource(any()))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
@@ -530,12 +562,12 @@ class CirculationRepositoryTests {
             new User.Builder().id(userId).build()
         ).build()));
 
-    
+
     final SessionData sessionData = TestUtils.getMockedSessionData();
-    
+
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, clock);
-    
+
     circulationRepository.performRenewAllCommand(renewAll, sessionData).onComplete(
         testContext.succeeding(renewAllResponse -> testContext.verify(() -> {
           assertNotNull(renewAllResponse);
@@ -547,11 +579,11 @@ class CirculationRepositoryTests {
           testContext.completeNow();
         }))
     );
-        
+
 
   }
 
-  @Test 
+  @Test
   void cannotRenewAllWithBadPassword(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
@@ -570,7 +602,7 @@ class CirculationRepositoryTests {
         .terminalPassword("1234")
         .feeAcknowledged(FALSE)
         .build();
-    
+
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
           .passwordVerified(false).build()));
@@ -589,7 +621,7 @@ class CirculationRepositoryTests {
           testContext.completeNow();
         }))
     );
-    
+
   }
 
   @Test

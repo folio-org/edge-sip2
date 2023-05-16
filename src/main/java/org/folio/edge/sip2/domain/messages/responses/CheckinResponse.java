@@ -66,6 +66,12 @@ public final class CheckinResponse {
   private final List<String> screenMessage;
   /** A message to print via the SC's printer. */
   private final List<String> printLine;
+  /** The call number of the item -- Extended field. */
+  private final String callNumber;
+  /** The alert type code of the item -- Extended field. */
+  private final String alertType;
+  /** The pickup service point of the item, if in transit -- Extended field. */
+  private final String pickupServicePoint;
 
   /**
    * Construct a {@code CheckintResponse} based on a
@@ -90,6 +96,9 @@ public final class CheckinResponse {
         : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
     this.printLine = builder.printLine == null ? null
         : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
+    this.callNumber = builder.callNumber;
+    this.alertType = builder.alertType;
+    this.pickupServicePoint = builder.pickupServicePoint;
   }
 
   /**
@@ -160,6 +169,18 @@ public final class CheckinResponse {
     return printLine;
   }
 
+  public String getCallNumber() {
+    return callNumber;
+  }
+
+  public String getAlertType() {
+    return alertType;
+  }
+
+  public String getPickupServicePoint() {
+    return pickupServicePoint;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(alert, institutionId, itemIdentifier, itemProperties,
@@ -194,7 +215,10 @@ public final class CheckinResponse {
         && Objects.equals(screenMessage, other.screenMessage)
         && Objects.equals(sortBin, other.sortBin)
         && Objects.equals(titleIdentifier, other.titleIdentifier)
-        && Objects.equals(transactionDate, other.transactionDate);
+        && Objects.equals(transactionDate, other.transactionDate)
+        && Objects.equals(callNumber, other.callNumber)
+        && Objects.equals(alertType, other.alertType)
+        && Objects.equals(pickupServicePoint, other.pickupServicePoint);
   }
 
   @Override
@@ -215,6 +239,9 @@ public final class CheckinResponse {
         .append(", itemProperties=").append(itemProperties)
         .append(", screenMessage=").append(screenMessage)
         .append(", printLine=").append(printLine)
+        .append(", callNumber=").append(callNumber)
+        .append(", alertType=").append(alertType)
+        .append(", pickupServicePoint=").append(pickupServicePoint)
         .append(']').toString();
   }
 
@@ -237,6 +264,9 @@ public final class CheckinResponse {
     private String itemProperties;
     private List<String> screenMessage;
     private List<String> printLine;
+    private String callNumber;
+    private String alertType;
+    private String pickupServicePoint;
 
     private CheckinResponseBuilder() {
       super();
@@ -314,6 +344,21 @@ public final class CheckinResponse {
 
     public CheckinResponseBuilder printLine(List<String> printLine) {
       this.printLine = printLine;
+      return this;
+    }
+
+    public CheckinResponseBuilder callNumber(String callNumber) {
+      this.callNumber = callNumber;
+      return this;
+    }
+
+    public CheckinResponseBuilder alertType(String alertType) {
+      this.alertType = alertType;
+      return this;
+    }
+
+    public CheckinResponseBuilder pickupServicePoint(String pickupServicePoint) {
+      this.pickupServicePoint = pickupServicePoint;
       return this;
     }
 

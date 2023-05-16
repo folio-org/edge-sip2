@@ -605,3 +605,11 @@
 <#macro currentLocation value>
   <@variableLengthField id="AP" value=value/>
 </#macro>
+
+<#macro callNumber value>
+  <@variableLengthField id="CS" value=value/>
+</#macro>
+
+<#macro alertType value>
+  <@variableLengthField id="CV" value=value/>
+</#macro>
