@@ -131,18 +131,7 @@ public class CirculationRepository {
               final boolean holdItem = requestState != null && requestState.equals("Hold");
               final boolean recallItem = requestState != null && requestState.equals("Recall");
               final boolean alert = inTransit || holdItem || recallItem;
-              String alertType;
-              if (alert) {
-                if (!inTransit) {
-                  alertType = "01";
-                } else if ((holdItem || recallItem) && inTransit) {
-                  alertType = "02";
-                } else {
-                  alertType = "03";
-                }
-              } else {
-                alertType = null;
-              }
+              final String alertType = getAlertType(inTransit, holdItem, recallItem);
               return Future.succeededFuture(
                 CheckinResponse.builder()
                   .ok(resourceJson == null ? FALSE : TRUE)
@@ -832,5 +821,21 @@ public class CirculationRepository {
       mediaType = MediaType.OTHER;
     }
     return mediaType;
+  }
+
+  private String getAlertType(boolean inTransit, boolean holdItem, boolean recallItem) {
+    String alertType;
+    if (inTransit || holdItem || recallItem) {
+      if (!inTransit) {
+        alertType = "01";
+      } else if ((holdItem || recallItem) && inTransit) {
+        alertType = "02";
+      } else {
+        alertType = "03";
+      }
+    } else {
+      alertType = null;
+    }
+    return alertType;
   }
 }
