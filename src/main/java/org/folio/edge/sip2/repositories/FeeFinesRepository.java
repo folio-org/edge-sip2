@@ -219,7 +219,6 @@ public class FeeFinesRepository {
         String amount,
         String paymentMethod,
         Boolean notifyPatron,
-        String userName,
         String account,
         List<String> accounts,
         Map<String, String> headers,
@@ -227,11 +226,14 @@ public class FeeFinesRepository {
       this.amount = amount.trim();
       this.notifyPatron = notifyPatron;
       this.paymentMethod = paymentMethod;
-      this.userName = userName;
       this.account = account;
       this.accounts = accounts;
       this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
       this.sessionData = sessionData;
+    }
+
+    public void setUserName(String userName) {
+      this.userName = userName;
     }
 
     @Override
@@ -313,7 +315,6 @@ public class FeeFinesRepository {
   public Future<FeePaidResponse> performFeePaidCommand(FeePaid feePaid, SessionData sessionData) {
     // We'll need to convert this date properly. It is likely that it will not include timezone
     // information, so we'll need to use the tenant/SC timezone as the basis and convert to UTC.
-    log.debug("Authtoken is set to " + sessionData.getAuthenticationToken());
     NumberFormat moneyFormatter = new DecimalFormat("0.00");
 
     final String institutionId = feePaid.getInstitutionId();
@@ -383,11 +384,12 @@ public class FeeFinesRepository {
                   feePaid.getFeeAmount(),
                   "Credit Card", // TODO - Default PaymentMethod
                   TRUE, // TODO - Default Notify
-                  user.getUsername(),
                   feeIdentifier,
                   acctIdList,
                   headers,
                   sessionData);
+
+              feePaymentRequestData.setUserName(user.getUsername());
 
               log.debug("Json for payment request is {}", feePaymentRequestData.getBody().encode());
 
