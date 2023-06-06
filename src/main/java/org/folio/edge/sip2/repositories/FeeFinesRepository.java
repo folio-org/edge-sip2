@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;  
-import java.util.regex.Pattern;  
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,7 +41,7 @@ public class FeeFinesRepository {
   private final IResourceProvider<IRequestData> resourceProvider;
   private final UsersRepository usersRepository;
   private Clock clock;
-  
+
 
   @Inject
   FeeFinesRepository(IResourceProvider<IRequestData> resourceProvider,
@@ -141,7 +141,7 @@ public class FeeFinesRepository {
       .otherwise(() -> null)
       .map(IResource::getResource);
   }
-  
+
   private class GetManualBlocksByUserIdRequestData implements IRequestData {
     private final String userId;
     private final Map<String, String> headers;
@@ -154,7 +154,7 @@ public class FeeFinesRepository {
       this.sessionData = sessionData;
     }
 
-  
+
 
     @Override
     public String getPath() {
@@ -186,7 +186,7 @@ public class FeeFinesRepository {
       this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
       this.sessionData = sessionData;
     }
-    
+
     @Override
     public String getPath() {
       return "/accounts?query="
@@ -209,6 +209,7 @@ public class FeeFinesRepository {
     private final String amount;
     private final Boolean notifyPatron;
     private final String paymentMethod;
+    private String userName;
     private String account;
     private List<String> accounts;
     private final Map<String, String> headers;
@@ -223,14 +224,18 @@ public class FeeFinesRepository {
         Map<String, String> headers,
         SessionData sessionData) {
       this.amount = amount.trim();
-      this.notifyPatron = notifyPatron; 
-      this.paymentMethod = paymentMethod; 
+      this.notifyPatron = notifyPatron;
+      this.paymentMethod = paymentMethod;
       this.account = account;
       this.accounts = accounts;
       this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
       this.sessionData = sessionData;
     }
-    
+
+    public void setUserName(String userName) {
+      this.userName = userName;
+    }
+
     @Override
     public String getPath() {
       if (account.equals("")) {
@@ -252,7 +257,7 @@ public class FeeFinesRepository {
           .put("amount", amount)
           .put("notifyPatron", notifyPatron)
           .put("servicePointId", sessionData.getScLocation())
-          .put("userName", sessionData.getUsername())
+          .put("userName", userName)
           .put("paymentMethod", paymentMethod);
       if (account.equals("")) {
         body.put("accountIds", new JsonArray(accounts));
@@ -299,7 +304,7 @@ public class FeeFinesRepository {
   }
 
 
-  
+
 
   /**
    * Perform a feePaid.
@@ -311,19 +316,19 @@ public class FeeFinesRepository {
     // We'll need to convert this date properly. It is likely that it will not include timezone
     // information, so we'll need to use the tenant/SC timezone as the basis and convert to UTC.
     NumberFormat moneyFormatter = new DecimalFormat("0.00");
-    
+
     final String institutionId = feePaid.getInstitutionId();
     final String patronIdentifier = feePaid.getPatronIdentifier();
     final String transactionId = feePaid.getTransactionId();
-    
+
     final Float amountPaid = Float.valueOf(feePaid.getFeeAmount()); //TODO - Decimal, not Float?
     String feeIdentifierMatch = "";
     if (feePaid.getFeeIdentifier() != null) {
-      Pattern startWithUuid = Pattern.compile("^(\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12})"); 
+      Pattern startWithUuid = Pattern.compile("^(\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12})");
       // UUID of the account to be paid
-      Matcher matcher = startWithUuid.matcher(feePaid.getFeeIdentifier());  
+      Matcher matcher = startWithUuid.matcher(feePaid.getFeeIdentifier());
       feeIdentifierMatch = "";
-      if (matcher.find()) { 
+      if (matcher.find()) {
         feeIdentifierMatch = matcher.group(1);
       }
     }
@@ -332,7 +337,7 @@ public class FeeFinesRepository {
 
     // This may need to be changed to passwordVerifier - GDG
     return usersRepository.getUserById(patronIdentifier, sessionData)
-      .compose(user -> { 
+      .compose(user -> {
 
         final Map<String, String> acctheaders = getBaseHeaders();
 
@@ -369,7 +374,7 @@ public class FeeFinesRepository {
                 .screenMessage(scrnMsg)
                 .build());
               }
-      
+
               final Map<String, String> headers = getBaseHeaders();
 
               List<String> acctIdList = getAcctIdList(acctList);
@@ -384,12 +389,14 @@ public class FeeFinesRepository {
                   headers,
                   sessionData);
 
+              feePaymentRequestData.setUserName(user.getUsername());
+
               log.debug("Json for payment request is {}", feePaymentRequestData.getBody().encode());
 
               Future<IResource> payresult;
               payresult = resourceProvider
                 .createResource(feePaymentRequestData);
-              
+
               return payresult
                 .otherwiseEmpty()
                 .compose(payresource -> {
