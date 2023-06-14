@@ -42,6 +42,8 @@ class PatronStatusResponseTests {
   final String feeAmount = "25.00";
   final List<String> screenMessage = asList("Hello, world!");
   final List<String> printLine = asList("Dot matrix");
+  final String borrowerType = "patrons";
+  final String borrowerTypeDescription = "library patrons";
 
   @Test
   void testGetPatronStatus() {
@@ -60,6 +62,8 @@ class PatronStatusResponseTests {
     assertNull(psr.getFeeAmount());
     assertNull(psr.getScreenMessage());
     assertNull(psr.getPrintLine());
+    assertNull(psr.getBorrowerType());
+    assertNull(psr.getBorrowerTypeDescription());
   }
 
   @Test
@@ -77,6 +81,8 @@ class PatronStatusResponseTests {
     assertNull(psr.getFeeAmount());
     assertNull(psr.getScreenMessage());
     assertNull(psr.getPrintLine());
+    assertNull(psr.getBorrowerType());
+    assertNull(psr.getBorrowerTypeDescription());
   }
 
   @Test
@@ -94,6 +100,8 @@ class PatronStatusResponseTests {
     assertNull(psr.getFeeAmount());
     assertNull(psr.getScreenMessage());
     assertNull(psr.getPrintLine());
+    assertNull(psr.getBorrowerType());
+    assertNull(psr.getBorrowerTypeDescription());
   }
 
   @Test
@@ -113,6 +121,8 @@ class PatronStatusResponseTests {
     assertNull(psr.getFeeAmount());
     assertNull(psr.getScreenMessage());
     assertNull(psr.getPrintLine());
+    assertNull(psr.getBorrowerType());
+    assertNull(psr.getBorrowerTypeDescription());
   }
 
   @Test
@@ -132,6 +142,8 @@ class PatronStatusResponseTests {
     assertNull(psr.getFeeAmount());
     assertNull(psr.getScreenMessage());
     assertNull(psr.getPrintLine());
+    assertNull(psr.getBorrowerType());
+    assertNull(psr.getBorrowerTypeDescription());
   }
 
   @Test
@@ -151,6 +163,8 @@ class PatronStatusResponseTests {
     assertNull(psr.getFeeAmount());
     assertNull(psr.getScreenMessage());
     assertNull(psr.getPrintLine());
+    assertNull(psr.getBorrowerType());
+    assertNull(psr.getBorrowerTypeDescription());
   }
 
   @Test
@@ -170,6 +184,8 @@ class PatronStatusResponseTests {
     assertNull(psr.getFeeAmount());
     assertNull(psr.getScreenMessage());
     assertNull(psr.getPrintLine());
+    assertNull(psr.getBorrowerType());
+    assertNull(psr.getBorrowerTypeDescription());
   }
 
   @Test
@@ -263,6 +279,48 @@ class PatronStatusResponseTests {
     assertNull(psr.getFeeAmount());
     assertNull(psr.getScreenMessage());
     assertEquals(printLine, psr.getPrintLine());
+    assertNull(psr.getBorrowerType());
+    assertNull(psr.getBorrowerTypeDescription());
+  }
+
+  @Test void testGetBorrowerType() {
+    final PatronStatusResponse psr = builder()
+        .borrowerType(borrowerType)
+        .build();
+    assertTrue(psr.getPatronStatus().isEmpty());
+    assertNull(psr.getLanguage());
+    assertNull(psr.getTransactionDate());
+    assertNull(psr.getInstitutionId());
+    assertNull(psr.getPatronIdentifier());
+    assertNull(psr.getPersonalName());
+    assertNull(psr.getValidPatron());
+    assertNull(psr.getValidPatronPassword());
+    assertNull(psr.getCurrencyType());
+    assertNull(psr.getFeeAmount());
+    assertNull(psr.getScreenMessage());
+    assertNull(psr.getPrintLine());
+    assertEquals(borrowerType, psr.getBorrowerType());
+    assertNull(psr.getBorrowerTypeDescription());
+  }
+
+  @Test void testGetBorrowerTypeDescription() {
+    final PatronStatusResponse psr = builder()
+        .borrowerTypeDescription(borrowerTypeDescription)
+        .build();
+    assertTrue(psr.getPatronStatus().isEmpty());
+    assertNull(psr.getLanguage());
+    assertNull(psr.getTransactionDate());
+    assertNull(psr.getInstitutionId());
+    assertNull(psr.getPatronIdentifier());
+    assertNull(psr.getPersonalName());
+    assertNull(psr.getValidPatron());
+    assertNull(psr.getValidPatronPassword());
+    assertNull(psr.getCurrencyType());
+    assertNull(psr.getFeeAmount());
+    assertNull(psr.getScreenMessage());
+    assertNull(psr.getPrintLine());
+    assertNull(psr.getBorrowerType());
+    assertEquals(borrowerTypeDescription, psr.getBorrowerTypeDescription());
   }
 
   @Test
@@ -280,6 +338,8 @@ class PatronStatusResponseTests {
         .feeAmount(feeAmount)
         .screenMessage(screenMessage)
         .printLine(printLine)
+        .borrowerType(borrowerType)
+        .borrowerTypeDescription(borrowerTypeDescription)
         .build();
     assertAll("PatronStatusResponse",
         () -> assertEquals(patronStatus, psr.getPatronStatus()),
@@ -293,7 +353,9 @@ class PatronStatusResponseTests {
         () -> assertEquals(currencyType, psr.getCurrencyType()),
         () -> assertEquals(feeAmount, psr.getFeeAmount()),
         () -> assertEquals(screenMessage, psr.getScreenMessage()),
-        () -> assertEquals(printLine, psr.getPrintLine())
+        () -> assertEquals(printLine, psr.getPrintLine()),
+        () -> assertEquals(borrowerType, psr.getBorrowerType()),
+        () -> assertEquals(borrowerTypeDescription, psr.getBorrowerTypeDescription())
     );
   }
 
@@ -312,6 +374,8 @@ class PatronStatusResponseTests {
         .feeAmount(feeAmount)
         .screenMessage(screenMessage)
         .printLine(printLine)
+        .borrowerType(borrowerType)
+        .borrowerTypeDescription(borrowerTypeDescription)
         .build();
     final PatronStatusResponse psr2 = builder()
         .patronStatus(patronStatus)
@@ -326,6 +390,8 @@ class PatronStatusResponseTests {
         .feeAmount(feeAmount)
         .screenMessage(screenMessage)
         .printLine(printLine)
+        .borrowerType(borrowerType)
+        .borrowerTypeDescription(borrowerTypeDescription)
         .build();
     assertTrue(psr1.equals(psr2));
     assertTrue(psr2.equals(psr1));
@@ -383,6 +449,8 @@ class PatronStatusResponseTests {
         .append(", feeAmount=").append(feeAmount)
         .append(", screenMessage=").append(screenMessage)
         .append(", printLine=").append(printLine)
+        .append(", borrowerType=").append(borrowerType)
+        .append(", borrowerTypeDescription=").append(borrowerTypeDescription)
         .append(']').toString();
     final PatronStatusResponse psr = builder()
         .patronStatus(patronStatus)
@@ -397,6 +465,8 @@ class PatronStatusResponseTests {
         .feeAmount(feeAmount)
         .screenMessage(screenMessage)
         .printLine(printLine)
+        .borrowerType(borrowerType)
+        .borrowerTypeDescription(borrowerTypeDescription)
         .build();
     assertEquals(expectedString, psr.toString());
   }

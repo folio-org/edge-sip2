@@ -613,3 +613,11 @@
 <#macro alertType value>
   <@variableLengthField id="CV" value=value/>
 </#macro>
+
+<#macro borrowerType value>
+  <@variableLengthField id="FU" value=value/>
+</#macro>
+
+<#macro borrowerTypeDescription value>
+  <@variableLengthField id="FV" value=value/>
+</#macro>

@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.FeePaid;
 import org.folio.edge.sip2.domain.messages.responses.FeePaidResponse;
+import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
 
@@ -337,8 +338,8 @@ public class FeeFinesRepository {
 
     // This may need to be changed to passwordVerifier - GDG
     return usersRepository.getUserById(patronIdentifier, sessionData)
-      .compose(user -> {
-
+      .compose(extendedUser -> {
+        User user = extendedUser.getUser();
         final Map<String, String> acctheaders = getBaseHeaders();
 
         FeePaymentAccountsRequestData feePaymentAccountsRequestData =

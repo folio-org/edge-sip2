@@ -10,6 +10,7 @@ import java.util.Objects;
 import javax.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.edge.sip2.repositories.domain.ExtendedUser;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
@@ -39,7 +40,7 @@ public class UsersRepository {
    * @param sessionData session data
    * @return the user details in raw JSON
    */
-  public Future<User> getUserById(
+  public Future<ExtendedUser> getUserById(
       String identifier,
       SessionData sessionData) {
     Objects.requireNonNull(identifier, "identifier cannot be null");
@@ -53,10 +54,42 @@ public class UsersRepository {
         new GetUserByIdentifierRequestData(identifier, headers, sessionData);
     final Future<IResource> result = resourceProvider.retrieveResource(getUserByBarcodeRequestData);
 
+    log.debug("Users lookup success is {}", result.succeeded());
+
     return result
         .otherwise(() -> null)
         .map(IResource::getResource)
-        .map(this::getUserFromList);
+        .map(this::getUserFromList)
+        .compose(user -> {
+          Future<IResource> blResult;
+          if (user != null) {
+            log.debug("Getting extended user info for id {}", user.getId());
+            final GetExtendedUserData getExtendedUserData =
+                new GetExtendedUserData(user.getId(), headers, sessionData);
+            log.debug("Path for extended user lookup is {}", getExtendedUserData.getPath());
+            blResult = resourceProvider.retrieveResource(getExtendedUserData);
+          } else {
+            blResult = Future.failedFuture("Invalid User");
+          }
+          return blResult
+            .otherwise(() -> null)
+            .compose(extendedUserResult -> {
+              if (blResult.failed()) {
+                return Future.succeededFuture(null);
+              } else {
+                JsonObject extendedUserJson = extendedUserResult.getResource();
+                JsonObject patronGroupJson = extendedUserJson.getJsonObject("patronGroup");
+                ExtendedUser extendedUser = new ExtendedUser();
+                extendedUser.setUser(user);
+                extendedUser.setPatronGroup(
+                    patronGroupJson.getString("group"),
+                    patronGroupJson.getString("desc"),
+                    patronGroupJson.getString("id")
+                );
+                return Future.succeededFuture(extendedUser);
+              }
+            });
+        });
   }
 
   private User getUserFromList(JsonObject userList) {
@@ -77,6 +110,34 @@ public class UsersRepository {
     }
 
     return user;
+  }
+
+  private class GetExtendedUserData implements IRequestData {
+    private final String userId;
+    private final Map<String, String> headers;
+    private final SessionData sessionData;
+
+    private GetExtendedUserData(String userId, Map<String, String> headers,
+        SessionData sessionData) {
+      this.userId = userId;
+      this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
+      this.sessionData = sessionData;
+    }
+
+    @Override
+    public String getPath() {
+      return "/bl-users/by-id/" + userId;
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return headers;
+    }
+
+    @Override
+    public SessionData getSessionData() {
+      return sessionData;
+    }
   }
 
   private class GetUserByIdentifierRequestData implements IRequestData {

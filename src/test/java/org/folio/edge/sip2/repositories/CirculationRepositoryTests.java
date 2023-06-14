@@ -39,6 +39,7 @@ import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.domain.messages.requests.Renew;
 import org.folio.edge.sip2.domain.messages.requests.RenewAll;
+import org.folio.edge.sip2.repositories.domain.ExtendedUser;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
@@ -551,6 +552,9 @@ class CirculationRepositoryTests {
         .put("title", title))
         .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
 
+    ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(new User.Builder().id(userId).build());
+
     when(mockFolioProvider.createResource(any()))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
@@ -558,9 +562,8 @@ class CirculationRepositoryTests {
         .thenReturn(Future.succeededFuture(new FolioResource(loansResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().user(
-            new User.Builder().id(userId).build()
-        ).build()));
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().extendedUser(
+            extendedUser).build()));
 
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
@@ -655,12 +658,14 @@ class CirculationRepositoryTests {
         .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
     final String userResponseJson = getJsonFromFile("json/user_response.json");
     final User userResponse = Json.decodeValue(userResponseJson, User.class);
+    ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(userResponse);
     when(mockFolioProvider.createResource(any()))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-            .user(userResponse)
+            .extendedUser(extendedUser)
             .passwordVerified(TRUE)
             .build()));
 
