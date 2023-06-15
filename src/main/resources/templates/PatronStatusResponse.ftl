@@ -27,7 +27,4 @@
 <@lib.screenMessage value=patronStatusResponse.screenMessage!""/>
 <#-- screen message: variable-length optional field -->
 <@lib.printLine value=patronStatusResponse.printLine!""/>
-<#-- borrower type: variable-length optional field (extension) -->
-<@lib.borrowerType value=patronStatusResponse.borrowerType!""/>
-<#-- borrower type description: variable-length optional field (extension) -->
-<@lib.borrowerTypeDescription value=patronStatusResponse.borrowerTypeDescription!""/>
+

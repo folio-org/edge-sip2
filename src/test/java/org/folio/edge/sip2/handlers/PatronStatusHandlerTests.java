@@ -78,8 +78,6 @@ class PatronStatusHandlerTests {
         .patronIdentifier(patronIdentifier)
         .validPatron(TRUE)
         .validPatronPassword(TRUE)
-        .borrowerType(borrowerType)
-        .borrowerTypeDescription(borrowerTypeDescription)
         .build();
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
@@ -87,8 +85,7 @@ class PatronStatusHandlerTests {
         + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
         + "AO" + institutionId + "|" + "AA" + patronIdentifier + "|"
         + "AE" + "Joe Zee Blow" + "|" + "BL" + "Y" + "|" + "CQ" + "Y" + "|"
-        + "BV" + feeAmount.toString() + "|" + "FU" + borrowerType + "|"
-        + "FV" + borrowerTypeDescription + "|";
+        + "BV" + feeAmount.toString() + "|";
 
     when(mockPatronRepository.performPatronStatusCommand(any(), any()))
         .thenReturn(Future.succeededFuture(patronStatusResponse));

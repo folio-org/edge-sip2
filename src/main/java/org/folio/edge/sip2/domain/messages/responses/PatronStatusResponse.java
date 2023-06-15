@@ -52,10 +52,6 @@ public final class PatronStatusResponse {
   private final List<String> screenMessage;
   /** A message to print for the patron on the SC printer. */
   private final List<String> printLine;
-  /** Extended field - the type of borrower. */
-  private final String borrowerType;
-  /** Extend field - the description of the borrower type. */
-  private final String borrowerTypeDescription;
 
   /**
    * Construct a {@code PatronStatusResponse} based on a
@@ -79,8 +75,6 @@ public final class PatronStatusResponse {
         : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
     this.printLine = builder.printLine == null ? null
         : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
-    this.borrowerType = builder.borrowerType;
-    this.borrowerTypeDescription = builder.borrowerTypeDescription;
   }
 
   /**
@@ -139,13 +133,6 @@ public final class PatronStatusResponse {
     return printLine;
   }
 
-  public String getBorrowerType() {
-    return borrowerType;
-  }
-
-  public String getBorrowerTypeDescription() {
-    return borrowerTypeDescription;
-  }
 
   @Override
   public int hashCode() {
@@ -195,8 +182,6 @@ public final class PatronStatusResponse {
         .append(", feeAmount=").append(feeAmount)
         .append(", screenMessage=").append(screenMessage)
         .append(", printLine=").append(printLine)
-        .append(", borrowerType=").append(borrowerType)
-        .append(", borrowerTypeDescription=").append(borrowerTypeDescription)
         .append(']').toString();
   }
 
@@ -216,8 +201,6 @@ public final class PatronStatusResponse {
     private String feeAmount;
     private List<String> screenMessage;
     private List<String> printLine;
-    private String borrowerType;
-    private String borrowerTypeDescription;
 
     private PatronStatusResponseBuilder() {
       super();
@@ -284,16 +267,6 @@ public final class PatronStatusResponse {
 
     public PatronStatusResponseBuilder printLine(List<String> printLine) {
       this.printLine = printLine;
-      return this;
-    }
-
-    public PatronStatusResponseBuilder borrowerType(String borrowerType) {
-      this.borrowerType = borrowerType;
-      return this;
-    }
-
-    public PatronStatusResponseBuilder borrowerTypeDescription(String borrowerTypeDescription) {
-      this.borrowerTypeDescription = borrowerTypeDescription;
       return this;
     }
 

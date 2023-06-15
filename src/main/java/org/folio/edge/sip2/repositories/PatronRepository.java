@@ -109,10 +109,9 @@ public class PatronRepository {
           if (FALSE.equals(verification.getPasswordVerified())) {
             return invalidPatron(patronInformation, FALSE);
           }
-          //getUser is add in PasswordVerifier
-          final Future<User> userFuture = Future.succeededFuture(verification.getUser());
-
-          return userFuture.compose(user -> {
+          final Future<ExtendedUser> extendedUserFuture = Future.succeededFuture(verification.getExtendedUser());
+          return extendedUserFuture.compose(extendedUser -> {
+            User user = extendedUser.getUser();
             if (user == null || FALSE.equals(user.getActive())) {
               return invalidPatron(patronInformation, null);
             } else {
@@ -124,7 +123,7 @@ public class PatronRepository {
                 return invalidPatron(patronInformation, verification.getPasswordVerified());
               }
 
-              return validPatron(userId, user.getPersonal(), patronInformation, sessionData,
+              return validPatron(extendedUser, patronInformation, sessionData,
                   verification.getPasswordVerified());
             }
           });
@@ -205,8 +204,10 @@ public class PatronRepository {
           .build());
   }
 
-  private Future<PatronInformationResponse> validPatron(String userId, Personal personal,
+  private Future<PatronInformationResponse> validPatron(ExtendedUser extendedUser,
       PatronInformation patronInformation, SessionData sessionData, Boolean validPassword) {
+    final String userId = extendedUser.getUser().getId();
+    final Personal personal = extendedUser.getUser().getPersonal();
     if (personal != null) {
       log.debug("validPatron userId:{} firstName:{} lastName:{}",
           userId,personal.getFirstName(),personal.getLastName());
@@ -254,6 +255,8 @@ public class PatronRepository {
               patronInformation.getLanguage(),patronInformation.getInstitutionId());
           return builder
             // Get tenant language from config along with the timezone
+            .borrowerType(extendedUser.getPatronGroup().getGroup())
+            .borrowerTypeDescription(extendedUser.getPatronGroup().getDesc())
             .language(patronInformation.getLanguage())
             .transactionDate(OffsetDateTime.now(clock))
             .unavailableHoldsCount(null)
@@ -275,8 +278,6 @@ public class PatronRepository {
     // Store patron data in the builder
     final String personalName = getPatronPersonalName(personal, patronStatus.getPatronIdentifier());
     builder.personalName(personalName);
-    builder.borrowerType(extendedUser.getPatronGroup().getGroup());
-    builder.borrowerTypeDescription((extendedUser.getPatronGroup().getDesc()));
     log.debug("Populating borrower info with patron group {}",
         extendedUser.getPatronGroup().getId());
     // When all operations complete, build and return the final PatronInformationResponse
