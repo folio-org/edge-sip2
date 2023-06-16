@@ -657,7 +657,8 @@ public final class PatronInformationResponse {
       return this;
     }
 
-    public PatronInformationResponseBuilder borrowerTypeDescription(String borrowerTypeDescription) {
+    public PatronInformationResponseBuilder borrowerTypeDescription(
+        String borrowerTypeDescription) {
       this.borrowerTypeDescription = borrowerTypeDescription;
       return this;
     }

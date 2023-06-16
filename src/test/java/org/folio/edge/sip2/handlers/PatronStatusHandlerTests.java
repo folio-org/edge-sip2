@@ -51,8 +51,6 @@ class PatronStatusHandlerTests {
         .middleName("Zee")
         .lastName("Blow")
         .build();
-    final String borrowerType = "patron";
-    final String borrowerTypeDescription = "Library Patron";
 
     final User user = new User.Builder()
         .id(userId)

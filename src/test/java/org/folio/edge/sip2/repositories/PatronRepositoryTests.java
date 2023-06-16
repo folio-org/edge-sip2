@@ -163,6 +163,8 @@ public class PatronRepositoryTests {
 
     final ExtendedUser extendedUser = new ExtendedUser();
     extendedUser.setUser(userResponse);
+    extendedUser.setPatronGroup("patrons","The Library Patrons", "12335");
+
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
@@ -272,6 +274,7 @@ public class PatronRepositoryTests {
     final JsonObject accountResponse = new JsonObject(accountResponseJson);
     final ExtendedUser extendedUser = new ExtendedUser();
     extendedUser.setUser(userResponse);
+    extendedUser.setPatronGroup("patrons","The Library Patrons", "12335");
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
@@ -383,6 +386,7 @@ public class PatronRepositoryTests {
     final JsonObject accountResponse = new JsonObject(accountResponseJson);
     final ExtendedUser extendedUser = new ExtendedUser();
     extendedUser.setUser(userResponse);
+    extendedUser.setPatronGroup("patrons","The Library Patrons", "12335");
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
@@ -492,6 +496,7 @@ public class PatronRepositoryTests {
     final JsonObject accountResponse = new JsonObject(accountResponseJson);
     final ExtendedUser extendedUser = new ExtendedUser();
     extendedUser.setUser(userResponse);
+    extendedUser.setPatronGroup("patrons","The Library Patrons", "12335");
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
@@ -760,6 +765,7 @@ public class PatronRepositoryTests {
     final JsonObject accountResponse = new JsonObject(accountResponseJson);
     final ExtendedUser extendedUser = new ExtendedUser();
     extendedUser.setUser(userResponse);
+    extendedUser.setPatronGroup("patrons","The Library Patrons", "12335");
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
@@ -876,6 +882,7 @@ public class PatronRepositoryTests {
     final JsonObject accountResponse = new JsonObject(accountResponseJson);
     final ExtendedUser extendedUser = new ExtendedUser();
     extendedUser.setUser(userResponse);
+    extendedUser.setPatronGroup("patrons","The Library Patrons", "12335");
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
@@ -1200,6 +1207,8 @@ public class PatronRepositoryTests {
     final User userResponse = Json.decodeValue(userResponseJson, User.class);
     final ExtendedUser extendedUser = new ExtendedUser();
     extendedUser.setUser(userResponse);
+    extendedUser.setPatronGroup("patrons","The Library Patrons", "12335");
+
     final String manualBlocksResponseJson = getJsonFromFile("json/no_manual_blocks_response.json");
     final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
@@ -1294,6 +1303,7 @@ public class PatronRepositoryTests {
     final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
     final ExtendedUser extendedUser = new ExtendedUser();
     extendedUser.setUser(userResponse);
+    extendedUser.setPatronGroup("patrons","The Library Patrons", "12335");
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
@@ -1393,6 +1403,8 @@ public class PatronRepositoryTests {
     final User userResponse = Json.decodeValue(userResponseJson, User.class);
     final ExtendedUser extendedUser = new ExtendedUser();
     extendedUser.setUser(userResponse);
+    extendedUser.setPatronGroup("patrons","The Library Patrons", "12335");
+
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
     final String accountResponseJson = getJsonFromFile("json/account_request_response.json");

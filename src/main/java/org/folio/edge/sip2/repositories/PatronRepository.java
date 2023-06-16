@@ -109,9 +109,10 @@ public class PatronRepository {
           if (FALSE.equals(verification.getPasswordVerified())) {
             return invalidPatron(patronInformation, FALSE);
           }
-          final Future<ExtendedUser> extendedUserFuture = Future.succeededFuture(verification.getExtendedUser());
+          final Future<ExtendedUser> extendedUserFuture
+              = Future.succeededFuture(verification.getExtendedUser());
           return extendedUserFuture.compose(extendedUser -> {
-            User user = extendedUser.getUser();
+            User user = extendedUser != null ? extendedUser.getUser() : null;
             if (user == null || FALSE.equals(user.getActive())) {
               return invalidPatron(patronInformation, null);
             } else {

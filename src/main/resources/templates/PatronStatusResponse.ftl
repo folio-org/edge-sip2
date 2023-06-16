@@ -27,4 +27,3 @@
 <@lib.screenMessage value=patronStatusResponse.screenMessage!""/>
 <#-- screen message: variable-length optional field -->
 <@lib.printLine value=patronStatusResponse.printLine!""/>
-
