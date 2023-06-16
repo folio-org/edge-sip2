@@ -23,8 +23,8 @@ public class ExtendedUser {
    * @param id The group id
    */
   public void setPatronGroup(String group, String desc, String id) {
-    PatronGroup patronGroup = new PatronGroup(group, desc, id);
-    this.patronGroup = patronGroup;
+    PatronGroup newPatronGroup = new PatronGroup(group, desc, id);
+    this.patronGroup = newPatronGroup;
   }
 
   public class PatronGroup {
