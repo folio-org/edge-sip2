@@ -37,7 +37,7 @@ class PatronStatusHandlerTests {
   void canExecutePatronStatus(Vertx vertx,
       VertxTestContext testContext,
       @Mock PatronRepository mockPatronRepository) {
-    
+
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate = OffsetDateTime.now();
     final String patronIdentifier = "1029384756";
@@ -79,7 +79,7 @@ class PatronStatusHandlerTests {
         .build();
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
-    final String expectedString = "24" + "YYYYYYYYYYYYYY" + "000" 
+    final String expectedString = "24" + "YYYYYYYYYYYYYY" + "000"
         + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
         + "AO" + institutionId + "|" + "AA" + patronIdentifier + "|"
         + "AE" + "Joe Zee Blow" + "|" + "BL" + "Y" + "|" + "CQ" + "Y" + "|"
@@ -87,7 +87,7 @@ class PatronStatusHandlerTests {
 
     when(mockPatronRepository.performPatronStatusCommand(any(), any()))
         .thenReturn(Future.succeededFuture(patronStatusResponse));
-    
+
     PatronStatusHandler handler = new PatronStatusHandler(mockPatronRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(PATRON_STATUS_RESPONSE));
 
@@ -100,5 +100,5 @@ class PatronStatusHandlerTests {
 
 
 
-  
+
 }

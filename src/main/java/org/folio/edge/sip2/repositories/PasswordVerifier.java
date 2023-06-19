@@ -45,17 +45,18 @@ public class PasswordVerifier {
 
     if (sessionData.isPatronPasswordVerificationRequired()) {
       loginFuture = usersRepository.getUserById(patronIdentifier, sessionData)
-          .compose(user -> {
-            if (user == null) {
+          .compose(extendedUser -> {
+            if (extendedUser == null) {
               return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
                   .passwordVerified(FALSE)
                   .build());
             }
 
-            return loginRepository.patronLogin(user.getUsername(), patronPassword, sessionData)
+            return loginRepository.patronLogin(extendedUser.getUser().getUsername(),
+                patronPassword, sessionData)
                 .map(resource -> {
                   final PatronPasswordVerificationRecords.Builder builder =
-                      PatronPasswordVerificationRecords.builder().user(user);
+                      PatronPasswordVerificationRecords.builder().extendedUser(extendedUser);
                   if (resource.getResource() == null) {
                     builder.errorMessages(resource.getErrorMessages());
                     builder.passwordVerified(FALSE);
@@ -66,13 +67,14 @@ public class PasswordVerifier {
                 });
           });
     } else {
-      loginFuture = usersRepository.getUserById(patronIdentifier, sessionData).compose(user -> {
-        if (user != null) {
-          return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-            .user(user).build());
-        }
-        return Future.succeededFuture(PatronPasswordVerificationRecords.builder().build());
-      });
+      loginFuture = usersRepository.getUserById(patronIdentifier,
+          sessionData).compose(extendedUser -> {
+            if (extendedUser != null) {
+              return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+                  .extendedUser(extendedUser).build());
+            }
+            return Future.succeededFuture(PatronPasswordVerificationRecords.builder().build());
+          });
     }
 
     return loginFuture;

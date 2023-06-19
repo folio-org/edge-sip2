@@ -5,19 +5,35 @@ import java.util.Collections;
 import java.util.List;
 
 public class PatronPasswordVerificationRecords {
-  private final User user;
+  private final ExtendedUser extendedUser;
   private final Boolean passwordVerified;
   private final List<String> errorMessages;
 
   private PatronPasswordVerificationRecords(Builder builder) {
-    this.user = builder.user;
+    this.extendedUser = builder.extendedUser;
     this.passwordVerified = builder.passwordVerified;
     this.errorMessages = builder.errorMessages == null ? null :
       Collections.unmodifiableList(new ArrayList<>(builder.errorMessages));
   }
 
+  /**
+   * Get the User object.
+   * @return the User object
+   */
   public User getUser() {
-    return user;
+    if (extendedUser != null) {
+      return extendedUser.getUser();
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Get the ExtendedUser object.
+   * @return the ExtendedUser object
+   */
+  public ExtendedUser getExtendedUser() {
+    return extendedUser;
   }
 
   public Boolean getPasswordVerified() {
@@ -33,12 +49,12 @@ public class PatronPasswordVerificationRecords {
   }
 
   public static class Builder {
-    private User user;
+    private ExtendedUser extendedUser;
     private Boolean passwordVerified;
     private List<String> errorMessages;
 
-    public Builder user(User user) {
-      this.user = user;
+    public Builder extendedUser(ExtendedUser extendedUser) {
+      this.extendedUser = extendedUser;
       return this;
     }
 

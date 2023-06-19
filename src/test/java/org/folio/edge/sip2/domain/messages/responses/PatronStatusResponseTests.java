@@ -265,6 +265,10 @@ class PatronStatusResponseTests {
     assertEquals(printLine, psr.getPrintLine());
   }
 
+
+
+
+
   @Test
   void testCompletePatronStatusResponse() {
     final PatronStatusResponse psr = builder()

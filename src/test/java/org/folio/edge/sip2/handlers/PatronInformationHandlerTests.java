@@ -53,6 +53,8 @@ public class PatronInformationHandlerTests {
     final String homePhoneNumber = "555-1234";
     final String screenMessage = "This is a screen message";
     final String printLine = "This is a print line";
+    final String borrowerType = "patron";
+    final String borrowerTypeDescription = "the library patrons";
     final PatronInformation patronInformation = PatronInformation.builder()
         .language(ENGLISH)
         .transactionDate(OffsetDateTime.now(clock))
@@ -97,6 +99,8 @@ public class PatronInformationHandlerTests {
             .homePhoneNumber(homePhoneNumber)
             .screenMessage(Arrays.asList(screenMessage))
             .printLine(Arrays.asList(printLine))
+            .borrowerType(borrowerType)
+            .borrowerTypeDescription(borrowerTypeDescription)
             .build()));
 
     final PatronInformationHandler handler = new PatronInformationHandler(mockPatronRepository,
@@ -114,7 +118,9 @@ public class PatronInformationHandlerTests {
               + String.format("AO%s|AA%s|AE%s|BLY|", institutionId, patronIdentifier, personalName)
               + String.format("AS%s|AS%s|AS%s|", holdItems.toArray(new Object[holdItems.size()]))
               + String.format("BD%s|BE%s|BF%s|", homeAddress, emailAddress, homePhoneNumber)
-              + String.format("AF%s|AG%s|", screenMessage, printLine);
+              + String.format("AF%s|AG%s|", screenMessage, printLine)
+              + String.format("FU%s|", borrowerType)
+              + String.format("FV%s|", borrowerTypeDescription);
 
           assertEquals(expectedString, sipMessage);
           testContext.completeNow();

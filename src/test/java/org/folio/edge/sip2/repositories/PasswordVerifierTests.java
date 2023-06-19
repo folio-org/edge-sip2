@@ -19,6 +19,7 @@ import io.vertx.junit5.VertxTestContext;
 import java.util.Collections;
 import java.util.List;
 import org.folio.edge.sip2.api.support.TestUtils;
+import org.folio.edge.sip2.repositories.domain.ExtendedUser;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
@@ -39,8 +40,10 @@ class PasswordVerifierTests {
 
     final String userResponseJson = getJsonFromFile("json/user_response.json");
     final User userResponse = Json.decodeValue(userResponseJson, User.class);
+    final ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(userResponse);
     when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
-        .thenReturn(Future.succeededFuture(userResponse));
+        .thenReturn(Future.succeededFuture(extendedUser));
     when(mockLoginRepository.patronLogin(eq("leslie"), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(() -> new JsonObject()));
 
@@ -98,8 +101,10 @@ class PasswordVerifierTests {
 
     final String userResponseJson = getJsonFromFile("json/user_response.json");
     final User userResponse = Json.decodeValue(userResponseJson, User.class);
+    final ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(userResponse);
     when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
-        .thenReturn(Future.succeededFuture(userResponse));
+        .thenReturn(Future.succeededFuture(extendedUser));
     when(mockLoginRepository.patronLogin(eq("leslie"), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(Utils.handleErrors(new RequestThrowable(null) {
           private static final long serialVersionUID = -9126223501276281006L;
@@ -138,8 +143,10 @@ class PasswordVerifierTests {
     sessionData.setPatronPasswordVerificationRequired(false);
     final String userResponseJson = getJsonFromFile("json/user_response.json");
     final User userResponse = Json.decodeValue(userResponseJson, User.class);
+    final ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(userResponse);
     when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
-        .thenReturn(Future.succeededFuture(userResponse));
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final PasswordVerifier passwordVerifier = new PasswordVerifier(mockUsersRepository,
         mockLoginRepository);

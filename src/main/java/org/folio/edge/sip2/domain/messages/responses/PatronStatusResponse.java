@@ -133,6 +133,7 @@ public final class PatronStatusResponse {
     return printLine;
   }
 
+
   @Override
   public int hashCode() {
     return Objects.hash(currencyType, feeAmount, institutionId, language,

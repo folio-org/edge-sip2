@@ -65,6 +65,8 @@ class PatronInformationResponseTests {
   final String homePhoneNumber = "555-1212";
   final List<String> screenMessage = asList("Hello, world!");
   final List<String> printLine = asList("Dot matrix");
+  final String borrowerType = "patron";
+  final String borrowerTypeDescription = "the library patrons";
 
   @Test
   void testGetPatronStatus() {
@@ -1237,6 +1239,86 @@ class PatronInformationResponseTests {
   }
 
   @Test
+  void testGetBorrowerType() {
+    final PatronInformationResponse pir = builder()
+        .borrowerType(borrowerType)
+        .build();
+    assertTrue(pir.getPatronStatus().isEmpty());
+    assertNull(pir.getLanguage());
+    assertNull(pir.getTransactionDate());
+    assertNull(pir.getHoldItemsCount());
+    assertNull(pir.getOverdueItemsCount());
+    assertNull(pir.getChargedItemsCount());
+    assertNull(pir.getFineItemsCount());
+    assertNull(pir.getRecallItemsCount());
+    assertNull(pir.getUnavailableHoldsCount());
+    assertNull(pir.getInstitutionId());
+    assertNull(pir.getPatronIdentifier());
+    assertNull(pir.getPersonalName());
+    assertNull(pir.getHoldItemsLimit());
+    assertNull(pir.getOverdueItemsLimit());
+    assertNull(pir.getChargedItemsLimit());
+    assertNull(pir.getValidPatron());
+    assertNull(pir.getValidPatronPassword());
+    assertNull(pir.getCurrencyType());
+    assertNull(pir.getFeeAmount());
+    assertNull(pir.getFeeLimit());
+    assertTrue(pir.getHoldItems().isEmpty());
+    assertTrue(pir.getOverdueItems().isEmpty());
+    assertTrue(pir.getChargedItems().isEmpty());
+    assertTrue(pir.getFineItems().isEmpty());
+    assertTrue(pir.getRecallItems().isEmpty());
+    assertTrue(pir.getUnavailableHoldItems().isEmpty());
+    assertNull(pir.getHomeAddress());
+    assertNull(pir.getEmailAddress());
+    assertNull(pir.getHomePhoneNumber());
+    assertNull(pir.getScreenMessage());
+    assertNull(pir.getPrintLine());
+    assertEquals(pir.getBorrowerType(), borrowerType);
+    assertNull(pir.getBorrowerTypeDescription());
+  }
+
+  @Test
+  void testGetBorrowerTypeDescription() {
+    final PatronInformationResponse pir = builder()
+        .borrowerTypeDescription(borrowerTypeDescription)
+        .build();
+    assertTrue(pir.getPatronStatus().isEmpty());
+    assertNull(pir.getLanguage());
+    assertNull(pir.getTransactionDate());
+    assertNull(pir.getHoldItemsCount());
+    assertNull(pir.getOverdueItemsCount());
+    assertNull(pir.getChargedItemsCount());
+    assertNull(pir.getFineItemsCount());
+    assertNull(pir.getRecallItemsCount());
+    assertNull(pir.getUnavailableHoldsCount());
+    assertNull(pir.getInstitutionId());
+    assertNull(pir.getPatronIdentifier());
+    assertNull(pir.getPersonalName());
+    assertNull(pir.getHoldItemsLimit());
+    assertNull(pir.getOverdueItemsLimit());
+    assertNull(pir.getChargedItemsLimit());
+    assertNull(pir.getValidPatron());
+    assertNull(pir.getValidPatronPassword());
+    assertNull(pir.getCurrencyType());
+    assertNull(pir.getFeeAmount());
+    assertNull(pir.getFeeLimit());
+    assertTrue(pir.getHoldItems().isEmpty());
+    assertTrue(pir.getOverdueItems().isEmpty());
+    assertTrue(pir.getChargedItems().isEmpty());
+    assertTrue(pir.getFineItems().isEmpty());
+    assertTrue(pir.getRecallItems().isEmpty());
+    assertTrue(pir.getUnavailableHoldItems().isEmpty());
+    assertNull(pir.getHomeAddress());
+    assertNull(pir.getEmailAddress());
+    assertNull(pir.getHomePhoneNumber());
+    assertNull(pir.getScreenMessage());
+    assertNull(pir.getPrintLine());
+    assertNull(pir.getBorrowerType());
+    assertEquals(pir.getBorrowerTypeDescription(), borrowerTypeDescription);
+  }
+
+  @Test
   void testCompletePatronInformationResponse() {
     final PatronInformationResponse pir = builder()
         .patronStatus(patronStatus)
@@ -1489,6 +1571,8 @@ class PatronInformationResponseTests {
         .append(", homePhoneNumber=").append(homePhoneNumber)
         .append(", screenMessage=").append(screenMessage)
         .append(", printLine=").append(printLine)
+        .append(", borrowerType=").append(borrowerType)
+        .append(", borrowerTypeDescription=").append(borrowerTypeDescription)
         .append(']').toString();
     final PatronInformationResponse pir = builder()
         .patronStatus(patronStatus)
@@ -1522,6 +1606,8 @@ class PatronInformationResponseTests {
         .homePhoneNumber(homePhoneNumber)
         .screenMessage(screenMessage)
         .printLine(printLine)
+        .borrowerType(borrowerType)
+        .borrowerTypeDescription(borrowerTypeDescription)
         .build();
     assertEquals(expectedString, pir.toString());
   }

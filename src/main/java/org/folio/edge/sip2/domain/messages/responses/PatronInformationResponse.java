@@ -125,6 +125,11 @@ public final class PatronInformationResponse {
   private final List<String> screenMessage;
   /** A message to print for the patron on the SC printer. */
   private final List<String> printLine;
+  /** Extended field - the type of borrower. */
+  private final String borrowerType;
+  /** Extend field - the description of the borrower type. */
+  private final String borrowerTypeDescription;
+
 
   /**
    * Construct a {@code PatronInformationResponse} based on a
@@ -186,6 +191,8 @@ public final class PatronInformationResponse {
         : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
     this.printLine = builder.printLine == null ? null
         : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
+    this.borrowerType = builder.borrowerType;
+    this.borrowerTypeDescription = builder.borrowerTypeDescription;
   }
 
   /**
@@ -320,6 +327,16 @@ public final class PatronInformationResponse {
     return printLine;
   }
 
+  public String getBorrowerType() {
+    return borrowerType;
+  }
+
+  public String getBorrowerTypeDescription() {
+    return borrowerTypeDescription;
+  }
+
+
+
   @Override
   public int hashCode() {
     return Objects.hash(chargedItems, chargedItemsCount, chargedItemsLimit,
@@ -329,7 +346,7 @@ public final class PatronInformationResponse {
         overdueItemsCount, overdueItemsLimit, patronIdentifier, patronStatus,
         personalName, printLine, recallItems, recallItemsCount, screenMessage,
         transactionDate, unavailableHoldItems, unavailableHoldsCount,
-        validPatron, validPatronPassword);
+        validPatron, validPatronPassword, borrowerType, borrowerTypeDescription);
   }
 
   @Override
@@ -374,7 +391,9 @@ public final class PatronInformationResponse {
         && Objects.equals(unavailableHoldItems, other.unavailableHoldItems)
         && Objects.equals(unavailableHoldsCount, other.unavailableHoldsCount)
         && Objects.equals(validPatron, other.validPatron)
-        && Objects.equals(validPatronPassword, other.validPatronPassword);
+        && Objects.equals(validPatronPassword, other.validPatronPassword)
+        && Objects.equals(borrowerType, other.borrowerType)
+        && Objects.equals(borrowerTypeDescription, other.borrowerTypeDescription);
   }
 
   @Override
@@ -411,6 +430,8 @@ public final class PatronInformationResponse {
         .append(", homePhoneNumber=").append(homePhoneNumber)
         .append(", screenMessage=").append(screenMessage)
         .append(", printLine=").append(printLine)
+        .append(", borrowerType=").append(borrowerType)
+        .append(", borrowerTypeDescription=").append(borrowerTypeDescription)
         .append(']').toString();
   }
 
@@ -449,6 +470,8 @@ public final class PatronInformationResponse {
     private String homePhoneNumber;
     private List<String> screenMessage;
     private List<String> printLine;
+    private String borrowerType;
+    private String borrowerTypeDescription;
 
     private PatronInformationResponseBuilder() {
       super();
@@ -626,6 +649,17 @@ public final class PatronInformationResponse {
 
     public PatronInformationResponseBuilder printLine(List<String> printLine) {
       this.printLine = printLine;
+      return this;
+    }
+
+    public PatronInformationResponseBuilder borrowerType(String borrowerType) {
+      this.borrowerType = borrowerType;
+      return this;
+    }
+
+    public PatronInformationResponseBuilder borrowerTypeDescription(
+        String borrowerTypeDescription) {
+      this.borrowerTypeDescription = borrowerTypeDescription;
       return this;
     }
 

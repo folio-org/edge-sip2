@@ -40,6 +40,7 @@ import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse.P
 import org.folio.edge.sip2.domain.messages.responses.PatronStatusResponse;
 import org.folio.edge.sip2.domain.messages.responses.PatronStatusResponse.PatronStatusResponseBuilder;
 import org.folio.edge.sip2.repositories.domain.Address;
+import org.folio.edge.sip2.repositories.domain.ExtendedUser;
 import org.folio.edge.sip2.repositories.domain.Personal;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
@@ -108,10 +109,10 @@ public class PatronRepository {
           if (FALSE.equals(verification.getPasswordVerified())) {
             return invalidPatron(patronInformation, FALSE);
           }
-          //getUser is add in PasswordVerifier
-          final Future<User> userFuture = Future.succeededFuture(verification.getUser());
-
-          return userFuture.compose(user -> {
+          final Future<ExtendedUser> extendedUserFuture
+              = Future.succeededFuture(verification.getExtendedUser());
+          return extendedUserFuture.compose(extendedUser -> {
+            User user = extendedUser != null ? extendedUser.getUser() : null;
             if (user == null || FALSE.equals(user.getActive())) {
               return invalidPatron(patronInformation, null);
             } else {
@@ -123,7 +124,7 @@ public class PatronRepository {
                 return invalidPatron(patronInformation, verification.getPasswordVerified());
               }
 
-              return validPatron(userId, user.getPersonal(), patronInformation, sessionData,
+              return validPatron(extendedUser, patronInformation, sessionData,
                   verification.getPasswordVerified());
             }
           });
@@ -144,7 +145,7 @@ public class PatronRepository {
 
     final String patronIdentifier = patronStatus.getPatronIdentifier();
     final String patronPassword = patronStatus.getPatronPassword();
-    log.debug("IsPatronVerificationRequired just before forcing it: {}", 
+    log.debug("IsPatronVerificationRequired just before forcing it: {}",
         sessionData.isPatronPasswordVerificationRequired());
     sessionData.setPatronPasswordVerificationRequired(TRUE);
 
@@ -154,9 +155,11 @@ public class PatronRepository {
             return invalidPatron(patronStatus, FALSE);
           }
           //getUser is add in PasswordVerifier
-          final Future<User> userFuture = Future.succeededFuture(verification.getUser());
+          final Future<ExtendedUser> extendedUserFuture
+              = Future.succeededFuture(verification.getExtendedUser());
 
-          return userFuture.compose(user -> {
+          return extendedUserFuture.compose(extendedUser -> {
+            User user = extendedUser != null ? extendedUser.getUser() : null;
             if (user == null || FALSE.equals(user.getActive())) {
               return invalidPatron(patronStatus, null);
             } else {
@@ -168,7 +171,7 @@ public class PatronRepository {
                 return invalidPatron(patronStatus, verification.getPasswordVerified());
               }
 
-              return validPatron(userId, user.getPersonal(), patronStatus, sessionData,
+              return validPatron(extendedUser, patronStatus, sessionData,
                   verification.getPasswordVerified());
             }
           });
@@ -202,8 +205,10 @@ public class PatronRepository {
           .build());
   }
 
-  private Future<PatronInformationResponse> validPatron(String userId, Personal personal,
+  private Future<PatronInformationResponse> validPatron(ExtendedUser extendedUser,
       PatronInformation patronInformation, SessionData sessionData, Boolean validPassword) {
+    final String userId = extendedUser.getUser().getId();
+    final Personal personal = extendedUser.getUser().getPersonal();
     if (personal != null) {
       log.debug("validPatron userId:{} firstName:{} lastName:{}",
           userId,personal.getFirstName(),personal.getLastName());
@@ -251,6 +256,8 @@ public class PatronRepository {
               patronInformation.getLanguage(),patronInformation.getInstitutionId());
           return builder
             // Get tenant language from config along with the timezone
+            .borrowerType(extendedUser.getPatronGroup().getGroup())
+            .borrowerTypeDescription(extendedUser.getPatronGroup().getDesc())
             .language(patronInformation.getLanguage())
             .transactionDate(OffsetDateTime.now(clock))
             .unavailableHoldsCount(null)
@@ -263,19 +270,23 @@ public class PatronRepository {
         );
   }
 
-  private Future<PatronStatusResponse> validPatron(String userId, Personal personal,
+  private Future<PatronStatusResponse> validPatron(ExtendedUser extendedUser,
           PatronStatusRequest patronStatus, SessionData sessionData, Boolean validPassword) {
     // Now that we have a valid patron, we can retrieve data from circulation
     final PatronStatusResponseBuilder builder = PatronStatusResponse.builder();
+    final String userId = extendedUser.getUser().getId();
+    final Personal personal = extendedUser.getUser().getPersonal();
     // Store patron data in the builder
     final String personalName = getPatronPersonalName(personal, patronStatus.getPatronIdentifier());
     builder.personalName(personalName);
+    log.debug("Populating borrower info with patron group {}",
+        extendedUser.getPatronGroup().getId());
     // When all operations complete, build and return the final PatronInformationResponse
-    
+
     final Future<PatronStatusResponseBuilder> getFeeAmountFuture = feeFinesRepository
         .getFeeAmountByUserId(userId, sessionData)
         .map(accounts -> totalAmount(accounts, builder));
-        
+
     return getFeeAmountFuture.map(result -> builder
             .patronStatus(EnumSet.allOf(PatronStatus.class))
             .language(patronStatus.getLanguage())
@@ -285,7 +296,7 @@ public class PatronRepository {
             .validPatron(TRUE)
             .validPatronPassword(validPassword)
             .build()
-        
+
     );
   }
 
@@ -317,7 +328,7 @@ public class PatronRepository {
   private PatronStatusResponseBuilder totalAmount(
       JsonObject jo,
       PatronStatusResponseBuilder builder) {
-    
+
     final JsonArray arr = jo.getJsonArray("accounts");
     Float total = 0.0f;
     for (int i = 0;i < arr.size();i++) {
