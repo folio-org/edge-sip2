@@ -45,6 +45,8 @@
     <vertx.version>4.3.4</vertx.version>
     <log4j2.version>2.19.0</log4j2.version>
     <micrometer.version>1.9.4</micrometer.version>
+    <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+    <java.version>17</java.version>
   </properties>
 
   <dependencyManagement>
@@ -263,9 +265,9 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>${maven-compiler-plugin.version}</version>
         <configuration>
-          <release>11</release>
+          <release>17</release>
         </configuration>
       </plugin>
       <plugin>
