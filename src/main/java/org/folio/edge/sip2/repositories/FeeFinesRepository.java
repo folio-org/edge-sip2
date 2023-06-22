@@ -7,6 +7,7 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.Clock;
@@ -316,7 +317,7 @@ public class FeeFinesRepository {
   public Future<FeePaidResponse> performFeePaidCommand(FeePaid feePaid, SessionData sessionData) {
     // We'll need to convert this date properly. It is likely that it will not include timezone
     // information, so we'll need to use the tenant/SC timezone as the basis and convert to UTC.
-    NumberFormat moneyFormatter = new DecimalFormat("0.00");
+    final MathContext moneyFormat = new MathContext(2);
 
     final String institutionId = feePaid.getInstitutionId();
     final String patronIdentifier = feePaid.getPatronIdentifier();
@@ -355,16 +356,16 @@ public class FeeFinesRepository {
               JsonObject accts = resource.getResource();
               final JsonArray acctList = accts.getJsonArray("accounts");
               Float acctTotal = totalAmount(acctList);
-              BigDecimal bdAmountPaid = new BigDecimal(moneyFormatter.format(amountPaid));
-              BigDecimal bdAmountTotal = new BigDecimal(moneyFormatter.format(acctTotal));
+              BigDecimal bdAmountPaid = new BigDecimal(amountPaid, moneyFormat);
+              BigDecimal bdAmountTotal = new BigDecimal(acctTotal, moneyFormat);;
               log.debug("bdAmountPaid = {}", bdAmountPaid);
               log.debug("bdAmountTotal = {}", bdAmountTotal);
               log.debug("Amount difference = {}", bdAmountPaid.compareTo(bdAmountTotal));
               // On overpayment return a FALSE Payment Accepted
               if (bdAmountPaid.compareTo(bdAmountTotal) > 0) {
                 List<String> scrnMsg = List.of("Paid amount ($"
-                    + moneyFormatter.format(amountPaid) + ") is more than amount owed ($"
-                    + moneyFormatter.format(acctTotal)
+                    + bdAmountPaid.toPlainString() + ") is more than amount owed ($"
+                    + bdAmountTotal.toPlainString()
                     + "). Please limit payment to no more than the amount owed.");
                 return Future.succeededFuture(FeePaidResponse.builder()
                 .paymentAccepted(FALSE)
