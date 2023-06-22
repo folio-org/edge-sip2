@@ -1,17 +1,11 @@
 package org.folio.edge.sip2.repositories;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.folio.edge.sip2.domain.messages.requests.FeePaid;
-import org.folio.edge.sip2.domain.messages.responses.FeePaidResponse;
-import org.folio.edge.sip2.repositories.domain.User;
-import org.folio.edge.sip2.session.SessionData;
-import org.folio.edge.sip2.utils.Utils;
-
-import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.Clock;
@@ -25,9 +19,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
+import javax.inject.Inject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.folio.edge.sip2.domain.messages.requests.FeePaid;
+import org.folio.edge.sip2.domain.messages.responses.FeePaidResponse;
+import org.folio.edge.sip2.repositories.domain.User;
+import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Utils;
 
 /**
  * Provides interaction with the feefines service.
