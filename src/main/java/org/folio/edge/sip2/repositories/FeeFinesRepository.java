@@ -354,8 +354,8 @@ public class FeeFinesRepository {
               JsonObject accts = resource.getResource();
               final JsonArray acctList = accts.getJsonArray("accounts");
               Float acctTotal = totalAmount(acctList);
-              BigDecimal bdAmountPaid = new BigDecimal(amountPaid, moneyFormat);
-              BigDecimal bdAmountTotal = new BigDecimal(acctTotal, moneyFormat);
+              BigDecimal bdAmountPaid = new BigDecimal(Float.toString(amountPaid), moneyFormat);
+              BigDecimal bdAmountTotal = new BigDecimal(Float.toString(acctTotal), moneyFormat);
               log.debug("bdAmountPaid = {}", bdAmountPaid);
               log.debug("bdAmountTotal = {}", bdAmountTotal);
               log.debug("Amount difference = {}", bdAmountPaid.compareTo(bdAmountTotal));
