@@ -321,7 +321,6 @@ public class FeeFinesRepository {
     final String patronIdentifier = feePaid.getPatronIdentifier();
     final String transactionId = feePaid.getTransactionId();
 
-    final Float amountPaid = Float.valueOf(feePaid.getFeeAmount()); //TODO - Decimal, not Float?
     String feeIdentifierMatch = "";
     if (feePaid.getFeeIdentifier() != null) {
       Pattern startWithUuid = Pattern.compile("^(\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12})");
@@ -351,19 +350,18 @@ public class FeeFinesRepository {
         return result
             .otherwiseEmpty()
             .compose(resource -> {
+              final BigDecimal amountPaid = new BigDecimal(feePaid.getFeeAmount(), moneyFormat);
               JsonObject accts = resource.getResource();
               final JsonArray acctList = accts.getJsonArray("accounts");
-              Float acctTotal = totalAmount(acctList);
-              BigDecimal bdAmountPaid = new BigDecimal(Float.toString(amountPaid), moneyFormat);
-              BigDecimal bdAmountTotal = new BigDecimal(Float.toString(acctTotal), moneyFormat);
-              log.debug("bdAmountPaid = {}", bdAmountPaid);
-              log.debug("bdAmountTotal = {}", bdAmountTotal);
-              log.debug("Amount difference = {}", bdAmountPaid.compareTo(bdAmountTotal));
+              final BigDecimal amountTotal = totalAmount(acctList).round(moneyFormat);
+              log.debug("bdAmountPaid = {}", amountPaid);
+              log.debug("bdAmountTotal = {}", amountTotal);
+              log.debug("Amount difference = {}", amountPaid.compareTo(amountTotal));
               // On overpayment return a FALSE Payment Accepted
-              if (bdAmountPaid.compareTo(bdAmountTotal) > 0) {
+              if (amountPaid.compareTo(amountTotal) > 0) {
                 List<String> scrnMsg = List.of("Paid amount ($"
-                    + bdAmountPaid.toPlainString() + ") is more than amount owed ($"
-                    + bdAmountTotal.toPlainString()
+                    + amountPaid.toPlainString() + ") is more than amount owed ($"
+                    + amountTotal.toPlainString()
                     + "). Please limit payment to no more than the amount owed.");
                 return Future.succeededFuture(FeePaidResponse.builder()
                 .paymentAccepted(FALSE)
@@ -417,10 +415,10 @@ public class FeeFinesRepository {
       });
   }
 
-  private Float totalAmount(JsonArray arr) {
-    Float total = 0.0f;
+  private static BigDecimal totalAmount(JsonArray arr) {
+    BigDecimal total = BigDecimal.ZERO;
     for (int i = 0;i < arr.size();i++) {
-      total += arr.getJsonObject(i).getFloat("remaining");
+      total = total.add(BigDecimal.valueOf(arr.getJsonObject(i).getDouble("remaining")));
     }
     return total;
   }
