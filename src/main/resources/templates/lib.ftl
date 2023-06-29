@@ -196,6 +196,42 @@
   </#if>
 </#macro>
 
+<#macro feeTypeFixed value>
+  <#if value?has_content>
+    <#switch value>
+      <#case "OTHER_UNKNOWN">
+        01<#t>
+        <#break>
+      <#case "ADMINISTRATIVE">
+        02<#t>
+        <#break>
+      <#case "DAMAGE">
+        03<#t>
+        <#break>
+      <#case "OVERDUE">
+        04<#t>
+        <#break>
+      <#case "PROCESSING">
+        05<#t>
+        <#break>
+      <#case "RENTAL">
+        06<#t>
+        <#break>
+      <#case "REPLACEMENT">
+        07<#t>
+        <#break>
+      <#case "COMPUTER_ACCESS_CHARGE">
+        08<#t>
+        <#break>
+      <#case "HOLD_FEE">
+        09<#t>
+        <#break>
+      <#default>
+        01<#t>
+    </#switch>
+  </#if>
+</#macro>
+
 <#macro circulationStatus value>
   <#if value?has_content>
     <#switch value>
