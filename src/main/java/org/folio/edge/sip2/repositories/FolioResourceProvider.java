@@ -14,11 +14,15 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.refreshtoken.client.Client;
+import org.folio.okapi.common.refreshtoken.client.ClientOptions;
 
 /**
  * Resource provider for communicating with FOLIO.
@@ -33,6 +37,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
   private final String okapiUrl;
   private final WebClient client;
+
+  Client tokenClient;
 
   /**
    * Construct a FOLIO resource provider with the specified parameters.
@@ -69,6 +75,26 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         .send()
         .map(FolioResourceProvider::toIResource)
         .onFailure(e -> log.error("Request failed", e));
+  }
+
+  /**
+   * Login and set the access token in session data object.
+   * @param username UserName
+   * @param getPasswordSupplier PasswordSupplier
+   * @param sessionData session data
+   * @return
+   */
+  public Future<String> loginWithSupplier(String username,
+                                          Supplier<Future<String>> getPasswordSupplier,
+                                          SessionData sessionData) {
+    log.info("loginWithSupplier username={} cache={}", username, TokenCacheFactory.get());
+    ClientOptions clientOptions = new ClientOptions()
+        .okapiUrl(okapiUrl)
+        .webClient(client);
+    tokenClient = Client.createLoginClient(clientOptions, TokenCacheFactory.get(),
+      sessionData.getTenant(), username, getPasswordSupplier);
+
+    return tokenClient.getToken();
   }
 
   @Override
@@ -114,6 +140,12 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         .orElse(Collections.emptyMap()).entrySet()) {
       request.putHeader(entry.getKey(), entry.getValue());
     }
+
+    loginWithSupplier(sessionData.getUsername(),
+        () -> Future.succeededFuture(sessionData.getPassword()), sessionData)
+        .onSuccess(token -> {
+          sessionData.setAuthenticationToken(token);
+        });
 
     final String authenticationToken = sessionData.getAuthenticationToken();
     if (authenticationToken != null) {

@@ -14,7 +14,6 @@ import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.Login;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
 import org.folio.edge.sip2.session.SessionData;
-import org.folio.edge.sip2.utils.Utils;
 
 /**
  * Provides interaction with the login service.
@@ -44,30 +43,29 @@ public class LoginRepository {
     final String password = login.getLoginPassword();
     final String locationCode = login.getLocationCode();
 
-    final JsonObject credentials = new JsonObject()
-        .put("username", user)
-        .put("password", password);
+    Future<String> authToken = resourceProvider.loginWithSupplier(user,
+        () -> Future.succeededFuture(password), sessionData);
 
-    final Future<IResource> result = resourceProvider
-        .createResource(new LoginRequestData(credentials, sessionData));
+    if (authToken == null) {
+      // Can't continue without an auth token
+      log.error("Login does not have a valid authentication token");
+      return Future.succeededFuture(LoginResponse.builder().ok(FALSE).build());
+    }
 
-    return result
-        .otherwise(() -> null)
-        .compose(resource -> {
-          final String authenticationToken = resource.getAuthenticationToken();
-          if (authenticationToken == null) {
-            // Can't continue without an auth token
-            log.error("Login does not have a valid authentication token");
-            return Future.succeededFuture(LoginResponse.builder().ok(FALSE).build());
-          }
-          sessionData.setAuthenticationToken(authenticationToken);
-          sessionData.setScLocation(locationCode);
-          return Future.succeededFuture(
-            LoginResponse.builder()
-              .ok(resource.getResource() == null ? FALSE : TRUE)
-              .build());
-        });
+    return authToken
+     .compose(token -> {
+       sessionData.setAuthenticationToken(token);
+       sessionData.setScLocation(locationCode);
+       sessionData.setUsername(user);
+       sessionData.setPassword(password);
+       return Future.succeededFuture(
+        LoginResponse.builder()
+          .ok(token == null ? FALSE : TRUE)
+          .build());
+     });
   }
+
+
 
   /**
    * Perform a login.
@@ -77,18 +75,20 @@ public class LoginRepository {
    * @param sessionData shared session data
    * @return the login response domain object
    */
-  public Future<IResource> patronLogin(String patronUserName, String patronPassword,
+  public Future<String> patronLogin(String patronUserName, String patronPassword,
       SessionData sessionData) {
     final JsonObject credentials = new JsonObject()
         .put("username", patronUserName)
         .put("password", patronPassword);
 
-    final Future<IResource> result = resourceProvider
-        .createResource(new LoginRequestData(credentials, sessionData));
-
-    return result
-        .otherwise(Utils::handleErrors);
+    Future<String> authToken = resourceProvider.loginWithSupplier(patronUserName,
+        () -> Future.succeededFuture(patronPassword), sessionData);
+    authToken.onFailure(throwable -> {
+      sessionData.setLoginErrorMessage(throwable.getMessage());
+    });
+    return authToken;
   }
+
 
   private class LoginRequestData implements IRequestData {
     private final JsonObject body;

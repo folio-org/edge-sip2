@@ -19,6 +19,8 @@ import static org.folio.edge.sip2.parser.Command.UNKNOWN;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.util.StringUtils;
+import io.netty.util.internal.StringUtil;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.core.AbstractVerticle;
@@ -39,6 +41,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.handlers.CheckinHandler;
 import org.folio.edge.sip2.handlers.CheckoutHandler;
@@ -72,9 +75,13 @@ public class MainVerticle extends AbstractVerticle {
   private JsonObject multiTenantConfig = new JsonObject();
   private ConfigRetriever configRetriever;
 
+  public static final int DEFAULT_TOKEN_CACHE_CAPACITY = 100;
+
+  public static final String SYS_TOKEN_CACHE_CAPACITY = "token_cache_capacity";
   /**
    * Construct the {@code MainVerticle}.
    */
+
   public MainVerticle() {
     super();
   }
@@ -94,6 +101,11 @@ public class MainVerticle extends AbstractVerticle {
     log.debug("Startup configuration: {}", this::getSanitizedConfig);
 
     callAdminHealthCheckService();
+
+    // initialize the TokenCache
+    TokenCacheFactory.initialize(config()
+        .getInteger(SYS_TOKEN_CACHE_CAPACITY, DEFAULT_TOKEN_CACHE_CAPACITY));
+
 
     // We need to reduce the complexity of this method...
     if (handlers == null) {

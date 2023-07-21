@@ -39,7 +39,7 @@ public class LoginHandler implements ISip2RequestHandler {
     final Future<LoginResponse> responseFuture = loginRepository.login(login, sessionData);
 
     return responseFuture.compose(loginResponse -> {
-      log.debug("LoginResponse: {}", () -> loginResponse);
+      log.info("LoginResponse: {}", () -> loginResponse);
 
       final Map<String, Object> root = new HashMap<>();
       root.put("formatDateTime", new FormatDateTimeMethodModel());

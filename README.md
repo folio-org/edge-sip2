@@ -51,20 +51,20 @@ On Windows, inline JSON configuration is in double quotes and the inner double q
 One option is to mount the configuration files to the Docker container and provide
 command line arguments to point it to the right path (e.g. `-conf /path/to/config`).
 
-|Config option|Type|Description|
-|-------------|----|-----------|
-|`port`|int|The port the module will use to bind, typically 1024 < port < 65,535.|
-|`okapiUrl`|string|The URL of the Okapi server used by FOLIO.|
-|`tenantConfigRetrieverOptions`|JSON object|Location for tenant configuration.|
-|`scanPeriod`|int|Frequency in msec that sip2 will check for and reload tenant configuration changes.|
-|`stores`|JSON array|Defines the properties for the tenant configuration stores. Multiple sources of tenant configuration can be loaded and combined together. |
-|`type`|string|The store type. Several supported types include: file, http, github, s3. See: [vertx config](https://vertx.io/docs/vertx-config/java/) |
-|`format`|string|Sip2 expects configuration to be in json format.|
-|`config`|string|Store type-specific properties. |
-|`path`|string|Path name of the tenant configuration file for file type stores. |
-|`optional`|boolean|If a failure is caught while loading the tenant configuration from an optional store, the failure is logged, but the processing does not fail. Instead, the tenant configuration will be empty.|
-|`netServerOptions`|JSON object|Configuration options for the server. These are Vertx options and are numerous. See: [NetServerOptions](https://vertx.io/docs/apidocs/io/vertx/core/net/NetServerOptions.html).|
-
+| Config option                  |Type| Description                                                                                                                                                                                     |
+|--------------------------------|----|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `port`                         |int| The port the module will use to bind, typically 1024 < port < 65,535.                                                                                                                           |
+| `okapiUrl`                     |string| The URL of the Okapi server used by FOLIO.                                                                                                                                                      |
+| `tenantConfigRetrieverOptions` |JSON object| Location for tenant configuration.                                                                                                                                                              |
+| `scanPeriod`                   |int| Frequency in msec that sip2 will check for and reload tenant configuration changes.                                                                                                             |
+| `stores`                       |JSON array| Defines the properties for the tenant configuration stores. Multiple sources of tenant configuration can be loaded and combined together.                                                       |
+| `type`                         |string| The store type. Several supported types include: file, http, github, s3. See: [vertx config](https://vertx.io/docs/vertx-config/java/)                                                          |
+| `format`                       |string| Sip2 expects configuration to be in json format.                                                                                                                                                |
+| `config`                       |string| Store type-specific properties.                                                                                                                                                                 |
+| `path`                         |string| Path name of the tenant configuration file for file type stores.                                                                                                                                |
+| `optional`                     |boolean| If a failure is caught while loading the tenant configuration from an optional store, the failure is logged, but the processing does not fail. Instead, the tenant configuration will be empty. |
+| `netServerOptions`             |JSON object| Configuration options for the server. These are Vertx options and are numerous. See: [NetServerOptions](https://vertx.io/docs/apidocs/io/vertx/core/net/NetServerOptions.html).                 |
+| `token_cache_capacity`         |int| Max token cache size. Default size is 100.                                                                                                                                                      |                                                                                                                                                           |
 Note: edge-sip2 now requires two config files: the main bootstrap sip2.conf and tenant configuration: sip2-tenants.conf. The additional config file is required to support multi-tenants and runtime reloading of tenant configuration without restarting the edge-sip2 module.
  
 Here is a sample sip2-tenants.conf file:

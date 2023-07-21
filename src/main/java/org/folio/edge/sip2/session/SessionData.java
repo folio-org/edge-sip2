@@ -11,6 +11,8 @@ public class SessionData {
   private final boolean errorDetectionEnabled;
   private final String charset;
 
+  private String loginErrorMessage;
+
   private String scLocation;
   private String authenticationToken;
   private int maxPrintWidth = -1; // since 0 is valid
@@ -123,5 +125,13 @@ public class SessionData {
                                           boolean errorDetectionEnabled, String charset) {
     return new SessionData(tenant, fieldDelimiter, errorDetectionEnabled,
       charset);
+  }
+
+  public String getLoginErrorMessage() {
+    return loginErrorMessage;
+  }
+
+  public void setLoginErrorMessage(String loginErrorMessage) {
+    this.loginErrorMessage = loginErrorMessage;
   }
 }

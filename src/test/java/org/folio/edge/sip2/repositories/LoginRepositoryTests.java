@@ -59,9 +59,8 @@ public class LoginRepositoryTests {
         .locationCode("library")
         .build();
 
-    when(mockFolioProvider.createResource(any()))
-        .thenReturn(Future.succeededFuture(new FolioResource(new JsonObject(),
-            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+    when(mockFolioProvider.loginWithSupplier(any(), any(), any()))
+        .thenReturn(Future.succeededFuture("tok"));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
@@ -87,8 +86,8 @@ public class LoginRepositoryTests {
         .locationCode("library")
         .build();
 
-    when(mockFolioProvider.createResource(any()))
-        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")));
+    when(mockFolioProvider.loginWithSupplier(any(), any(), any()))
+        .thenReturn(Future.succeededFuture(null));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
@@ -109,18 +108,14 @@ public class LoginRepositoryTests {
     final String username = "test";
     final String password = "xyzzy";
 
-    when(mockFolioProvider.createResource(any()))
-        .thenReturn(Future.succeededFuture(new FolioResource(new JsonObject(),
-            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
-
+    when(mockFolioProvider.loginWithSupplier(any(), any(), any()))
+        .thenReturn(Future.succeededFuture("tok"));
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
     final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
     loginRepository.patronLogin(username, password, sessionData).onComplete(
         testContext.succeeding(loginResponse -> testContext.verify(() -> {
           assertNotNull(loginResponse);
-          assertNotNull(loginResponse.getResource());
-
           testContext.completeNow();
         })));
   }
@@ -132,18 +127,14 @@ public class LoginRepositoryTests {
     final String username = "test";
     final String password = "xyzzy";
 
-    when(mockFolioProvider.createResource(any()))
-        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")));
-
+    when(mockFolioProvider.loginWithSupplier(any(), any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
     final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
     loginRepository.patronLogin(username, password, sessionData).onComplete(
         testContext.succeeding(loginResponse -> testContext.verify(() -> {
-          assertNotNull(loginResponse);
-          assertNull(loginResponse.getResource());
-          assertEquals(Collections.singletonList("Test failure"), loginResponse.getErrorMessages());
-
+          assertNull(loginResponse);
           testContext.completeNow();
         })));
   }

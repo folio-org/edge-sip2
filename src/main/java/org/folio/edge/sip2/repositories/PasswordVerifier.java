@@ -4,6 +4,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
 import io.vertx.core.Future;
+import java.util.Collections;
 import java.util.Objects;
 import javax.inject.Inject;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
@@ -54,17 +55,21 @@ public class PasswordVerifier {
 
             return loginRepository.patronLogin(extendedUser.getUser().getUsername(),
                 patronPassword, sessionData)
-                .map(resource -> {
-                  final PatronPasswordVerificationRecords.Builder builder =
-                      PatronPasswordVerificationRecords.builder().extendedUser(extendedUser);
-                  if (resource.getResource() == null) {
-                    builder.errorMessages(resource.getErrorMessages());
-                    builder.passwordVerified(FALSE);
-                  } else {
-                    builder.passwordVerified(TRUE);
-                  }
-                  return builder.build();
-                });
+              .compose(token -> {
+                if (token != null) {
+                  return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+                    .extendedUser(extendedUser)
+                    .passwordVerified(TRUE)
+                    .build());
+                } else {
+                  return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+                    .extendedUser(extendedUser)
+                    .errorMessages(Collections.singletonList(sessionData.getLoginErrorMessage()))
+                    .passwordVerified(FALSE)
+                    .build());
+                }
+
+              });
           });
     } else {
       loginFuture = usersRepository.getUserById(patronIdentifier,
