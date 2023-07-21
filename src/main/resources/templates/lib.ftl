@@ -32,6 +32,14 @@
   ${id}${value[0..*255]?replace(delimiter, " ")}${delimiter}<#t>
 </#macro>
 
+<#macro variableLengthCurrencyField id value>
+  ${id}<#t>
+  <#if value?has_content>
+    ${value?string(",##0.00")}<#t>
+  </#if>
+  ${delimiter}<#t>
+</#macro>
+
 <#macro variableLengthRepeatableField id value length>
   <#list value?matches('.{1,${length}}', 's') as chunk>
     ${id}${chunk?replace(delimiter, " ")}${delimiter}<#t>
@@ -42,6 +50,14 @@
   ${id}<#t>
   <#if value?has_content>
     ${formatDateTime(value, "yyyyMMdd    HHmmss", timezone)}<#t>
+  </#if>
+  ${delimiter}<#t>
+</#macro>
+
+<#macro variableLengthGossipDateField id value>
+  ${id}<#t>
+  <#if value?has_content>
+    ${formatDateTime(value, "dd.MM.yyyy", timezone)}<#t>
   </#if>
   ${delimiter}<#t>
 </#macro>
@@ -621,3 +637,33 @@
 <#macro borrowerTypeDescription value>
   <@variableLengthField id="FV" value=value/>
 </#macro>
+
+<#macro accountIdentifier value>
+  <@variableLengthField id="CG" value=value/>
+</#macro>
+
+<#macro feeRemaining value>
+  <@variableLengthCurrencyField id="FA" value=value/>
+</#macro>
+
+<#macro accountItemIdentifier value>
+  <@variableLengthField id="FB" value=value/>
+</#macro>
+
+<#macro accountCreationDate value>
+  <@variableLengthGossipDateField id="FC" value=value/>
+</#macro>
+
+<#macro itemTitle value>
+  <@variableLengthField id="FD" value=value/>
+</#macro>
+
+<#macro accountFeeId value>
+  <@variableLengthField id="FE" value=value/>
+</#macro>
+
+<#macro accountFeeType value>
+  <@variableLengthField id="FF" value=value/>
+</#macro>
+
+

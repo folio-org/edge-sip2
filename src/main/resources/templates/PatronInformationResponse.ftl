@@ -60,6 +60,16 @@
 -->
 <@lib.unavailableHoldItems
     value=patronInformationResponse.unavailableHoldItems!""/>
+<#-- extended account/fee information -->
+<#list patronInformationResponse.patronAccountList as patronAccount>
+<@lib.accountIdentifier value=patronAccount.id!""/>
+<@lib.feeRemaining value=patronAccount.feeFineRemaining!""/>
+<@lib.accountItemIdentifier value=patronAccount.itemBarcode!""/>
+<@lib.accountCreationDate value=patronAccount.feeCreationDate!""/>
+<@lib.itemTitle value=patronAccount.itemTitle!""/>
+<@lib.accountFeeId value=patronAccount.feeFineId!""/>
+<@lib.accountFeeType value=patronAccount.feeFineType!""/>
+</#list>
 <#-- home address: variable-length optional field -->
 <@lib.homeAddress value=patronInformationResponse.homeAddress!""/>
 <#-- e-mail address: variable-length optional field -->

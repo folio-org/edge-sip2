@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -195,33 +196,100 @@ class FeeFinesRepositoryTests {
   @Test
   void canAccountByUserIdWithBlocksApplied(Vertx vertx,
       VertxTestContext testContext,
-      @Mock IResourceProvider<IRequestData> mockFolioProvider,
       @Mock UsersRepository mockUsersRepository,
       @Mock Clock clock) {
 
     final String accountResponseJson = getJsonFromFile("json/account_request_response.json");
+    final String feeFineResponseJson = getJsonFromFile("json/feefine_request_response.json");
+    assertFalse(feeFineResponseJson.isEmpty());
     final JsonObject accountResponse = new JsonObject(accountResponseJson);
+    final JsonObject feeFineResponse = new JsonObject(feeFineResponseJson);
+
 
     final String userId = "2205005b-ca51-4a04-87fd-938eefa8f6de";
 
-    when(mockFolioProvider.retrieveResource(
-        argThat(arg -> arg.getPath().equals("/accounts?query=(userId==" + userId
-          + ")&limit=1000"))))
-        .thenReturn(Future.succeededFuture(new FolioResource(accountResponse,
-          MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+    IResourceProvider<IRequestData> mockFolioProvider
+        = mock(FolioResourceProvider.class, withSettings().verboseLogging().lenient());
+
+    doReturn(Future.succeededFuture(new FolioResource(accountResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
+        .when(mockFolioProvider).retrieveResource(
+        argThat((IRequestData data) -> data.getPath().equals("/accounts?query=(userId==" + userId
+            + ")&limit=1000")));
+
+    doReturn(Future.succeededFuture(new FolioResource(feeFineResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
+        .when(mockFolioProvider).retrieveResource(
+          argThat((IRequestData data2) -> data2.getPath().startsWith("/feefines?query=")));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(
         mockFolioProvider, mockUsersRepository, clock);
+
     feeFinesRepository.getAccountDataByUserId(userId, sessionData).onComplete(
         testContext.succeeding(account -> testContext.verify(() -> {
           assertNotNull(account);
           assertEquals(1, account.getInteger(FIELD_TOTAL_RECORDS));
           assertNotNull(account.getJsonArray(FIELD_ACCOUNT));
+          assertEquals("Overdue fine",
+              account.getJsonArray(FIELD_ACCOUNT).getJsonObject(0)
+                  .getString("feeFineType"));
           assertEquals(1, account.getJsonArray(FIELD_ACCOUNT).size());
           testContext.completeNow();
         })));
+  }
+
+  @Test
+  void canGetMultipleAccountsForUserWithFeeFineDetails(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock Clock clock) {
+
+    final String accountResponseJson = getJsonFromFile(
+        "json/account_multiple_request_response.json");
+    final String feeFineResponseJson = getJsonFromFile(
+        "json/feefine_multiple_request_response.json");
+    assertFalse(feeFineResponseJson.isEmpty());
+    assertFalse(accountResponseJson.isEmpty());
+    final JsonObject accountResponse = new JsonObject(accountResponseJson);
+    final JsonObject feeFineResponse = new JsonObject(feeFineResponseJson);
+
+    final String userId = "2205005b-ca51-4a04-87fd-938eefa8f6de";
+
+    IResourceProvider<IRequestData> mockFolioProvider
+        = mock(FolioResourceProvider.class, withSettings().verboseLogging().lenient());
+
+    doReturn(Future.succeededFuture(new FolioResource(accountResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
+        .when(mockFolioProvider).retrieveResource(
+            argThat((IRequestData data) -> data.getPath().equals(
+                "/accounts?query=(userId==" + userId
+            + ")&limit=1000")));
+
+    doReturn(Future.succeededFuture(new FolioResource(feeFineResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
+        .when(mockFolioProvider).retrieveResource(
+            argThat((IRequestData data2) -> data2.getPath().startsWith("/feefines?query=")));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(
+        mockFolioProvider, mockUsersRepository, clock);
+
+    feeFinesRepository.getAccountDataByUserId(userId, sessionData).onComplete(
+        testContext.succeeding(account -> testContext.verify(() -> {
+          assertNotNull(account);
+          assertEquals(3, account.getInteger(FIELD_TOTAL_RECORDS));
+          assertEquals("Overdue fine",
+              account.getJsonArray(FIELD_ACCOUNT).getJsonObject(0)
+              .getString("feeFineType"));
+          assertEquals("Replacement processing fee",
+              account.getJsonArray(FIELD_ACCOUNT).getJsonObject(1)
+              .getString("feeFineType"));
+          testContext.completeNow();
+        })));
+
   }
 
   @Test

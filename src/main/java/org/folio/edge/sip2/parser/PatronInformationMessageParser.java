@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.parser;
 
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.CHARGED_ITEMS;
+import static org.folio.edge.sip2.domain.messages.enumerations.Summary.EXTENDED_FEES;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.FINE_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.HOLD_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.OVERDUE_ITEMS;
@@ -125,7 +126,12 @@ public class PatronInformationMessageParser extends MessageParser {
       return UNAVAILABLE_HOLDS;
     }
 
-    position += 4;
+    if (parseBoolean(messageChars)) {
+      position += 3;
+      return EXTENDED_FEES;
+    }
+
+    position += 3;
     return null; // consider adding Summary.NONE
   }
 }

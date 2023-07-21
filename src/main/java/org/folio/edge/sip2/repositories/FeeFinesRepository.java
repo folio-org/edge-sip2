@@ -139,6 +139,37 @@ public class FeeFinesRepository {
 
     return result
       .otherwise(() -> null)
+      .map(IResource::getResource)
+      .compose(accountJson -> {
+        List<String> idList = getFeeFineIdList(accountJson);
+        return getFeeFinesByIds(idList, sessionData)
+            .compose(feeFinesJson -> {
+              return Future.succeededFuture(populateFeeFinesDetails(accountJson, feeFinesJson));
+            });
+      });
+  }
+
+  /**
+   * Get a listing of feeFines objects.
+   *
+   * @param ids a list of UUID strings
+   * @param sessionData session data
+   * @return a JsonObject Future of the FeeFine response
+   */
+  public Future<JsonObject> getFeeFinesByIds(List<String> ids, SessionData sessionData) {
+    Objects.requireNonNull(ids, "ids cannot be null");
+    Objects.requireNonNull(sessionData, "sessionData cannot be null");
+
+    final Map<String, String> headers = new HashMap<>();
+    headers.put(HEADER_ACCEPT, MIMETYPE_JSON);
+
+    final GetFeeFinesByIdsRequestData getFeeFinesByIdsRequestData =
+        new GetFeeFinesByIdsRequestData(ids, headers, sessionData);
+    final Future<IResource> result =
+        resourceProvider.retrieveResource(getFeeFinesByIdsRequestData);
+
+    return result
+      .otherwise(() -> null)
       .map(IResource::getResource);
   }
 
@@ -303,6 +334,43 @@ public class FeeFinesRepository {
     }
   }
 
+  private class GetFeeFinesByIdsRequestData implements IRequestData {
+
+    private List<String> idList;
+    private final Map<String, String> headers;
+    private final SessionData sessionData;
+
+    private GetFeeFinesByIdsRequestData(List<String> idList, Map<String, String> headers,
+        SessionData sessionData) {
+      this.idList = idList;
+      this.headers = headers;
+      this.sessionData = sessionData;
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return headers;
+    }
+
+    @Override
+    public SessionData getSessionData() {
+      return sessionData;
+    }
+
+    @Override
+    public String getPath() {
+      List<String> queryList = new ArrayList<>();
+      for (String id : this.idList) {
+        queryList.add("(id==" + id + ")");
+      }
+      final StringBuilder sb = new StringBuilder()
+          .append("/feefines?query=(")
+          .append(String.join("+OR+", queryList))
+          .append(")");
+      return sb.toString();
+    }
+  }
+
 
 
 
@@ -429,5 +497,38 @@ public class FeeFinesRepository {
       list.add(arr.getJsonObject(i).getString("id"));
     }
     return list;
+  }
+
+  private List<String> getFeeFineIdList(JsonObject accountJson) {
+    List<String> idList = new ArrayList<>();
+    JsonArray accountArray = accountJson.getJsonArray("accounts");
+    if (accountArray != null) {
+      for (Object ob : accountArray) {
+        String id = ((JsonObject)ob).getString("id");
+        idList.add(id);
+      }
+    }
+    return idList;
+  }
+
+  private JsonObject populateFeeFinesDetails(JsonObject accountJson, JsonObject feeFinesJson) {
+    if (accountJson != null && feeFinesJson != null) {
+      JsonArray accountArray = accountJson.getJsonArray("accounts");
+      JsonArray feeFinesArray = feeFinesJson.getJsonArray("feefines");
+      if (feeFinesArray != null && accountArray != null) {
+        for (Object ob : accountArray) {
+          JsonObject account = (JsonObject)ob;
+          String feeFineId = account.getString("feeFineId","");
+          for (Object ob2 : feeFinesArray) {
+            JsonObject feeFine = (JsonObject)ob2;
+            if (feeFineId.equals(feeFine.getString("id"))) {
+              account.put("feeFineType", feeFine.getString("feeFineType"));
+              break;
+            }
+          }
+        }
+      }
+    }
+    return accountJson;
   }
 }

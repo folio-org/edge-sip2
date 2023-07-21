@@ -1,0 +1,21 @@
+{
+  "feefines" : [ {
+    "automatic" : true,
+    "feeFineType" : "Overdue fine",
+    "id" : "78b549ec-607c-4d67-805a-828d5e0968da"
+  }, {
+    "automatic" : true,
+    "feeFineType" : "Replacement processing fee",
+    "id" : "d640b5c7-5735-4d81-a286-969e64ba4e76"
+  },{
+    "automatic" : true,
+    "feeFineType" : "Reminder fee",
+    "id" : "b8e17d94-7642-4f59-b8df-0237d6bfef5d"
+  }],
+  "totalRecords" : 3,
+  "resultInfo" : {
+    "totalRecords" : 3,
+    "facets" : [ ],
+    "diagnostics" : [ ]
+  }
+}

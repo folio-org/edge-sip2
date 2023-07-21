@@ -129,6 +129,7 @@ public final class PatronInformationResponse {
   private final String borrowerType;
   /** Extend field - the description of the borrower type. */
   private final String borrowerTypeDescription;
+  private final List<PatronAccount> patronAccountList;
 
 
   /**
@@ -193,6 +194,8 @@ public final class PatronInformationResponse {
         : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
     this.borrowerType = builder.borrowerType;
     this.borrowerTypeDescription = builder.borrowerTypeDescription;
+    this.patronAccountList = builder.patronAccountList == null
+        ? emptyList() : unmodifiableList(new ArrayList<>(builder.patronAccountList));
   }
 
   /**
@@ -335,6 +338,10 @@ public final class PatronInformationResponse {
     return borrowerTypeDescription;
   }
 
+  public List<PatronAccount> getPatronAccountList() {
+    return patronAccountList;
+  }
+
 
 
   @Override
@@ -346,7 +353,8 @@ public final class PatronInformationResponse {
         overdueItemsCount, overdueItemsLimit, patronIdentifier, patronStatus,
         personalName, printLine, recallItems, recallItemsCount, screenMessage,
         transactionDate, unavailableHoldItems, unavailableHoldsCount,
-        validPatron, validPatronPassword, borrowerType, borrowerTypeDescription);
+        validPatron, validPatronPassword, borrowerType, borrowerTypeDescription,
+        patronAccountList);
   }
 
   @Override
@@ -393,7 +401,8 @@ public final class PatronInformationResponse {
         && Objects.equals(validPatron, other.validPatron)
         && Objects.equals(validPatronPassword, other.validPatronPassword)
         && Objects.equals(borrowerType, other.borrowerType)
-        && Objects.equals(borrowerTypeDescription, other.borrowerTypeDescription);
+        && Objects.equals(borrowerTypeDescription, other.borrowerTypeDescription)
+        && Objects.equals(patronAccountList, other.patronAccountList);
   }
 
   @Override
@@ -432,6 +441,7 @@ public final class PatronInformationResponse {
         .append(", printLine=").append(printLine)
         .append(", borrowerType=").append(borrowerType)
         .append(", borrowerTypeDescription=").append(borrowerTypeDescription)
+        .append(", patronAccountList=").append(patronAccountList)
         .append(']').toString();
   }
 
@@ -472,6 +482,9 @@ public final class PatronInformationResponse {
     private List<String> printLine;
     private String borrowerType;
     private String borrowerTypeDescription;
+
+
+    private List<PatronAccount> patronAccountList;
 
     private PatronInformationResponseBuilder() {
       super();
@@ -663,8 +676,99 @@ public final class PatronInformationResponse {
       return this;
     }
 
+    public PatronInformationResponseBuilder patronAccountList(
+        List<PatronAccount> patronAccountList) {
+      this.patronAccountList = patronAccountList;
+      return this;
+    }
+
     public PatronInformationResponse build() {
       return new PatronInformationResponse(this);
+    }
+  }
+
+  public static class PatronAccount {
+
+    private String id;
+    private String feeFineType;
+    private Double feeFineAmount;
+    private Double feeFineRemaining;
+    private String itemBarcode;
+    private OffsetDateTime feeCreationDate;
+    private String feeFineId;
+    private String feeDescription;
+    private String itemTitle;
+
+    public String getId() {
+      return id;
+    }
+
+    public void setId(String id) {
+      this.id = id;
+    }
+
+    public String getItemTitle() {
+      return itemTitle;
+    }
+
+    public void setItemTitle(String itemTitle) {
+      this.itemTitle = itemTitle;
+    }
+
+    public String getFeeFineId() {
+      return feeFineId;
+    }
+
+    public void setFeeFineId(String feeFineId) {
+      this.feeFineId = feeFineId;
+    }
+
+    public String getFeeFineType() {
+      return feeFineType;
+    }
+
+    public void setFeeFineType(String feeFineType) {
+      this.feeFineType = feeFineType;
+    }
+
+    public Double getFeeFineAmount() {
+      return feeFineAmount;
+    }
+
+    public Double getFeeFineRemaining() {
+      return feeFineRemaining;
+    }
+
+    public void setFeeFineAmount(Double feeFineAmount) {
+      this.feeFineAmount = feeFineAmount;
+    }
+
+    public void setFeeFineRemaining(Double feeFineRemaining) {
+      this.feeFineRemaining = feeFineRemaining;
+    }
+
+    public String getItemBarcode() {
+      return itemBarcode;
+    }
+
+    public void setItemBarcode(String itemBarcode) {
+      this.itemBarcode = itemBarcode;
+    }
+
+    public OffsetDateTime getFeeCreationDate() {
+      return feeCreationDate;
+    }
+
+    public void setFeeCreationDate(OffsetDateTime feeCreationDate) {
+      this.feeCreationDate = feeCreationDate;
+    }
+
+    public String getFeeDescription() {
+      return feeDescription;
+    }
+
+    public void setFeeDescription(String feeDescription) {
+      this.feeDescription = feeDescription;
     }
   }
 }

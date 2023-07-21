@@ -6,6 +6,7 @@ import static org.folio.edge.sip2.domain.messages.enumerations.Language.UNKNOWN;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.HOLD_PRIVILEGES_DENIED;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RECALL_PRIVILEGES_DENIED;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RENEWAL_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.Summary.EXTENDED_FEES;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.HOLD_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.OVERDUE_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.RECALL_ITEMS;
@@ -226,7 +227,11 @@ public class PatronRepository {
     // Add fine count
     final Future<PatronInformationResponseBuilder> accountFuture = feeFinesRepository
         .getAccountDataByUserId(userId, sessionData)
-        .map(accounts -> populateFinesCount(accounts, builder));
+        .map(accounts -> {
+          populateFinesCount(accounts, builder);
+          return addExtendedAccountInfo(accounts,
+              patronInformation.getSummary() == EXTENDED_FEES, builder);
+        });
 
     // Add charged count
     final Future<PatronInformationResponseBuilder> loansFuture = circulationRepository
@@ -324,6 +329,7 @@ public class PatronRepository {
     }
     return builder.fineItemsCount(fineItemsCount);
   }
+
 
   private PatronStatusResponseBuilder totalAmount(
       JsonObject jo,
@@ -485,6 +491,22 @@ public class PatronRepository {
     });
   }
 
+  private PatronInformationResponseBuilder addExtendedAccountInfo(JsonObject accounts,
+      boolean details, PatronInformationResponseBuilder builder) {
+    List<PatronInformationResponse.PatronAccount> patronAccountList;
+    if (accounts != null) {
+      if (details) {
+        patronAccountList = getPatronAccountList(accounts);
+      } else {
+        patronAccountList = null;
+      }
+    } else {
+      patronAccountList = null;
+    }
+    return builder.patronAccountList(patronAccountList);
+  }
+
+
   private String getPatronPersonalName(Personal personal, String defaultPersonalName) {
     if (personal != null) {
       return Stream.of(personal.getFirstName(), personal.getMiddleName(), personal.getLastName())
@@ -537,6 +559,29 @@ public class PatronRepository {
         .map(o -> (JsonObject) o)
         .map(jo -> getChildString(jo, childField, FIELD_TITLE))
         .collect(Collectors.toList());
+  }
+
+  private List<PatronInformationResponse.PatronAccount> getPatronAccountList(
+      JsonObject accountsJson) {
+    List<PatronInformationResponse.PatronAccount> accountList = new ArrayList<>();
+    final JsonArray accountArray = accountsJson.getJsonArray("accounts");
+    for (Object ob : accountArray) {
+      JsonObject jo = (JsonObject)ob;
+      PatronInformationResponse.PatronAccount patronAccount =
+          new PatronInformationResponse.PatronAccount();
+      patronAccount.setFeeFineAmount(jo.getNumber("amount") != null
+          ? jo.getNumber("amount").doubleValue() : null);
+      patronAccount.setFeeFineRemaining(jo.getNumber("remaining") != null
+          ? jo.getNumber("remaining").doubleValue() : null);
+      patronAccount.setItemBarcode(jo.getString("barcode"));
+      patronAccount.setFeeFineId(jo.getString("feeFineId"));
+      patronAccount.setFeeFineType(jo.getString("feeFineType"));
+      patronAccount.setItemTitle(jo.getString("title"));
+      patronAccount.setFeeCreationDate(jo.getString("dateCreated") != null
+          ? OffsetDateTime.parse(jo.getString("dateCreated")) : null);
+      accountList.add(patronAccount);
+    }
+    return accountList;
   }
 
   private List<String> getHoldItems(JsonObject requests) {
