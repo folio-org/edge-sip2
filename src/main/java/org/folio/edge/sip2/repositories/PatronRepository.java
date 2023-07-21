@@ -146,9 +146,8 @@ public class PatronRepository {
 
     final String patronIdentifier = patronStatus.getPatronIdentifier();
     final String patronPassword = patronStatus.getPatronPassword();
-    log.debug("IsPatronVerificationRequired just before forcing it: {}",
+    log.debug("IsPatronVerificationRequired: {}",
         sessionData.isPatronPasswordVerificationRequired());
-    sessionData.setPatronPasswordVerificationRequired(TRUE);
 
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
         .compose(verification -> {
