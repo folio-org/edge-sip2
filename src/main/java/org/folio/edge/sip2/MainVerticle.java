@@ -227,23 +227,15 @@ public class MainVerticle extends AbstractVerticle {
               }).onFailure(e -> {
                 String errorMsg = "Failed to respond to request";
                 log.error(errorMsg, e);
-                String loginResponseMsg = null;
                 if (message.getCommand() == LOGIN) {
-                  sessionData.setAuthenticationToken(null);
-                  loginResponseMsg = formatResponse(
-                    LoginHandler.createLoginResponseMessageForError(sessionData),
-                      message, sessionData, messageDelimiter);
-                  handler.writeHistory(sessionData,
-                      message, loginResponseMsg);
-                  log.info("Sip login error response {}", loginResponseMsg);
+                  handleLoginErrorResponse(sessionData,
+                      message, messageDelimiter, sample,
+                      handler, metrics, socket);
                 }
                 sample.stop(metrics.commandTimer(message.getCommand()));
-                if (message.getCommand() == LOGIN) {
-                  socket.write(loginResponseMsg, sessionData.getCharset());
-                } else {
-                  socket.write(e.getMessage() + messageDelimiter,
-                      sessionData.getCharset());
-                }
+                socket.write(e.getMessage() + messageDelimiter,
+                    sessionData.getCharset());
+
                 metrics.responseError();
               });
         } catch (Exception ex) {
@@ -295,6 +287,24 @@ public class MainVerticle extends AbstractVerticle {
       log.info("Tenant config changed: {}", () -> multiTenantConfig.encodePrettily());
     });
 
+  }
+
+  private void handleLoginErrorResponse(SessionData sessionData,
+                                        Message<Object> message,
+                                        String messageDelimiter,
+                                        Timer.Sample sample,
+                                        ISip2RequestHandler handler,
+                                        Metrics metrics,
+                                        NetSocket socket) {
+    sessionData.setAuthenticationToken(null);
+    String loginResponseMsg = formatResponse(
+         LoginHandler.createLoginResponseMessageForError(sessionData),
+         message, sessionData, messageDelimiter);
+    handler.writeHistory(sessionData,
+          message, loginResponseMsg);
+    log.info("Sip login error response {}", loginResponseMsg);
+    sample.stop(metrics.commandTimer(message.getCommand()));
+    socket.write(loginResponseMsg, sessionData.getCharset());
   }
 
   private void callAdminHealthCheckService() {

@@ -20,8 +20,10 @@ import javax.inject.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.cache.TokenCacheFactory;
+import org.folio.edge.sip2.handlers.ClientExceptionHanlder;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.okapi.common.refreshtoken.client.Client;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.folio.okapi.common.refreshtoken.client.ClientOptions;
 
 /**
@@ -145,7 +147,14 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     loginWithSupplier(sessionData.getUsername(),
         () -> Future.succeededFuture(sessionData.getPassword()), sessionData)
         .onSuccess(sessionData::setAuthenticationToken)
-        .onFailure(e -> log.error("Request failed", e));
+        .onFailure(e -> {
+          log.error("Request failed", e);
+          if (e instanceof ClientException) {
+            ClientExceptionHanlder clientExceptionHanlder = new ClientExceptionHanlder(
+                e.getMessage());
+            sessionData.setAuthenticationToken(null);
+          }
+        });
 
     final String authenticationToken = sessionData.getAuthenticationToken();
     if (authenticationToken != null) {

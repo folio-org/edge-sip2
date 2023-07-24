@@ -278,7 +278,8 @@ public class CirculationRepository {
   }
 
   private IResource getTitleFromJson(IResource resource, List<String> circErrorMessages) {
-    if (!resource.getErrorMessages().isEmpty()) {
+
+    if (resource != null && !resource.getErrorMessages().isEmpty()) {
       return resource;
     }
 
