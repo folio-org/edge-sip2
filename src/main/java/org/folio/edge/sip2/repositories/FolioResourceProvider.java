@@ -99,7 +99,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     try {
       tokenClient = Client.createLoginClient(clientOptions, TokenCacheFactory.get(),
         sessionData.getTenant(), username, getPasswordSupplier);
-    } catch (ClientException e) {
+    } catch (Exception e) {
       log.info("Inside Catch ");
       sessionData.setAuthenticationToken(null);
       sessionData.setLoginErrorMessage(e.getMessage());
