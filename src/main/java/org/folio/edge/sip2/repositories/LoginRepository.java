@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.Login;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 /**
  * Provides interaction with the login service.
@@ -44,8 +45,7 @@ public class LoginRepository {
     sessionData.setPassword(password);
 
     Future<String> authToken = resourceProvider.loginWithSupplier(user,
-        () -> Future.succeededFuture(password), sessionData)
-        .onFailure(e -> log.error("Login request failed ", e));
+        () -> Future.succeededFuture(password), sessionData);
 
     if (authToken == null) {
       // Can't continue without an auth token
@@ -77,9 +77,13 @@ public class LoginRepository {
    */
   public Future<String> patronLogin(String patronUserName, String patronPassword,
       SessionData sessionData) {
-    Future<String> authToken = resourceProvider.loginWithSupplier(patronUserName,
-        () -> Future.succeededFuture(patronPassword), sessionData);
-    authToken.onFailure(throwable -> sessionData.setLoginErrorMessage(throwable.getMessage()));
-    return authToken;
+    try {
+      Future<String> authToken = resourceProvider.loginWithSupplier(patronUserName,
+          () -> Future.succeededFuture(patronPassword), sessionData);
+      authToken.onFailure(throwable -> sessionData.setLoginErrorMessage(throwable.getMessage()));
+      return authToken;
+    } catch (ClientException e) {
+      return null;
+    }
   }
 }

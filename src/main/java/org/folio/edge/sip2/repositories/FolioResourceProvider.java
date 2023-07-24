@@ -1,5 +1,6 @@
 package org.folio.edge.sip2.repositories;
 
+
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
@@ -20,7 +21,6 @@ import javax.inject.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.cache.TokenCacheFactory;
-import org.folio.edge.sip2.handlers.ClientExceptionHanlder;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.okapi.common.refreshtoken.client.Client;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
@@ -86,17 +86,22 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
    * @param sessionData session data
    * @return
    */
-  public Future<String> loginWithSupplier(String username,
-                                          Supplier<Future<String>> getPasswordSupplier,
-                                          SessionData sessionData) {
+  public Future<String> loginWithSupplier(
+      String username,
+      Supplier<Future<String>> getPasswordSupplier,
+      SessionData sessionData) {
     log.info("loginWithSupplier username={} cache={}",
         username, TokenCacheFactory.get());
     ClientOptions clientOptions = new ClientOptions()
         .okapiUrl(okapiUrl)
         .webClient(client);
-    tokenClient = Client.createLoginClient(clientOptions, TokenCacheFactory.get(),
-      sessionData.getTenant(), username, getPasswordSupplier);
 
+    try {
+      tokenClient = Client.createLoginClient(clientOptions, TokenCacheFactory.get(),
+        sessionData.getTenant(), username, getPasswordSupplier);
+    } catch (ClientException e) {
+      return null;
+    }
     return tokenClient.getToken();
   }
 
@@ -144,17 +149,9 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
       request.putHeader(entry.getKey(), entry.getValue());
     }
 
-    loginWithSupplier(sessionData.getUsername(),
-        () -> Future.succeededFuture(sessionData.getPassword()), sessionData)
-        .onSuccess(sessionData::setAuthenticationToken)
-        .onFailure(e -> {
-          log.error("Request failed", e);
-          if (e instanceof ClientException) {
-            ClientExceptionHanlder clientExceptionHanlder = new ClientExceptionHanlder(
-                e.getMessage());
-            sessionData.setAuthenticationToken(null);
-          }
-        });
+
+    sessionData.setAuthenticationToken(loginWithSupplier(sessionData.getUsername(),
+        () -> Future.succeededFuture(sessionData.getPassword()), sessionData).result());
 
     final String authenticationToken = sessionData.getAuthenticationToken();
     if (authenticationToken != null) {

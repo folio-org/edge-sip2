@@ -61,6 +61,7 @@ import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.TenantUtils;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -227,11 +228,6 @@ public class MainVerticle extends AbstractVerticle {
               }).onFailure(e -> {
                 String errorMsg = "Failed to respond to request";
                 log.error(errorMsg, e);
-                if (message.getCommand() == LOGIN) {
-                  handleLoginErrorResponse(sessionData,
-                      message, messageDelimiter, sample,
-                      handler, metrics, socket);
-                }
                 sample.stop(metrics.commandTimer(message.getCommand()));
                 socket.write(e.getMessage() + messageDelimiter,
                     sessionData.getCharset());
@@ -287,24 +283,6 @@ public class MainVerticle extends AbstractVerticle {
       log.info("Tenant config changed: {}", () -> multiTenantConfig.encodePrettily());
     });
 
-  }
-
-  private void handleLoginErrorResponse(SessionData sessionData,
-                                        Message<Object> message,
-                                        String messageDelimiter,
-                                        Timer.Sample sample,
-                                        ISip2RequestHandler handler,
-                                        Metrics metrics,
-                                        NetSocket socket) {
-    sessionData.setAuthenticationToken(null);
-    String loginResponseMsg = formatResponse(
-         LoginHandler.createLoginResponseMessageForError(sessionData),
-         message, sessionData, messageDelimiter);
-    handler.writeHistory(sessionData,
-          message, loginResponseMsg);
-    log.info("Sip login error response {}", loginResponseMsg);
-    sample.stop(metrics.commandTimer(message.getCommand()));
-    socket.write(loginResponseMsg, sessionData.getCharset());
   }
 
   private void callAdminHealthCheckService() {

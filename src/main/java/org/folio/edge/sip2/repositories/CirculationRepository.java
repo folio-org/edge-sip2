@@ -231,6 +231,7 @@ public class CirculationRepository {
       });
   }
 
+
   private Future<IResource> addTitleIfNotFound(SessionData sessionData,
                                                String itemIdentifier, IResource circRes) {
     if (circRes.getErrorMessages().isEmpty()) {
