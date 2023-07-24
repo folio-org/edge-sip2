@@ -43,10 +43,13 @@ public class LoginRepository {
     final String locationCode = login.getLocationCode();
     sessionData.setUsername(user);
     sessionData.setPassword(password);
-
-    Future<String> authToken = resourceProvider.loginWithSupplier(user,
+    Future<String> authToken = null;
+    try {
+      authToken = resourceProvider.loginWithSupplier(user,
         () -> Future.succeededFuture(password), sessionData);
-
+    } catch (ClientException e) {
+      log.info("Caught it here");
+    }
     if (authToken == null) {
       // Can't continue without an auth token
       log.error("Login does not have a valid authentication token");
@@ -77,13 +80,7 @@ public class LoginRepository {
    */
   public Future<String> patronLogin(String patronUserName, String patronPassword,
       SessionData sessionData) {
-    try {
-      Future<String> authToken = resourceProvider.loginWithSupplier(patronUserName,
-          () -> Future.succeededFuture(patronPassword), sessionData);
-      authToken.onFailure(throwable -> sessionData.setLoginErrorMessage(throwable.getMessage()));
-      return authToken;
-    } catch (ClientException e) {
-      return null;
-    }
+    return resourceProvider.loginWithSupplier(patronUserName,
+      () -> Future.succeededFuture(patronPassword), sessionData);
   }
 }
