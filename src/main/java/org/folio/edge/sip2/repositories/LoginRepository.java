@@ -45,11 +45,7 @@ public class LoginRepository {
 
     Future<String> authToken = resourceProvider.loginWithSupplier(user,
         () -> Future.succeededFuture(password), sessionData)
-        .onFailure(e -> log.error("Login request failed ", e))
-        .onComplete(h -> {
-          log.info("It came here ?? ");
-          return;
-        });
+        .onFailure(e -> log.error("Login request failed ", e));
 
     if (authToken == null) {
       // Can't continue without an auth token

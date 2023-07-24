@@ -227,9 +227,23 @@ public class MainVerticle extends AbstractVerticle {
               }).onFailure(e -> {
                 String errorMsg = "Failed to respond to request";
                 log.error(errorMsg, e);
+                String loginResponseMsg = null;
+                if (message.getCommand() == LOGIN) {
+                  sessionData.setAuthenticationToken(null);
+                  loginResponseMsg = formatResponse(
+                    LoginHandler.createLoginResponseMessageForError(sessionData),
+                      message, sessionData, messageDelimiter);
+                  handler.writeHistory(sessionData,
+                      message, loginResponseMsg);
+                  log.info("Sip login error response {}", loginResponseMsg);
+                }
                 sample.stop(metrics.commandTimer(message.getCommand()));
-                socket.write(e.getMessage() + messageDelimiter,
-                    sessionData.getCharset());
+                if (message.getCommand() == LOGIN) {
+                  socket.write(loginResponseMsg, sessionData.getCharset());
+                } else {
+                  socket.write(e.getMessage() + messageDelimiter,
+                      sessionData.getCharset());
+                }
                 metrics.responseError();
               });
         } catch (Exception ex) {
