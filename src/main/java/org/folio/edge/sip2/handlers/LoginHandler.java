@@ -42,6 +42,18 @@ public class LoginHandler implements ISip2RequestHandler {
 
     Future<LoginResponse> responseFuture = loginRepository.login(login, sessionData);
 
+    responseFuture.onFailure(e -> {
+      final Map<String, Object> root = new HashMap<>();
+      root.put("formatDateTime", new FormatDateTimeMethodModel());
+      root.put("delimiter", sessionData.getFieldDelimiter());
+      root.put("loginResponse",  LoginResponse.builder().ok(FALSE).build());
+
+      final String response = FreemarkerUtils
+          .executeFreemarkerTemplate(root, commandTemplate);
+
+      sessionData.setResponseMessage(response);
+    });
+
     return responseFuture.compose(loginResponse -> {
       log.info("LoginResponse: {}", () -> loginResponse);
 

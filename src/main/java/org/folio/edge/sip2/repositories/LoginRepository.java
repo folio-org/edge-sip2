@@ -44,12 +44,12 @@ public class LoginRepository {
     sessionData.setUsername(user);
     sessionData.setPassword(password);
     Future<String> authToken = null;
-    try {
-      authToken = resourceProvider.loginWithSupplier(user,
-        () -> Future.succeededFuture(password), sessionData);
-    } catch (ClientException e) {
-      log.info("Caught it here");
-    }
+    authToken = resourceProvider.loginWithSupplier(user,
+        () -> Future.succeededFuture(password), sessionData)
+        .onFailure(e -> {
+          log.error("Login does not have a valid authentication token");
+          sessionData.setAuthenticationToken(null);
+        });
     if (authToken == null) {
       // Can't continue without an auth token
       log.error("Login does not have a valid authentication token");

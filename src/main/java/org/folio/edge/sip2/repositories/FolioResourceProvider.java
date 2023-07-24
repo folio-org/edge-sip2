@@ -96,18 +96,16 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         .okapiUrl(okapiUrl)
         .webClient(client);
 
-    try {
-      tokenClient = Client.createLoginClient(clientOptions, TokenCacheFactory.get(),
+    tokenClient = Client.createLoginClient(clientOptions, TokenCacheFactory.get(),
         sessionData.getTenant(), username, getPasswordSupplier);
-    } catch (Exception e) {
-      log.info("Inside Catch ");
-      sessionData.setAuthenticationToken(null);
-      sessionData.setLoginErrorMessage(e.getMessage());
-      throw new ClientException(e.getMessage());
-    } finally {
-      return tokenClient != null ? tokenClient.getToken()
-        : null;
-    }
+    tokenClient.getToken()
+        .onFailure(e -> {
+          log.error("Unable to get the access token {}",e);
+          sessionData.setAuthenticationToken(null);
+          sessionData.setLoginErrorMessage(e.getMessage());
+          throw new ClientException(e.getMessage());
+        });
+    return tokenClient.getToken();
   }
 
   @Override

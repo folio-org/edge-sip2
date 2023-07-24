@@ -228,10 +228,14 @@ public class MainVerticle extends AbstractVerticle {
               }).onFailure(e -> {
                 String errorMsg = "Failed to respond to request";
                 log.error(errorMsg, e);
+                String responseMessage = sessionData.getResponseMessage();
+                if (responseMessage != null) {
+                  handler.writeHistory(sessionData, message, responseMessage);
+                }
                 sample.stop(metrics.commandTimer(message.getCommand()));
-                socket.write(e.getMessage() + messageDelimiter,
+                socket.write(responseMessage != null ? responseMessage
+                    : e.getMessage() + messageDelimiter,
                     sessionData.getCharset());
-
                 metrics.responseError();
               });
         } catch (Exception ex) {

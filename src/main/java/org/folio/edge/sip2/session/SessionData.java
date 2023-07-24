@@ -13,6 +13,8 @@ public class SessionData {
 
   private String loginErrorMessage;
 
+  private String responseMessage;
+
   private String scLocation;
   private String authenticationToken;
   private int maxPrintWidth = -1; // since 0 is valid
@@ -133,5 +135,13 @@ public class SessionData {
 
   public void setLoginErrorMessage(String loginErrorMessage) {
     this.loginErrorMessage = loginErrorMessage;
+  }
+
+  public void setResponseMessage(String responseMessage) {
+    this.responseMessage = responseMessage;
+  }
+
+  public String getResponseMessage() {
+    return this.responseMessage;
   }
 }
