@@ -1,5 +1,7 @@
 package org.folio.edge.sip2.handlers;
 
+import static java.lang.Boolean.FALSE;
+
 import freemarker.template.Template;
 import io.vertx.core.Future;
 import java.util.HashMap;
@@ -36,7 +38,13 @@ public class LoginHandler implements ISip2RequestHandler {
 
     log.info("LoginHandler :: execute Login: {}", login::getLoginLogInfo);
 
-    final Future<LoginResponse> responseFuture = loginRepository.login(login, sessionData);
+    Future<LoginResponse> responseFuture = loginRepository.login(login, sessionData);
+
+    if (responseFuture == null) {
+      log.error("Login does not have a valid authentication token");
+      sessionData.setAuthenticationToken(null);
+      responseFuture = Future.succeededFuture(LoginResponse.builder().ok(FALSE).build());
+    }
 
     return responseFuture.compose(loginResponse -> {
       log.info("LoginResponse: {}", () -> loginResponse);
