@@ -68,6 +68,6 @@ public class DefaultResourceProvider implements IResourceProvider<IRequestData> 
   public Future<String> loginWithSupplier(String username,
                                           Supplier<Future<String>> getPasswordSupplier,
                                           SessionData sessionData) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 }
