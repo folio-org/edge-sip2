@@ -143,9 +143,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
     loginWithSupplier(sessionData.getUsername(),
         () -> Future.succeededFuture(sessionData.getPassword()), sessionData)
-        .onSuccess(token -> {
-          sessionData.setAuthenticationToken(token);
-        });
+        .onSuccess(sessionData::setAuthenticationToken);
 
     final String authenticationToken = sessionData.getAuthenticationToken();
     if (authenticationToken != null) {

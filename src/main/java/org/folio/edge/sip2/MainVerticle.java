@@ -19,8 +19,6 @@ import static org.folio.edge.sip2.parser.Command.UNKNOWN;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.util.StringUtils;
-import io.netty.util.internal.StringUtil;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.core.AbstractVerticle;

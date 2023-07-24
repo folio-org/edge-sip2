@@ -4,9 +4,6 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
 import org.apache.logging.log4j.LogManager;
@@ -77,48 +74,9 @@ public class LoginRepository {
    */
   public Future<String> patronLogin(String patronUserName, String patronPassword,
       SessionData sessionData) {
-    final JsonObject credentials = new JsonObject()
-        .put("username", patronUserName)
-        .put("password", patronPassword);
-
     Future<String> authToken = resourceProvider.loginWithSupplier(patronUserName,
         () -> Future.succeededFuture(patronPassword), sessionData);
-    authToken.onFailure(throwable -> {
-      sessionData.setLoginErrorMessage(throwable.getMessage());
-    });
+    authToken.onFailure(throwable -> sessionData.setLoginErrorMessage(throwable.getMessage()));
     return authToken;
-  }
-
-
-  private class LoginRequestData implements IRequestData {
-    private final JsonObject body;
-    private final SessionData sessionData;
-
-    private LoginRequestData(JsonObject body, SessionData sessionData) {
-      this.body = body;
-      this.sessionData = sessionData;
-    }
-
-    @Override
-    public String getPath() {
-      return "/authn/login";
-    }
-
-    @Override
-    public Map<String, String> getHeaders() {
-      Map<String, String> headers = new HashMap<>();
-      headers.put("accept", "application/json");
-      return headers;
-    }
-
-    @Override
-    public JsonObject getBody() {
-      return body;
-    }
-
-    @Override
-    public SessionData getSessionData() {
-      return sessionData;
-    }
   }
 }
