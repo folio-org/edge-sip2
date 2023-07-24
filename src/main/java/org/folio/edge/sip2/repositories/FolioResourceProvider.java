@@ -104,9 +104,10 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
       sessionData.setAuthenticationToken(null);
       sessionData.setLoginErrorMessage(e.getMessage());
       throw new ClientException(e.getMessage());
-      //return null;
+    } finally {
+      return tokenClient != null ? tokenClient.getToken()
+        : null;
     }
-    return tokenClient.getToken();
   }
 
   @Override
