@@ -28,6 +28,10 @@ public class LoginRepository {
         "Resource provider cannot be null");
   }
 
+  private class LoginResponseErrorHandler {
+
+  }
+
   /**
    * Perform a login.
    *
@@ -44,7 +48,10 @@ public class LoginRepository {
 
     Future<String> authToken = resourceProvider.loginWithSupplier(user,
         () -> Future.succeededFuture(password), sessionData)
-        .onFailure(e -> log.error("Request failed", e));
+        .onFailure(e -> {
+          log.error("Login request failed {}", e);
+          Future.succeededFuture(LoginResponse.builder().ok(FALSE).build());
+        });
 
     if (authToken == null) {
       // Can't continue without an auth token

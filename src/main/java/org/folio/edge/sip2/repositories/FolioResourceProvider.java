@@ -87,8 +87,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   public Future<String> loginWithSupplier(String username,
                                           Supplier<Future<String>> getPasswordSupplier,
                                           SessionData sessionData) {
-    log.info("loginWithSupplier username={} cache={} password={}",
-        username, TokenCacheFactory.get(), getPasswordSupplier.get());
+    log.info("loginWithSupplier username={} cache={}",
+        username, TokenCacheFactory.get());
     ClientOptions clientOptions = new ClientOptions()
         .okapiUrl(okapiUrl)
         .webClient(client);
