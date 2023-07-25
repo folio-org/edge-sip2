@@ -565,7 +565,7 @@ public class PatronRepository {
   private List<PatronInformationResponse.PatronAccount> getPatronAccountList(
       JsonObject accountsJson) {
     List<PatronInformationResponse.PatronAccount> accountList = new ArrayList<>();
-    final JsonArray accountArray = accountsJson.getJsonArray("accounts");
+    final JsonArray accountArray = accountsJson.getJsonArray(FIELD_ACCOUNTS);
     for (Object ob : accountArray) {
       JsonObject jo = (JsonObject)ob;
       PatronInformationResponse.PatronAccount patronAccount =

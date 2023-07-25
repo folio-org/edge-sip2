@@ -131,7 +131,7 @@ public class PatronInformationHandlerTests {
   }
 
   @Test
-  public void canExecuteASamplePatronInformationUsingHandlerWithExtendedFees(
+  void canExecuteASamplePatronInformationUsingHandlerWithExtendedFees(
       @Mock PatronRepository mockPatronRepository,
       Vertx vertx,
       VertxTestContext testContext) {
