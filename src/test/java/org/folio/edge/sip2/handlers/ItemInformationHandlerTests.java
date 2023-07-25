@@ -56,7 +56,7 @@ class ItemInformationHandlerTests {
 
     handler.execute(itemInformation, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
-          final String expectedString = "1803BT01|"
+          final String expectedString = "180301"
               + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
               + "AB" + itemIdentifier + "|AJ|AQMain Library|AP|";
 

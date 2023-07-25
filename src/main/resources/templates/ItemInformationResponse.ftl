@@ -2,19 +2,19 @@
 18<#t>
 <#-- circulation Status: 2-char, fixed-length required field: 00 thru 99 -->
 <@lib.circulationStatus value=itemInformationResponse.circulationStatus/>
-<#-- hold queue length: optional -->
-<@lib.holdQueueLength value=itemInformationResponse.holdQueueLength!"" required=false/>
 <#-- security Marker: 2-char, fixed-length required field: 00 thru 99-->
 <@lib.securityMarker value=itemInformationResponse.securityMarker!""/>
 <#--
     fee type: 2-char, fixed-length optional field (01 thru 99)
     The type of fee associated with checking out this item
 -->
-<@lib.feeType value=itemInformationResponse.feeType!"OTHER_UNKNOWN"/>
+<@lib.feeTypeFixed value=itemInformationResponse.feeType!"OTHER_UNKNOWN"/>
 <#--
     transaction date: 18-char, fixed-length required field: YYYYMMDDZZZZHHMMSS
 -->
 <@lib.transactionDate value=itemInformationResponse.transactionDate/>
+<#-- hold queue length: optional -->
+<@lib.holdQueueLength value=itemInformationResponse.holdQueueLength!"" required=false/>
 <#-- due date: 18-char, fixed-length field: YYYYMMDDZZZZHHMMS -->
 <@lib.dueDate value=itemInformationResponse.dueDate!"" required=false/>
 <#-- recall date: 18-char, fixed-lengt  field: YYYYMMDDZZZZHHMMSS -->
