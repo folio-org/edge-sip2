@@ -13,7 +13,7 @@ public class SessionData {
 
   private String loginErrorMessage;
 
-  private String responseMessage;
+  private Object responseMessage;
 
   private String scLocation;
   private String authenticationToken;
@@ -137,11 +137,11 @@ public class SessionData {
     this.loginErrorMessage = loginErrorMessage;
   }
 
-  public void setResponseMessage(String responseMessage) {
+  public void setResponseMessage(Object responseMessage) {
     this.responseMessage = responseMessage;
   }
 
-  public String getResponseMessage() {
+  public Object getResponseMessage() {
     return this.responseMessage;
   }
 }

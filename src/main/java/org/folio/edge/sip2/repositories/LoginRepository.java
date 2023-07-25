@@ -45,11 +45,8 @@ public class LoginRepository {
     sessionData.setPassword(password);
     Future<String> authToken = null;
     authToken = resourceProvider.loginWithSupplier(user,
-        () -> Future.succeededFuture(password), sessionData)
-        .onFailure(e -> {
-          log.error("Login does not have a valid authentication token");
-          sessionData.setAuthenticationToken(null);
-        });
+        () -> Future.succeededFuture(password), sessionData);
+
     if (authToken == null) {
       // Can't continue without an auth token
       log.error("Login does not have a valid authentication token");

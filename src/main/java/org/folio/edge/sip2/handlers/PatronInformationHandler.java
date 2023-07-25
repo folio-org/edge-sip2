@@ -44,21 +44,33 @@ public class PatronInformationHandler implements ISip2RequestHandler {
     final Future<PatronInformationResponse> patronFuture =
         patronRepository.performPatronInformationCommand(patronInformation, sessionData);
 
-    return patronFuture.compose(patronInformationResponse -> {
-      log.debug("PatronInformationResponse: {}", () -> patronInformationResponse);
-
-      final Map<String, Object> root = new HashMap<>();
-      root.put("formatDateTime", new FormatDateTimeMethodModel());
-      root.put("delimiter", sessionData.getFieldDelimiter());
-      root.put("patronInformationResponse", patronInformationResponse);
-      root.put("maxLength", sessionData.getMaxPrintWidth());
-      root.put("timezone", sessionData.getTimeZone());
-
-      final String response = FreemarkerUtils.executeFreemarkerTemplate(root, commandTemplate);
-
-      log.debug("SIP patron information response: {}", response);
-
-      return Future.succeededFuture(response);
+    patronFuture.onFailure(throwable -> {
+      sessionData.setResponseMessage(
+          createPatronInformationResponse(sessionData,
+            (PatronInformationResponse) sessionData.getResponseMessage()));
     });
+
+    return patronFuture.compose(patronInformationResponse -> Future.succeededFuture(
+      createPatronInformationResponse(sessionData,
+        patronInformationResponse)));
+  }
+
+  private String createPatronInformationResponse(
+      SessionData sessionData,
+      PatronInformationResponse patronInformationResponse) {
+    log.debug("PatronInformationResponse: {}", () -> patronInformationResponse);
+
+    final Map<String, Object> root = new HashMap<>();
+    root.put("formatDateTime", new FormatDateTimeMethodModel());
+    root.put("delimiter", sessionData.getFieldDelimiter());
+    root.put("patronInformationResponse", patronInformationResponse);
+    root.put("maxLength", sessionData.getMaxPrintWidth());
+    root.put("timezone", sessionData.getTimeZone());
+
+    final String response = FreemarkerUtils.executeFreemarkerTemplate(root, commandTemplate);
+
+    log.debug("SIP patron information response: {}", response);
+    sessionData.setResponseMessage(response);
+    return response;
   }
 }

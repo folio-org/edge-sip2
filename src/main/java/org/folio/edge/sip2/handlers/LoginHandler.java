@@ -52,7 +52,9 @@ public class LoginHandler implements ISip2RequestHandler {
           .executeFreemarkerTemplate(root, commandTemplate);
 
       sessionData.setResponseMessage(response);
+
     });
+
 
     return responseFuture.compose(loginResponse -> {
       log.info("LoginResponse: {}", () -> loginResponse);

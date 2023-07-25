@@ -105,6 +105,9 @@ public class PatronRepository {
     final String patronPassword = patronInformation.getPatronPassword();
 
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+      .onFailure(h -> {
+        sessionData.setResponseMessage(invalidPatron(patronInformation, FALSE).result());
+      })
         .compose(verification -> {
           if (FALSE.equals(verification.getPasswordVerified())) {
             return invalidPatron(patronInformation, FALSE);
@@ -149,6 +152,9 @@ public class PatronRepository {
         sessionData.isPatronPasswordVerificationRequired());
 
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+      .onFailure(throwable -> {
+        sessionData.setResponseMessage(invalidPatron(patronStatus, FALSE).result());
+      })
         .compose(verification -> {
           if (FALSE.equals(verification.getPasswordVerified())) {
             return invalidPatron(patronStatus, FALSE);

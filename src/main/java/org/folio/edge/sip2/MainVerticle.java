@@ -228,7 +228,7 @@ public class MainVerticle extends AbstractVerticle {
               }).onFailure(e -> {
                 String errorMsg = "Failed to respond to request";
                 log.error(errorMsg, e);
-                String responseMessage = sessionData.getResponseMessage();
+                String responseMessage = (String) sessionData.getResponseMessage();
                 if (responseMessage != null) {
                   handler.writeHistory(sessionData, message, responseMessage);
                 }
