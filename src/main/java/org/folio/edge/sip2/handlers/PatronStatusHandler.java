@@ -15,6 +15,7 @@ import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 
 public class PatronStatusHandler implements ISip2RequestHandler {
@@ -44,8 +45,10 @@ public class PatronStatusHandler implements ISip2RequestHandler {
         patronRepository.performPatronStatusCommand(patronStatus, sessionData);
 
     patronStatusFuture.onFailure(throwable -> {
-      sessionData.setResponseMessage(createPatronStatusResponse(sessionData,
-          (PatronStatusResponse) sessionData.getResponseMessage()));
+      if (throwable instanceof ClientException) {
+        sessionData.setResponseMessage(createPatronStatusResponse(sessionData,
+            (PatronStatusResponse) sessionData.getResponseMessage()));
+      }
     });
 
     return patronStatusFuture.compose(patronStatusResponse -> Future.succeededFuture(

@@ -15,6 +15,7 @@ import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 public class PatronInformationHandler implements ISip2RequestHandler {
   private static final Logger log = LogManager.getLogger();
@@ -45,9 +46,11 @@ public class PatronInformationHandler implements ISip2RequestHandler {
         patronRepository.performPatronInformationCommand(patronInformation, sessionData);
 
     patronFuture.onFailure(throwable -> {
-      sessionData.setResponseMessage(
-          createPatronInformationResponse(sessionData,
-            (PatronInformationResponse) sessionData.getResponseMessage()));
+      if (throwable instanceof ClientException) {
+        sessionData.setResponseMessage(
+            createPatronInformationResponse(sessionData,
+              (PatronInformationResponse) sessionData.getResponseMessage()));
+      }
     });
 
     return patronFuture.compose(patronInformationResponse -> Future.succeededFuture(
@@ -55,6 +58,12 @@ public class PatronInformationHandler implements ISip2RequestHandler {
         patronInformationResponse)));
   }
 
+  /**
+   * Create Patron Information Response message.
+   * @param sessionData sessionData
+   * @param patronInformationResponse patronInformationResponse
+   * @return
+   */
   private String createPatronInformationResponse(
       SessionData sessionData,
       PatronInformationResponse patronInformationResponse) {
@@ -68,9 +77,7 @@ public class PatronInformationHandler implements ISip2RequestHandler {
     root.put("timezone", sessionData.getTimeZone());
 
     final String response = FreemarkerUtils.executeFreemarkerTemplate(root, commandTemplate);
-
     log.debug("SIP patron information response: {}", response);
-    sessionData.setResponseMessage(response);
     return response;
   }
 }

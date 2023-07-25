@@ -36,6 +36,7 @@ import org.folio.edge.sip2.domain.messages.responses.RenewResponse;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 /**
  * Provides interaction with the circulation service.
@@ -167,6 +168,23 @@ public class CirculationRepository {
     final String patronPassword = checkout.getPatronPassword();
 
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+      .onFailure(throwable -> {
+        if (throwable instanceof ClientException) {
+          sessionData.setResponseMessage(CheckoutResponse.builder()
+              .ok(FALSE)
+              .renewalOk(FALSE)
+              .magneticMedia(null)
+              .desensitize(FALSE)
+              .transactionDate(OffsetDateTime.now(clock))
+              .institutionId(institutionId)
+              .patronIdentifier(patronIdentifier)
+              .itemIdentifier(itemIdentifier)
+              .titleIdentifier(UNKNOWN)
+              .dueDate(OffsetDateTime.now(clock))
+              .screenMessage(Collections.singletonList(sessionData.getLoginErrorMessage()))
+              .build());
+        }
+      })
       .compose(verification -> {
         log.info("performCheckoutCommand verification:{}",verification);
         if (FALSE.equals(verification.getPasswordVerified())) {
@@ -587,6 +605,17 @@ public class CirculationRepository {
     final String barcode = renew.getItemIdentifier();
 
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+      .onFailure(throwable -> {
+        if (throwable instanceof ClientException) {
+          sessionData.setResponseMessage(RenewResponse.builder()
+                .ok(FALSE)
+                .renewalOk(FALSE)
+                .transactionDate(OffsetDateTime.now(clock))
+                .institutionId(institutionId)
+                .screenMessage(Collections.singletonList(sessionData.getLoginErrorMessage()))
+                .build());
+        }
+      })
       .compose(verification -> {
         if (FALSE.equals(verification.getPasswordVerified())) {
           return Future.succeededFuture(RenewResponse.builder()
@@ -664,6 +693,20 @@ public class CirculationRepository {
     List<String> emptyItems = new ArrayList<String>();
 
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+      .onFailure(throwable -> {
+        if (throwable instanceof ClientException) {
+          sessionData.setResponseMessage(RenewAllResponse.builder()
+              .ok(FALSE)
+              .transactionDate(OffsetDateTime.now(clock))
+              .institutionId(institutionId)
+              .renewedCount(0)
+              .unrenewedCount(0)
+              .renewedItems(emptyItems)
+              .unrenewedItems(emptyItems)
+              .screenMessage(Collections.singletonList(sessionData.getLoginErrorMessage()))
+              .build());
+        }
+      })
         .compose(verification -> {
           if (FALSE.equals(verification.getPasswordVerified())) {
             return Future.succeededFuture(RenewAllResponse.builder()

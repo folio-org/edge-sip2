@@ -43,31 +43,27 @@ public class LoginRepository {
     final String locationCode = login.getLocationCode();
     sessionData.setUsername(user);
     sessionData.setPassword(password);
-    try {
-      Future<String> authToken = null;
-      authToken = resourceProvider.loginWithSupplier(user,
+
+    Future<String> authToken = null;
+    authToken = resourceProvider.loginWithSupplier(user,
         () -> Future.succeededFuture(password), sessionData);
 
-      if (authToken == null) {
-        // Can't continue without an auth token
-        log.error("Login does not have a valid authentication token");
-        sessionData.setAuthenticationToken(null);
-        return Future.succeededFuture(LoginResponse.builder().ok(FALSE).build());
-      }
-
-      return authToken
-        .compose(token -> {
-          sessionData.setAuthenticationToken(token);
-          sessionData.setScLocation(locationCode);
-          return Future.succeededFuture(
-            LoginResponse.builder()
-              .ok(token == null ? FALSE : TRUE)
-              .build());
-        });
-    } catch (Exception e) {
-      log.info("Exception Caught so returning null");
+    if (authToken == null) {
+      // Can't continue without an auth token
+      log.error("Login does not have a valid authentication token");
+      sessionData.setAuthenticationToken(null);
       return Future.succeededFuture(LoginResponse.builder().ok(FALSE).build());
     }
+
+    return authToken
+     .compose(token -> {
+       sessionData.setAuthenticationToken(token);
+       sessionData.setScLocation(locationCode);
+       return Future.succeededFuture(
+        LoginResponse.builder()
+          .ok(token == null ? FALSE : TRUE)
+          .build());
+     });
   }
 
 
