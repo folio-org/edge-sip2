@@ -103,7 +103,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
           log.error("Unable to get the access token {}",e);
           sessionData.setAuthenticationToken(null);
           sessionData.setLoginErrorMessage(e.getMessage());
-          Future.succeededFuture("failed");
+          Future.succeededFuture(null);
         })
       .onSuccess(x -> {
         log.info("On success");

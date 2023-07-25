@@ -48,18 +48,23 @@ public class LoginRepository {
     authToken = resourceProvider.loginWithSupplier(user,
         () -> Future.succeededFuture(password), sessionData)
         .onFailure(e -> {
-          log.error("Login does not have a valid authentication token");
+          log.error("onFailure:: Login does not have a valid authentication token");
           sessionData.setAuthenticationToken(null);
         });
-    if (authToken == null) {
-      // Can't continue without an auth token
-      log.error("Login does not have a valid authentication token");
-      sessionData.setAuthenticationToken(null);
-      return Future.succeededFuture(LoginResponse.builder().ok(FALSE).build());
-    }
-    log.info("Setting auth token in session data");
+//    if (authToken == null) {
+//      // Can't continue without an auth token
+//      log.error("authToken:: Login does not have a valid authentication token");
+//      sessionData.setAuthenticationToken(null);
+//      return Future.succeededFuture(LoginResponse.builder().ok(FALSE).build());
+//    }
+//    log.info("Setting auth token in session data");
     return authToken
      .compose(token -> {
+       if(token==null){
+         log.error("authToken:: Login does not have a valid authentication token as token is null");
+         sessionData.setAuthenticationToken(null);
+         return Future.succeededFuture(LoginResponse.builder().ok(FALSE).build());
+       }
        sessionData.setAuthenticationToken(token);
        sessionData.setScLocation(locationCode);
        return Future.succeededFuture(
