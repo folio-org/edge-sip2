@@ -38,6 +38,7 @@ public class FeeFinesRepository {
   private static final Logger log = LogManager.getLogger();
   private static final String HEADER_ACCEPT = "accept";
   private static final String MIMETYPE_JSON = "application/json";
+  private static final String ACCOUNTS_KEY = "accounts";
   private final IResourceProvider<IRequestData> resourceProvider;
   private final UsersRepository usersRepository;
   private Clock clock;
@@ -143,9 +144,9 @@ public class FeeFinesRepository {
       .compose(accountJson -> {
         List<String> idList = getFeeFineIdList(accountJson);
         return getFeeFinesByIds(idList, sessionData)
-            .compose(feeFinesJson -> {
-              return Future.succeededFuture(populateFeeFinesDetails(accountJson, feeFinesJson));
-            });
+            .compose(feeFinesJson ->
+                Future.succeededFuture(populateFeeFinesDetails(accountJson, feeFinesJson))
+            );
       });
   }
 
@@ -420,7 +421,7 @@ public class FeeFinesRepository {
             .compose(resource -> {
               final BigDecimal amountPaid = new BigDecimal(feePaid.getFeeAmount(), moneyFormat);
               JsonObject accts = resource.getResource();
-              final JsonArray acctList = accts.getJsonArray("accounts");
+              final JsonArray acctList = accts.getJsonArray(ACCOUNTS_KEY);
               final BigDecimal amountTotal = totalAmount(acctList).round(moneyFormat);
               log.debug("bdAmountPaid = {}", amountPaid);
               log.debug("bdAmountTotal = {}", amountTotal);
@@ -501,7 +502,7 @@ public class FeeFinesRepository {
 
   private List<String> getFeeFineIdList(JsonObject accountJson) {
     List<String> idList = new ArrayList<>();
-    JsonArray accountArray = accountJson.getJsonArray("accounts");
+    JsonArray accountArray = accountJson.getJsonArray(ACCOUNTS_KEY);
     if (accountArray != null) {
       for (Object ob : accountArray) {
         String id = ((JsonObject)ob).getString("id");
@@ -513,7 +514,7 @@ public class FeeFinesRepository {
 
   private JsonObject populateFeeFinesDetails(JsonObject accountJson, JsonObject feeFinesJson) {
     if (accountJson != null && feeFinesJson != null) {
-      JsonArray accountArray = accountJson.getJsonArray("accounts");
+      JsonArray accountArray = accountJson.getJsonArray(ACCOUNTS_KEY);
       JsonArray feeFinesArray = feeFinesJson.getJsonArray("feefines");
       if (feeFinesArray != null && accountArray != null) {
         for (Object ob : accountArray) {

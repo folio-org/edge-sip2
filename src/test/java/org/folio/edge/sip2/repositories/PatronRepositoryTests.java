@@ -843,7 +843,7 @@ public class PatronRepositoryTests {
   }
 
   @Test
-  public void canPatronInformationWithExtendedFees(Vertx vertx, VertxTestContext testContext,
+  void canPatronInformationWithExtendedFees(Vertx vertx, VertxTestContext testContext,
        @Mock UsersRepository mockUsersRepository,
        @Mock CirculationRepository mockCirculationRepository,
        @Mock FeeFinesRepository mockFeeFinesRepository,

@@ -54,6 +54,8 @@ import org.folio.edge.sip2.session.SessionData;
  *
  */
 public class PatronRepository {
+  private static final String FIELD_ACCOUNTS = "accounts";
+  private static final String FIELD_REMAINING = "remaining";
   private static final String FIELD_REQUESTS = "requests";
   private static final String FIELD_TITLE = "title";
   private static final String FIELD_TOTAL_RECORDS = "totalRecords";
@@ -335,10 +337,10 @@ public class PatronRepository {
       JsonObject jo,
       PatronStatusResponseBuilder builder) {
 
-    final JsonArray arr = jo.getJsonArray("accounts");
+    final JsonArray arr = jo.getJsonArray(FIELD_ACCOUNTS);
     Float total = 0.0f;
     for (int i = 0;i < arr.size();i++) {
-      total += arr.getJsonObject(i).getFloat("remaining");
+      total += arr.getJsonObject(i).getFloat(FIELD_REMAINING);
     }
     log.debug("Total is {}", total);
     return builder.feeAmount(total.toString());
@@ -571,12 +573,12 @@ public class PatronRepository {
           new PatronInformationResponse.PatronAccount();
       patronAccount.setFeeFineAmount(jo.getNumber("amount") != null
           ? jo.getNumber("amount").doubleValue() : null);
-      patronAccount.setFeeFineRemaining(jo.getNumber("remaining") != null
-          ? jo.getNumber("remaining").doubleValue() : null);
+      patronAccount.setFeeFineRemaining(jo.getNumber(FIELD_REMAINING) != null
+          ? jo.getNumber(FIELD_REMAINING).doubleValue() : null);
       patronAccount.setItemBarcode(jo.getString("barcode"));
       patronAccount.setFeeFineId(jo.getString("feeFineId"));
       patronAccount.setFeeFineType(jo.getString("feeFineType"));
-      patronAccount.setItemTitle(jo.getString("title"));
+      patronAccount.setItemTitle(jo.getString(FIELD_TITLE));
       patronAccount.setFeeCreationDate(jo.getString("dateCreated") != null
           ? OffsetDateTime.parse(jo.getString("dateCreated")) : null);
       accountList.add(patronAccount);
