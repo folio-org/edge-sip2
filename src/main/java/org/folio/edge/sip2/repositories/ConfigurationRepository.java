@@ -183,7 +183,7 @@ public class ConfigurationRepository {
       builder.supportedMessages(getSupportedMessagesFromJson(
           config.getJsonArray("supportedMessages")));
       sessionData.setPatronPasswordVerificationRequired(
-          config.getBoolean("patronPasswordVerificationRequired", Boolean.FALSE));
+          config.getBoolean("patronPasswordVerificationRequired", Boolean.TRUE));
     }
   }
 
