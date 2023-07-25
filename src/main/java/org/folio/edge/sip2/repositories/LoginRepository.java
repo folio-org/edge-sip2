@@ -44,6 +44,7 @@ public class LoginRepository {
     sessionData.setUsername(user);
     sessionData.setPassword(password);
     Future<String> authToken = null;
+    log.info("Inside login");
     authToken = resourceProvider.loginWithSupplier(user,
         () -> Future.succeededFuture(password), sessionData)
         .onFailure(e -> {
@@ -56,7 +57,7 @@ public class LoginRepository {
       sessionData.setAuthenticationToken(null);
       return Future.succeededFuture(LoginResponse.builder().ok(FALSE).build());
     }
-
+    log.info("Setting auth token in session data");
     return authToken
      .compose(token -> {
        sessionData.setAuthenticationToken(token);

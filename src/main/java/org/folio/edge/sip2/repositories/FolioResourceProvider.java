@@ -98,14 +98,17 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
     tokenClient = Client.createLoginClient(clientOptions, TokenCacheFactory.get(),
         sessionData.getTenant(), username, getPasswordSupplier);
-    tokenClient.getToken()
+    return tokenClient.getToken()
         .onFailure(e -> {
           log.error("Unable to get the access token {}",e);
           sessionData.setAuthenticationToken(null);
           sessionData.setLoginErrorMessage(e.getMessage());
-          throw new ClientException(e.getMessage());
-        });
-    return tokenClient.getToken();
+          Future.succeededFuture("failed");
+        })
+      .onSuccess(x -> {
+        log.info("On success");
+        Future.succeededFuture(x);
+      });
   }
 
   @Override
