@@ -184,7 +184,7 @@ public class MainVerticle extends AbstractVerticle {
             return;
           }
 
-          executeHandler(message, command,
+          executeHandler(message,
               sessionData, messageDelimiter,
               handler, sample,
               socket, metrics);
@@ -246,7 +246,6 @@ public class MainVerticle extends AbstractVerticle {
   /**
    * Execute the command.
    * @param message message
-   * @param command command
    * @param sessionData sessionData
    * @param messageDelimiter messageDelimiter
    * @param handler handler
@@ -255,7 +254,6 @@ public class MainVerticle extends AbstractVerticle {
    * @param metrics metrics
    */
   private void executeHandler(Message<Object> message,
-                              Command command,
                               SessionData sessionData,
                               String messageDelimiter,
                               ISip2RequestHandler handler,
