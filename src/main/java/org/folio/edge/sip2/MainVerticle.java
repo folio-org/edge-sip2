@@ -171,12 +171,8 @@ public class MainVerticle extends AbstractVerticle {
 
           //check if the previous message needs resending
           if (requiredResending(sessionData, message)) {
-            String prvMessage = sessionData
-                .getPreviousMessage()
-                .getPreviousMessageResponse();
-            log.info("Sending previous Sip response {}", prvMessage);
-            sample.stop(metrics.commandTimer(command));
-            socket.write(prvMessage, sessionData.getCharset());
+            resendPreviousMessage(sessionData, sample,
+                metrics, socket, command);
             return;
           }
 
@@ -188,34 +184,10 @@ public class MainVerticle extends AbstractVerticle {
             return;
           }
 
-          handler
-              .execute(message.getRequest(), sessionData)
-              .onSuccess(result -> {
-                final String responseMsg;
-                if (message.getCommand() == REQUEST_ACS_RESEND) {
-                  // we don't want to modify the response
-                  responseMsg = result;
-                } else {
-                  responseMsg = formatResponse(result, message, sessionData,
-                      messageDelimiter);
-                }
-                handler.writeHistory(sessionData, message, responseMsg);
-                log.info("Sip response {}", responseMsg);
-                sample.stop(metrics.commandTimer(message.getCommand()));
-                socket.write(responseMsg, sessionData.getCharset());
-              }).onFailure(e -> {
-                String errorMsg = "Failed to respond to request";
-                log.error(errorMsg, e);
-                String responseMessage = (String) sessionData.getErrorResponseMessage();
-                if (responseMessage != null) {
-                  handler.writeHistory(sessionData, message, responseMessage);
-                }
-                sample.stop(metrics.commandTimer(message.getCommand()));
-                socket.write(responseMessage != null ? responseMessage
-                    : e.getMessage() + messageDelimiter,
-                    sessionData.getCharset());
-                metrics.responseError();
-              });
+          executeHandler(message, command,
+              sessionData, messageDelimiter,
+              handler, sample,
+              socket, metrics);
         } catch (Exception ex) {
           String message = "Problems handling the request: " + ex.getMessage();
           log.error(message, ex);
@@ -223,7 +195,6 @@ public class MainVerticle extends AbstractVerticle {
           // Will find a better way to handle negative test cases.
           sample.stop(metrics.commandTimer(command));
           socket.write(message + messageDelimiter, sessionData.getCharset());
-
           metrics.requestError();
         }
       }));
@@ -239,6 +210,12 @@ public class MainVerticle extends AbstractVerticle {
     configRetriever = ConfigRetriever.create(vertx, crOptions);
 
     // after tenant config is loaded, start listening for messages
+    lsitenToMessages(startFuture);
+
+  }
+
+  private void lsitenToMessages(Promise<Void> startFuture) {
+
     configRetriever.getConfig(ar -> {
       if (ar.succeeded()) {
         multiTenantConfig = ar.result();
@@ -264,9 +241,81 @@ public class MainVerticle extends AbstractVerticle {
       multiTenantConfig = change.getNewConfiguration();
       log.info("Tenant config changed: {}", () -> multiTenantConfig.encodePrettily());
     });
-
   }
 
+  /**
+   * Execute the command.
+   * @param message message
+   * @param command command
+   * @param sessionData sessionData
+   * @param messageDelimiter messageDelimiter
+   * @param handler handler
+   * @param sample sample
+   * @param socket socket
+   * @param metrics metrics
+   */
+  private void executeHandler(Message<Object> message,
+                              Command command,
+                              SessionData sessionData,
+                              String messageDelimiter,
+                              ISip2RequestHandler handler,
+                              Timer.Sample sample,
+                              NetSocket socket,
+                              Metrics metrics) {
+    handler
+        .execute(message.getRequest(), sessionData)
+        .onSuccess(result -> {
+          final String responseMsg;
+          if (message.getCommand() == REQUEST_ACS_RESEND) {
+            // we don't want to modify the response
+            responseMsg = result;
+          } else {
+            responseMsg = formatResponse(result, message, sessionData,
+            messageDelimiter);
+          }
+          handler.writeHistory(sessionData, message, responseMsg);
+          log.info("Sip response {}", responseMsg);
+          sample.stop(metrics.commandTimer(message.getCommand()));
+          socket.write(responseMsg, sessionData.getCharset());
+        }).onFailure(e -> {
+          String errorMsg = "Failed to respond to request";
+          log.error(errorMsg, e);
+          String responseMessage = (String) sessionData.getErrorResponseMessage();
+          if (responseMessage != null) {
+            handler.writeHistory(sessionData, message, responseMessage);
+          }
+          sample.stop(metrics.commandTimer(message.getCommand()));
+          socket.write(responseMessage != null ? responseMessage
+              : e.getMessage() + messageDelimiter,
+              sessionData.getCharset());
+          metrics.responseError();
+        });
+  }
+
+  /**
+   * Resend the previous message.
+   * @param sessionData sessionData
+   * @param sample sample
+   * @param metrics metrics
+   * @param socket socket
+   * @param command command
+   */
+  private void resendPreviousMessage(SessionData sessionData,
+                                     Timer.Sample sample,
+                                     Metrics metrics,
+                                     NetSocket socket,
+                                     Command command) {
+    String prvMessage = sessionData
+        .getPreviousMessage()
+        .getPreviousMessageResponse();
+    log.info("Sending previous Sip response {}", prvMessage);
+    sample.stop(metrics.commandTimer(command));
+    socket.write(prvMessage, sessionData.getCharset());
+  }
+
+  /**
+   * Initialize the handlers.
+   */
   private void setupHanlders() {
     if (handlers == null) {
       String okapiUrl = config().getString("okapiUrl");
