@@ -167,6 +167,7 @@ public class PatronInformationHandlerTests {
         FreemarkerRepository.getInstance().getFreemarkerTemplate(PATRON_INFORMATION_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPatronPasswordVerificationRequired(TRUE);
     sessionData.setErrorResponseMessage(PatronInformationResponse.builder()
         .patronStatus(null)
         .language(ENGLISH)
