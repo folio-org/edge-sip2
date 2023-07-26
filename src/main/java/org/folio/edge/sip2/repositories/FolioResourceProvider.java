@@ -71,8 +71,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         // parameter (e.g. circulation). So we can't use the built-in JSON
         // predicate here.
         .expect(ResponsePredicate.contentType(Arrays.asList(
-            "application/json",
-            "application/json; charset=utf-8")))
+          "application/json",
+          "application/json; charset=utf-8")))
         .as(BodyCodec.jsonObject())
         .send()
         .map(FolioResourceProvider::toIResource)
@@ -152,9 +152,14 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
       request.putHeader(entry.getKey(), entry.getValue());
     }
 
-
-    sessionData.setAuthenticationToken(loginWithSupplier(sessionData.getUsername(),
-        () -> Future.succeededFuture(sessionData.getPassword()), sessionData).result());
+    Future<String> token = loginWithSupplier(sessionData.getUsername(),
+        () -> Future.succeededFuture(sessionData.getPassword()), sessionData);
+    token.onFailure(throwable -> {
+      sessionData.setResponseMessage("Access token missing.");
+    })
+          .onSuccess(accessToken -> {
+            sessionData.setAuthenticationToken(accessToken);
+          });
 
     final String authenticationToken = sessionData.getAuthenticationToken();
     if (authenticationToken != null) {

@@ -155,7 +155,6 @@ public class CirculationRepository {
 
   /**
    * Perform a checkout.
-   *
    * @param checkout the checkout domain object
    * @return the checkout response domain object
    */
@@ -170,37 +169,19 @@ public class CirculationRepository {
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
       .onFailure(throwable -> {
         if (throwable instanceof ClientException) {
-          sessionData.setResponseMessage(CheckoutResponse.builder()
-              .ok(FALSE)
-              .renewalOk(FALSE)
-              .magneticMedia(null)
-              .desensitize(FALSE)
-              .transactionDate(OffsetDateTime.now(clock))
-              .institutionId(institutionId)
-              .patronIdentifier(patronIdentifier)
-              .itemIdentifier(itemIdentifier)
-              .titleIdentifier(UNKNOWN)
-              .dueDate(OffsetDateTime.now(clock))
-              .screenMessage(Collections.singletonList(sessionData.getLoginErrorMessage()))
-              .build());
+          sessionData.setResponseMessage(
+              buildFailedCheckoutResponse(institutionId,
+              patronIdentifier, itemIdentifier, sessionData,
+              true, null));
         }
       })
       .compose(verification -> {
         log.info("performCheckoutCommand verification:{}",verification);
         if (FALSE.equals(verification.getPasswordVerified())) {
-          return Future.succeededFuture(CheckoutResponse.builder()
-            .ok(FALSE)
-            .renewalOk(FALSE)
-            .magneticMedia(null)
-            .desensitize(FALSE)
-            .transactionDate(OffsetDateTime.now(clock))
-            .institutionId(institutionId)
-            .patronIdentifier(patronIdentifier)
-            .itemIdentifier(itemIdentifier)
-            .titleIdentifier(UNKNOWN)
-            .dueDate(OffsetDateTime.now(clock))
-            .screenMessage(verification.getErrorMessages())
-            .build());
+          return Future.succeededFuture(
+            buildFailedCheckoutResponse(institutionId,
+            patronIdentifier, itemIdentifier, sessionData,
+              false, verification.getErrorMessages()));
         }
 
         final User user = verification.getUser();
@@ -249,6 +230,30 @@ public class CirculationRepository {
       });
   }
 
+  private CheckoutResponse buildFailedCheckoutResponse(String institutionId,
+                                                       String patronIdentifier,
+                                                       String itemIdentifier,
+                                                       SessionData sessionData,
+                                                       boolean fromClientException,
+                                                       List<String> errorMessages) {
+    return CheckoutResponse.builder()
+      .ok(FALSE)
+      .renewalOk(FALSE)
+      .magneticMedia(null)
+      .desensitize(FALSE)
+      .transactionDate(OffsetDateTime.now(clock))
+      .institutionId(institutionId)
+      .patronIdentifier(patronIdentifier)
+      .itemIdentifier(itemIdentifier)
+      .titleIdentifier(UNKNOWN)
+      .dueDate(OffsetDateTime.now(clock))
+      .screenMessage(fromClientException
+        ? Collections.singletonList(
+          sessionData.getLoginErrorMessage())
+        : errorMessages)
+      .build();
+  }
+
 
   private Future<IResource> addTitleIfNotFound(SessionData sessionData,
                                                String itemIdentifier, IResource circRes) {
@@ -290,6 +295,7 @@ public class CirculationRepository {
         new ItemRequestData(null, headers, sessionData, itemIdentifier);
 
     final Future<IResource> result = resourceProvider.retrieveResource(itemRequestData);
+
 
     return result
       .otherwise(Utils.handleSearchErrors(result.cause(), circErrorMessages))
@@ -607,24 +613,22 @@ public class CirculationRepository {
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
       .onFailure(throwable -> {
         if (throwable instanceof ClientException) {
-          sessionData.setResponseMessage(RenewResponse.builder()
-                .ok(FALSE)
-                .renewalOk(FALSE)
-                .transactionDate(OffsetDateTime.now(clock))
-                .institutionId(institutionId)
-                .screenMessage(Collections.singletonList(sessionData.getLoginErrorMessage()))
-                .build());
+          sessionData.setResponseMessage(
+              buildFailedRenewResponse(
+              institutionId,
+              sessionData,
+              true,
+              null));
         }
       })
       .compose(verification -> {
         if (FALSE.equals(verification.getPasswordVerified())) {
-          return Future.succeededFuture(RenewResponse.builder()
-            .ok(FALSE)
-            .renewalOk(FALSE)
-            .transactionDate(OffsetDateTime.now(clock))
-            .institutionId(institutionId)
-            .screenMessage(verification.getErrorMessages())
-            .build());
+          return Future.succeededFuture(
+            buildFailedRenewResponse(
+              institutionId,
+              sessionData,
+              false,
+              verification.getErrorMessages()));
         }
 
         final JsonObject body = new JsonObject()
@@ -672,6 +676,29 @@ public class CirculationRepository {
       });
   }
 
+  /**
+   * Build Failed Renew Response.
+   * @param institutionId institutionId
+   * @param sessionData sessionData
+   * @return
+   */
+  private RenewResponse buildFailedRenewResponse(
+      String institutionId,
+      SessionData sessionData,
+      boolean fromClientException,
+      List<String> errorMessage) {
+    return RenewResponse.builder()
+      .ok(FALSE)
+      .renewalOk(FALSE)
+      .transactionDate(OffsetDateTime.now(clock))
+      .institutionId(institutionId)
+      .screenMessage(fromClientException
+        ? Collections.singletonList(
+          sessionData.getLoginErrorMessage())
+        : errorMessage)
+      .build();
+  }
+
   RenewAllResponseBuilder doRenewals(JsonObject jo, RenewAllResponseBuilder builder) {
     log.debug("doRenewals: {} ", jo != null ? jo.encode() : null);
     return builder;
@@ -695,30 +722,20 @@ public class CirculationRepository {
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
       .onFailure(throwable -> {
         if (throwable instanceof ClientException) {
-          sessionData.setResponseMessage(RenewAllResponse.builder()
-              .ok(FALSE)
-              .transactionDate(OffsetDateTime.now(clock))
-              .institutionId(institutionId)
-              .renewedCount(0)
-              .unrenewedCount(0)
-              .renewedItems(emptyItems)
-              .unrenewedItems(emptyItems)
-              .screenMessage(Collections.singletonList(sessionData.getLoginErrorMessage()))
-              .build());
+          sessionData.setResponseMessage(
+              buildFailedRenewAllResponse(
+              institutionId,
+              emptyItems,
+              sessionData));
         }
       })
         .compose(verification -> {
           if (FALSE.equals(verification.getPasswordVerified())) {
-            return Future.succeededFuture(RenewAllResponse.builder()
-                .ok(FALSE)
-                .transactionDate(OffsetDateTime.now(clock))
-                .institutionId(institutionId)
-                .renewedCount(0)
-                .unrenewedCount(0)
-                .renewedItems(emptyItems)
-                .unrenewedItems(emptyItems)
-                .screenMessage(verification.getErrorMessages())
-                .build());
+            return Future.succeededFuture(
+              buildFailedRenewAllResponse(
+                institutionId,
+                emptyItems,
+                sessionData));
           }
 
           final User user = verification.getUser();
@@ -762,6 +779,21 @@ public class CirculationRepository {
         });
   }
 
+  private RenewAllResponse buildFailedRenewAllResponse(
+      String institutionId,
+      List<String> emptyItems,
+      SessionData sessionData) {
+    return RenewAllResponse.builder()
+      .ok(FALSE)
+      .transactionDate(OffsetDateTime.now(clock))
+      .institutionId(institutionId)
+      .renewedCount(0)
+      .unrenewedCount(0)
+      .renewedItems(emptyItems)
+      .unrenewedItems(emptyItems)
+      .screenMessage(Collections.singletonList(sessionData.getLoginErrorMessage()))
+      .build();
+  }
 
 
   private class RenewalRequestData extends CirculationRequestData {
