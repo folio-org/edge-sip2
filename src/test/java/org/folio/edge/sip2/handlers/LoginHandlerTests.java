@@ -13,13 +13,18 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import java.util.HashMap;
+import java.util.Map;
 import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
 import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
 import org.folio.edge.sip2.domain.messages.requests.Login;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
+import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
+import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.LoginRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -88,6 +93,53 @@ public class LoginHandlerTests {
           testContext.completeNow();
         })));
   }
+
+  @Test
+  public void canExecuteFailedLoginUsingHandler(
+      @Mock LoginRepository mockLoginRepository,
+      Vertx vertx,
+      VertxTestContext testContext) {
+    final Login login = Login.builder()
+        .uidAlgorithm(UIDAlgorithm.NO_ENCRYPTION)
+        .pwdAlgorithm(PWDAlgorithm.NO_ENCRYPTION)
+        .loginUserId("test")
+        .loginPassword("xyzzy")
+        .locationCode("library")
+        .build();
+
+    when(mockLoginRepository.login(any(), any()))
+        .thenReturn(Future.failedFuture(new ClientException("Incorrect username")));
+
+    final LoginHandler handler = new LoginHandler(mockLoginRepository,
+        FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    LoginResponse loginResponse = LoginResponse.builder().ok(FALSE).build();
+    sessionData.setErrorResponseMessage(constructLoginResponse(loginResponse));
+    handler.execute(login, sessionData).onComplete(
+        testContext.failing(sipMessage -> testContext.verify(() -> {
+          final String expectedString = "Incorrect username";
+
+          assertEquals(expectedString, sipMessage.getMessage());
+
+          testContext.completeNow();
+        })));
+  }
+
+  private String constructLoginResponse(LoginResponse loginResponse) {
+    final Map<String, Object> root = new HashMap<>();
+    root.put("formatDateTime", new FormatDateTimeMethodModel());
+    root.put("delimiter", "|");
+    root.put("loginResponse", loginResponse);
+
+    final String response = FreemarkerUtils
+        .executeFreemarkerTemplate(root,
+        FreemarkerRepository
+          .getInstance()
+          .getFreemarkerTemplate(LOGIN_RESPONSE));
+    return response;
+  }
+
 
   @Test
   public void cannotCreateHandlerDueToMissingLoginRepository() {
