@@ -61,7 +61,6 @@ import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.TenantUtils;
-import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -107,28 +106,7 @@ public class MainVerticle extends AbstractVerticle {
 
 
     // We need to reduce the complexity of this method...
-    if (handlers == null) {
-      String okapiUrl = config().getString("okapiUrl");
-      final WebClient webClient = WebClient.create(vertx);
-      final Injector injector = Guice.createInjector(
-          new FolioResourceProviderModule(okapiUrl, webClient),
-          new ApplicationModule());
-      handlers = new EnumMap<>(Command.class);
-      handlers.put(CHECKOUT, injector.getInstance(CheckoutHandler.class));
-      handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
-      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null,
-          null, null, okapiUrl, webClient));
-      handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
-      handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
-      handlers.put(PATRON_INFORMATION, injector.getInstance(PatronInformationHandler.class));
-      handlers.put(PATRON_STATUS_REQUEST, injector.getInstance(PatronStatusHandler.class));
-      handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
-      handlers.put(END_PATRON_SESSION, injector.getInstance(EndPatronSessionHandler.class));
-      handlers.put(FEE_PAID, injector.getInstance(FeePaidHandler.class));
-      handlers.put(ITEM_INFORMATION, injector.getInstance(ItemInformationHandler.class));
-      handlers.put(RENEW,  injector.getInstance(RenewHandler.class));
-      handlers.put(RENEW_ALL,  injector.getInstance(RenewAllHandler.class));
-    }
+    setupHanlders();
 
     //set Config object's defaults
     int port = config().getInteger("port"); // move port to netServerOptions
@@ -228,7 +206,7 @@ public class MainVerticle extends AbstractVerticle {
               }).onFailure(e -> {
                 String errorMsg = "Failed to respond to request";
                 log.error(errorMsg, e);
-                String responseMessage = (String) sessionData.getResponseMessage();
+                String responseMessage = (String) sessionData.getErrorResponseMessage();
                 if (responseMessage != null) {
                   handler.writeHistory(sessionData, message, responseMessage);
                 }
@@ -287,6 +265,31 @@ public class MainVerticle extends AbstractVerticle {
       log.info("Tenant config changed: {}", () -> multiTenantConfig.encodePrettily());
     });
 
+  }
+
+  private void setupHanlders() {
+    if (handlers == null) {
+      String okapiUrl = config().getString("okapiUrl");
+      final WebClient webClient = WebClient.create(vertx);
+      final Injector injector = Guice.createInjector(
+          new FolioResourceProviderModule(okapiUrl, webClient),
+          new ApplicationModule());
+      handlers = new EnumMap<>(Command.class);
+      handlers.put(CHECKOUT, injector.getInstance(CheckoutHandler.class));
+      handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
+      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null,
+          null, null, okapiUrl, webClient));
+      handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
+      handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
+      handlers.put(PATRON_INFORMATION, injector.getInstance(PatronInformationHandler.class));
+      handlers.put(PATRON_STATUS_REQUEST, injector.getInstance(PatronStatusHandler.class));
+      handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
+      handlers.put(END_PATRON_SESSION, injector.getInstance(EndPatronSessionHandler.class));
+      handlers.put(FEE_PAID, injector.getInstance(FeePaidHandler.class));
+      handlers.put(ITEM_INFORMATION, injector.getInstance(ItemInformationHandler.class));
+      handlers.put(RENEW,  injector.getInstance(RenewHandler.class));
+      handlers.put(RENEW_ALL,  injector.getInstance(RenewAllHandler.class));
+    }
   }
 
   private void callAdminHealthCheckService() {

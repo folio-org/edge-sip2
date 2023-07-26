@@ -10,7 +10,6 @@ import javax.inject.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
-import org.folio.edge.sip2.domain.messages.responses.CheckinResponse;
 import org.folio.edge.sip2.domain.messages.responses.CheckoutResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
@@ -45,10 +44,10 @@ public class CheckoutHandler implements ISip2RequestHandler {
 
     circulationFuture.onFailure(throwable -> {
       if (throwable instanceof ClientException) {
-        sessionData.setResponseMessage(
+        sessionData.setErrorResponseMessage(
             constructCheckoutResponse(
               sessionData,
-              (CheckoutResponse) sessionData.getResponseMessage()));
+              (CheckoutResponse) sessionData.getErrorResponseMessage()));
       }
     });
 

@@ -100,7 +100,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         sessionData.getTenant(), username, getPasswordSupplier);
     tokenClient.getToken()
         .onFailure(e -> {
-          log.error("Unable to get the access token {}",e);
+          log.error("Unable to get the access token ",e);
           sessionData.setAuthenticationToken(null);
           sessionData.setLoginErrorMessage(e.getMessage());
           throw new ClientException(e.getMessage());
@@ -154,12 +154,13 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
     Future<String> token = loginWithSupplier(sessionData.getUsername(),
         () -> Future.succeededFuture(sessionData.getPassword()), sessionData);
-    token.onFailure(throwable -> {
-      sessionData.setResponseMessage("Access token missing.");
-    })
-          .onSuccess(accessToken -> {
-            sessionData.setAuthenticationToken(accessToken);
-          });
+    token.onFailure(throwable ->
+        sessionData.setErrorResponseMessage("Access token missing.")
+    )
+        .onSuccess(accessToken -> {
+          sessionData.setErrorResponseMessage(null);
+          sessionData.setAuthenticationToken(accessToken);
+        });
 
     final String authenticationToken = sessionData.getAuthenticationToken();
     if (authenticationToken != null) {

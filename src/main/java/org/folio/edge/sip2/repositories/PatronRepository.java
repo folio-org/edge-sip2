@@ -108,7 +108,7 @@ public class PatronRepository {
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
       .onFailure(throwable -> {
         if (throwable instanceof ClientException) {
-          sessionData.setResponseMessage(invalidPatron(patronInformation, FALSE).result());
+          sessionData.setErrorResponseMessage(invalidPatron(patronInformation, FALSE).result());
         }
       })
         .compose(verification -> {
@@ -157,7 +157,7 @@ public class PatronRepository {
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
       .onFailure(throwable -> {
         if (throwable instanceof ClientException) {
-          sessionData.setResponseMessage(invalidPatron(patronStatus, FALSE).result());
+          sessionData.setErrorResponseMessage(invalidPatron(patronStatus, FALSE).result());
         }
       })
         .compose(verification -> {
@@ -209,7 +209,7 @@ public class PatronRepository {
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
       .onFailure(throwable -> {
         if (throwable instanceof ClientException) {
-          sessionData.setResponseMessage(EndSessionResponse.builder()
+          sessionData.setErrorResponseMessage(EndSessionResponse.builder()
               .endSession(FALSE)
               .transactionDate(OffsetDateTime.now(clock))
               .institutionId(endPatronSession.getInstitutionId())

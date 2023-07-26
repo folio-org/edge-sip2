@@ -46,8 +46,8 @@ public class PatronStatusHandler implements ISip2RequestHandler {
 
     patronStatusFuture.onFailure(throwable -> {
       if (throwable instanceof ClientException) {
-        sessionData.setResponseMessage(createPatronStatusResponse(sessionData,
-            (PatronStatusResponse) sessionData.getResponseMessage()));
+        sessionData.setErrorResponseMessage(createPatronStatusResponse(sessionData,
+            (PatronStatusResponse) sessionData.getErrorResponseMessage()));
       }
     });
 

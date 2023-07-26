@@ -11,7 +11,6 @@ import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.Login;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
 import org.folio.edge.sip2.session.SessionData;
-import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 /**
  * Provides interaction with the login service.

@@ -45,7 +45,7 @@ public class LoginHandler implements ISip2RequestHandler {
 
     responseFuture.onFailure(e -> {
       if (e instanceof ClientException) {
-        sessionData.setResponseMessage(
+        sessionData.setErrorResponseMessage(
             constructLoginResponse(
             sessionData,
             LoginResponse.builder().ok(FALSE).build()));

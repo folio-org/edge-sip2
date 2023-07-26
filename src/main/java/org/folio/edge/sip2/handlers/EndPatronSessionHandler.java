@@ -47,10 +47,10 @@ public class EndPatronSessionHandler implements ISip2RequestHandler {
 
     endPatronSessionFuture.onFailure(throwable -> {
       if (throwable instanceof ClientException) {
-        sessionData.setResponseMessage(
+        sessionData.setErrorResponseMessage(
             createEndPatronResponse(
               sessionData,
-              (EndSessionResponse) sessionData.getResponseMessage()));
+              (EndSessionResponse) sessionData.getErrorResponseMessage()));
       }
     });
 

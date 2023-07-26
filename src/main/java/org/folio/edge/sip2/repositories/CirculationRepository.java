@@ -169,7 +169,7 @@ public class CirculationRepository {
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
       .onFailure(throwable -> {
         if (throwable instanceof ClientException) {
-          sessionData.setResponseMessage(
+          sessionData.setErrorResponseMessage(
               buildFailedCheckoutResponse(institutionId,
               patronIdentifier, itemIdentifier, sessionData,
               true, null));
@@ -304,7 +304,7 @@ public class CirculationRepository {
 
   private IResource getTitleFromJson(IResource resource, List<String> circErrorMessages) {
 
-    if (resource != null && !resource.getErrorMessages().isEmpty()) {
+    if (!resource.getErrorMessages().isEmpty()) {
       return resource;
     }
 
@@ -613,7 +613,7 @@ public class CirculationRepository {
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
       .onFailure(throwable -> {
         if (throwable instanceof ClientException) {
-          sessionData.setResponseMessage(
+          sessionData.setErrorResponseMessage(
               buildFailedRenewResponse(
               institutionId,
               sessionData,
@@ -722,7 +722,7 @@ public class CirculationRepository {
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
       .onFailure(throwable -> {
         if (throwable instanceof ClientException) {
-          sessionData.setResponseMessage(
+          sessionData.setErrorResponseMessage(
               buildFailedRenewAllResponse(
               institutionId,
               emptyItems,

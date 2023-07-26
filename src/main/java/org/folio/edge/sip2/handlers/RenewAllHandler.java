@@ -43,10 +43,10 @@ public class RenewAllHandler implements ISip2RequestHandler {
 
     renewAllFuture.onFailure(throwable -> {
       if (throwable instanceof ClientException) {
-        sessionData.setResponseMessage(
+        sessionData.setErrorResponseMessage(
             constructRenewAllResponse(
             sessionData,
-            (RenewAllResponse) sessionData.getResponseMessage()));
+            (RenewAllResponse) sessionData.getErrorResponseMessage()));
       }
     });
 
