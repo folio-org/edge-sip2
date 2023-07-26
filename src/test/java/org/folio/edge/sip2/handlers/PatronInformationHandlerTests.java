@@ -26,6 +26,7 @@ import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -126,6 +127,89 @@ public class PatronInformationHandlerTests {
           testContext.completeNow();
         })));
   }
+
+  void cantExecutePatronInformation(
+       @Mock PatronRepository mockPatronRepository,
+       Vertx vertx,
+       VertxTestContext testContext) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final String institutionId = "diku";
+    final String patronIdentifier = "123456";
+    final Integer holdItemsCount = Integer.valueOf(5);
+    final Integer overdueItemsCount = Integer.valueOf(1);
+    final Integer recallItemsCount = Integer.valueOf(1);
+    final Integer chargedItemsCount = 3;
+    final Integer fineItemsCount = 1;
+    final String personalName = "Some Guy";
+    final List<String> holdItems = Arrays.asList("Book2", "Book3", "Book4");
+    final String homeAddress = "1234 Fake St., Anytown US";
+    final String emailAddress = "jdoe@example.com";
+    final String homePhoneNumber = "555-1234";
+    final String screenMessage = "This is a screen message";
+    final String printLine = "This is a print line";
+    final String borrowerType = "patron";
+    final String borrowerTypeDescription = "the library patrons";
+    final PatronInformation patronInformation = PatronInformation.builder()
+        .language(ENGLISH)
+        .transactionDate(OffsetDateTime.now(clock))
+        .summary(HOLD_ITEMS)
+        .institutionId(institutionId)
+        .patronIdentifier(patronIdentifier)
+        .terminalPassword("1234")
+        .patronPassword("xyzzy")
+        .startItem(Integer.valueOf(2))
+        .endItem(Integer.valueOf(4))
+        .build();
+    when(mockPatronRepository.performPatronInformationCommand(any(), any()))
+        .thenReturn(Future.failedFuture(new ClientException("Incorrect Username")));
+
+    final PatronInformationHandler handler = new PatronInformationHandler(mockPatronRepository,
+        FreemarkerRepository.getInstance().getFreemarkerTemplate(PATRON_INFORMATION_RESPONSE));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setErrorResponseMessage(PatronInformationResponse.builder()
+        .patronStatus(null)
+        .language(ENGLISH)
+        .transactionDate(OffsetDateTime.now(clock).plusSeconds(5))
+        .holdItemsCount(holdItemsCount)
+        .overdueItemsCount(overdueItemsCount)
+        .chargedItemsCount(3)
+        .fineItemsCount(1)
+        .recallItemsCount(recallItemsCount)
+        .unavailableHoldsCount(null)
+        .institutionId(institutionId)
+        .patronIdentifier(patronIdentifier)
+        .personalName(personalName)
+        .holdItemsLimit(null)
+        .overdueItemsLimit(null)
+        .chargedItemsLimit(null)
+        .validPatron(TRUE)
+        .validPatronPassword(null)
+        .currencyType(null)
+        .feeAmount(null)
+        .feeLimit(null)
+        .holdItems(holdItems)
+        .overdueItems(Collections.emptyList())
+        .chargedItems(Collections.emptyList())
+        .fineItems(Collections.emptyList())
+        .recallItems(Collections.emptyList())
+        .unavailableHoldItems(Collections.emptyList())
+        .homeAddress(homeAddress)
+        .emailAddress(emailAddress)
+        .homePhoneNumber(homePhoneNumber)
+        .screenMessage(Arrays.asList(screenMessage))
+        .printLine(Arrays.asList(printLine))
+        .borrowerType(borrowerType)
+        .borrowerTypeDescription(borrowerTypeDescription)
+        .build());
+
+    handler.execute(patronInformation, sessionData).onComplete(
+        testContext.failing(sipMessage -> testContext.verify(() -> {
+          assertEquals("Incorrect Username", sipMessage);
+          testContext.completeNow();
+        })));
+  }
+
 
   @Test
   public void cannotCreateHandlerDueToMissingPatronRepository() {
