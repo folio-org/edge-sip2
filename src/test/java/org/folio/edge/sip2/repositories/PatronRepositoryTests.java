@@ -1187,7 +1187,7 @@ public class PatronRepositoryTests {
 
 
   @Test
-  public void verifyPasswordFails(Vertx vertx,
+   void verifyPasswordFails(Vertx vertx,
                                   VertxTestContext testContext,
                                   @Mock UsersRepository mockUsersRepository,
                                   @Mock CirculationRepository mockCirculationRepository,

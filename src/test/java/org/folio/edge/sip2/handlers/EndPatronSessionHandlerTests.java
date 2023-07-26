@@ -143,7 +143,7 @@ public class EndPatronSessionHandlerTests {
   }
 
   @Test
-  public void incorrectUsernameFailure(
+   void incorrectUsernameFailure(
       @Mock PatronRepository mockPatronRepository,
       Vertx vertx,
       VertxTestContext testContext) {

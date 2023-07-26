@@ -95,7 +95,7 @@ public class LoginHandlerTests {
   }
 
   @Test
-  public void canExecuteFailedLoginUsingHandler(
+   void canExecuteFailedLoginUsingHandler(
       @Mock LoginRepository mockLoginRepository,
       Vertx vertx,
       VertxTestContext testContext) {
