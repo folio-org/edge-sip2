@@ -1643,6 +1643,46 @@ public class PatronRepositoryTests {
         })));
   }
 
+  @Test
+  void cannotPatronEndSessionRequireIncorrectUnsername(
+      Vertx vertx,
+      VertxTestContext testContext,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock PasswordVerifier mockPasswordVerifier) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final String patronIdentifier = "1234567890";
+    final EndPatronSession endPatronSession = EndPatronSession.builder()
+        .transactionDate(OffsetDateTime.now())
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .terminalPassword("1234")
+        .patronPassword("0989")
+        .build();
+
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+        .thenReturn(Future.failedFuture(new ClientException("Incorrect Username")));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPatronPasswordVerificationRequired(true);
+    sessionData.setErrorResponseMessage(EndSessionResponse.builder()
+        .endSession(FALSE)
+        .transactionDate(OffsetDateTime.now(clock))
+        .institutionId(endPatronSession.getInstitutionId())
+        .patronIdentifier(endPatronSession.getPatronIdentifier())
+        .build());
+
+    final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
+    patronRepository.performEndPatronSessionCommand(endPatronSession, sessionData).onComplete(
+        testContext.failing(endSessionResponse -> testContext.verify(() -> {
+          assertNotNull(endSessionResponse);
+          assertEquals("Incorrect Username", endSessionResponse.getMessage());
+          testContext.completeNow();
+        })));
+  }
+
   private static JsonObject getManualBlockJsonObject(boolean borrowing, boolean renewals,
       boolean requests) {
     return new JsonObject("{\n"
