@@ -296,14 +296,12 @@ public class CirculationRepository {
 
     final Future<IResource> result = resourceProvider.retrieveResource(itemRequestData);
 
-
     return result
       .otherwise(Utils.handleSearchErrors(result.cause(), circErrorMessages))
       .map(searchResult -> getTitleFromJson(searchResult, circErrorMessages));
   }
 
   private IResource getTitleFromJson(IResource resource, List<String> circErrorMessages) {
-
     if (!resource.getErrorMessages().isEmpty()) {
       return resource;
     }

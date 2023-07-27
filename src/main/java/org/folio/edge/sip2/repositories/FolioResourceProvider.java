@@ -1,6 +1,5 @@
 package org.folio.edge.sip2.repositories;
 
-
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
@@ -41,12 +40,12 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   private final WebClient client;
 
   Client tokenClient;
-
   /**
    * Construct a FOLIO resource provider with the specified parameters.
    * @param okapiUrl the URL for okapi
    * @param webClient the WebClient instance
    */
+
   @Inject
   public FolioResourceProvider(
       @Named("okapiUrl") String okapiUrl,

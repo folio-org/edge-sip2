@@ -225,7 +225,6 @@ public class PatronRepository {
           .build());
   }
 
-
   private Future<PatronInformationResponse> validPatron(ExtendedUser extendedUser,
       PatronInformation patronInformation, SessionData sessionData, Boolean validPassword) {
     final String userId = extendedUser.getUser().getId();

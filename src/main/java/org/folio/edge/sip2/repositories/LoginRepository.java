@@ -28,7 +28,6 @@ public class LoginRepository {
         "Resource provider cannot be null");
   }
 
-
   /**
    * Perform a login.
    *

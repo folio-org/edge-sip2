@@ -10,11 +10,8 @@ public class SessionData {
   private final String tenant;
   private final boolean errorDetectionEnabled;
   private final String charset;
-
   private String loginErrorMessage;
-
   private Object errorResponseMessage;
-
   private String scLocation;
   private String authenticationToken;
   private int maxPrintWidth = -1; // since 0 is valid
