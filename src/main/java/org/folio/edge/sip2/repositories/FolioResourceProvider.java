@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.okapi.common.refreshtoken.client.Client;
-import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.folio.okapi.common.refreshtoken.client.ClientOptions;
 
 /**
@@ -102,7 +101,6 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
           log.error("Unable to get the access token ",e);
           sessionData.setAuthenticationToken(null);
           sessionData.setLoginErrorMessage(e.getMessage());
-          throw new ClientException(e.getMessage());
         });
     return tokenClient.getToken();
   }
