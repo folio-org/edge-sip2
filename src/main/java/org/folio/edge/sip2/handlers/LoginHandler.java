@@ -1,7 +1,6 @@
 package org.folio.edge.sip2.handlers;
 
 import static java.lang.Boolean.FALSE;
-import static org.folio.edge.sip2.parser.Command.LOGIN_RESPONSE;
 
 import freemarker.template.Template;
 import io.vertx.core.Future;
@@ -15,11 +14,11 @@ import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.Login;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
-import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.LoginRepository;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
+
 
 public class LoginHandler implements ISip2RequestHandler {
   private static final Logger log = LogManager.getLogger();
@@ -80,25 +79,4 @@ public class LoginHandler implements ISip2RequestHandler {
     return response;
   }
 
-  /**
-   * Create a login response message when login action fails.
-   * @param sessionData SessionData.
-   * @return
-   */
-  public static String createLoginResponseMessageForError(SessionData sessionData) {
-    LoginResponse loginResponse = LoginResponse.builder().ok(FALSE).build();
-
-    final Map<String, Object> root = new HashMap<>();
-    root.put("formatDateTime", new FormatDateTimeMethodModel());
-    root.put("delimiter", sessionData.getFieldDelimiter());
-    root.put("loginResponse", loginResponse);
-
-    final String response = FreemarkerUtils
-        .executeFreemarkerTemplate(root,
-          FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE));
-
-    log.info("LoginHandler :: execute SIP login response: {}", response);
-
-    return  response;
-  }
 }
