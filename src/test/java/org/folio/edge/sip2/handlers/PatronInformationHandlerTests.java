@@ -129,6 +129,7 @@ public class PatronInformationHandlerTests {
         })));
   }
 
+  @Test
   void cantExecutePatronInformation(
        @Mock PatronRepository mockPatronRepository,
        Vertx vertx,
