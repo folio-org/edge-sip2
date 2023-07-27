@@ -1,5 +1,6 @@
 package org.folio.edge.sip2.handlers;
 
+import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.ENGLISH;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.HOLD_ITEMS;
@@ -184,8 +185,8 @@ public class PatronInformationHandlerTests {
         .holdItemsLimit(null)
         .overdueItemsLimit(null)
         .chargedItemsLimit(null)
-        .validPatron(TRUE)
-        .validPatronPassword(null)
+        .validPatron(FALSE)
+        .validPatronPassword(FALSE)
         .currencyType(null)
         .feeAmount(null)
         .feeLimit(null)
@@ -206,7 +207,7 @@ public class PatronInformationHandlerTests {
 
     handler.execute(patronInformation, sessionData).onComplete(
         testContext.failing(sipMessage -> testContext.verify(() -> {
-          assertEquals("Incorrect Username", sipMessage);
+          assertEquals("Incorrect Username", sipMessage.getMessage());
           testContext.completeNow();
         })));
   }
