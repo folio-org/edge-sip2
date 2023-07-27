@@ -20,6 +20,7 @@ import org.folio.edge.sip2.domain.messages.responses.CheckoutResponse;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.repositories.CirculationRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -81,6 +82,61 @@ public class CheckoutHandlerTests {
               + '|';
 
           assertEquals(expectedString, sipMessage);
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  void cantExecuteASampleCheckoutUsingHandler(
+      @Mock CirculationRepository mockCirculationRepository,
+      Vertx vertx,
+      VertxTestContext testContext) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final OffsetDateTime nbDueDate = OffsetDateTime.now();
+    final String institutionId = "diku";
+    final String patronIdentifier = "0192837465";
+    final String itemIdentifier = "1234567890";
+    final Checkout checkout = Checkout.builder()
+        .scRenewalPolicy(FALSE)
+        .noBlock(FALSE)
+        .transactionDate(OffsetDateTime.now())
+        .nbDueDate(nbDueDate)
+        .institutionId(institutionId)
+        .patronIdentifier(patronIdentifier)
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .patronPassword("4321")
+        .feeAcknowledged(FALSE)
+        .cancel(FALSE)
+        .build();
+
+    when(mockCirculationRepository.performCheckoutCommand(any(), any()))
+        .thenReturn(Future.failedFuture(new ClientException("Incorrect Username")));
+
+    final CheckoutHandler handler = new CheckoutHandler(mockCirculationRepository,
+        FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKOUT_RESPONSE));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPatronPasswordVerificationRequired(TRUE);
+    sessionData.setErrorResponseMessage(CheckoutResponse.builder()
+        .ok(FALSE)
+        .renewalOk(FALSE)
+        .magneticMedia(null)
+        .desensitize(TRUE)
+        .transactionDate(OffsetDateTime.now(clock))
+        .institutionId(institutionId)
+        .patronIdentifier(patronIdentifier)
+        .itemIdentifier(itemIdentifier)
+        .titleIdentifier("Some Book")
+        .dueDate(OffsetDateTime.now(clock).plusDays(30))
+        .build());
+
+    handler.execute(checkout, sessionData).onComplete(
+        testContext.failing(sipMessage -> testContext.verify(() -> {
+
+          assertEquals("Incorrect Username", sipMessage.getMessage());
 
           testContext.completeNow();
         })));

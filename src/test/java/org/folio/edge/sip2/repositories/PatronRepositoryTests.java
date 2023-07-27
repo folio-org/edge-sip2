@@ -1211,6 +1211,7 @@ public class PatronRepositoryTests {
         .thenReturn(Future.failedFuture(new ClientException("Incorrect Password")));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPatronPasswordVerificationRequired(TRUE);
     sessionData.setErrorResponseMessage(EndSessionResponse.builder()
         .endSession(FALSE)
         .transactionDate(OffsetDateTime.now(clock))
