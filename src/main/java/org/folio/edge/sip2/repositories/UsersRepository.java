@@ -78,14 +78,17 @@ public class UsersRepository {
                 return Future.succeededFuture(null);
               } else {
                 JsonObject extendedUserJson = extendedUserResult.getResource();
+                log.debug("Got extended user JSON: " + extendedUserJson.encode());
                 JsonObject patronGroupJson = extendedUserJson.getJsonObject("patronGroup");
                 ExtendedUser extendedUser = new ExtendedUser();
                 extendedUser.setUser(user);
-                extendedUser.setPatronGroup(
-                    patronGroupJson.getString("group"),
-                    patronGroupJson.getString("desc"),
-                    patronGroupJson.getString("id")
-                );
+                if (patronGroupJson != null) {
+                  extendedUser.setPatronGroup(
+                      patronGroupJson.getString("group"),
+                      patronGroupJson.getString("desc"),
+                      patronGroupJson.getString("id")
+                  );
+                }
                 return Future.succeededFuture(extendedUser);
               }
             });
