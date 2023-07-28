@@ -66,9 +66,6 @@ public class RenewAllHandlerTests {
         .build()
       ));
 
-
-
-
     final RenewAllHandler handler = new RenewAllHandler(mockCirculationRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.RENEW_ALL_RESPONSE));
 
