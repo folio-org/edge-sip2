@@ -130,7 +130,7 @@ public class UsersRepositoryTests {
   }
 
   @Test
-  public void canGetUserByUsernameWithoutPatronGroup(Vertx vertx,
+  void canGetUserByUsernameWithoutPatronGroup(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
 
