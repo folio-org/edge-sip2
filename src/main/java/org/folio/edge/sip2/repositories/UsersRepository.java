@@ -78,7 +78,7 @@ public class UsersRepository {
                 return Future.succeededFuture(null);
               } else {
                 JsonObject extendedUserJson = extendedUserResult.getResource();
-                log.debug("Got extended user JSON: " + extendedUserJson.encode());
+                log.debug("Got extended user JSON: {}", extendedUserJson.encode());
                 JsonObject patronGroupJson = extendedUserJson.getJsonObject("patronGroup");
                 ExtendedUser extendedUser = new ExtendedUser();
                 extendedUser.setUser(user);
