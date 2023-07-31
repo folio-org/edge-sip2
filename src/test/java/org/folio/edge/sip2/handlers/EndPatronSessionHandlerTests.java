@@ -21,6 +21,7 @@ import org.folio.edge.sip2.domain.messages.responses.EndSessionResponse;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -140,4 +141,56 @@ public class EndPatronSessionHandlerTests {
           testContext.completeNow();
         })));
   }
+
+  @Test
+   void incorrectUsernameFailure(
+      @Mock PatronRepository mockPatronRepository,
+      Vertx vertx,
+      VertxTestContext testContext) {
+
+    final String institutionId = "fs00000001";
+    final String patronIdentifier = "patronId1234";
+    final String patronPassword = "patronPassword";
+    final Clock clock = TestUtils.getUtcFixedClock();
+
+    final EndPatronSession endPatronSessionRequest = EndPatronSession.builder()
+        .patronIdentifier(patronIdentifier)
+        .patronPassword(patronPassword)
+        .institutionId(institutionId)
+        .terminalPassword("12345")
+        .transactionDate(OffsetDateTime.now(clock))
+        .build();
+
+    when(mockPatronRepository.performEndPatronSessionCommand(any(), any()))
+        .thenReturn(Future.failedFuture(new ClientException("Incorrect username")));
+    Template template = FreemarkerRepository
+        .getInstance()
+        .getFreemarkerTemplate(END_SESSION_RESPONSE);
+
+    final EndPatronSessionHandler handler =
+        new EndPatronSessionHandler(mockPatronRepository, template);
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPassword("some random password");
+    sessionData.setUsername("JoeSmith");
+    sessionData.setAuthenticationToken("abcdefghijklmnop");
+    sessionData.setPatronPasswordVerificationRequired(true);
+    sessionData.setErrorResponseMessage(EndSessionResponse.builder()
+        .endSession(FALSE)
+        .transactionDate(OffsetDateTime.now(clock))
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .build());
+
+    handler.execute(endPatronSessionRequest, sessionData).onComplete(
+        testContext.failing(sipMessage -> testContext.verify(() -> {
+          assertEquals("Incorrect username", sipMessage.getMessage());
+          assertEquals("abcdefghijklmnop", sessionData.getAuthenticationToken());
+          assertEquals("JoeSmith", sessionData.getUsername());
+          assertEquals("some random password", sessionData.getPassword());
+
+          testContext.completeNow();
+        })));
+  }
+
 }

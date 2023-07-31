@@ -7,9 +7,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.edge.sip2.session.SessionData;
 
 public class DefaultResourceProvider implements IResourceProvider<IRequestData> {
 
@@ -59,6 +61,13 @@ public class DefaultResourceProvider implements IResourceProvider<IRequestData> 
 
   @Override
   public Future<IResource> deleteResource(IRequestData resource) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Future<String> loginWithSupplier(String username,
+                                          Supplier<Future<String>> getPasswordSupplier,
+                                          SessionData sessionData) {
     throw new UnsupportedOperationException();
   }
 }

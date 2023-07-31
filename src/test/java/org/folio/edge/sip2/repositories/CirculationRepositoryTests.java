@@ -39,11 +39,13 @@ import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
 import org.folio.edge.sip2.domain.messages.requests.Renew;
 import org.folio.edge.sip2.domain.messages.requests.RenewAll;
+import org.folio.edge.sip2.domain.messages.responses.CheckoutResponse;
 import org.folio.edge.sip2.repositories.domain.ExtendedUser;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -332,6 +334,65 @@ class CirculationRepositoryTests {
           assertNull(checkoutResponse.getTransactionId());
           assertNull(checkoutResponse.getScreenMessage());
           assertNull(checkoutResponse.getPrintLine());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  void cantCheckout(Vertx vertx,
+                   VertxTestContext testContext,
+                   @Mock IResourceProvider<IRequestData> mockFolioProvider,
+                   @Mock PasswordVerifier mockPasswordVerifier) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
+    final String patronIdentifier = "1029384756";
+    final String itemIdentifier = "1234567890";
+    final String title = "Some book";
+    final Checkout checkout = Checkout.builder()
+        .scRenewalPolicy(FALSE)
+        .noBlock(FALSE)
+        .transactionDate(OffsetDateTime.now())
+        .nbDueDate(nbDueDate)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .patronPassword("7890")
+        .feeAcknowledged(FALSE)
+        .cancel(FALSE)
+        .build();
+
+    final JsonObject response = new JsonObject()
+        .put("item", new JsonObject()
+        .put("title", title))
+        .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
+        .thenReturn(Future.failedFuture(new ClientException("Incorrect Username")));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPatronPasswordVerificationRequired(TRUE);
+    sessionData.setErrorResponseMessage(CheckoutResponse.builder()
+        .ok(FALSE)
+        .renewalOk(FALSE)
+        .magneticMedia(null)
+        .desensitize(FALSE)
+        .transactionDate(OffsetDateTime.now(clock))
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .itemIdentifier(itemIdentifier)
+        .titleIdentifier("test")
+        .dueDate(OffsetDateTime.now(clock))
+        .screenMessage(Collections.singletonList("Incorrect Username"))
+        .build());
+
+    final CirculationRepository circulationRepository = new CirculationRepository(
+        mockFolioProvider, mockPasswordVerifier, clock);
+    circulationRepository.performCheckoutCommand(checkout, sessionData).onComplete(
+        testContext.failing(checkoutResponse -> testContext.verify(() -> {
+          assertNotNull(checkoutResponse);
+          assertEquals("Incorrect Username", checkoutResponse.getMessage());
 
           testContext.completeNow();
         })));

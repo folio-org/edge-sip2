@@ -45,6 +45,7 @@ import org.folio.edge.sip2.repositories.domain.ExtendedUser;
 import org.folio.edge.sip2.repositories.domain.Personal;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 /**
  * Provides interaction with the patron required services. This repository is a go-between for
@@ -108,6 +109,11 @@ public class PatronRepository {
     final String patronPassword = patronInformation.getPatronPassword();
 
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+      .onFailure(throwable -> {
+        if (throwable instanceof ClientException) {
+          sessionData.setErrorResponseMessage(invalidPatron(patronInformation, FALSE).result());
+        }
+      })
         .compose(verification -> {
           if (FALSE.equals(verification.getPasswordVerified())) {
             return invalidPatron(patronInformation, FALSE);
@@ -152,6 +158,11 @@ public class PatronRepository {
         sessionData.isPatronPasswordVerificationRequired());
 
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+      .onFailure(throwable -> {
+        if (throwable instanceof ClientException) {
+          sessionData.setErrorResponseMessage(invalidPatron(patronStatus, FALSE).result());
+        }
+      })
         .compose(verification -> {
           if (FALSE.equals(verification.getPasswordVerified())) {
             return invalidPatron(patronStatus, FALSE);
@@ -199,6 +210,16 @@ public class PatronRepository {
     final String patronPassword = endPatronSession.getPatronPassword();
 
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+      .onFailure(throwable -> {
+        if (throwable instanceof ClientException) {
+          sessionData.setErrorResponseMessage(EndSessionResponse.builder()
+              .endSession(FALSE)
+              .transactionDate(OffsetDateTime.now(clock))
+              .institutionId(endPatronSession.getInstitutionId())
+              .patronIdentifier(endPatronSession.getPatronIdentifier())
+              .build());
+        }
+      })
         .map(verification -> EndSessionResponse.builder()
           .endSession(!FALSE.equals(verification.getPasswordVerified()))
           .transactionDate(OffsetDateTime.now(clock))
@@ -286,7 +307,8 @@ public class PatronRepository {
     final String personalName = getPatronPersonalName(personal, patronStatus.getPatronIdentifier());
     builder.personalName(personalName);
     log.debug("Populating borrower info with patron group {}",
-        extendedUser.getPatronGroup().getId());
+        extendedUser.getPatronGroup() != null ? extendedUser.getPatronGroup().getId()
+        : null);
     // When all operations complete, build and return the final PatronInformationResponse
 
     final Future<PatronStatusResponseBuilder> getFeeAmountFuture = feeFinesRepository

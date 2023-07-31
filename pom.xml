@@ -191,6 +191,11 @@
       <version>1.74</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.folio.okapi</groupId>
+      <artifactId>okapi-common</artifactId>
+      <version>5.0.0</version>
+    </dependency>
   </dependencies>
 
   <distributionManagement>
@@ -442,7 +447,7 @@
           <localCheckout>true</localCheckout>
         </configuration>
       </plugin>
-      
+
     </plugins>
     <pluginManagement>
       <!--

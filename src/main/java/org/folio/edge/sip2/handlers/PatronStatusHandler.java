@@ -15,12 +15,13 @@ import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 
 public class PatronStatusHandler implements ISip2RequestHandler {
   private static final Logger log = LogManager.getLogger();
 
-  
+
   private final PatronRepository patronRepository;
   private final Template commandTemplate;
 
@@ -43,22 +44,40 @@ public class PatronStatusHandler implements ISip2RequestHandler {
     final Future<PatronStatusResponse> patronStatusFuture =
         patronRepository.performPatronStatusCommand(patronStatus, sessionData);
 
-    return patronStatusFuture.compose(patronStatusResponse -> {
-      log.info("PatronStatusResponse: {}", () -> patronStatusResponse);
-
-      final Map<String, Object> root = new HashMap<>();
-      root.put("formatDateTime", new FormatDateTimeMethodModel());
-      root.put("delimiter", sessionData.getFieldDelimiter());
-      root.put("patronStatusResponse", patronStatusResponse);
-      root.put("timezone", sessionData.getTimeZone());
-
-      final String response = FreemarkerUtils
-          .executeFreemarkerTemplate(root, commandTemplate);
-
-      log.debug("SIP patronStatus response: {}", response);
-
-      return Future.succeededFuture(response);
+    patronStatusFuture.onFailure(throwable -> {
+      if (throwable instanceof ClientException) {
+        sessionData.setErrorResponseMessage(createPatronStatusResponse(sessionData,
+            (PatronStatusResponse) sessionData.getErrorResponseMessage()));
+      }
     });
+
+    return patronStatusFuture.compose(patronStatusResponse -> Future.succeededFuture(
+      createPatronStatusResponse(sessionData, patronStatusResponse)
+    ));
+  }
+
+  /**
+   * Create Patron Status Response Message.
+   * @param sessionData Session Data
+   * @param patronStatusResponse Patron Status Response
+   * @return
+   */
+  public String createPatronStatusResponse(
+      SessionData sessionData,
+      PatronStatusResponse patronStatusResponse) {
+    log.info("PatronStatusResponse: {}", () -> patronStatusResponse);
+
+    final Map<String, Object> root = new HashMap<>();
+    root.put("formatDateTime", new FormatDateTimeMethodModel());
+    root.put("delimiter", sessionData.getFieldDelimiter());
+    root.put("patronStatusResponse", patronStatusResponse);
+    root.put("timezone", sessionData.getTimeZone());
+
+    final String response = FreemarkerUtils
+        .executeFreemarkerTemplate(root, commandTemplate);
+
+    log.debug("SIP patronStatus response: {}", response);
+    return response;
   }
 }
 

@@ -129,6 +129,47 @@ public class UsersRepositoryTests {
         })));
   }
 
+  @Test
+  void canGetUserByUsernameWithoutPatronGroup(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+
+    final String userResponseJson = getJsonFromFile("json/users_response.json");
+    final JsonObject userResponse = new JsonObject(userResponseJson);
+    final String userBlResponseJson = getJsonFromFile("json/bl_user_response_no_patrongroup.json");
+    final JsonObject userBlResponse = new JsonObject(userBlResponseJson);
+
+    final String username = "leslie";
+    final String userId = "4f0e711c-d583-41e0-9555-b62f1725023f";
+    final String expectedUsersQueryPath = "/users?limit=1&query="
+        + Utils.encode("(barcode==" + username
+        + " or externalSystemId==" + username
+        + " or username==" + username + ')');
+
+    final String expectedUsersBlQueryPath = "/bl-users/by-id/" + userId;
+
+    doReturn(Future.succeededFuture(new FolioResource(userBlResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
+        .when(mockFolioProvider).retrieveResource(
+        argThat((IRequestData data2) -> data2.getPath().equals(expectedUsersBlQueryPath)));
+
+    doReturn(Future.succeededFuture(new FolioResource(userResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
+        .when(mockFolioProvider).retrieveResource(
+        argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
+    usersRepository.getUserById(username, sessionData).onComplete(
+        testContext.succeeding(extendedUser -> testContext.verify(() -> {
+          assertNotNull(extendedUser);
+          assertEquals(username, extendedUser.getUser().getUsername());
+          assertNull(extendedUser.getPatronGroup());
+          testContext.completeNow();
+        })));
+  }
+
   /**
    * In the unlikely case of multiple user records returning for the same externalSystemId
    * because it's not unique, the service should only return the first record.

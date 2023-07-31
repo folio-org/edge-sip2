@@ -14,11 +14,15 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.refreshtoken.client.Client;
+import org.folio.okapi.common.refreshtoken.client.ClientOptions;
 
 /**
  * Resource provider for communicating with FOLIO.
@@ -34,11 +38,13 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   private final String okapiUrl;
   private final WebClient client;
 
+  Client tokenClient;
   /**
    * Construct a FOLIO resource provider with the specified parameters.
    * @param okapiUrl the URL for okapi
    * @param webClient the WebClient instance
    */
+
   @Inject
   public FolioResourceProvider(
       @Named("okapiUrl") String okapiUrl,
@@ -63,12 +69,40 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         // parameter (e.g. circulation). So we can't use the built-in JSON
         // predicate here.
         .expect(ResponsePredicate.contentType(Arrays.asList(
-            "application/json",
-            "application/json; charset=utf-8")))
+          "application/json",
+          "application/json; charset=utf-8")))
         .as(BodyCodec.jsonObject())
         .send()
         .map(FolioResourceProvider::toIResource)
         .onFailure(e -> log.error("Request failed", e));
+  }
+
+  /**
+   * Login and set the access token in session data object.
+   * @param username UserName
+   * @param getPasswordSupplier PasswordSupplier
+   * @param sessionData session data
+   * @return
+   */
+  public Future<String> loginWithSupplier(
+      String username,
+      Supplier<Future<String>> getPasswordSupplier,
+      SessionData sessionData) {
+    log.info("loginWithSupplier username={} cache={}",
+        username, TokenCacheFactory.get());
+    ClientOptions clientOptions = new ClientOptions()
+        .okapiUrl(okapiUrl)
+        .webClient(client);
+
+    tokenClient = Client.createLoginClient(clientOptions, TokenCacheFactory.get(),
+        sessionData.getTenant(), username, getPasswordSupplier);
+    tokenClient.getToken()
+        .onFailure(e -> {
+          log.error("Unable to get the access token ",e);
+          sessionData.setAuthenticationToken(null);
+          sessionData.setLoginErrorMessage(e.getMessage());
+        });
+    return tokenClient.getToken();
   }
 
   @Override
@@ -114,6 +148,16 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         .orElse(Collections.emptyMap()).entrySet()) {
       request.putHeader(entry.getKey(), entry.getValue());
     }
+
+    Future<String> token = loginWithSupplier(sessionData.getUsername(),
+        () -> Future.succeededFuture(sessionData.getPassword()), sessionData);
+    token.onFailure(throwable ->
+        sessionData.setErrorResponseMessage("Access token missing.")
+    )
+        .onSuccess(accessToken -> {
+          sessionData.setErrorResponseMessage(null);
+          sessionData.setAuthenticationToken(accessToken);
+        });
 
     final String authenticationToken = sessionData.getAuthenticationToken();
     if (authenticationToken != null) {

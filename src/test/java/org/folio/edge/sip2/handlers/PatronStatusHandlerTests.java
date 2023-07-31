@@ -25,6 +25,7 @@ import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.repositories.domain.Personal;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -98,7 +99,67 @@ class PatronStatusHandlerTests {
         })));
   }
 
+  @Test
+  void cantExecutePatronStatus(Vertx vertx,
+                              VertxTestContext testContext,
+                              @Mock PatronRepository mockPatronRepository) {
 
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final OffsetDateTime nbDueDate = OffsetDateTime.now();
+    final String patronIdentifier = "1029384756";
+    final String patronPassword = "1234";
+    final String institutionId = "diku";
+    final String userId = "99a81cee-d439-42c8-9860-2bd1de881c4a";
+    final String userBarcode = "2349871212";
+    final Float feeAmount = 34.50f;
+    final Personal personal = new Personal.Builder()
+        .firstName("Joe")
+        .middleName("Zee")
+        .lastName("Blow")
+        .build();
+
+    final User user = new User.Builder()
+        .id(userId)
+        .barcode(userBarcode)
+        .personal(personal)
+        .build();
+
+    final PatronStatusRequest patronStatus = PatronStatusRequest.builder()
+        .patronIdentifier(patronIdentifier)
+        .patronPassword(patronPassword)
+        .institutionId(institutionId)
+        .transactionDate(OffsetDateTime.now())
+        .language(Language.UNKNOWN)
+        .build();
+
+    final PatronStatusResponse patronStatusResponse = PatronStatusResponse.builder()
+        .personalName("Joe Zee Blow")
+        .feeAmount(feeAmount.toString())
+        .patronStatus(EnumSet.allOf(PatronStatus.class))
+        .transactionDate(OffsetDateTime.now(clock))
+        .institutionId(institutionId)
+        .language(Language.UNKNOWN)
+        .patronIdentifier(patronIdentifier)
+        .validPatron(FALSE)
+        .validPatronPassword(FALSE)
+        .build();
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPatronPasswordVerificationRequired(true);
+    sessionData.setErrorResponseMessage(patronStatusResponse);
+
+    when(mockPatronRepository.performPatronStatusCommand(any(), any()))
+        .thenReturn(Future.failedFuture(new ClientException("Incorrect Username")));
+
+    PatronStatusHandler handler = new PatronStatusHandler(mockPatronRepository,
+        FreemarkerRepository.getInstance().getFreemarkerTemplate(PATRON_STATUS_RESPONSE));
+
+    handler.execute(patronStatus, sessionData).onComplete(testContext.failing(
+        sipMessage -> testContext.verify(() -> {
+          assertEquals("Incorrect Username", sipMessage.getMessage());
+          testContext.completeNow();
+        })));
+  }
 
 
 }
