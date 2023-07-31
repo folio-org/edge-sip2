@@ -14,11 +14,12 @@ import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.folio.edge.sip2.api.support.TestUtils;
-import org.folio.edge.sip2.domain.messages.requests.RenewAll;
-import org.folio.edge.sip2.domain.messages.responses.RenewAllResponse;
+import org.folio.edge.sip2.domain.messages.requests.Renew;
+import org.folio.edge.sip2.domain.messages.responses.RenewResponse;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.repositories.CirculationRepository;
@@ -30,10 +31,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class RenewAllHandlerTests {
+class RenewHandlerTests {
 
   @Test
-  public void canRenewAllWithHandler(Vertx vertx,
+   void canRenewWithHandler(Vertx vertx,
       VertxTestContext testContext,
       @Mock CirculationRepository mockCirculationRepository) {
 
@@ -45,7 +46,7 @@ public class RenewAllHandlerTests {
     final String itemId = UUID.randomUUID().toString();
     List<String> emptyItems = new ArrayList<String>();
 
-    final RenewAll renewAll = RenewAll.builder()
+    final Renew renew = Renew.builder()
         .transactionDate(OffsetDateTime.now())
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
@@ -54,28 +55,25 @@ public class RenewAllHandlerTests {
         .feeAcknowledged(FALSE)
         .build();
 
-    when(mockCirculationRepository.performRenewAllCommand(any(), any()))
-        .thenReturn(Future.succeededFuture(RenewAllResponse.builder()
+    when(mockCirculationRepository.performRenewCommand(any(), any()))
+        .thenReturn(Future.succeededFuture(RenewResponse.builder()
         .ok(TRUE)
+        .renewalOk(TRUE)
         .transactionDate(OffsetDateTime.now())
         .institutionId("diku")
-        .renewedCount(0)
-        .unrenewedCount(0)
-        .renewedItems(emptyItems)
-        .unrenewedItems(emptyItems)
         .build()
       ));
 
-    final RenewAllHandler handler = new RenewAllHandler(mockCirculationRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.RENEW_ALL_RESPONSE));
+    final RenewHandler handler = new RenewHandler(mockCirculationRepository,
+        FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.RENEW_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
-    final String expectedString = "66" + "1" + "0000" + "0000"
+    final String expectedString = "30" + "1" + "YUU"
         + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
-        + "AO" + "diku" + "|";
+        + "AO" + "diku" + "|AA|AB|AJ|AH|";
 
-    handler.execute(renewAll, sessionData).onComplete(
+    handler.execute(renew, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           assertNotNull(sipMessage);
           assertEquals(expectedString, sipMessage);
@@ -83,13 +81,12 @@ public class RenewAllHandlerTests {
         }
     )));
 
-
   }
 
   @Test
-  void cantRenewAllWithHandler(Vertx vertx,
-                                     VertxTestContext testContext,
-                                     @Mock CirculationRepository mockCirculationRepository) {
+   void canRenewWithHandlerFail(Vertx vertx,
+                                  VertxTestContext testContext,
+                                  @Mock CirculationRepository mockCirculationRepository) {
 
     final String patronIdentifier = "1029384756";
     final Clock clock = TestUtils.getUtcFixedClock();
@@ -99,7 +96,7 @@ public class RenewAllHandlerTests {
     final String itemId = UUID.randomUUID().toString();
     List<String> emptyItems = new ArrayList<String>();
 
-    final RenewAll renewAll = RenewAll.builder()
+    final Renew renew = Renew.builder()
         .transactionDate(OffsetDateTime.now())
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
@@ -108,32 +105,33 @@ public class RenewAllHandlerTests {
         .feeAcknowledged(FALSE)
         .build();
 
-    when(mockCirculationRepository.performRenewAllCommand(any(), any()))
-        .thenReturn(Future.failedFuture(new ClientException("Incorrect Username")));
-
-    final RenewAllHandler handler = new RenewAllHandler(mockCirculationRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.RENEW_ALL_RESPONSE));
+    when(mockCirculationRepository.performRenewCommand(any(), any()))
+        .thenReturn(Future.failedFuture(new ClientException("Invalid username")));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
-    sessionData.setPatronPasswordVerificationRequired(TRUE);
-    sessionData.setErrorResponseMessage(RenewAllResponse.builder()
+    sessionData.setErrorResponseMessage(
+        RenewResponse.builder()
         .ok(FALSE)
-        .transactionDate(OffsetDateTime.now())
-        .institutionId("diku")
-        .renewedCount(0)
-        .unrenewedCount(0)
-        .renewedItems(emptyItems)
-        .unrenewedItems(emptyItems)
+        .renewalOk(FALSE)
+        .transactionDate(OffsetDateTime.now(clock))
+        .institutionId("abc")
+        .screenMessage(Collections.singletonList("Invalid username"))
         .build()
     );
 
-    handler.execute(renewAll, sessionData).onComplete(
+    final RenewHandler handler = new RenewHandler(mockCirculationRepository,
+        FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.RENEW_RESPONSE));
+
+    final String expectedString = "Invalid username";
+
+    handler.execute(renew, sessionData).onComplete(
         testContext.failing(sipMessage -> testContext.verify(() -> {
               assertNotNull(sipMessage);
-              assertEquals("Incorrect Username", sipMessage.getMessage());
+              assertEquals(expectedString, sipMessage.getMessage());
               testContext.completeNow();
             }
-        )));
+      )));
+
 
   }
 

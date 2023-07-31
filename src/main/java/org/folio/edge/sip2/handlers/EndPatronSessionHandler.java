@@ -16,6 +16,7 @@ import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 public class EndPatronSessionHandler implements ISip2RequestHandler {
 
@@ -44,23 +45,45 @@ public class EndPatronSessionHandler implements ISip2RequestHandler {
     final Future<EndSessionResponse> endPatronSessionFuture =
         patronRepository.performEndPatronSessionCommand(endPatronSession, sessionData);
 
-    return endPatronSessionFuture.map(endSessionResponse -> {
-      log.info("EndPatronSessionHandler :: execute EndSessionResponse: {}",
-          () -> endSessionResponse);
-
-      final Map<String, Object> root = new HashMap<>();
-      root.put("formatDateTime", new FormatDateTimeMethodModel());
-      root.put("delimiter", sessionData.getFieldDelimiter());
-      root.put("endSessionResponse", endSessionResponse);
-      root.put("timezone", sessionData.getTimeZone());
-
-      final String response = FreemarkerUtils
-          .executeFreemarkerTemplate(root, commandTemplate);
-
-      log.info("EndPatronSessionHandler :: execute SIP end session response: {}", response);
-
-      return response;
+    endPatronSessionFuture.onFailure(throwable -> {
+      if (throwable instanceof ClientException) {
+        sessionData.setErrorResponseMessage(
+            createEndPatronResponse(
+              sessionData,
+              (EndSessionResponse) sessionData.getErrorResponseMessage()));
+      }
     });
+
+    return endPatronSessionFuture.map(endSessionResponse ->
+      createEndPatronResponse(
+        sessionData,
+        endSessionResponse));
+  }
+
+  /**
+   * Create End Patron Response message.
+   * @param sessionData sessionData
+   * @param endSessionResponse endSessionResponse
+   * @return
+   */
+  private String createEndPatronResponse(
+      SessionData sessionData,
+      EndSessionResponse endSessionResponse) {
+
+    log.info("EndPatronSessionHandler :: execute EndSessionResponse: {}",
+        () -> endSessionResponse);
+
+    final Map<String, Object> root = new HashMap<>();
+    root.put("formatDateTime", new FormatDateTimeMethodModel());
+    root.put("delimiter", sessionData.getFieldDelimiter());
+    root.put("endSessionResponse", endSessionResponse);
+    root.put("timezone", sessionData.getTimeZone());
+
+    final String response = FreemarkerUtils
+        .executeFreemarkerTemplate(root, commandTemplate);
+
+    log.info("EndPatronSessionHandler :: execute SIP end session response: {}", response);
+    return response;
   }
 
   @Override

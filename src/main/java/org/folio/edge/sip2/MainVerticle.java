@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.handlers.CheckinHandler;
 import org.folio.edge.sip2.handlers.CheckoutHandler;
@@ -72,9 +73,13 @@ public class MainVerticle extends AbstractVerticle {
   private JsonObject multiTenantConfig = new JsonObject();
   private ConfigRetriever configRetriever;
 
+  public static final int DEFAULT_TOKEN_CACHE_CAPACITY = 100;
+
+  public static final String SYS_TOKEN_CACHE_CAPACITY = "token_cache_capacity";
   /**
    * Construct the {@code MainVerticle}.
    */
+
   public MainVerticle() {
     super();
   }
@@ -95,29 +100,13 @@ public class MainVerticle extends AbstractVerticle {
 
     callAdminHealthCheckService();
 
+    // initialize the TokenCache
+    TokenCacheFactory.initialize(config()
+        .getInteger(SYS_TOKEN_CACHE_CAPACITY, DEFAULT_TOKEN_CACHE_CAPACITY));
+
+
     // We need to reduce the complexity of this method...
-    if (handlers == null) {
-      String okapiUrl = config().getString("okapiUrl");
-      final WebClient webClient = WebClient.create(vertx);
-      final Injector injector = Guice.createInjector(
-          new FolioResourceProviderModule(okapiUrl, webClient),
-          new ApplicationModule());
-      handlers = new EnumMap<>(Command.class);
-      handlers.put(CHECKOUT, injector.getInstance(CheckoutHandler.class));
-      handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
-      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null,
-          null, null, okapiUrl, webClient));
-      handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
-      handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
-      handlers.put(PATRON_INFORMATION, injector.getInstance(PatronInformationHandler.class));
-      handlers.put(PATRON_STATUS_REQUEST, injector.getInstance(PatronStatusHandler.class));
-      handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
-      handlers.put(END_PATRON_SESSION, injector.getInstance(EndPatronSessionHandler.class));
-      handlers.put(FEE_PAID, injector.getInstance(FeePaidHandler.class));
-      handlers.put(ITEM_INFORMATION, injector.getInstance(ItemInformationHandler.class));
-      handlers.put(RENEW,  injector.getInstance(RenewHandler.class));
-      handlers.put(RENEW_ALL,  injector.getInstance(RenewAllHandler.class));
-    }
+    setupHanlders();
 
     //set Config object's defaults
     int port = config().getInteger("port"); // move port to netServerOptions
@@ -182,12 +171,8 @@ public class MainVerticle extends AbstractVerticle {
 
           //check if the previous message needs resending
           if (requiredResending(sessionData, message)) {
-            String prvMessage = sessionData
-                .getPreviousMessage()
-                .getPreviousMessageResponse();
-            log.info("Sending previous Sip response {}", prvMessage);
-            sample.stop(metrics.commandTimer(command));
-            socket.write(prvMessage, sessionData.getCharset());
+            resendPreviousMessage(sessionData, sample,
+                metrics, socket, command);
             return;
           }
 
@@ -199,29 +184,10 @@ public class MainVerticle extends AbstractVerticle {
             return;
           }
 
-          handler
-              .execute(message.getRequest(), sessionData)
-              .onSuccess(result -> {
-                final String responseMsg;
-                if (message.getCommand() == REQUEST_ACS_RESEND) {
-                  // we don't want to modify the response
-                  responseMsg = result;
-                } else {
-                  responseMsg = formatResponse(result, message, sessionData,
-                      messageDelimiter);
-                }
-                handler.writeHistory(sessionData, message, responseMsg);
-                log.info("Sip response {}", responseMsg);
-                sample.stop(metrics.commandTimer(message.getCommand()));
-                socket.write(responseMsg, sessionData.getCharset());
-              }).onFailure(e -> {
-                String errorMsg = "Failed to respond to request";
-                log.error(errorMsg, e);
-                sample.stop(metrics.commandTimer(message.getCommand()));
-                socket.write(e.getMessage() + messageDelimiter,
-                    sessionData.getCharset());
-                metrics.responseError();
-              });
+          executeHandler(message,
+              sessionData, messageDelimiter,
+              handler, sample,
+              socket, metrics);
         } catch (Exception ex) {
           String message = "Problems handling the request: " + ex.getMessage();
           log.error(message, ex);
@@ -229,7 +195,6 @@ public class MainVerticle extends AbstractVerticle {
           // Will find a better way to handle negative test cases.
           sample.stop(metrics.commandTimer(command));
           socket.write(message + messageDelimiter, sessionData.getCharset());
-
           metrics.requestError();
         }
       }));
@@ -245,6 +210,12 @@ public class MainVerticle extends AbstractVerticle {
     configRetriever = ConfigRetriever.create(vertx, crOptions);
 
     // after tenant config is loaded, start listening for messages
+    lsitenToMessages(startFuture);
+
+  }
+
+  private void lsitenToMessages(Promise<Void> startFuture) {
+
     configRetriever.getConfig(ar -> {
       if (ar.succeeded()) {
         multiTenantConfig = ar.result();
@@ -270,7 +241,102 @@ public class MainVerticle extends AbstractVerticle {
       multiTenantConfig = change.getNewConfiguration();
       log.info("Tenant config changed: {}", () -> multiTenantConfig.encodePrettily());
     });
+  }
 
+  /**
+   * Execute the command.
+   * @param message message
+   * @param sessionData sessionData
+   * @param messageDelimiter messageDelimiter
+   * @param handler handler
+   * @param sample sample
+   * @param socket socket
+   * @param metrics metrics
+   */
+  private void executeHandler(Message<Object> message,
+                              SessionData sessionData,
+                              String messageDelimiter,
+                              ISip2RequestHandler handler,
+                              Timer.Sample sample,
+                              NetSocket socket,
+                              Metrics metrics) {
+    handler
+        .execute(message.getRequest(), sessionData)
+        .onSuccess(result -> {
+          final String responseMsg;
+          if (message.getCommand() == REQUEST_ACS_RESEND) {
+            // we don't want to modify the response
+            responseMsg = result;
+          } else {
+            responseMsg = formatResponse(result, message, sessionData,
+            messageDelimiter);
+          }
+          handler.writeHistory(sessionData, message, responseMsg);
+          log.info("Sip response {}", responseMsg);
+          sample.stop(metrics.commandTimer(message.getCommand()));
+          socket.write(responseMsg, sessionData.getCharset());
+        }).onFailure(e -> {
+          String errorMsg = "Failed to respond to request";
+          log.error(errorMsg, e);
+          String responseMessage = (String) sessionData.getErrorResponseMessage();
+          if (responseMessage != null) {
+            handler.writeHistory(sessionData, message, responseMessage);
+          }
+          sample.stop(metrics.commandTimer(message.getCommand()));
+          socket.write(responseMessage != null ? responseMessage
+              : e.getMessage() + messageDelimiter,
+              sessionData.getCharset());
+          metrics.responseError();
+        });
+  }
+
+  /**
+   * Resend the previous message.
+   * @param sessionData sessionData
+   * @param sample sample
+   * @param metrics metrics
+   * @param socket socket
+   * @param command command
+   */
+  private void resendPreviousMessage(SessionData sessionData,
+                                     Timer.Sample sample,
+                                     Metrics metrics,
+                                     NetSocket socket,
+                                     Command command) {
+    String prvMessage = sessionData
+        .getPreviousMessage()
+        .getPreviousMessageResponse();
+    log.info("Sending previous Sip response {}", prvMessage);
+    sample.stop(metrics.commandTimer(command));
+    socket.write(prvMessage, sessionData.getCharset());
+  }
+
+  /**
+   * Initialize the handlers.
+   */
+  private void setupHanlders() {
+    if (handlers == null) {
+      String okapiUrl = config().getString("okapiUrl");
+      final WebClient webClient = WebClient.create(vertx);
+      final Injector injector = Guice.createInjector(
+          new FolioResourceProviderModule(okapiUrl, webClient),
+          new ApplicationModule());
+      handlers = new EnumMap<>(Command.class);
+      handlers.put(CHECKOUT, injector.getInstance(CheckoutHandler.class));
+      handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
+      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null,
+          null, null, okapiUrl, webClient));
+      handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
+      handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
+      handlers.put(PATRON_INFORMATION, injector.getInstance(PatronInformationHandler.class));
+      handlers.put(PATRON_STATUS_REQUEST, injector.getInstance(PatronStatusHandler.class));
+      handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
+      handlers.put(END_PATRON_SESSION, injector.getInstance(EndPatronSessionHandler.class));
+      handlers.put(FEE_PAID, injector.getInstance(FeePaidHandler.class));
+      handlers.put(ITEM_INFORMATION, injector.getInstance(ItemInformationHandler.class));
+      handlers.put(RENEW,  injector.getInstance(RenewHandler.class));
+      handlers.put(RENEW_ALL,  injector.getInstance(RenewAllHandler.class));
+    }
   }
 
   private void callAdminHealthCheckService() {

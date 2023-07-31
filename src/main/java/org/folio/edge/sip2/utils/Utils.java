@@ -132,7 +132,9 @@ public final class Utils {
       @Override
       public List<String> getErrorMessages() {
         List<String> temp = new ArrayList<>(errorMessages);
+        if (cause != null) {
           temp.add(cause.getMessage());
+        }
           return temp;
         }
     };

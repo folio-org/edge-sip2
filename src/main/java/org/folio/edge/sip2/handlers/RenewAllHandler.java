@@ -15,6 +15,7 @@ import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.CirculationRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 public class RenewAllHandler implements ISip2RequestHandler {
   private static final Logger log = LogManager.getLogger();
@@ -40,21 +41,42 @@ public class RenewAllHandler implements ISip2RequestHandler {
     final Future<RenewAllResponse> renewAllFuture =
         circulationRepository.performRenewAllCommand(renewAll, sessionData);
 
-    return renewAllFuture.compose(renewAllResponse -> {
-      log.info("RenewAllResponse: {}", () -> renewAllResponse);
-
-      final Map<String, Object> root = new HashMap<>();
-      root.put("formatDateTime", new FormatDateTimeMethodModel());
-      root.put("delimiter", sessionData.getFieldDelimiter());
-      root.put("renewAllResponse", renewAllResponse);
-      root.put("timezone", sessionData.getTimeZone());
-
-      final String response = FreemarkerUtils
-          .executeFreemarkerTemplate(root, commandTemplate);
-
-      log.debug("SIP renewAll response: {}", response);
-
-      return Future.succeededFuture(response);
+    renewAllFuture.onFailure(throwable -> {
+      if (throwable instanceof ClientException) {
+        sessionData.setErrorResponseMessage(
+            constructRenewAllResponse(
+            sessionData,
+            (RenewAllResponse) sessionData.getErrorResponseMessage()));
+      }
     });
+
+    return renewAllFuture.compose(renewAllResponse ->
+      Future.succeededFuture(
+        constructRenewAllResponse(
+          sessionData, renewAllResponse)));
+  }
+
+  /**
+   * Construct Renew All Response Message.
+   * @param sessionData sessionData
+   * @param renewAllResponse renewAllResponse
+   * @return
+   */
+  private String constructRenewAllResponse(
+      SessionData sessionData,
+      RenewAllResponse renewAllResponse) {
+    log.info("RenewAllResponse: {}", () -> renewAllResponse);
+
+    final Map<String, Object> root = new HashMap<>();
+    root.put("formatDateTime", new FormatDateTimeMethodModel());
+    root.put("delimiter", sessionData.getFieldDelimiter());
+    root.put("renewAllResponse", renewAllResponse);
+    root.put("timezone", sessionData.getTimeZone());
+
+    final String response = FreemarkerUtils
+        .executeFreemarkerTemplate(root, commandTemplate);
+
+    log.debug("SIP renewAll response: {}", response);
+    return response;
   }
 }

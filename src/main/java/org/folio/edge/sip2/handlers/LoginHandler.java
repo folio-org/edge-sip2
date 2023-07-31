@@ -1,5 +1,7 @@
 package org.folio.edge.sip2.handlers;
 
+import static java.lang.Boolean.FALSE;
+
 import freemarker.template.Template;
 import io.vertx.core.Future;
 import java.util.HashMap;
@@ -15,6 +17,8 @@ import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.LoginRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.refreshtoken.client.ClientException;
+
 
 public class LoginHandler implements ISip2RequestHandler {
   private static final Logger log = LogManager.getLogger();
@@ -36,22 +40,43 @@ public class LoginHandler implements ISip2RequestHandler {
 
     log.info("LoginHandler :: execute Login: {}", login::getLoginLogInfo);
 
-    final Future<LoginResponse> responseFuture = loginRepository.login(login, sessionData);
+    Future<LoginResponse> responseFuture = loginRepository.login(login, sessionData);
 
-    return responseFuture.compose(loginResponse -> {
-      log.debug("LoginResponse: {}", () -> loginResponse);
-
-      final Map<String, Object> root = new HashMap<>();
-      root.put("formatDateTime", new FormatDateTimeMethodModel());
-      root.put("delimiter", sessionData.getFieldDelimiter());
-      root.put("loginResponse", loginResponse);
-
-      final String response = FreemarkerUtils
-          .executeFreemarkerTemplate(root, commandTemplate);
-
-      log.info("LoginHandler :: execute SIP login response: {}", response);
-
-      return Future.succeededFuture(response);
+    responseFuture.onFailure(e -> {
+      if (e instanceof ClientException) {
+        sessionData.setErrorResponseMessage(
+            constructLoginResponse(
+            sessionData,
+            LoginResponse.builder().ok(FALSE).build()));
+      }
     });
+
+
+    return responseFuture.compose(loginResponse ->
+      Future.succeededFuture(
+        constructLoginResponse(
+          sessionData, loginResponse)));
   }
+
+  /**
+   * Construct Login Response message.
+   * @param sessionData sessionData
+   * @param loginResponse loginResponse
+   * @return
+   */
+  private String constructLoginResponse(
+      SessionData sessionData,
+      LoginResponse loginResponse) {
+    log.debug("LoginResponse: {}", () -> loginResponse);
+    final Map<String, Object> root = new HashMap<>();
+    root.put("formatDateTime", new FormatDateTimeMethodModel());
+    root.put("delimiter", sessionData.getFieldDelimiter());
+    root.put("loginResponse", loginResponse);
+
+    final String response = FreemarkerUtils
+        .executeFreemarkerTemplate(root, commandTemplate);
+    log.info("LoginHandler :: execute SIP login response: {}", response);
+    return response;
+  }
+
 }

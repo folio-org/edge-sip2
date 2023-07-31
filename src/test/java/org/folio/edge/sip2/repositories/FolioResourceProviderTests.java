@@ -136,7 +136,11 @@ public class FolioResourceProviderTests {
   private interface FolioRequestData extends IRequestData {
     @Override
     default SessionData getSessionData() {
-      return SessionData.createSession("diku", '|', true, "IBM850");
+
+      SessionData sessionData = SessionData.createSession("diku", '|', true, "IBM850");
+      sessionData.setUsername("testUser");
+      sessionData.setPassword("testpassword");
+      return sessionData;
     }
   }
 }

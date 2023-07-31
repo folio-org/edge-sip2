@@ -45,7 +45,7 @@ class PasswordVerifierTests {
     when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(extendedUser));
     when(mockLoginRepository.patronLogin(eq("leslie"), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(() -> new JsonObject()));
+        .thenReturn(Future.succeededFuture("testToken"));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
     sessionData.setPatronPasswordVerificationRequired(true);
@@ -106,15 +106,11 @@ class PasswordVerifierTests {
     when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(extendedUser));
     when(mockLoginRepository.patronLogin(eq("leslie"), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(Utils.handleErrors(new RequestThrowable(null) {
-          private static final long serialVersionUID = -9126223501276281006L;
-          public List<String> getErrorMessages() {
-            return Collections.singletonList("Password does not match");
-          }
-        })));
+        .thenReturn(Future.succeededFuture(null));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
     sessionData.setPatronPasswordVerificationRequired(true);
+    sessionData.setLoginErrorMessage("Password does not match");
 
     final PasswordVerifier passwordVerifier = new PasswordVerifier(mockUsersRepository,
         mockLoginRepository);
