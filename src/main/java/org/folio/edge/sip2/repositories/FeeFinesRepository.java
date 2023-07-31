@@ -38,6 +38,7 @@ public class FeeFinesRepository {
   private static final Logger log = LogManager.getLogger();
   private static final String HEADER_ACCEPT = "accept";
   private static final String MIMETYPE_JSON = "application/json";
+  private static final String ACCOUNTS_KEY = "accounts";
   private final IResourceProvider<IRequestData> resourceProvider;
   private final UsersRepository usersRepository;
   private Clock clock;
@@ -136,6 +137,37 @@ public class FeeFinesRepository {
         new GetAccountByUserIdRequestData(userId, headers, sessionData);
     final Future<IResource> result =
         resourceProvider.retrieveResource(getAccountByUserIdRequestData);
+
+    return result
+      .otherwise(() -> null)
+      .map(IResource::getResource)
+      .compose(accountJson -> {
+        List<String> idList = getFeeFineIdList(accountJson);
+        return getFeeFinesByIds(idList, sessionData)
+            .compose(feeFinesJson ->
+                Future.succeededFuture(populateFeeFinesDetails(accountJson, feeFinesJson))
+            );
+      });
+  }
+
+  /**
+   * Get a listing of feeFines objects.
+   *
+   * @param ids a list of UUID strings
+   * @param sessionData session data
+   * @return a JsonObject Future of the FeeFine response
+   */
+  public Future<JsonObject> getFeeFinesByIds(List<String> ids, SessionData sessionData) {
+    Objects.requireNonNull(ids, "ids cannot be null");
+    Objects.requireNonNull(sessionData, "sessionData cannot be null");
+
+    final Map<String, String> headers = new HashMap<>();
+    headers.put(HEADER_ACCEPT, MIMETYPE_JSON);
+
+    final GetFeeFinesByIdsRequestData getFeeFinesByIdsRequestData =
+        new GetFeeFinesByIdsRequestData(ids, headers, sessionData);
+    final Future<IResource> result =
+        resourceProvider.retrieveResource(getFeeFinesByIdsRequestData);
 
     return result
       .otherwise(() -> null)
@@ -303,6 +335,43 @@ public class FeeFinesRepository {
     }
   }
 
+  private class GetFeeFinesByIdsRequestData implements IRequestData {
+
+    private List<String> idList;
+    private final Map<String, String> headers;
+    private final SessionData sessionData;
+
+    private GetFeeFinesByIdsRequestData(List<String> idList, Map<String, String> headers,
+        SessionData sessionData) {
+      this.idList = idList;
+      this.headers = headers;
+      this.sessionData = sessionData;
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return headers;
+    }
+
+    @Override
+    public SessionData getSessionData() {
+      return sessionData;
+    }
+
+    @Override
+    public String getPath() {
+      List<String> queryList = new ArrayList<>();
+      for (String id : this.idList) {
+        queryList.add("(id==" + id + ")");
+      }
+      final StringBuilder sb = new StringBuilder()
+          .append("/feefines?query=(")
+          .append(String.join("+OR+", queryList))
+          .append(")");
+      return sb.toString();
+    }
+  }
+
 
 
 
@@ -352,7 +421,7 @@ public class FeeFinesRepository {
             .compose(resource -> {
               final BigDecimal amountPaid = new BigDecimal(feePaid.getFeeAmount(), moneyFormat);
               JsonObject accts = resource.getResource();
-              final JsonArray acctList = accts.getJsonArray("accounts");
+              final JsonArray acctList = accts.getJsonArray(ACCOUNTS_KEY);
               final BigDecimal amountTotal = totalAmount(acctList).round(moneyFormat);
               log.debug("bdAmountPaid = {}", amountPaid);
               log.debug("bdAmountTotal = {}", amountTotal);
@@ -429,5 +498,38 @@ public class FeeFinesRepository {
       list.add(arr.getJsonObject(i).getString("id"));
     }
     return list;
+  }
+
+  private List<String> getFeeFineIdList(JsonObject accountJson) {
+    List<String> idList = new ArrayList<>();
+    JsonArray accountArray = accountJson.getJsonArray(ACCOUNTS_KEY);
+    if (accountArray != null) {
+      for (Object ob : accountArray) {
+        String id = ((JsonObject)ob).getString("id");
+        idList.add(id);
+      }
+    }
+    return idList;
+  }
+
+  private JsonObject populateFeeFinesDetails(JsonObject accountJson, JsonObject feeFinesJson) {
+    if (accountJson != null && feeFinesJson != null) {
+      JsonArray accountArray = accountJson.getJsonArray(ACCOUNTS_KEY);
+      JsonArray feeFinesArray = feeFinesJson.getJsonArray("feefines");
+      if (feeFinesArray != null && accountArray != null) {
+        for (Object ob : accountArray) {
+          JsonObject account = (JsonObject)ob;
+          String feeFineId = account.getString("feeFineId","");
+          for (Object ob2 : feeFinesArray) {
+            JsonObject feeFine = (JsonObject)ob2;
+            if (feeFineId.equals(feeFine.getString("id"))) {
+              account.put("feeFineType", feeFine.getString("feeFineType"));
+              break;
+            }
+          }
+        }
+      }
+    }
+    return accountJson;
   }
 }

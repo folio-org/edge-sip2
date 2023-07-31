@@ -1,0 +1,13 @@
+{
+  "feefines" : [ {
+    "automatic" : true,
+    "feeFineType" : "Overdue fine",
+    "id" : "78b549ec-607c-4d67-805a-828d5e0968da"
+  } ],
+  "totalRecords" : 1,
+  "resultInfo" : {
+    "totalRecords" : 1,
+    "facets" : [ ],
+    "diagnostics" : [ ]
+  }
+}

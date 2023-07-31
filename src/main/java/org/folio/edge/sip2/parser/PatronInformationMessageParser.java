@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.parser;
 
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.CHARGED_ITEMS;
+import static org.folio.edge.sip2.domain.messages.enumerations.Summary.EXTENDED_FEES;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.FINE_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.HOLD_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.OVERDUE_ITEMS;
@@ -95,37 +96,42 @@ public class PatronInformationMessageParser extends MessageParser {
   }
 
   private Summary parseSummary(char [] messageChars) {
-    if (parseBoolean(messageChars)) {
+    if (Boolean.TRUE.equals(parseBoolean(messageChars))) {
       position += 9;
       return HOLD_ITEMS;
     }
 
-    if (parseBoolean(messageChars)) {
+    if (Boolean.TRUE.equals(parseBoolean(messageChars))) {
       position += 8;
       return OVERDUE_ITEMS;
     }
 
-    if (parseBoolean(messageChars)) {
+    if (Boolean.TRUE.equals(parseBoolean(messageChars))) {
       position += 7;
       return CHARGED_ITEMS;
     }
 
-    if (parseBoolean(messageChars)) {
+    if (Boolean.TRUE.equals(parseBoolean(messageChars))) {
       position += 6;
       return FINE_ITEMS;
     }
 
-    if (parseBoolean(messageChars)) {
+    if (Boolean.TRUE.equals(parseBoolean(messageChars))) {
       position += 5;
       return RECALL_ITEMS;
     }
 
-    if (parseBoolean(messageChars)) {
+    if (Boolean.TRUE.equals(parseBoolean(messageChars))) {
       position += 4;
       return UNAVAILABLE_HOLDS;
     }
 
-    position += 4;
+    if (Boolean.TRUE.equals(parseBoolean(messageChars))) {
+      position += 3;
+      return EXTENDED_FEES;
+    }
+
+    position += 3;
     return null; // consider adding Summary.NONE
   }
 }

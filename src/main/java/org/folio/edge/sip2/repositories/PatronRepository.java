@@ -6,6 +6,7 @@ import static org.folio.edge.sip2.domain.messages.enumerations.Language.UNKNOWN;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.HOLD_PRIVILEGES_DENIED;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RECALL_PRIVILEGES_DENIED;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RENEWAL_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.Summary.EXTENDED_FEES;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.HOLD_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.OVERDUE_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.RECALL_ITEMS;
@@ -54,6 +55,8 @@ import org.folio.okapi.common.refreshtoken.client.ClientException;
  *
  */
 public class PatronRepository {
+  private static final String FIELD_ACCOUNTS = "accounts";
+  private static final String FIELD_REMAINING = "remaining";
   private static final String FIELD_REQUESTS = "requests";
   private static final String FIELD_TITLE = "title";
   private static final String FIELD_TOTAL_RECORDS = "totalRecords";
@@ -246,7 +249,11 @@ public class PatronRepository {
     // Add fine count
     final Future<PatronInformationResponseBuilder> accountFuture = feeFinesRepository
         .getAccountDataByUserId(userId, sessionData)
-        .map(accounts -> populateFinesCount(accounts, builder));
+        .map(accounts -> {
+          populateFinesCount(accounts, builder);
+          return addExtendedAccountInfo(accounts,
+              patronInformation.getSummary() == EXTENDED_FEES, builder);
+        });
 
     // Add charged count
     final Future<PatronInformationResponseBuilder> loansFuture = circulationRepository
@@ -346,14 +353,15 @@ public class PatronRepository {
     return builder.fineItemsCount(fineItemsCount);
   }
 
+
   private PatronStatusResponseBuilder totalAmount(
       JsonObject jo,
       PatronStatusResponseBuilder builder) {
 
-    final JsonArray arr = jo.getJsonArray("accounts");
+    final JsonArray arr = jo.getJsonArray(FIELD_ACCOUNTS);
     Float total = 0.0f;
     for (int i = 0;i < arr.size();i++) {
-      total += arr.getJsonObject(i).getFloat("remaining");
+      total += arr.getJsonObject(i).getFloat(FIELD_REMAINING);
     }
     log.debug("Total is {}", total);
     return builder.feeAmount(total.toString());
@@ -506,6 +514,22 @@ public class PatronRepository {
     });
   }
 
+  private PatronInformationResponseBuilder addExtendedAccountInfo(JsonObject accounts,
+      boolean details, PatronInformationResponseBuilder builder) {
+    List<PatronInformationResponse.PatronAccount> patronAccountList;
+    if (accounts != null) {
+      if (details) {
+        patronAccountList = getPatronAccountList(accounts);
+      } else {
+        patronAccountList = null;
+      }
+    } else {
+      patronAccountList = null;
+    }
+    return builder.patronAccountList(patronAccountList);
+  }
+
+
   private String getPatronPersonalName(Personal personal, String defaultPersonalName) {
     if (personal != null) {
       return Stream.of(personal.getFirstName(), personal.getMiddleName(), personal.getLastName())
@@ -558,6 +582,29 @@ public class PatronRepository {
         .map(o -> (JsonObject) o)
         .map(jo -> getChildString(jo, childField, FIELD_TITLE))
         .collect(Collectors.toList());
+  }
+
+  private List<PatronInformationResponse.PatronAccount> getPatronAccountList(
+      JsonObject accountsJson) {
+    List<PatronInformationResponse.PatronAccount> accountList = new ArrayList<>();
+    final JsonArray accountArray = accountsJson.getJsonArray(FIELD_ACCOUNTS);
+    for (Object ob : accountArray) {
+      JsonObject jo = (JsonObject)ob;
+      PatronInformationResponse.PatronAccount patronAccount =
+          new PatronInformationResponse.PatronAccount();
+      patronAccount.setFeeFineAmount(jo.getNumber("amount") != null
+          ? jo.getNumber("amount").doubleValue() : null);
+      patronAccount.setFeeFineRemaining(jo.getNumber(FIELD_REMAINING) != null
+          ? jo.getNumber(FIELD_REMAINING).doubleValue() : null);
+      patronAccount.setItemBarcode(jo.getString("barcode"));
+      patronAccount.setFeeFineId(jo.getString("feeFineId"));
+      patronAccount.setFeeFineType(jo.getString("feeFineType"));
+      patronAccount.setItemTitle(jo.getString(FIELD_TITLE));
+      patronAccount.setFeeCreationDate(jo.getString("dateCreated") != null
+          ? OffsetDateTime.parse(jo.getString("dateCreated")) : null);
+      accountList.add(patronAccount);
+    }
+    return accountList;
   }
 
   private List<String> getHoldItems(JsonObject requests) {

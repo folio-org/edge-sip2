@@ -3,6 +3,7 @@ package org.folio.edge.sip2.handlers;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.ENGLISH;
+import static org.folio.edge.sip2.domain.messages.enumerations.Summary.EXTENDED_FEES;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.HOLD_ITEMS;
 import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION_RESPONSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,6 +19,8 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -130,6 +133,7 @@ public class PatronInformationHandlerTests {
   }
 
   @Test
+
   void cantExecutePatronInformation(
        @Mock PatronRepository mockPatronRepository,
        Vertx vertx,
@@ -151,6 +155,7 @@ public class PatronInformationHandlerTests {
     final String printLine = "This is a print line";
     final String borrowerType = "patron";
     final String borrowerTypeDescription = "the library patrons";
+
     final PatronInformation patronInformation = PatronInformation.builder()
         .language(ENGLISH)
         .transactionDate(OffsetDateTime.now(clock))
@@ -162,6 +167,7 @@ public class PatronInformationHandlerTests {
         .startItem(Integer.valueOf(2))
         .endItem(Integer.valueOf(4))
         .build();
+
     when(mockPatronRepository.performPatronInformationCommand(any(), any()))
         .thenReturn(Future.failedFuture(new ClientException("Incorrect Username")));
 
@@ -169,6 +175,7 @@ public class PatronInformationHandlerTests {
         FreemarkerRepository.getInstance().getFreemarkerTemplate(PATRON_INFORMATION_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
+
     sessionData.setPatronPasswordVerificationRequired(TRUE);
     sessionData.setErrorResponseMessage(PatronInformationResponse.builder()
         .patronStatus(null)
@@ -212,7 +219,6 @@ public class PatronInformationHandlerTests {
           testContext.completeNow();
         })));
   }
-
 
   @Test
   public void cannotCreateHandlerDueToMissingPatronRepository() {

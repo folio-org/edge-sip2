@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -67,6 +68,7 @@ class PatronInformationResponseTests {
   final List<String> printLine = asList("Dot matrix");
   final String borrowerType = "patron";
   final String borrowerTypeDescription = "the library patrons";
+  final List<PatronInformationResponse.PatronAccount> patronAccountList = new ArrayList<>();
 
   @Test
   void testGetPatronStatus() {
@@ -1573,6 +1575,7 @@ class PatronInformationResponseTests {
         .append(", printLine=").append(printLine)
         .append(", borrowerType=").append(borrowerType)
         .append(", borrowerTypeDescription=").append(borrowerTypeDescription)
+        .append(", patronAccountList=").append(patronAccountList)
         .append(']').toString();
     final PatronInformationResponse pir = builder()
         .patronStatus(patronStatus)
