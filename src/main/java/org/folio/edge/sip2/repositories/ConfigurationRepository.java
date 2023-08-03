@@ -262,8 +262,9 @@ public class ConfigurationRepository {
         pathStringBuilder.append(Utils.buildQueryString(configQueryParams.get(i), " AND ", "=="));
         pathStringBuilder.append(")");
       }
-      log.debug("Configuration path before encoding: {}", pathStringBuilder.toString());
-      String path =  "/configurations/entries?query=" + Utils.encode(pathStringBuilder.toString());
+      String partialPath = pathStringBuilder.toString();
+      log.debug("Configuration path before encoding: {}", partialPath);
+      String path =  "/configurations/entries?query=" + Utils.encode(partialPath);
 
       log.debug("Parsed mod-config path: {}", path);
 
