@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.folio.edge.sip2.api.support.TestUtils;
+import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
@@ -60,6 +61,7 @@ public class PatronInformationHandlerTests {
     final String printLine = "This is a print line";
     final String borrowerType = "patron";
     final String borrowerTypeDescription = "the library patrons";
+    final String totalRemaining = "55.30";
     final PatronInformation patronInformation = PatronInformation.builder()
         .language(ENGLISH)
         .transactionDate(OffsetDateTime.now(clock))
@@ -90,8 +92,8 @@ public class PatronInformationHandlerTests {
             .chargedItemsLimit(null)
             .validPatron(TRUE)
             .validPatronPassword(null)
-            .currencyType(null)
-            .feeAmount(null)
+            .currencyType(CurrencyType.USD)
+            .feeAmount(totalRemaining)
             .feeLimit(null)
             .holdItems(holdItems)
             .overdueItems(Collections.emptyList())
@@ -121,6 +123,8 @@ public class PatronInformationHandlerTests {
                   holdItemsCount, overdueItemsCount, chargedItemsCount,
                   fineItemsCount, recallItemsCount)
               + String.format("AO%s|AA%s|AE%s|BLY|", institutionId, patronIdentifier, personalName)
+              + String.format("BH%s|", CurrencyType.USD.name())
+              + String.format("BV%s|", totalRemaining)
               + String.format("AS%s|AS%s|AS%s|", holdItems.toArray(new Object[holdItems.size()]))
               + String.format("BD%s|BE%s|BF%s|", homeAddress, emailAddress, homePhoneNumber)
               + String.format("AF%s|AG%s|", screenMessage, printLine)

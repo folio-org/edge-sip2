@@ -19,7 +19,7 @@
       "module": "ORG",
       "configName": "localeSettings",
       "enabled": true,
-      "value": "{\"locale\":\"en-SE\",\"timezone\":\"Etc/UTC\"}"
+      "value": "{\"locale\":\"en-SE\",\"timezone\":\"Etc/UTC\",\"currency\":\"USD\"}"
     }
   ],
   "totalRecords": 3,

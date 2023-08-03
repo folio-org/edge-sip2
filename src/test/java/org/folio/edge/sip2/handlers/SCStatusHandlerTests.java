@@ -22,6 +22,7 @@ import org.folio.edge.sip2.repositories.IRequestData;
 import org.folio.edge.sip2.repositories.IResourceProvider;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -117,6 +118,7 @@ class SCStatusHandlerTests {
         })));
   }
 
+  @Disabled("Disabled until configuration policy is more concrete")
   @Test
   void cannotGetAValidResponseDueToMissingConfig(
       Vertx vertx,

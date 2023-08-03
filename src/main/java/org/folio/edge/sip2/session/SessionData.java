@@ -19,10 +19,13 @@ public class SessionData {
   private String password; // should we really save this?
   private PreviousMessage previousMessage;
   private String timeZone;
+  private String currency;
   private boolean patronPasswordVerificationRequired;
 
   private static final Logger log = LogManager.getLogger();
+  private static final String DEFAULT_CURRENCY = "USD";
   private static final String DEFAULT_TIMEZONE = "Etc/UTC";
+
 
   private SessionData(String tenant, char fieldDelimiter,
                       boolean errorDetectionEnabled, String charset) {
@@ -140,5 +143,23 @@ public class SessionData {
 
   public Object getErrorResponseMessage() {
     return this.errorResponseMessage;
+  }
+
+  public String getCurrency() {
+    return currency != null ? currency : DEFAULT_CURRENCY;
+  }
+
+  /**
+   * Setter for currency.
+   *
+   * @param currency The currency value to set the session to
+   */
+  public void setCurrency(String currency) {
+    if (currency == null) {
+      log.warn("Null currency value, therefore default value {} will be used",
+          DEFAULT_CURRENCY);
+    } else {
+      this.currency = currency;
+    }
   }
 }
