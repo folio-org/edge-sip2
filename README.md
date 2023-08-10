@@ -291,6 +291,8 @@ All permission associated with edge-sip2
     inventory.items.collection.get
     circulation.renew-by-barcode.post
     usergroups.collection.get
+    users-bl.item.get
+    usergroups.item.get
 ```
 
 #### Security concerns for developers

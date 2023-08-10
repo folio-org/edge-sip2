@@ -300,7 +300,8 @@ public class PatronRepository {
     final String personalName = getPatronPersonalName(personal, patronStatus.getPatronIdentifier());
     builder.personalName(personalName);
     log.debug("Populating borrower info with patron group {}",
-        extendedUser.getPatronGroup().getId());
+        extendedUser.getPatronGroup() != null ? extendedUser.getPatronGroup().getId()
+        : null);
     // When all operations complete, build and return the final PatronInformationResponse
 
     final Future<PatronStatusResponseBuilder> getFeeAmountFuture = feeFinesRepository

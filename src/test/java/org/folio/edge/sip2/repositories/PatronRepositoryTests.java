@@ -580,12 +580,81 @@ public class PatronRepositoryTests {
   }
 
   @Test
-  void canPerformPatronStatus(Vertx vertx,
+  void canPerformPatronStatusWithNoGroup(Vertx vertx,
         VertxTestContext testContext,
         @Mock PasswordVerifier mockPasswordVerifier,
         @Mock FeeFinesRepository mockFeeFinesRepository,
         @Mock CirculationRepository mockCirculationRepository,
         @Mock UsersRepository mockUsersRepository) {
+    final String patronIdentifier = "1029384756";
+    final String patronPassword = "1234";
+    final String institutionId = "diku";
+    final String userId = "99a81cee-d439-42c8-9860-2bd1de881c4a";
+    final String userBarcode = "2349871212";
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final Float feeAmount = 34.50f;
+    final Personal personal = new Personal.Builder()
+        .firstName("Joe")
+        .middleName("Zee")
+        .lastName("Blow")
+        .build();
+
+    final User user = new User.Builder()
+        .id(userId)
+        .barcode(userBarcode)
+        .personal(personal)
+        .build();
+
+    final ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(user);
+
+    final PatronStatusRequest patronStatus = PatronStatusRequest.builder()
+        .patronIdentifier(patronIdentifier)
+        .patronPassword(patronPassword)
+        .institutionId(institutionId)
+        .transactionDate(OffsetDateTime.now())
+        .build();
+
+    final JsonObject queryAccountResponse = new JsonObject()
+        .put("accounts", new JsonArray()
+        .add(new JsonObject()
+          .put("remaining", feeAmount)
+          .put("id", "2345")
+        )
+    );
+
+    when(mockPasswordVerifier.verifyPatronPassword(anyString(), anyString(), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .extendedUser(extendedUser).build()));
+
+    when(mockFeeFinesRepository.getFeeAmountByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(queryAccountResponse));
+
+    PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier,
+        clock);
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    patronRepository.performPatronStatusCommand(patronStatus, sessionData).onComplete(
+        testContext.succeeding(patronStatusResponse -> testContext.verify(() -> {
+          assertNotNull(patronStatusResponse);
+          assertEquals(feeAmount.toString(), patronStatusResponse.getFeeAmount());
+          assertEquals("Joe Zee Blow", patronStatusResponse.getPersonalName());
+          assertEquals(true, patronStatusResponse.getValidPatron());
+          assertEquals(null, patronStatusResponse.getScreenMessage());
+          testContext.completeNow();
+        }))
+    );
+  }
+
+  @Test
+  void canPerformPatronStatus(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock UsersRepository mockUsersRepository) {
     final String patronIdentifier = "1029384756";
     final String patronPassword = "1234";
     final String institutionId = "diku";
@@ -618,15 +687,15 @@ public class PatronRepositoryTests {
 
     final JsonObject queryAccountResponse = new JsonObject()
         .put("accounts", new JsonArray()
-        .add(new JsonObject()
-          .put("remaining", feeAmount)
-          .put("id", "2345")
-        )
-    );
+            .add(new JsonObject()
+                .put("remaining", feeAmount)
+                .put("id", "2345")
+            )
+        );
 
     when(mockPasswordVerifier.verifyPatronPassword(anyString(), anyString(), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-            .extendedUser(extendedUser).build()));
+        .extendedUser(extendedUser).build()));
 
     when(mockFeeFinesRepository.getFeeAmountByUserId(eq(userId), any()))
         .thenReturn(Future.succeededFuture(queryAccountResponse));
