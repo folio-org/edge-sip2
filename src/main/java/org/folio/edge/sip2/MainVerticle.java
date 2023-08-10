@@ -144,7 +144,7 @@ public class MainVerticle extends AbstractVerticle {
 
         final String messageString = buffer.getString(0, buffer.length(), sessionData.getCharset());
 
-        log.debug("Received message: {}", messageString);
+        log.info("Received message: {}", messageString);
 
         Command command = UNKNOWN;
 
