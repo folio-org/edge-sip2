@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.folio.edge.sip2.api.support.TestUtils;
+import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
 import org.folio.edge.sip2.domain.messages.enumerations.Summary;
 import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
@@ -213,8 +214,8 @@ public class PatronRepositoryTests {
           assertNull(patronInformationResponse.getChargedItemsLimit());
           assertTrue(patronInformationResponse.getValidPatron());
           assertNull(patronInformationResponse.getValidPatronPassword());
-          assertNull(patronInformationResponse.getCurrencyType());
-          assertNull(patronInformationResponse.getFeeAmount());
+          assertEquals(CurrencyType.USD, patronInformationResponse.getCurrencyType());
+          assertEquals("1.0", patronInformationResponse.getFeeAmount());
           assertNull(patronInformationResponse.getFeeLimit());
           assertNotNull(patronInformationResponse.getHoldItems());
           assertTrue(patronInformationResponse.getHoldItems().isEmpty());
@@ -325,8 +326,8 @@ public class PatronRepositoryTests {
           assertNull(patronInformationResponse.getChargedItemsLimit());
           assertTrue(patronInformationResponse.getValidPatron());
           assertNull(patronInformationResponse.getValidPatronPassword());
-          assertNull(patronInformationResponse.getCurrencyType());
-          assertNull(patronInformationResponse.getFeeAmount());
+          assertEquals(CurrencyType.USD, patronInformationResponse.getCurrencyType());
+          assertEquals("1.0", patronInformationResponse.getFeeAmount());
           assertNull(patronInformationResponse.getFeeLimit());
           assertNotNull(patronInformationResponse.getHoldItems());
           assertTrue(patronInformationResponse.getHoldItems().isEmpty());
@@ -437,8 +438,8 @@ public class PatronRepositoryTests {
           assertNull(patronInformationResponse.getChargedItemsLimit());
           assertTrue(patronInformationResponse.getValidPatron());
           assertNull(patronInformationResponse.getValidPatronPassword());
-          assertNull(patronInformationResponse.getCurrencyType());
-          assertNull(patronInformationResponse.getFeeAmount());
+          assertEquals(CurrencyType.USD, patronInformationResponse.getCurrencyType());
+          assertEquals("1.0", patronInformationResponse.getFeeAmount());
           assertNull(patronInformationResponse.getFeeLimit());
           assertNotNull(patronInformationResponse.getHoldItems());
           assertTrue(patronInformationResponse.getHoldItems().isEmpty());
@@ -551,8 +552,8 @@ public class PatronRepositoryTests {
           assertNull(patronInformationResponse.getChargedItemsLimit());
           assertTrue(patronInformationResponse.getValidPatron());
           assertTrue(patronInformationResponse.getValidPatronPassword());
-          assertNull(patronInformationResponse.getCurrencyType());
-          assertNull(patronInformationResponse.getFeeAmount());
+          assertEquals(CurrencyType.USD, patronInformationResponse.getCurrencyType());
+          assertEquals("1.0", patronInformationResponse.getFeeAmount());
           assertNull(patronInformationResponse.getFeeLimit());
           assertNotNull(patronInformationResponse.getHoldItems());
           assertTrue(patronInformationResponse.getHoldItems().isEmpty());
@@ -885,8 +886,8 @@ public class PatronRepositoryTests {
           assertNull(patronInformationResponse.getChargedItemsLimit());
           assertTrue(patronInformationResponse.getValidPatron());
           assertNull(patronInformationResponse.getValidPatronPassword());
-          assertNull(patronInformationResponse.getCurrencyType());
-          assertNull(patronInformationResponse.getFeeAmount());
+          assertEquals(CurrencyType.USD, patronInformationResponse.getCurrencyType());
+          assertEquals("1.0", patronInformationResponse.getFeeAmount());
           assertNull(patronInformationResponse.getFeeLimit());
           assertNotNull(patronInformationResponse.getHoldItems());
           assertEquals(expectedLists.get(0), patronInformationResponse.getHoldItems());
@@ -991,6 +992,7 @@ public class PatronRepositoryTests {
               patronInformationResponse.getPatronAccountList().get(1).getFeeFineType());
           assertEquals(5.5,
               patronInformationResponse.getPatronAccountList().get(1).getFeeFineRemaining());
+          assertEquals("72.16", patronInformationResponse.getFeeAmount());
           testContext.completeNow();
 
         })));
@@ -1090,8 +1092,8 @@ public class PatronRepositoryTests {
           assertNull(patronInformationResponse.getChargedItemsLimit());
           assertTrue(patronInformationResponse.getValidPatron());
           assertNull(patronInformationResponse.getValidPatronPassword());
-          assertNull(patronInformationResponse.getCurrencyType());
-          assertNull(patronInformationResponse.getFeeAmount());
+          assertEquals(CurrencyType.USD, patronInformationResponse.getCurrencyType());
+          assertEquals("1.0", patronInformationResponse.getFeeAmount());
           assertNull(patronInformationResponse.getFeeLimit());
           assertNotNull(patronInformationResponse.getHoldItems());
           assertTrue(patronInformationResponse.getHoldItems().isEmpty());
@@ -1449,7 +1451,7 @@ public class PatronRepositoryTests {
           assertEquals("Darius Auer", patronInformationResponse.getPersonalName());
           assertTrue(patronInformationResponse.getValidPatron());
           assertNull(patronInformationResponse.getValidPatronPassword());
-          assertNull(patronInformationResponse.getCurrencyType());
+          assertEquals(CurrencyType.USD, patronInformationResponse.getCurrencyType());
           assertNull(patronInformationResponse.getFeeAmount());
           assertNull(patronInformationResponse.getFeeLimit());
           assertNotNull(patronInformationResponse.getHoldItems());
@@ -1548,7 +1550,7 @@ public class PatronRepositoryTests {
           assertEquals("Darius Auer", patronInformationResponse.getPersonalName());
           assertTrue(patronInformationResponse.getValidPatron());
           assertNull(patronInformationResponse.getValidPatronPassword());
-          assertNull(patronInformationResponse.getCurrencyType());
+          assertEquals(CurrencyType.USD, patronInformationResponse.getCurrencyType());
           assertNull(patronInformationResponse.getFeeAmount());
           assertNull(patronInformationResponse.getFeeLimit());
           assertNotNull(patronInformationResponse.getHoldItems());
@@ -1646,8 +1648,8 @@ public class PatronRepositoryTests {
           assertEquals("Darius Auer", patronInformationResponse.getPersonalName());
           assertTrue(patronInformationResponse.getValidPatron());
           assertNull(patronInformationResponse.getValidPatronPassword());
-          assertNull(patronInformationResponse.getCurrencyType());
-          assertNull(patronInformationResponse.getFeeAmount());
+          assertEquals(CurrencyType.USD, patronInformationResponse.getCurrencyType());
+          assertEquals("1.0", patronInformationResponse.getFeeAmount());
           assertNull(patronInformationResponse.getFeeLimit());
           assertNotNull(patronInformationResponse.getHoldItems());
           assertTrue(patronInformationResponse.getHoldItems().isEmpty());

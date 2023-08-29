@@ -93,15 +93,15 @@ public final class Utils {
                                         String operator) {
 
     StringBuilder stringBuilder = new StringBuilder();
-    boolean firstParamEmtpy = true;
+    boolean firstParamEmpty = true;
 
     for (Map.Entry<String, String> entry: queryStringParameters.entrySet()) {
       if (!Utils.isStringNullOrEmpty(entry.getValue())) {
-        stringBuilder.append(firstParamEmtpy ? "" : delimiter)
+        stringBuilder.append(firstParamEmpty ? "" : delimiter)
                      .append(entry.getKey())
                      .append(operator)
                      .append(entry.getValue());
-        firstParamEmtpy = false;
+        firstParamEmpty = false;
       }
     }
     return stringBuilder.toString();

@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
 import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
@@ -250,6 +251,7 @@ public class PatronRepository {
     final Future<PatronInformationResponseBuilder> accountFuture = feeFinesRepository
         .getAccountDataByUserId(userId, sessionData)
         .map(accounts -> {
+          totalAmount(accounts, builder);
           populateFinesCount(accounts, builder);
           return addExtendedAccountInfo(accounts,
               patronInformation.getSummary() == EXTENDED_FEES, builder);
@@ -292,6 +294,7 @@ public class PatronRepository {
             .patronIdentifier(patronInformation.getPatronIdentifier())
             .validPatron(TRUE)
             .validPatronPassword(validPassword)
+            .currencyType(matchCurrency(sessionData.getCurrency()))
             .build();
           }
         );
@@ -353,6 +356,21 @@ public class PatronRepository {
     return builder.fineItemsCount(fineItemsCount);
   }
 
+
+  private PatronInformationResponseBuilder totalAmount(
+      JsonObject jo,
+      PatronInformationResponseBuilder builder) {
+    Float total = 0.0f;
+    if (jo != null) {
+      final JsonArray arr = jo.getJsonArray(FIELD_ACCOUNTS);
+      for (int i = 0; i < arr.size(); i++) {
+        total += arr.getJsonObject(i).getFloat(FIELD_REMAINING);
+      }
+      log.debug("Total is {}", total);
+      return builder.feeAmount(total.toString());
+    }
+    return null;
+  }
 
   private PatronStatusResponseBuilder totalAmount(
       JsonObject jo,
@@ -686,4 +704,15 @@ public class PatronRepository {
           .collect(Collectors.toList());
     });
   }
+
+  private CurrencyType matchCurrency(String currencyString) {
+    for (CurrencyType c : CurrencyType.values()) {
+      if (c.name().equals(currencyString)) {
+        return c;
+      }
+    }
+    return null;
+  }
 }
+
+

@@ -127,7 +127,7 @@ public final class PatronInformationResponse {
   private final List<String> printLine;
   /** Extended field - the type of borrower. */
   private final String borrowerType;
-  /** Extend field - the description of the borrower type. */
+  /** Extended field - the description of the borrower type. */
   private final String borrowerTypeDescription;
   private final List<PatronAccount> patronAccountList;
 
@@ -482,8 +482,6 @@ public final class PatronInformationResponse {
     private List<String> printLine;
     private String borrowerType;
     private String borrowerTypeDescription;
-
-
     private List<PatronAccount> patronAccountList;
 
     private PatronInformationResponseBuilder() {

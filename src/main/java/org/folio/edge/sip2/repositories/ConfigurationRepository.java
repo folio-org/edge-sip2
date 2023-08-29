@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
 import org.folio.edge.sip2.domain.messages.responses.ACSStatus;
 import org.folio.edge.sip2.domain.messages.responses.ACSStatus.ACSStatusBuilder;
@@ -116,41 +117,39 @@ public class ConfigurationRepository {
       final JsonObject scConfiguration = resource.getResource();
       JsonArray configs = scConfiguration.getJsonArray("configs");
       int totalConfigs = configs.size();
-      if (totalConfigs >= configParameters.size()) {
-
-        LinkedHashMap<String, JsonObject> resultJsonConfigs = new LinkedHashMap<>();
-
-        for (int i = 0; i < totalConfigs; i++) {
-          JsonObject config = configs.getJsonObject(i);
-          String module = config.getString(KEY_CONFIG_MODULE);
-          String configName = config.getString(KEY_CONFIG_NAME);
-          String code = config.getString(KEY_CONFIG_CODE);
-
-          String configKey = String.format(CONFIGURATION_TEMPLATE, module, configName, code);
-
-          String configurationString = config.getString("value");
-          if (!Utils.isStringNullOrEmpty(configurationString)) {
-            JsonObject jsonConfiguration = new JsonObject(configurationString);
-            resultJsonConfigs.put(configKey, jsonConfiguration);
-          } else {
-            log.error("Getting no value from config store for one of the result config records");
-          }
-        }
-
-        return Future.succeededFuture(resultJsonConfigs);
-
-      } else {
+      /*
+        Previously, this was a hard fail if there were fewer configurations found than were
+        specified in the queries. Changing it to be more forgiving but to issue a warning
+        and only to fail if the scLocation is not set in the sessionData
+       */
+      if (totalConfigs < configParameters.size()) {
+        log.warn("Found fewer configurations than expected. Expected {} but found {}",
+            configParameters.size(), totalConfigs);
         if (Utils.isStringNullOrEmpty(sessionData.getScLocation())) {
           log.error("Configuration error: please add a value to Location Code.");
           return Future.failedFuture("Configuration error: please add a value to Location Code.");
-        } else {
-          log.error("Unable to find all necessary configuration(s). Found {} of {}",
-              totalConfigs, configParameters.size());
-          return Future.failedFuture("Unable to find all necessary configuration(s). Found "
-            + totalConfigs + " of " + configParameters.size());
         }
-
       }
+
+      LinkedHashMap<String, JsonObject> resultJsonConfigs = new LinkedHashMap<>();
+
+      for (int i = 0; i < totalConfigs; i++) {
+        JsonObject config = configs.getJsonObject(i);
+        String module = config.getString(KEY_CONFIG_MODULE);
+        String configName = config.getString(KEY_CONFIG_NAME);
+        String code = config.getString(KEY_CONFIG_CODE);
+
+        String configKey = String.format(CONFIGURATION_TEMPLATE, module, configName, code);
+
+        String configurationString = config.getString("value");
+        if (!Utils.isStringNullOrEmpty(configurationString)) {
+          JsonObject jsonConfiguration = new JsonObject(configurationString);
+          resultJsonConfigs.put(configKey, jsonConfiguration);
+        } else {
+          log.error("Getting no value from config store for one of the result config records");
+        }
+      }
+      return Future.succeededFuture(resultJsonConfigs);
     });
   }
 
@@ -170,6 +169,17 @@ public class ConfigurationRepository {
   private void addLocaleConfig(JsonObject config, SessionData sessionData) {
     if (config != null) {
       sessionData.setTimeZone(config.getString("timezone"));
+      String currencyConfig = config.getString("currency") != null
+          ? config.getString("currency") : "";
+      currencyConfig = currencyConfig.toUpperCase();
+      String currencyValue = null;
+      for (CurrencyType c : CurrencyType.values()) {
+        if (c.name().equals(currencyConfig)) {
+          currencyValue = c.name();
+          break;
+        }
+      }
+      sessionData.setCurrency(currencyValue);
     }
   }
 
@@ -252,7 +262,9 @@ public class ConfigurationRepository {
         pathStringBuilder.append(Utils.buildQueryString(configQueryParams.get(i), " AND ", "=="));
         pathStringBuilder.append(")");
       }
-      String path =  "/configurations/entries?query=" + Utils.encode(pathStringBuilder.toString());
+      String partialPath = pathStringBuilder.toString();
+      log.debug("Configuration path before encoding: {}", partialPath);
+      String path =  "/configurations/entries?query=" + Utils.encode(partialPath);
 
       log.debug("Parsed mod-config path: {}", path);
 

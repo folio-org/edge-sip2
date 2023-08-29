@@ -54,6 +54,7 @@ public class TestUtils {
     SessionData sessionData = SessionData.createSession("dikutest", '|', false, "IBM850");
     sessionData.setTimeZone(UTCTimeZone);
     sessionData.setMaxPrintWidth(100);
+    sessionData.setCurrency("USD");
     sessionData.setScLocation("testLocation");
     return sessionData;
   }
