@@ -3,7 +3,7 @@
 <#-- circulation Status: 2-char, fixed-length required field: 00 thru 99 -->
 <@lib.circulationStatus value=itemInformationResponse.circulationStatus/>
 <#-- security Marker: 2-char, fixed-length required field: 00 thru 99-->
-<@lib.securityMarker value=itemInformationResponse.securityMarker!""/>
+<@lib.securityMarker value=itemInformationResponse.securityMarker!"OTHER"/>
 <#--
     fee type: 2-char, fixed-length optional field (01 thru 99)
     The type of fee associated with checking out this item
