@@ -615,14 +615,26 @@ public class PatronRepository {
       patronAccount.setFeeFineRemaining(jo.getNumber(FIELD_REMAINING) != null
           ? jo.getNumber(FIELD_REMAINING).doubleValue() : null);
       patronAccount.setItemBarcode(jo.getString("barcode"));
+      patronAccount.setId(jo.getString("id"));
       patronAccount.setFeeFineId(jo.getString("feeFineId"));
       patronAccount.setFeeFineType(jo.getString("feeFineType"));
       patronAccount.setItemTitle(jo.getString(FIELD_TITLE));
-      patronAccount.setFeeCreationDate(jo.getString("dateCreated") != null
-          ? OffsetDateTime.parse(jo.getString("dateCreated")) : null);
+      String accountDate = getDateFromAccountJson(jo);
+      patronAccount.setFeeCreationDate(accountDate != null
+          ? OffsetDateTime.parse(accountDate) : null);
       accountList.add(patronAccount);
     }
     return accountList;
+  }
+
+  private String getDateFromAccountJson(JsonObject accountJson) {
+    if (accountJson.getString("dateCreated") != null) {
+      return accountJson.getString("dateCreated");
+    }
+    if (accountJson.getJsonObject("metadata") != null) {
+      return accountJson.getJsonObject("metadata").getString("createdDate");
+    }
+    return null;
   }
 
   private List<String> getHoldItems(JsonObject requests) {
