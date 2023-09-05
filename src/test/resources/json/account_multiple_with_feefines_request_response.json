@@ -29,8 +29,6 @@
     {
       "amount": 12.0,
       "remaining": 5.50,
-      "dateCreated": "2022-09-19T00:00:01Z",
-      "dateUpdated": "2022-09-19T00:00:01Z",
       "status": {
         "name": "Open"
       },
