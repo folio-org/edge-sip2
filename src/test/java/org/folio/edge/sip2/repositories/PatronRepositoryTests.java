@@ -226,7 +226,7 @@ public class PatronRepositoryTests {
           assertNotNull(patronInformationResponse.getFineItems());
           assertTrue(patronInformationResponse.getFineItems().isEmpty());
           assertNotNull(patronInformationResponse.getRecallItems());
-          assertEquals(Arrays.asList("1990 to 2010"), patronInformationResponse.getRecallItems());
+          assertEquals(Arrays.asList("6214635593916"), patronInformationResponse.getRecallItems());
           assertNotNull(patronInformationResponse.getUnavailableHoldItems());
           assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
           assertEquals("00430 Denis Parks, Indianapolis, FL 14654-6001 US",
@@ -338,7 +338,7 @@ public class PatronRepositoryTests {
           assertNotNull(patronInformationResponse.getFineItems());
           assertTrue(patronInformationResponse.getFineItems().isEmpty());
           assertNotNull(patronInformationResponse.getRecallItems());
-          assertEquals(Arrays.asList("1990 to 2010"), patronInformationResponse.getRecallItems());
+          assertEquals(Arrays.asList("6214635593916"), patronInformationResponse.getRecallItems());
           assertNotNull(patronInformationResponse.getUnavailableHoldItems());
           assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
           assertEquals("00430 Denis Parks, Indianapolis, FL 14654-6001 US",
@@ -450,7 +450,7 @@ public class PatronRepositoryTests {
           assertNotNull(patronInformationResponse.getFineItems());
           assertTrue(patronInformationResponse.getFineItems().isEmpty());
           assertNotNull(patronInformationResponse.getRecallItems());
-          assertEquals(Arrays.asList("1990 to 2010"), patronInformationResponse.getRecallItems());
+          assertEquals(Arrays.asList("6214635593916"), patronInformationResponse.getRecallItems());
           assertNotNull(patronInformationResponse.getUnavailableHoldItems());
           assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
           assertEquals(null, patronInformationResponse.getHomeAddress());
@@ -564,7 +564,7 @@ public class PatronRepositoryTests {
           assertNotNull(patronInformationResponse.getFineItems());
           assertTrue(patronInformationResponse.getFineItems().isEmpty());
           assertNotNull(patronInformationResponse.getRecallItems());
-          assertEquals(Arrays.asList("1990 to 2010"), patronInformationResponse.getRecallItems());
+          assertEquals(Arrays.asList("6214635593916"), patronInformationResponse.getRecallItems());
           assertNotNull(patronInformationResponse.getUnavailableHoldItems());
           assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
           assertEquals("00430 Denis Parks, Indianapolis, FL 14654-6001 US",
@@ -777,15 +777,18 @@ public class PatronRepositoryTests {
   private static Stream<Arguments> providePatronInformationParams() {
     final List<String> l = Collections.emptyList();
     return Stream.of(
-        Arguments.of(Summary.HOLD_ITEMS, Arrays.asList(Arrays.asList("Interesting Times",
-            "Request title1556587200969"), l, l, l, l, l)),
-        Arguments.of(Summary.OVERDUE_ITEMS, Arrays.asList(l, Arrays.asList("1990 to 2010"),
+        Arguments.of(Summary.HOLD_ITEMS, Arrays.asList(Arrays.asList("326547658598",
+            "1556587200969"), l, l, l, l, l)),
+        Arguments.of(Summary.OVERDUE_ITEMS, Arrays.asList(l, Arrays.asList("6214635593916"),
             l, l, l, l)),
-        Arguments.of(Summary.CHARGED_ITEMS, Arrays.asList(l, l, l, l, l, l)),
-        Arguments.of(Summary.FINE_ITEMS, Arrays.asList(l, l, l, l, l, l)),
+        Arguments.of(Summary.CHARGED_ITEMS,
+            Arrays.asList(l, l, Arrays.asList("6214635593916","9546958212529","7041345600523"),
+            l, l, l)),
+        Arguments.of(Summary.FINE_ITEMS, Arrays.asList(l, l, l, Arrays.asList("789234123"), l, l)),
         Arguments.of(Summary.RECALL_ITEMS,
-            Arrays.asList(l, l, l, l, Arrays.asList("1990 to 2010"), l)),
-        Arguments.of(Summary.UNAVAILABLE_HOLDS, Arrays.asList(l, l, l, l, l, l))
+            Arrays.asList(l, l, l, l, Arrays.asList("6214635593916"), l)),
+        Arguments.of(Summary.UNAVAILABLE_HOLDS, Arrays.asList(l, l, l, l, l,
+            Arrays.asList("1556587200969")))
       );
   }
 
@@ -1104,7 +1107,7 @@ public class PatronRepositoryTests {
           assertNotNull(patronInformationResponse.getFineItems());
           assertTrue(patronInformationResponse.getFineItems().isEmpty());
           assertNotNull(patronInformationResponse.getRecallItems());
-          assertEquals(Arrays.asList("Al Gore"), patronInformationResponse.getRecallItems());
+          assertEquals(Arrays.asList("7041345600523"), patronInformationResponse.getRecallItems());
           assertNotNull(patronInformationResponse.getUnavailableHoldItems());
           assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
           assertNull(patronInformationResponse.getHomeAddress());
