@@ -62,10 +62,12 @@ public class PatronRepository {
   private static final String FIELD_ACCOUNTS = "accounts";
   private static final String FIELD_REMAINING = "remaining";
   private static final String FIELD_REQUESTS = "requests";
+  private static final String FIELD_STATUS = "status";
   private static final String FIELD_TITLE = "title";
   private static final String FIELD_TOTAL_RECORDS = "totalRecords";
   private static final String FIELD_INSTANCE = "instance";
   private static final String FIELD_ITEM = "item";
+  private static final String FIELD_LOANS = "loans";
   private static final String FIELD_BARCODE = "barcode";
   private static final Logger log = LogManager.getLogger();
   // These really should come from FOLIO
@@ -528,7 +530,7 @@ public class PatronRepository {
 
     if (loans != null) {
       if (details) {
-        chargedItems = getChargedItems(loans);
+        chargedItems = getLoanItems(loans);
       } else {
         chargedItems = null;
       }
@@ -563,7 +565,7 @@ public class PatronRepository {
     if (overdues != null) {
       overdueItemsCount = Math.min(getTotalRecords(overdues), 9999);
       if (details) {
-        overdueItems = getOverdueItems(overdues);
+        overdueItems = getLoanItems(overdues);
       } else {
         overdueItems = null;
       }
@@ -648,23 +650,8 @@ public class PatronRepository {
     return null;
   }
 
-  private List<String> getTitlesForRequests(JsonArray items) {
-    return getTitles(items, FIELD_INSTANCE);
-  }
-
   private List<String> getBarcodesForRequests(JsonArray items) {
     return getBarcodes(items, FIELD_ITEM);
-  }
-
-  private List<String> getTitlesForLoans(JsonArray loans) {
-    return getTitles(loans, FIELD_ITEM);
-  }
-
-  private List<String> getTitles(JsonArray items, String childField) {
-    return items.stream()
-        .map(o -> (JsonObject) o)
-        .map(jo -> getChildString(jo, childField, FIELD_TITLE))
-        .collect(Collectors.toList());
   }
 
   private List<String> getBarcodesForLoans(JsonArray loans) {
@@ -674,8 +661,8 @@ public class PatronRepository {
   private List<String> getBarcodesForOpenAccounts(JsonArray accounts) {
     return accounts.stream()
       .map(o -> (JsonObject) o)
-      .filter(jo -> "Open".equals(getChildString(jo, "status", "name")))
-      .map(jo -> jo.getString("barcode"))
+      .filter(jo -> "Open".equals(getChildString(jo, FIELD_STATUS, "name")))
+      .map(jo -> jo.getString(FIELD_BARCODE))
       .collect(Collectors.toList());
   }
 
@@ -698,7 +685,7 @@ public class PatronRepository {
           ? jo.getNumber("amount").doubleValue() : null);
       patronAccount.setFeeFineRemaining(jo.getNumber(FIELD_REMAINING) != null
           ? jo.getNumber(FIELD_REMAINING).doubleValue() : null);
-      patronAccount.setItemBarcode(jo.getString("barcode"));
+      patronAccount.setItemBarcode(jo.getString(FIELD_BARCODE));
       patronAccount.setId(jo.getString("id"));
       patronAccount.setFeeFineId(jo.getString("feeFineId"));
       patronAccount.setFeeFineType(jo.getString("feeFineType"));
@@ -728,25 +715,17 @@ public class PatronRepository {
   }
 
   private List<String> getUnavailableHoldItems(JsonObject requests) {
-    final JsonArray requestsArray = requests.getJsonArray("requests", new JsonArray());
+    final JsonArray requestsArray = requests.getJsonArray(FIELD_REQUESTS, new JsonArray());
     return requestsArray.stream()
       .map(o -> (JsonObject) o)
-      .filter(jo -> {
-        return ("Closed - Unfilled".equals(jo.getString("status"))
-            || "Closed - Canceled".equals(jo.getString("status")));
-      })
-      .map(jo -> getChildString(jo, "item", "barcode"))
+      .filter(jo -> ("Closed - Unfilled".equals(jo.getString(FIELD_STATUS))
+            || "Closed - Canceled".equals(jo.getString(FIELD_STATUS))))
+      .map(jo -> getChildString(jo, "item", FIELD_BARCODE))
       .collect(Collectors.toList());
   }
 
-  private List<String> getOverdueItems(JsonObject loans) {
-    // All items in the response are overdue loans
-    final JsonArray loanArray = loans.getJsonArray("loans", new JsonArray());
-    return getBarcodesForLoans(loanArray);
-  }
-
-  private List<String> getChargedItems(JsonObject loans) {
-    final JsonArray loanArray = loans.getJsonArray("loans", new JsonArray());
+  private List<String> getLoanItems(JsonObject loans) {
+    final JsonArray loanArray = loans.getJsonArray(FIELD_LOANS, new JsonArray());
     return getBarcodesForLoans(loanArray);
   }
 
@@ -814,7 +793,7 @@ public class PatronRepository {
 
     return loansFuture.map(jo -> {
       final JsonArray loans = jo == null ? new JsonArray()
-          : jo.getJsonArray("loans", new JsonArray());
+          : jo.getJsonArray(FIELD_LOANS, new JsonArray());
       return loans.stream()
           .map(o -> (JsonObject) o)
           .map(loan -> circulationRepository.getRequestsByItemId(loan.getString("itemId"),
