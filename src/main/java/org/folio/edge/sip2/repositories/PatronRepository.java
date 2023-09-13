@@ -65,7 +65,6 @@ public class PatronRepository {
   private static final String FIELD_STATUS = "status";
   private static final String FIELD_TITLE = "title";
   private static final String FIELD_TOTAL_RECORDS = "totalRecords";
-  private static final String FIELD_INSTANCE = "instance";
   private static final String FIELD_ITEM = "item";
   private static final String FIELD_LOANS = "loans";
   private static final String FIELD_BARCODE = "barcode";
