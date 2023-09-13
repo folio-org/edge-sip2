@@ -6,10 +6,13 @@ import static org.folio.edge.sip2.domain.messages.enumerations.Language.UNKNOWN;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.HOLD_PRIVILEGES_DENIED;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RECALL_PRIVILEGES_DENIED;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RENEWAL_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.Summary.CHARGED_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.EXTENDED_FEES;
+import static org.folio.edge.sip2.domain.messages.enumerations.Summary.FINE_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.HOLD_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.OVERDUE_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.RECALL_ITEMS;
+import static org.folio.edge.sip2.domain.messages.enumerations.Summary.UNAVAILABLE_HOLDS;
 import static org.folio.edge.sip2.utils.JsonUtils.getChildString;
 
 import io.vertx.core.CompositeFuture;
@@ -63,6 +66,7 @@ public class PatronRepository {
   private static final String FIELD_TOTAL_RECORDS = "totalRecords";
   private static final String FIELD_INSTANCE = "instance";
   private static final String FIELD_ITEM = "item";
+  private static final String FIELD_BARCODE = "barcode";
   private static final Logger log = LogManager.getLogger();
   // These really should come from FOLIO
   static final String MESSAGE_INVALID_PATRON =
@@ -253,6 +257,7 @@ public class PatronRepository {
         .map(accounts -> {
           totalAmount(accounts, builder);
           populateFinesCount(accounts, builder);
+          addFineItems(accounts, patronInformation.getSummary() == FINE_ITEMS, builder);
           return addExtendedAccountInfo(accounts,
               patronInformation.getSummary() == EXTENDED_FEES, builder);
         });
@@ -260,12 +265,19 @@ public class PatronRepository {
     // Add charged count
     final Future<PatronInformationResponseBuilder> loansFuture = circulationRepository
         .getLoansByUserId(userId, null, null, sessionData)
-        .map(loans -> populateChargedCount(loans, builder));
+        .map(loans -> {
+          populateChargedCount(loans, builder);
+          return addCharged(loans, patronInformation.getSummary() == CHARGED_ITEMS, builder);
+        });
 
     // Get holds data (count and items) and store it in the builder
     final Future<PatronInformationResponseBuilder> holdsFuture = circulationRepository
         .getRequestsByUserId(userId, "Hold", startItem, endItem, sessionData).map(
-            holds -> addHolds(holds, patronInformation.getSummary() == HOLD_ITEMS, builder));
+            holds -> {
+              addUnavailableHolds(holds, patronInformation.getSummary() == UNAVAILABLE_HOLDS,
+                  builder);
+              return addHolds(holds, patronInformation.getSummary() == HOLD_ITEMS, builder);
+            });
     // Get overdue loans data (count and items) and store it in the builder
     // Due date needs to be UTC since it is being used in CQL for time comparison in the DB.
     final Future<PatronInformationResponseBuilder> overdueFuture =
@@ -494,6 +506,55 @@ public class PatronRepository {
     return builder.holdItemsCount(Integer.valueOf(holdItemsCount)).holdItems(holdItems);
   }
 
+  private PatronInformationResponseBuilder addUnavailableHolds(JsonObject holds,
+      boolean details, PatronInformationResponseBuilder builder) {
+    final List<String> unavailableHoldItems;
+
+    if (holds != null) {
+      if (details) {
+        unavailableHoldItems = getUnavailableHoldItems(holds);
+      } else {
+        unavailableHoldItems = null;
+      }
+    } else {
+      unavailableHoldItems = null;
+    }
+    return builder.unavailableHoldItems(unavailableHoldItems);
+  }
+
+  private PatronInformationResponseBuilder addCharged(JsonObject loans, boolean details,
+      PatronInformationResponseBuilder builder) {
+    final List<String> chargedItems;
+
+    if (loans != null) {
+      if (details) {
+        chargedItems = getChargedItems(loans);
+      } else {
+        chargedItems = null;
+      }
+    } else {
+      chargedItems = null;
+    }
+
+    return builder.chargedItems(chargedItems);
+  }
+
+  private PatronInformationResponseBuilder addFineItems(JsonObject accounts, boolean details,
+      PatronInformationResponseBuilder builder) {
+    final List<String> fineItems;
+
+    if (accounts != null) {
+      if (details) {
+        fineItems = getFineItems(accounts);
+      } else {
+        fineItems = null;
+      }
+    } else {
+      fineItems = null;
+    }
+    return builder.fineItems(fineItems);
+  }
+
   private PatronInformationResponseBuilder addOverdueItems(JsonObject overdues, boolean details,
       PatronInformationResponseBuilder builder) {
     final int overdueItemsCount;
@@ -591,6 +652,10 @@ public class PatronRepository {
     return getTitles(items, FIELD_INSTANCE);
   }
 
+  private List<String> getBarcodesForRequests(JsonArray items) {
+    return getBarcodes(items, FIELD_ITEM);
+  }
+
   private List<String> getTitlesForLoans(JsonArray loans) {
     return getTitles(loans, FIELD_ITEM);
   }
@@ -600,6 +665,25 @@ public class PatronRepository {
         .map(o -> (JsonObject) o)
         .map(jo -> getChildString(jo, childField, FIELD_TITLE))
         .collect(Collectors.toList());
+  }
+
+  private List<String> getBarcodesForLoans(JsonArray loans) {
+    return getBarcodes(loans, FIELD_ITEM);
+  }
+
+  private List<String> getBarcodesForOpenAccounts(JsonArray accounts) {
+    return accounts.stream()
+      .map(o -> (JsonObject) o)
+      .filter(jo -> "Open".equals(getChildString(jo, "status", "name")))
+      .map(jo -> jo.getString("barcode"))
+      .collect(Collectors.toList());
+  }
+
+  private List<String> getBarcodes(JsonArray items, String childField) {
+    return items.stream()
+      .map(o -> (JsonObject) o)
+      .map(jo -> getChildString(jo, childField, FIELD_BARCODE))
+      .collect(Collectors.toList());
   }
 
   private List<PatronInformationResponse.PatronAccount> getPatronAccountList(
@@ -640,13 +724,35 @@ public class PatronRepository {
   private List<String> getHoldItems(JsonObject requests) {
     // All items in the response are holds
     final JsonArray requestArray = requests.getJsonArray(FIELD_REQUESTS, new JsonArray());
-    return getTitlesForRequests(requestArray);
+    return getBarcodesForRequests(requestArray);
+  }
+
+  private List<String> getUnavailableHoldItems(JsonObject requests) {
+    final JsonArray requestsArray = requests.getJsonArray("requests", new JsonArray());
+    return requestsArray.stream()
+      .map(o -> (JsonObject) o)
+      .filter(jo -> {
+        return ("Closed - Unfilled".equals(jo.getString("status"))
+            || "Closed - Canceled".equals(jo.getString("status")));
+      })
+      .map(jo -> getChildString(jo, "item", "barcode"))
+      .collect(Collectors.toList());
   }
 
   private List<String> getOverdueItems(JsonObject loans) {
     // All items in the response are overdue loans
     final JsonArray loanArray = loans.getJsonArray("loans", new JsonArray());
-    return getTitlesForLoans(loanArray);
+    return getBarcodesForLoans(loanArray);
+  }
+
+  private List<String> getChargedItems(JsonObject loans) {
+    final JsonArray loanArray = loans.getJsonArray("loans", new JsonArray());
+    return getBarcodesForLoans(loanArray);
+  }
+
+  private List<String> getFineItems(JsonObject accounts) {
+    final JsonArray accountArray = accounts.getJsonArray(FIELD_ACCOUNTS, new JsonArray());
+    return getBarcodesForOpenAccounts(accountArray);
   }
 
   private int countRecallItems(List<Future<JsonObject>> recallItems) {
@@ -667,7 +773,7 @@ public class PatronRepository {
         .filter(jo -> getTotalRecords(jo) > 0)
         .map(jo -> jo.getJsonArray(FIELD_REQUESTS, new JsonArray()).stream().findAny()
             .map(o -> (JsonObject) o)
-            .map(jsonObject -> getChildString(jsonObject, FIELD_INSTANCE, FIELD_TITLE)))
+            .map(jsonObject -> getChildString(jsonObject, FIELD_ITEM, FIELD_BARCODE)))
         .filter(Optional::isPresent)
         .map(Optional::get)
         .sorted(Comparator.naturalOrder())

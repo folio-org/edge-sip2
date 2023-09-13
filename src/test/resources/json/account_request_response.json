@@ -9,6 +9,7 @@
       "paymentStatus": {
         "name": "Outstanding"
       },
+      "barcode" : "789234123",
       "feeFineType": "Test",
       "feeFineOwner": "Test",
       "callNumber": "",
