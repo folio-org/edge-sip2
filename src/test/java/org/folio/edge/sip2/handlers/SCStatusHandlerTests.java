@@ -26,10 +26,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(VertxExtension.class)
-public class SCStatusHandlerTests {
+class SCStatusHandlerTests {
 
   @Test
-  public void canExecuteASampleScStatusRequestUsingHandlersFactory(
+   void canExecuteASampleScStatusRequestUsingHandlersFactory(
       Vertx vertx,
       VertxTestContext testContext) {
 
@@ -63,7 +63,7 @@ public class SCStatusHandlerTests {
   }
 
   @Test
-  public void canGetValidScStatusRequestWithNonDefaultTimezone(
+   void canGetValidScStatusRequestWithNonDefaultTimezone(
       Vertx vertx,
       VertxTestContext testContext) {
 
@@ -99,7 +99,7 @@ public class SCStatusHandlerTests {
   }
 
   @Test
-  public void cannotGetAValidResponseDueToMissingTemplate(
+   void cannotGetAValidResponseDueToMissingTemplate(
       Vertx vertx,
       VertxTestContext testContext) {
     IResourceProvider<IRequestData> defaultConfigurationProvider =
@@ -118,7 +118,7 @@ public class SCStatusHandlerTests {
   }
 
   @Test
-  public void cannotGetAValidResponseDueToMissingConfig(
+   void cannotGetAValidResponseDueToMissingConfig(
       Vertx vertx,
       VertxTestContext testContext) {
 
@@ -139,7 +139,7 @@ public class SCStatusHandlerTests {
   }
 
   @Test
-  public void canGetValidPackagedSupportedMessages() {
+   void canGetValidPackagedSupportedMessages() {
     Set<Messages> supportedMessages = new HashSet<>();
     supportedMessages.add(Messages.CHECKIN);
     supportedMessages.add(Messages.CHECKOUT);

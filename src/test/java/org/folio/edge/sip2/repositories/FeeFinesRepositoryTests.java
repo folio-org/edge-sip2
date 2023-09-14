@@ -28,13 +28,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class FeeFinesRepositoryTests {
+class FeeFinesRepositoryTests {
   private static final String FIELD_TOTAL_RECORDS = "totalRecords";
   private static final String FIELD_MANUALBLOCKS = "manualblocks";
   private static final String FIELD_ACCOUNT = "accounts";
 
   @Test
-  public void canCreateFeeFinesRepository(
+   void canCreateFeeFinesRepository(
       @Mock IResourceProvider<IRequestData> mockFolioResource) {
     final FeeFinesRepository usersRepository =
         new FeeFinesRepository(mockFolioResource);
@@ -43,7 +43,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test
-  public void cannotCreateFeeFinesRepositoryWhenResourceProviderIsNull() {
+   void cannotCreateFeeFinesRepositoryWhenResourceProviderIsNull() {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
         () -> new FeeFinesRepository(null));
@@ -52,7 +52,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test
-  public void canGetManualBlocksByUserIdWithNoBlocksApplied(Vertx vertx,
+   void canGetManualBlocksByUserIdWithNoBlocksApplied(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
 
@@ -79,7 +79,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test
-  public void cannotGetManualBlocksByUserId(Vertx vertx,
+   void cannotGetManualBlocksByUserId(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
     when(mockFolioProvider.retrieveResource(any()))
@@ -98,7 +98,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test
-  public void canGetManualBlocksByUserIdWithBlocksApplied(Vertx vertx,
+   void canGetManualBlocksByUserIdWithBlocksApplied(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
 
@@ -140,7 +140,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test
-  public void canGetAccountByUserIdWithNoBlocksApplied(Vertx vertx,
+   void canGetAccountByUserIdWithNoBlocksApplied(Vertx vertx,
                                                             VertxTestContext testContext,
                               @Mock IResourceProvider<IRequestData> mockFolioProvider) {
 
@@ -167,7 +167,7 @@ public class FeeFinesRepositoryTests {
   }
 
   @Test
-  public void canAccountByUserIdWithBlocksApplied(Vertx vertx,
+   void canAccountByUserIdWithBlocksApplied(Vertx vertx,
                                                           VertxTestContext testContext,
                             @Mock IResourceProvider<IRequestData> mockFolioProvider) {
 
