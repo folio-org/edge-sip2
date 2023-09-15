@@ -15,11 +15,11 @@
 <#-- institution id: variable-length required field -->
 <@lib.institutionId value=renewResponse.institutionId/>
 <#-- patron identifier: variable-length required field -->
-<@lib.patronIdentifier value=renewResponse.patronIdentifier/>
+<@lib.patronIdentifier value=renewResponse.patronIdentifier!""/>
 <#-- item identifier: variable-length required field -->
-<@lib.itemIdentifier value=renewResponse.itemIdentifier/>
+<@lib.itemIdentifier value=renewResponse.itemIdentifier!""/>
 <#-- title identifier: variable-length required field -->
-<@lib.titleIdentifier value=renewResponse.titleIdentifier/>
+<@lib.titleIdentifier value=renewResponse.titleIdentifier!""/>
 <#-- due date: variable-length required field -->
 <@lib.dueDate value=renewResponse.dueDate!""/>
 <#--

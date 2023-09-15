@@ -7,6 +7,7 @@ import static org.folio.edge.sip2.parser.Command.END_PATRON_SESSION;
 import static org.folio.edge.sip2.parser.Command.ITEM_INFORMATION;
 import static org.folio.edge.sip2.parser.Command.LOGIN;
 import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION;
+import static org.folio.edge.sip2.parser.Command.RENEW;
 import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
@@ -42,6 +43,7 @@ import org.folio.edge.sip2.handlers.ISip2RequestHandler;
 import org.folio.edge.sip2.handlers.ItemInformationHandler;
 import org.folio.edge.sip2.handlers.LoginHandler;
 import org.folio.edge.sip2.handlers.PatronInformationHandler;
+import org.folio.edge.sip2.handlers.RenewHandler;
 import org.folio.edge.sip2.metrics.Metrics;
 import org.folio.edge.sip2.modules.ApplicationModule;
 import org.folio.edge.sip2.modules.FolioResourceProviderModule;
@@ -78,7 +80,7 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start(Promise<Void> startFuture) {
-    log.debug("Startup configuration: {}", () -> getSanitizedConfig());
+    log.debug("Startup configuration: {}", this::getSanitizedConfig);
 
     // We need to reduce the complexity of this method...
     if (handlers == null) {
@@ -98,6 +100,7 @@ public class MainVerticle extends AbstractVerticle {
       handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
       handlers.put(END_PATRON_SESSION, injector.getInstance(EndPatronSessionHandler.class));
       handlers.put(ITEM_INFORMATION, injector.getInstance(ItemInformationHandler.class));
+      handlers.put(RENEW,  injector.getInstance(RenewHandler.class));
     }
 
     //set Config object's defaults
@@ -175,7 +178,7 @@ public class MainVerticle extends AbstractVerticle {
           ISip2RequestHandler handler = handlers.get(command);
 
           if (handler == null) {
-            log.error("Error locating handler for command; " + command.name());
+            log.error("Error locating handler for command {}", command.name());
             sample.stop(metrics.commandTimer(command));
             return;
           }

@@ -289,6 +289,7 @@ All permission associated with edge-sip2
     users.item.get
     automated-patron-blocks.collection.get
     inventory.items.collection.get
+    circulation.renew-by-barcode.post
 ```
 
 #### Security concerns for developers

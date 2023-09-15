@@ -95,32 +95,32 @@ public class PatronInformationMessageParser extends MessageParser {
   }
 
   private Summary parseSummary(char [] messageChars) {
-    if (parseBoolean(messageChars)) {
+    if (Boolean.TRUE.equals(parseBoolean(messageChars))) {
       position += 9;
       return HOLD_ITEMS;
     }
 
-    if (parseBoolean(messageChars)) {
+    if (Boolean.TRUE.equals(parseBoolean(messageChars))) {
       position += 8;
       return OVERDUE_ITEMS;
     }
 
-    if (parseBoolean(messageChars)) {
+    if (Boolean.TRUE.equals(parseBoolean(messageChars))) {
       position += 7;
       return CHARGED_ITEMS;
     }
 
-    if (parseBoolean(messageChars)) {
+    if (Boolean.TRUE.equals(parseBoolean(messageChars))) {
       position += 6;
       return FINE_ITEMS;
     }
 
-    if (parseBoolean(messageChars)) {
+    if (Boolean.TRUE.equals(parseBoolean(messageChars))) {
       position += 5;
       return RECALL_ITEMS;
     }
 
-    if (parseBoolean(messageChars)) {
+    if (Boolean.TRUE.equals(parseBoolean(messageChars))) {
       position += 4;
       return UNAVAILABLE_HOLDS;
     }

@@ -7,6 +7,7 @@ import static org.folio.edge.sip2.parser.Command.END_SESSION_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.ITEM_INFORMATION_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.LOGIN_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION_RESPONSE;
+import static org.folio.edge.sip2.parser.Command.RENEW_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 
 import freemarker.template.Configuration;
@@ -68,6 +69,7 @@ public class FreemarkerRepository {
     addTemplate(PATRON_INFORMATION_RESPONSE, "PatronInformationResponse.ftl", configuration);
     addTemplate(END_SESSION_RESPONSE, "EndSessionResponse.ftl", configuration);
     addTemplate(ITEM_INFORMATION_RESPONSE, "ItemInformationResponse.ftl", configuration);
+    addTemplate(RENEW_RESPONSE, "RenewResponse.ftl", configuration);
   }
 
   private void addTemplate(Command commmand, String templateName, Configuration configuration) {
