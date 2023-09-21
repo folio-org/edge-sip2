@@ -1,4 +1,4 @@
-## 3.0.1 Draft
+## 3.0.1 2023-09-21
 * [SIP2-165](https://issues.folio.org/browse/SIP2-165): SIP2: backport Renew command implementation in Orchid.
 
 ## 3.0.0 2023-02-23
