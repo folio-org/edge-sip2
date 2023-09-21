@@ -1,3 +1,6 @@
+## 3.0.2 2023-09-21
+* [SIP2-161](https://issues.folio.org/browse/SIP2-161): Item Information Response - invalid
+
 ## 3.0.1 2023-09-21
 * [SIP2-165](https://issues.folio.org/browse/SIP2-165): SIP2: backport Renew command implementation in Orchid.
 
