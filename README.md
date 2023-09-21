@@ -217,7 +217,7 @@ Currently, edge-sip2 implements select SIP messages. Below, is the list of all i
 |Item Information|No||
 |Patron Enable|No||
 |Hold|No||
-|Renew|No||
+|Renew|Yes||
 |Renew All|No||
 
 ## Security
