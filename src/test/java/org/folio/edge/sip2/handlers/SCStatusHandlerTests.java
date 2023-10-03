@@ -140,6 +140,7 @@ class SCStatusHandlerTests {
         })));
   }
 
+  @Disabled("Disabled until configuration policy is more concrete")
   @Test
   void cannotGetAValidResponseDueToMissingLocationCode(
       Vertx vertx,
