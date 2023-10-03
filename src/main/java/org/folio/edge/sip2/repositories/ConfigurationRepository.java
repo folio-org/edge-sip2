@@ -120,15 +120,14 @@ public class ConfigurationRepository {
       /*
         Previously, this was a hard fail if there were fewer configurations found than were
         specified in the queries. Changing it to be more forgiving but to issue a warning
-        and only to fail if the scLocation is not set in the sessionData
        */
       if (totalConfigs < configParameters.size()) {
         log.warn("Found fewer configurations than expected. Expected {} but found {}",
             configParameters.size(), totalConfigs);
-        if (Utils.isStringNullOrEmpty(sessionData.getScLocation())) {
-          log.error("Configuration error: please add a value to Location Code.");
-          return Future.failedFuture("Configuration error: please add a value to Location Code.");
-        }
+      }
+
+      if (Utils.isStringNullOrEmpty(sessionData.getScLocation())) {
+        log.warn("Configuration: No value found for Location Code.");
       }
 
       LinkedHashMap<String, JsonObject> resultJsonConfigs = new LinkedHashMap<>();
@@ -146,7 +145,8 @@ public class ConfigurationRepository {
           JsonObject jsonConfiguration = new JsonObject(configurationString);
           resultJsonConfigs.put(configKey, jsonConfiguration);
         } else {
-          log.error("Getting no value from config store for one of the result config records");
+          log.warn("Getting no value from config store for configuration string: {}",
+              configurationString);
         }
       }
       return Future.succeededFuture(resultJsonConfigs);
