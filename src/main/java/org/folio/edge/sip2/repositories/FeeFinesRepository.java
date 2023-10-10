@@ -412,11 +412,11 @@ public class FeeFinesRepository {
         FeePaymentAccountsRequestData feePaymentAccountsRequestData =
             new FeePaymentAccountsRequestData(user.getId(), acctheaders, sessionData);
 
-        Future<IResource> result;
-        result = resourceProvider
+        Future<IResource> userAccountDataResult;
+        userAccountDataResult = resourceProvider
             .retrieveResource(feePaymentAccountsRequestData);
 
-        return result
+        return userAccountDataResult
             .otherwiseEmpty()
             .compose(resource -> {
               final BigDecimal amountPaid = new BigDecimal(feePaid.getFeeAmount(), moneyFormat);
