@@ -1,4 +1,4 @@
-## 3.1.0 Draft
+## 3.1.0 2023-10-12 
 * [SIP2-121](https://issues.folio.org/browse/SIP2-121): SIP2: Renew response
 * [SIP2-94](https://issues.folio.org/browse/SIP2-94): Non SIP2 protocol error occurs when faced with exceptional situations
 * [SIP2-143](https://issues.folio.org/browse/SIP2-143): Update feesfines interface version to 18.0
