@@ -1,6 +1,24 @@
-## 3.1.0 Draft
+## 3.1.0 2023-10-12 
 * [SIP2-121](https://issues.folio.org/browse/SIP2-121): SIP2: Renew response
 * [SIP2-94](https://issues.folio.org/browse/SIP2-94): Non SIP2 protocol error occurs when faced with exceptional situations
+* [SIP2-143](https://issues.folio.org/browse/SIP2-143): Update feesfines interface version to 18.0
+* [SIP2-27](https://issues.folio.org/browse/SIP2-27): SIP2: Renew All response
+* [SIP2-134](https://issues.folio.org/browse/SIP2-134): Add /admin/health to edge-sip2
+* [SIP2-144](https://issues.folio.org/browse/SIP2-144): SIP2: Fee Paid
+* [SIP2-147](https://issues.folio.org/browse/SIP2-147): SIP2: Renew response missing title identifier.
+* [SIP2-15](https://issues.folio.org/browse/SIP2-15): SIP2: Patron Status Response
+* [SIP2-148](https://issues.folio.org/browse/SIP2-148): Update circulation interface to 14.0
+* [SIP2-145](https://issues.folio.org/browse/SIP2-145): SIP2: extend the Checkin command response
+* [SIP2-146](https://issues.folio.org/browse/SIP2-146): Fee Paid response has invalid checksum
+* [SIP2-149](https://issues.folio.org/browse/SIP2-149): SIP2: extend the Patron Information Response
+* [SIP2-153](https://issues.folio.org/browse/SIP2-153): Update to Java 17 edge-sip2
+* [SIP2-154](https://issues.folio.org/browse/SIP2-154): patronPasswordVerificationRequired is always TRUE
+* [SIP2-156](https://issues.folio.org/browse/SIP2-156): Item Information Response - incorrect BT-element appears in fixed-length element
+* [SIP2-132](https://issues.folio.org/browse/SIP2-132): Implement refresh token rotation
+* [SIP2-152](https://issues.folio.org/browse/SIP2-152): SIP2: Extend Patron Information summary field on fee items elements
+* [SIP2-155](https://issues.folio.org/browse/SIP2-155): SIP2: extend the Patron Information Response on fee fields
+* [SIP2-161](https://issues.folio.org/browse/SIP2-161): Item Information Response - invalid
+* [SIP2-151](https://issues.folio.org/browse/SIP2-151): SIP2: summary fields for Patron Information
 
 ## 3.0.0 2023-02-23
 * [SIP2-123](https://issues.folio.org/browse/SIP2-123): SIP2: Item Information Response

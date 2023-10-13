@@ -5,15 +5,15 @@
   "requires": [
     {
       "id": "login",
-      "version": "5.0 6.0 7.0"
+      "version": "7.3"
     },
     {
       "id": "circulation",
-      "version": "12.0 13.0 14.0"
+      "version": "14.2"
     },
     {
       "id": "users",
-      "version": "15.0 16.0"
+      "version": "16.0"
     },
     {
       "id": "configuration",
@@ -21,11 +21,11 @@
     },
     {
       "id": "feesfines",
-      "version": "15.0 16.0 17.0 18.0"
+      "version": "18.0"
     },
     {
       "id": "search",
-      "version": "0.7 1.0"
+      "version": "1.2"
     }
   ],
   "permissionSets": [
