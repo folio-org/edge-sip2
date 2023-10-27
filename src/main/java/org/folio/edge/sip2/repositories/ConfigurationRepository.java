@@ -134,12 +134,13 @@ public class ConfigurationRepository {
 
       for (int i = 0; i < totalConfigs; i++) {
         JsonObject config = configs.getJsonObject(i);
+        log.debug("Configuration is {}", config.encode());
         String module = config.getString(KEY_CONFIG_MODULE);
         String configName = config.getString(KEY_CONFIG_NAME);
         String code = config.getString(KEY_CONFIG_CODE);
 
         String configKey = String.format(CONFIGURATION_TEMPLATE, module, configName, code);
-
+        log.debug("Getting configuration with key {}", configKey);
         String configurationString = config.getString("value");
         if (!Utils.isStringNullOrEmpty(configurationString)) {
           JsonObject jsonConfiguration = new JsonObject(configurationString);
@@ -167,17 +168,22 @@ public class ConfigurationRepository {
   }
 
   private void addLocaleConfig(JsonObject config, SessionData sessionData) {
+    log.debug("Adding locale config with config {}", config != null ? config.encode() : "(null)");
     if (config != null) {
       sessionData.setTimeZone(config.getString("timezone"));
       String currencyConfig = config.getString("currency") != null
           ? config.getString("currency") : "";
       currencyConfig = currencyConfig.toUpperCase();
+      log.debug("currencyConfig is {}", currencyConfig);
       String currencyValue = null;
       for (CurrencyType c : CurrencyType.values()) {
         if (c.name().equals(currencyConfig)) {
           currencyValue = c.name();
           break;
         }
+      }
+      if (currencyValue == null) {
+        log.warn("No currency type found for currency code '{}'", currencyConfig);
       }
       sessionData.setCurrency(currencyValue);
     }
