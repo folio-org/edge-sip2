@@ -345,7 +345,7 @@ class FeeFinesRepositoryTests {
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     when(mockFolioProvider.createResource(
-      argThat(arg -> arg.getPath().contains("/accounts-bulk/pay"))))
+        argThat(arg -> arg.getPath().contains("/accounts-bulk/pay"))))
         .thenReturn(Future.succeededFuture(new FolioResource(accountPayResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
@@ -370,9 +370,9 @@ class FeeFinesRepositoryTests {
   ) {
 
     UsersRepository mockUsersRepository
-      = mock(UsersRepository.class, withSettings().verboseLogging());
+        = mock(UsersRepository.class, withSettings().verboseLogging());
     IResourceProvider<IRequestData> mockFolioProvider
-      = mock(IResourceProvider.class, withSettings().verboseLogging());
+        = mock(IResourceProvider.class, withSettings().verboseLogging());
 
     final Clock clock = TestUtils.getUtcFixedClock();
     final String patronIdentifier = "1029384756";
@@ -383,24 +383,24 @@ class FeeFinesRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
     final String feeAmount = "20.43";
     final JsonObject queryAccountResponse = new JsonObject()
-      .put("accounts", new JsonArray()
+        .put("accounts", new JsonArray()
         .add(new JsonObject()
           .put("remaining", 20.43)
           .put("id", accountId)
         )
       );
     final JsonObject accountPayResponse = new JsonObject()
-      .put("accountId", accountId)
-      .put("amount", feeAmount)
-      .put("remainingAmount", "0");
+        .put("accountId", accountId)
+        .put("amount", feeAmount)
+        .put("remainingAmount", "0");
 
     final FeePaid feePaid = FeePaid.builder()
-      .institutionId("diku")
-      .patronIdentifier(patronIdentifier)
-      .transactionId(transactionId)
-      .feeAmount(feeAmount)
-      .feeIdentifier(feeIdentifier)
-      .build();
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .transactionId(transactionId)
+        .feeAmount(feeAmount)
+        .feeIdentifier(feeIdentifier)
+        .build();
 
     final User user = new User.Builder().id(userId).build();
 
@@ -408,30 +408,30 @@ class FeeFinesRepositoryTests {
     extendedUser.setUser(user);
 
     when(mockUsersRepository.getUserById(anyString(), any()))
-      .thenReturn(Future.succeededFuture(extendedUser));
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     when(mockFolioProvider.retrieveResource(
-      argThat(arg -> arg.getPath()
+        argThat(arg -> arg.getPath()
         .endsWith(Utils.encode("userId==" + userId + "  and status.name==Open)")))))
-      .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
+        .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     when(mockFolioProvider.createResource(
-      argThat(arg -> arg.getPath().contains("/accounts/" + feeIdentifier + "/pay"))))
-      .thenReturn(Future.succeededFuture(new FolioResource(accountPayResponse,
+        argThat(arg -> arg.getPath().contains("/accounts/" + feeIdentifier + "/pay"))))
+        .thenReturn(Future.succeededFuture(new FolioResource(accountPayResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(
-      mockFolioProvider, mockUsersRepository, clock);
+        mockFolioProvider, mockUsersRepository, clock);
 
     feeFinesRepository.performFeePaidCommand(feePaid, sessionData).onComplete(
-      testContext.succeeding(feePaidResponse -> testContext.verify(() -> {
-        assertNotNull(feePaidResponse);
-        assertTrue(feePaidResponse.getPaymentAccepted());
-        assertNull(feePaidResponse.getScreenMessage());
-        assertEquals(transactionId, feePaidResponse.getTransactionId());
-        testContext.completeNow();
-      }))
+        testContext.succeeding(feePaidResponse -> testContext.verify(() -> {
+          assertNotNull(feePaidResponse);
+          assertTrue(feePaidResponse.getPaymentAccepted());
+          assertNull(feePaidResponse.getScreenMessage());
+          assertEquals(transactionId, feePaidResponse.getTransactionId());
+          testContext.completeNow();
+        }))
     );
 
   }

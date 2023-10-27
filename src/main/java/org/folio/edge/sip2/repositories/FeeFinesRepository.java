@@ -107,7 +107,7 @@ public class FeeFinesRepository {
     headers.put(HEADER_ACCEPT, MIMETYPE_JSON);
 
     final FeePaymentAccountsRequestData getFeePaymentAccountsRequestData =
-        new FeePaymentAccountsRequestData(userId, headers, sessionData);
+        new FeePaymentAccountsRequestData(userId, headers, null, sessionData);
     final Future<IResource> result =
         resourceProvider.retrieveResource(getFeePaymentAccountsRequestData);
 
@@ -208,21 +208,30 @@ public class FeeFinesRepository {
 
     private String userId;
     private final Map<String, String> headers;
+    private final String accountIdentifier;
     private final SessionData sessionData;
 
     private FeePaymentAccountsRequestData(
         String userId,
         Map<String, String> headers,
+        String accountIdentifier,
         SessionData sessionData) {
       this.userId = userId;
       this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
+      this.accountIdentifier = accountIdentifier;
       this.sessionData = sessionData;
     }
 
     @Override
     public String getPath() {
-      return "/accounts?query="
+      if (accountIdentifier != null) {
+        return "/accounts?query="
           + Utils.encode("(userId==" + this.userId + "  and status.name==Open)");
+      } else {
+        return "/accounts?query="
+          + Utils.encode("(userId==" + this.userId + " and id==" + this.accountIdentifier
+          + " and status.name==Open)");
+      }
     }
 
     @Override
@@ -410,7 +419,8 @@ public class FeeFinesRepository {
         final Map<String, String> acctheaders = getBaseHeaders();
 
         FeePaymentAccountsRequestData feePaymentAccountsRequestData =
-            new FeePaymentAccountsRequestData(user.getId(), acctheaders, sessionData);
+            new FeePaymentAccountsRequestData(user.getId(), acctheaders,
+                feeIdentifier, sessionData);
 
         Future<IResource> userAccountDataResult;
         userAccountDataResult = resourceProvider
