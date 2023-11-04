@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>edge-sip2</artifactId>
-  <version>3.1.1-SNAPSHOT</version>
+  <version>3.1.1</version>
   <name>Standard Interchange Protocol v2 (SIP2)</name>
   <url>https://github.com/folio-org/edge-sip2</url>
   <description>Support for SIP2 in FOLIO. This allow self service circulation and patron services stations to perform supported operations in FOLIO.</description>
@@ -26,7 +26,7 @@
     <url>https://github.com/folio-org/edge-sip2.git</url>
     <connection>scm:git:git://github.com/folio-org/edge-sip2.git</connection>
     <developerConnection>scm:git:git@github.com:folio-org/edge-sip2.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>v3.1.1</tag>
   </scm>
 
   <issueManagement>
