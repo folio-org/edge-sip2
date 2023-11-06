@@ -1,3 +1,6 @@
+## 3.1.1 2023-11-06
+* [SIP2-178](https://issues.folio.org/browse/SIP2-178) Vert.x 4.4.6 fixing Netty HTTP/2 DoS (CVE-2023-44487)
+
 ## 3.1.0 2023-10-12 
 * [SIP2-121](https://issues.folio.org/browse/SIP2-121): SIP2: Renew response
 * [SIP2-94](https://issues.folio.org/browse/SIP2-94): Non SIP2 protocol error occurs when faced with exceptional situations
