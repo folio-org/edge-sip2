@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import org.folio.edge.sip2.domain.messages.PatronAccountInfo;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.Language;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
@@ -68,7 +69,7 @@ class PatronInformationResponseTests {
   final List<String> printLine = asList("Dot matrix");
   final String borrowerType = "patron";
   final String borrowerTypeDescription = "the library patrons";
-  final List<PatronInformationResponse.PatronAccount> patronAccountList = new ArrayList<>();
+  final List<PatronAccountInfo> patronAccountList = new ArrayList<>();
 
   @Test
   void testGetPatronStatus() {

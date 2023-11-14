@@ -11,7 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import org.folio.edge.sip2.domain.messages.PatronAccountInfo;
 import org.junit.jupiter.api.Test;
 
 class FeePaidResponseTests {
@@ -22,6 +24,8 @@ class FeePaidResponseTests {
   final String transactionId = "029282747585";
   final List<String> screenMessage = asList("Hello, world!");
   final List<String> printLine = asList("Dot matrix");
+
+  final List<PatronAccountInfo> patronAccountInfoList = new ArrayList<>();
 
   @Test
   void testGetPaymentAccepted() {
@@ -195,6 +199,7 @@ class FeePaidResponseTests {
         .append(", transactionId=").append(transactionId)
         .append(", screenMessage=").append(screenMessage)
         .append(", printLine=").append(printLine)
+        .append(", patronAccountInfoList=").append(patronAccountInfoList)
         .append(']').toString();
     final FeePaidResponse fpr = builder()
         .paymentAccepted(paymentAccepted)

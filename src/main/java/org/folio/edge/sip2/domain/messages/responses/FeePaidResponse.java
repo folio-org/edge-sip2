@@ -1,10 +1,14 @@
 package org.folio.edge.sip2.domain.messages.responses;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
+
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import org.folio.edge.sip2.domain.messages.PatronAccountInfo;
+
 
 /**
  * Represents the Fee Paid Response message.
@@ -35,6 +39,7 @@ public final class FeePaidResponse {
   private final List<String> screenMessage;
   /** A message to print for the patron on the SC printer. */
   private final List<String> printLine;
+  private final List<PatronAccountInfo> patronAccountInfoList;
 
   /**
    * Construct a {@code FeePaidResponse} based on a
@@ -48,9 +53,11 @@ public final class FeePaidResponse {
     this.patronIdentifier = builder.patronIdentifier;
     this.transactionId = builder.transactionId;
     this.screenMessage = builder.screenMessage == null ? null
-        : Collections.unmodifiableList(new ArrayList<>(builder.screenMessage));
+        : unmodifiableList(new ArrayList<>(builder.screenMessage));
     this.printLine = builder.printLine == null ? null
-        : Collections.unmodifiableList(new ArrayList<>(builder.printLine));
+        : unmodifiableList(new ArrayList<>(builder.printLine));
+    this.patronAccountInfoList = builder.patronAccountInfoList == null
+        ? emptyList() : unmodifiableList(new ArrayList<>(builder.patronAccountInfoList));
   }
 
   /**
@@ -87,6 +94,10 @@ public final class FeePaidResponse {
 
   public List<String> getPrintLine() {
     return printLine;
+  }
+
+  public List<PatronAccountInfo> getPatronAccountInfoList() {
+    return patronAccountInfoList;
   }
 
   @Override
@@ -126,6 +137,7 @@ public final class FeePaidResponse {
         .append(", transactionId=").append(transactionId)
         .append(", screenMessage=").append(screenMessage)
         .append(", printLine=").append(printLine)
+        .append(", patronAccountInfoList=").append(patronAccountInfoList)
         .append(']').toString();
   }
 
@@ -140,6 +152,7 @@ public final class FeePaidResponse {
     private String transactionId;
     private List<String> screenMessage;
     private List<String> printLine;
+    private List<PatronAccountInfo> patronAccountInfoList;
 
     private FeePaidResponseBuilder() {
       super();
@@ -181,8 +194,15 @@ public final class FeePaidResponse {
       return this;
     }
 
+    public FeePaidResponseBuilder patronAccountInfoList(
+        List<PatronAccountInfo> patronAccountInfoList) {
+      this.patronAccountInfoList = patronAccountInfoList;
+      return this;
+    }
+
     public FeePaidResponse build() {
       return new FeePaidResponse(this);
     }
   }
+
 }

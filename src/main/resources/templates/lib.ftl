@@ -702,4 +702,6 @@
   <@variableLengthField id="FF" value=value/>
 </#macro>
 
-
+<#macro feePaid value>
+  <@variableLengthCurrencyField id="FG" value=value/>
+</#macro>

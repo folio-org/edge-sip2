@@ -19,3 +19,11 @@
 <@lib.screenMessage value=feePaidResponse.screenMessage!""/>
 <#-- screen message: variable-length optional field -->
 <@lib.printLine value=feePaidResponse.printLine!""/>
+<#-- extended account information -->
+<#list feePaidResponse.patronAccountInfoList as patronAccountInfo>
+<@lib.accountIdentifier value=patronAccountInfo.id!""/>
+<@lib.feeRemaining value=patronAccountInfo.feeFineRemaining!""/>
+<@lib.accountCreationDate value=patronAccountInfo.feeCreationDate!""/>
+<@lib.accountFeeId value=patronAccountInfo.feeFineId!""/>
+<@lib.feePaid value=patronAccountInfo.feeFinePaid!""/>
+</#list>

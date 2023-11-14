@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.edge.sip2.domain.messages.PatronAccountInfo;
 import org.folio.edge.sip2.domain.messages.requests.FeePaid;
 import org.folio.edge.sip2.domain.messages.responses.FeePaidResponse;
 import org.folio.edge.sip2.repositories.domain.User;
@@ -224,7 +225,7 @@ public class FeeFinesRepository {
 
     @Override
     public String getPath() {
-      if (accountIdentifier != null) {
+      if (accountIdentifier == null || accountIdentifier.isEmpty()) {
         return "/accounts?query="
           + Utils.encode("(userId==" + this.userId + "  and status.name==Open)");
       } else {
@@ -383,7 +384,6 @@ public class FeeFinesRepository {
 
 
 
-
   /**
    * Perform a feePaid.
    *
@@ -398,6 +398,8 @@ public class FeeFinesRepository {
     final String institutionId = feePaid.getInstitutionId();
     final String patronIdentifier = feePaid.getPatronIdentifier();
     final String transactionId = feePaid.getTransactionId();
+
+    List<PatronAccountInfo> patronAccountInfoList = new ArrayList<>();
 
     String feeIdentifierMatch = "";
     if (feePaid.getFeeIdentifier() != null) {
@@ -454,6 +456,16 @@ public class FeeFinesRepository {
 
               final Map<String, String> headers = getBaseHeaders();
 
+              for (Object accountOb : acctList) {
+                JsonObject accountJson = (JsonObject) accountOb;
+                PatronAccountInfo patronAccountInfo = new PatronAccountInfo();
+                patronAccountInfo.setId(accountJson.getString("id"));
+                patronAccountInfo.setItemBarcode(accountJson.getString("barcode"));
+                patronAccountInfo.setFeeFineId(accountJson.getString("feeFineId"));
+                patronAccountInfo.setFeeFineAmount(accountJson.getDouble("amount"));
+                patronAccountInfoList.add(patronAccountInfo);
+              }
+
               List<String> acctIdList = getAcctIdList(acctList);
 
               FeePaymentRequestData feePaymentRequestData =
@@ -478,6 +490,7 @@ public class FeeFinesRepository {
                 .otherwiseEmpty()
                 .compose(payresource -> {
                   JsonObject paidResponse = payresource.getResource();
+                  updatePatronAccountInfoList(patronAccountInfoList, paidResponse);
                   log.debug("paidResponse = {}", paidResponse.encode());
                   return Future.succeededFuture(FeePaidResponse.builder()
                     .paymentAccepted(paidResponse == null ? FALSE : TRUE)
@@ -488,6 +501,7 @@ public class FeeFinesRepository {
                     .screenMessage(Optional.of(resource.getErrorMessages())
                         .filter(v -> !v.isEmpty())
                         .orElse(null))
+                    .patronAccountInfoList(patronAccountInfoList)
                     .build());
                 });
             });
@@ -541,5 +555,23 @@ public class FeeFinesRepository {
       }
     }
     return accountJson;
+  }
+
+  private void updatePatronAccountInfoList(List<PatronAccountInfo> patronAccountInfoList,
+      JsonObject feePaidResponseJson) {
+    JsonArray feeFineActionsArray = feePaidResponseJson.getJsonArray("feefineactions");
+    if (feeFineActionsArray != null) {
+      for (Object ob : feeFineActionsArray) {
+        JsonObject actionJson = (JsonObject)ob;
+        String accountId = actionJson.getString("accountId");
+        for (PatronAccountInfo patronAccountInfo : patronAccountInfoList) {
+          if (patronAccountInfo.getId().equals(accountId)) {
+            patronAccountInfo.setFeeFineRemaining(actionJson.getDouble("balance"));
+            patronAccountInfo.setFeeFinePaid(actionJson.getDouble("amountAction"));
+            break;
+          }
+        }
+      }
+    }
   }
 }

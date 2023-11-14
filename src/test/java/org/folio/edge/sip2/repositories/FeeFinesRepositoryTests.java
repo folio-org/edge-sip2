@@ -340,7 +340,7 @@ class FeeFinesRepositoryTests {
 
     when(mockFolioProvider.retrieveResource(
         argThat(arg -> arg.getPath()
-          .endsWith(Utils.encode("userId==" + userId + "  and status.name==Open)")))))
+          .contains(Utils.encode("(userId==" + userId + "  and status.name==Open)")))))
         .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
@@ -412,7 +412,9 @@ class FeeFinesRepositoryTests {
 
     when(mockFolioProvider.retrieveResource(
         argThat(arg -> arg.getPath()
-        .endsWith(Utils.encode("userId==" + userId + "  and status.name==Open)")))))
+        .endsWith(Utils.encode("userId==" + userId
+            + " and id==" + feeIdentifier
+            + " and status.name==Open)")))))
         .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
@@ -505,7 +507,9 @@ class FeeFinesRepositoryTests {
 
     when(mockFolioProvider.retrieveResource(
         argThat(arg -> arg.getPath()
-            .endsWith(Utils.encode("userId==" + userId + "  and status.name==Open)")))))
+          .endsWith(Utils.encode("userId==" + userId
+              + " and id==" + feeIdentifier
+              + " and status.name==Open)")))))
         .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
