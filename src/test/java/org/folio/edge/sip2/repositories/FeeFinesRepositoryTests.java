@@ -511,6 +511,72 @@ class FeeFinesRepositoryTests {
   }
 
   @Test
+  void canHandleFailedFeePaid(Vertx vertx, VertxTestContext testContext) {
+
+    UsersRepository mockUsersRepository
+        = mock(UsersRepository.class, withSettings().verboseLogging());
+    IResourceProvider<IRequestData> mockFolioProvider
+        = mock(IResourceProvider.class, withSettings().verboseLogging());
+
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final String patronIdentifier = "1029384756";
+    final String feeIdentifier = "c78489bd-4d1b-4e4f-87d3-caa915946aa4";
+    final String transactionId = "7e15ba2d-cc85-4226-963d-d6c7d5c03f26";
+    final String accountId = "4bf0339e-8d4c-46ff-92c2-8a8f8735c30b";
+    final String userId = "62628aed-f753-462c-88ca-3def9f870e7a";
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    final String feeAmount = "20.43";
+    final JsonObject queryAccountResponse = new JsonObject()
+        .put("accounts", new JsonArray()
+            .add(new JsonObject()
+                .put("remaining", 20.43)
+                .put("id", accountId)
+        )
+      );
+    final JsonObject accountPayResponse = new JsonObject();
+
+    final FeePaid feePaid = FeePaid.builder()
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .transactionId(transactionId)
+        .feeAmount(feeAmount)
+        .feeIdentifier(feeIdentifier)
+        .build();
+
+    final User user = new User.Builder().id(userId).build();
+
+    final ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(user);
+
+    when(mockUsersRepository.getUserById(anyString(), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
+
+    when(mockFolioProvider.retrieveResource(
+        argThat(arg -> arg.getPath()
+            .endsWith(Utils.encode("userId==" + userId
+            + " and id==" + feeIdentifier
+            + " and status.name==Open)")))))
+        .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    when(mockFolioProvider.createResource(
+        argThat(arg -> arg.getPath().contains("/accounts/" + feeIdentifier + "/pay"))))
+            .thenReturn(Future.succeededFuture(new FolioResource(null,
+                MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(
+        mockFolioProvider, mockUsersRepository, clock);
+
+    feeFinesRepository.performFeePaidCommand(feePaid, sessionData).onComplete(
+        testContext.succeeding(feePaidResponse -> testContext.verify(() -> {
+          assertFalse(feePaidResponse.getPaymentAccepted());
+          testContext.completeNow();
+        }))
+    );
+
+  }
+
+  @Test
   void canGetFeeAmountByUserId(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,

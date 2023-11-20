@@ -483,7 +483,8 @@ public class FeeFinesRepository {
                 .compose(payresource -> {
                   JsonObject paidResponse = payresource.getResource();
                   updatePatronAccountInfoList(patronAccountInfoList, paidResponse);
-                  log.debug("paidResponse = {}", paidResponse.encode());
+                  log.debug("paidResponse = {}",
+                      paidResponse != null ? paidResponse.encode() : "null");
                   return Future.succeededFuture(FeePaidResponse.builder()
                     .paymentAccepted(paidResponse == null ? FALSE : TRUE)
                     .transactionDate(OffsetDateTime.now(clock))
@@ -551,6 +552,9 @@ public class FeeFinesRepository {
 
   private void updatePatronAccountInfoList(List<PatronAccountInfo> patronAccountInfoList,
       JsonObject feePaidResponseJson) {
+    if (feePaidResponseJson == null) {
+      return;
+    }
     JsonArray feeFineActionsArray = feePaidResponseJson.getJsonArray("feefineactions");
     if (feeFineActionsArray != null) {
       for (Object ob : feeFineActionsArray) {
