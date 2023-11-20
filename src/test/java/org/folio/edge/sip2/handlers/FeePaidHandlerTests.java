@@ -90,7 +90,7 @@ class FeePaidHandlerTests {
         + "CG" + accountIdentifier + "|"
         + "FA" + "3.33" + "|"
         + "FC" + "13.11.2023" + "|"
-        + "FE" + feeFineIdentifier + "|" 
+        + "FE" + feeFineIdentifier + "|"
         + "FG" + feeAmount + "|";
 
     handler.execute(feePaid, sessionData).onComplete(

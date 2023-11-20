@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.repositories;
 
 import static org.folio.edge.sip2.api.support.TestUtils.getJsonFromFile;
+import static org.folio.edge.sip2.api.support.TestUtils.getMockedSessionData;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -23,7 +24,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import java.lang.reflect.Field;
 import java.time.Clock;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.FutureTask;
 import org.folio.edge.sip2.api.support.TestUtils;
@@ -61,6 +66,54 @@ class FeeFinesRepositoryTests {
         () -> new FeeFinesRepository(null, null, null));
 
     assertEquals("Resource provider cannot be null", thrown.getMessage());
+  }
+
+  @Test
+  void testRequestData() throws Exception {
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    final String userId = "rjablonski";
+    final String barcode = "abc123";
+    final String accountId = "221a077d-5b10-4a58-ac85-8ccf2deb4046";
+    final String amount = "50.00";
+    final String paymentMethod = "creditcard";
+    final Map<String, String> headers = new HashMap<>();
+    headers.put("x-okapi-token", "1234");
+
+    FeeFinesRepository.GetManualBlocksByUserIdRequestData gmbbuidRequestData =
+        new FeeFinesRepository.GetManualBlocksByUserIdRequestData(
+            barcode, headers, sessionData);
+
+    assertEquals(sessionData, gmbbuidRequestData.getSessionData());
+    assertEquals(headers, gmbbuidRequestData.getHeaders());
+
+    FeeFinesRepository.FeePaymentAccountsRequestData fpaRequestData =
+        new FeeFinesRepository.FeePaymentAccountsRequestData(
+            userId, headers, accountId, sessionData);
+
+    assertEquals(sessionData, fpaRequestData.getSessionData());
+    assertEquals(headers, fpaRequestData.getHeaders());
+
+    FeeFinesRepository.FeePaymentRequestData fpRequestData =
+        new FeeFinesRepository.FeePaymentRequestData(
+            amount, paymentMethod, false, accountId,
+            new ArrayList<>(), headers, sessionData);
+
+    assertEquals(sessionData, fpRequestData.getSessionData());
+    assertEquals(headers, fpaRequestData.getHeaders());
+
+    FeeFinesRepository.GetAccountByUserIdRequestData gabuiRequestData =
+        new FeeFinesRepository.GetAccountByUserIdRequestData(
+            userId, headers, sessionData);
+
+    assertEquals(sessionData, gabuiRequestData.getSessionData());
+    assertEquals(headers, gabuiRequestData.getHeaders());
+
+    FeeFinesRepository.GetFeeFinesByIdsRequestData gffbiRequestData =
+        new FeeFinesRepository.GetFeeFinesByIdsRequestData(
+            new ArrayList<>(), headers, sessionData);
+
+    assertEquals(sessionData, gffbiRequestData.getSessionData());
+    assertEquals(headers, gffbiRequestData.getHeaders());
   }
 
   @Test
@@ -525,4 +578,5 @@ class FeeFinesRepositoryTests {
         }))
     );
   }
+
 }

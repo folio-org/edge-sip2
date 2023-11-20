@@ -175,12 +175,12 @@ public class FeeFinesRepository {
       .map(IResource::getResource);
   }
 
-  private class GetManualBlocksByUserIdRequestData implements IRequestData {
+  protected static class GetManualBlocksByUserIdRequestData implements IRequestData {
     private final String userId;
     private final Map<String, String> headers;
     private final SessionData sessionData;
 
-    private GetManualBlocksByUserIdRequestData(String barcode, Map<String, String> headers,
+    protected GetManualBlocksByUserIdRequestData(String barcode, Map<String, String> headers,
         SessionData sessionData) {
       this.userId = barcode;
       this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
@@ -205,14 +205,14 @@ public class FeeFinesRepository {
     }
   }
 
-  private class FeePaymentAccountsRequestData implements IRequestData {
+  protected static class FeePaymentAccountsRequestData implements IRequestData {
 
     private String userId;
     private final Map<String, String> headers;
     private final String accountIdentifier;
     private final SessionData sessionData;
 
-    private FeePaymentAccountsRequestData(
+    protected FeePaymentAccountsRequestData(
         String userId,
         Map<String, String> headers,
         String accountIdentifier,
@@ -246,7 +246,7 @@ public class FeeFinesRepository {
     }
   }
 
-  private class FeePaymentRequestData implements IRequestData {
+  protected static class FeePaymentRequestData implements IRequestData {
 
     private final String amount;
     private final Boolean notifyPatron;
@@ -257,7 +257,7 @@ public class FeeFinesRepository {
     private final Map<String, String> headers;
     private final SessionData sessionData;
 
-    private FeePaymentRequestData(
+    protected FeePaymentRequestData(
         String amount,
         String paymentMethod,
         Boolean notifyPatron,
@@ -313,12 +313,12 @@ public class FeeFinesRepository {
     }
   }
 
-  private class GetAccountByUserIdRequestData implements IRequestData {
+  protected static class GetAccountByUserIdRequestData implements IRequestData {
     private final String userId;
     private final Map<String, String> headers;
     private final SessionData sessionData;
 
-    private GetAccountByUserIdRequestData(String userId, Map<String, String> headers,
+    protected GetAccountByUserIdRequestData(String userId, Map<String, String> headers,
                                                SessionData sessionData) {
       this.userId = userId;
       this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
@@ -345,13 +345,13 @@ public class FeeFinesRepository {
     }
   }
 
-  private class GetFeeFinesByIdsRequestData implements IRequestData {
+  protected static class GetFeeFinesByIdsRequestData implements IRequestData {
 
     private List<String> idList;
     private final Map<String, String> headers;
     private final SessionData sessionData;
 
-    private GetFeeFinesByIdsRequestData(List<String> idList, Map<String, String> headers,
+    protected GetFeeFinesByIdsRequestData(List<String> idList, Map<String, String> headers,
         SessionData sessionData) {
       this.idList = idList;
       this.headers = headers;
