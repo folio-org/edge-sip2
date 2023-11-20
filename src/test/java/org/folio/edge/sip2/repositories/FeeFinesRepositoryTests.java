@@ -99,7 +99,7 @@ class FeeFinesRepositoryTests {
             new ArrayList<>(), headers, sessionData);
 
     assertEquals(sessionData, fpRequestData.getSessionData());
-    assertEquals(headers, fpaRequestData.getHeaders());
+    assertEquals(headers, fpRequestData.getHeaders());
 
     FeeFinesRepository.GetAccountByUserIdRequestData gabuiRequestData =
         new FeeFinesRepository.GetAccountByUserIdRequestData(
