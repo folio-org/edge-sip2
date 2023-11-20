@@ -401,7 +401,8 @@ public class FeeFinesRepository {
 
     List<PatronAccountInfo> patronAccountInfoList = new ArrayList<>();
 
-    String feeIdentifierMatch = "";
+    String feeIdentifierMatch = matchUUID(feePaid.getFeeIdentifier());
+    /*
     if (feePaid.getFeeIdentifier() != null) {
       Pattern startWithUuid = Pattern.compile("^(\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12})");
       // UUID of the account to be paid
@@ -411,6 +412,7 @@ public class FeeFinesRepository {
         feeIdentifierMatch = matcher.group(1);
       }
     }
+     */
     final String feeIdentifier = feeIdentifierMatch;
     log.debug("feeIdentifier = {}", feeIdentifier);
 
@@ -573,5 +575,18 @@ public class FeeFinesRepository {
         }
       }
     }
+  }
+
+  protected static String matchUUID(String identifier) {
+    String uuidMatch = "";
+    if (identifier != null) {
+      Pattern startWithUuid = Pattern.compile("^(\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12})");
+      // UUID of the account to be paid
+      Matcher matcher = startWithUuid.matcher(identifier);
+      if (matcher.find()) {
+        uuidMatch = matcher.group(1);
+      }
+    }
+    return uuidMatch;
   }
 }

@@ -69,6 +69,17 @@ class FeeFinesRepositoryTests {
   }
 
   @Test
+  void testMatchUUID() {
+    final String accountId1 = "221a077d-5b10-4a58-ac85-8ccf2deb4046";
+    final String accountId2 = "221a077d-5b10-4a58-ac85-8ccf2deb4046somethingelse";
+    final String accountId3 = "12345";
+
+    assertEquals(accountId1, FeeFinesRepository.matchUUID(accountId1));
+    assertEquals(accountId1, FeeFinesRepository.matchUUID(accountId2));
+    assertEquals("", FeeFinesRepository.matchUUID(accountId3));
+  }
+
+  @Test
   void testRequestData() throws Exception {
     final SessionData sessionData = TestUtils.getMockedSessionData();
     final String userId = "rjablonski";
@@ -92,6 +103,17 @@ class FeeFinesRepositoryTests {
 
     assertEquals(sessionData, fpaRequestData.getSessionData());
     assertEquals(headers, fpaRequestData.getHeaders());
+    assertTrue(fpaRequestData.getPath().contains(Utils.encode("and id")));
+
+    FeeFinesRepository.FeePaymentAccountsRequestData fpaRequestData2 =
+      new FeeFinesRepository.FeePaymentAccountsRequestData(
+        userId, headers, "", sessionData);
+    assertFalse(fpaRequestData2.getPath().contains(Utils.encode("and id")));
+
+    FeeFinesRepository.FeePaymentAccountsRequestData fpaRequestData3 =
+      new FeeFinesRepository.FeePaymentAccountsRequestData(
+        userId, headers, null, sessionData);
+    assertFalse(fpaRequestData3.getPath().contains(Utils.encode("and id")));
 
     FeeFinesRepository.FeePaymentRequestData fpRequestData =
         new FeeFinesRepository.FeePaymentRequestData(
