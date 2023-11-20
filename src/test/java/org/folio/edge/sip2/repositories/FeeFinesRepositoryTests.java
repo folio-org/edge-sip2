@@ -1,7 +1,6 @@
 package org.folio.edge.sip2.repositories;
 
 import static org.folio.edge.sip2.api.support.TestUtils.getJsonFromFile;
-import static org.folio.edge.sip2.api.support.TestUtils.getMockedSessionData;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -24,13 +23,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import java.lang.reflect.Field;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.FutureTask;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.FeePaid;
 import org.folio.edge.sip2.repositories.domain.ExtendedUser;
@@ -69,14 +66,14 @@ class FeeFinesRepositoryTests {
   }
 
   @Test
-  void testMatchUUID() {
+  void testMatchUuid() {
     final String accountId1 = "221a077d-5b10-4a58-ac85-8ccf2deb4046";
     final String accountId2 = "221a077d-5b10-4a58-ac85-8ccf2deb4046somethingelse";
     final String accountId3 = "12345";
 
-    assertEquals(accountId1, FeeFinesRepository.matchUUID(accountId1));
-    assertEquals(accountId1, FeeFinesRepository.matchUUID(accountId2));
-    assertEquals("", FeeFinesRepository.matchUUID(accountId3));
+    assertEquals(accountId1, FeeFinesRepository.matchUuid(accountId1));
+    assertEquals(accountId1, FeeFinesRepository.matchUuid(accountId2));
+    assertEquals("", FeeFinesRepository.matchUuid(accountId3));
   }
 
   @Test
@@ -106,13 +103,13 @@ class FeeFinesRepositoryTests {
     assertTrue(fpaRequestData.getPath().contains(Utils.encode("and id")));
 
     FeeFinesRepository.FeePaymentAccountsRequestData fpaRequestData2 =
-      new FeeFinesRepository.FeePaymentAccountsRequestData(
-        userId, headers, "", sessionData);
+        new FeeFinesRepository.FeePaymentAccountsRequestData(
+            userId, headers, "", sessionData);
     assertFalse(fpaRequestData2.getPath().contains(Utils.encode("and id")));
 
     FeeFinesRepository.FeePaymentAccountsRequestData fpaRequestData3 =
-      new FeeFinesRepository.FeePaymentAccountsRequestData(
-        userId, headers, null, sessionData);
+        new FeeFinesRepository.FeePaymentAccountsRequestData(
+            userId, headers, null, sessionData);
     assertFalse(fpaRequestData3.getPath().contains(Utils.encode("and id")));
 
     FeeFinesRepository.FeePaymentRequestData fpRequestData =
