@@ -40,6 +40,7 @@ public class FeeFinesRepository {
   private static final String HEADER_ACCEPT = "accept";
   private static final String MIMETYPE_JSON = "application/json";
   private static final String ACCOUNTS_KEY = "accounts";
+  private static final String ACCOUNTS_QUERY_URL = "/accounts?query=";
   private final IResourceProvider<IRequestData> resourceProvider;
   private final UsersRepository usersRepository;
   private Clock clock;
@@ -226,10 +227,10 @@ public class FeeFinesRepository {
     @Override
     public String getPath() {
       if (accountIdentifier == null || accountIdentifier.isEmpty()) {
-        return "/accounts?query="
+        return ACCOUNTS_QUERY_URL
           + Utils.encode("(userId==" + this.userId + "  and status.name==Open)");
       } else {
-        return "/accounts?query="
+        return ACCOUNTS_QUERY_URL
           + Utils.encode("(userId==" + this.userId + " and id==" + this.accountIdentifier
           + " and status.name==Open)");
       }
@@ -328,7 +329,7 @@ public class FeeFinesRepository {
     @Override
     public String getPath() {
       final StringBuilder qSb = new StringBuilder()
-          .append("/accounts?query=")
+          .append(ACCOUNTS_QUERY_URL)
           .append("(userId==")
           .append(userId).append(")").append("&limit=1000");
       return qSb.toString();
