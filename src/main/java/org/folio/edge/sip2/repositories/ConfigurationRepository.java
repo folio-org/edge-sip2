@@ -168,7 +168,8 @@ public class ConfigurationRepository {
   }
 
   private void addLocaleConfig(JsonObject config, SessionData sessionData) {
-    log.debug("Adding locale config with config {}", config != null ? config.encode() : "(null)");
+    log.debug("Adding locale config with config {}",
+        () -> config != null ? config.encode() : "(null)");
     if (config != null) {
       sessionData.setTimeZone(config.getString("timezone"));
       String currencyConfig = config.getString("currency") != null
