@@ -107,9 +107,10 @@ class CirculationRepositoryTests {
             .put("location", new JsonObject()
                 .put("name", "Main Library"))
             .put("materialType", new JsonObject()
-                .put("name", "book")))
+                .put("name", "book"))
             .put("inTransitDestinationServicePoint", new JsonObject()
-                .put("name", "Annex"));
+                .put("name", "Annex"))
+        );
 
 
     final JsonObject getRequestsResponseJson = new JsonObject()
@@ -150,6 +151,7 @@ class CirculationRepositoryTests {
           assertNull(checkinResponse.getScreenMessage());
           assertNull(checkinResponse.getPrintLine());
           assertEquals(callNumber, checkinResponse.getCallNumber());
+          assertEquals("Annex", checkinResponse.getPickupServicePoint());
 
           testContext.completeNow();
         })));

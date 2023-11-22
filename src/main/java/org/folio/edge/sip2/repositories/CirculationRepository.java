@@ -102,13 +102,15 @@ public class CirculationRepository {
         .compose(resource -> {
           log.info("performCheckinCommand resource:{}", resource);
           JsonObject resourceJson = resource.getResource();
-
+          log.debug("performCheckinCommand resource json is {}",
+              () -> resourceJson != null ? resourceJson.encode() : "null");
           final Future<JsonObject> getRequestsResult = resourceJson != null
               ? getRequestsByItemId(itemIdentifier, null, null,
                   null, sessionData) : Future.succeededFuture(null);
           return getRequestsResult
             .compose(requestsJson -> {
               JsonObject valuesJson = extractCheckinValues(resourceJson);
+              log.debug("valuesJson is {}", valuesJson.encode());
               MediaType mediaType = getMediaType(valuesJson.getJsonObject("itemMaterialTypeJson"));
               JsonArray requestArray =
                   requestsJson != null ? requestsJson.getJsonArray("requests") : null;
