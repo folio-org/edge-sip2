@@ -104,13 +104,15 @@ public class CirculationRepository {
           JsonObject resourceJson = resource.getResource();
           log.debug("performCheckinCommand resource json is {}",
               () -> resourceJson != null ? resourceJson.encode() : "null");
+          JsonObject valuesJson = extractCheckinValues(resourceJson);
+          log.debug("valuesJson is {}", valuesJson.encode());
           final Future<JsonObject> getRequestsResult = resourceJson != null
-              ? getRequestsByItemId(itemIdentifier, null, null,
+              ? getRequestsByItemId(valuesJson.getString("itemId"), null, null,
                   null, sessionData) : Future.succeededFuture(null);
           return getRequestsResult
             .compose(requestsJson -> {
-              JsonObject valuesJson = extractCheckinValues(resourceJson);
-              log.debug("valuesJson is {}", valuesJson.encode());
+              log.debug("JSON from getRequestsByItemId is {}",
+                  () -> requestsJson != null ? requestsJson.encode() : "null");
               MediaType mediaType = getMediaType(valuesJson.getJsonObject("itemMaterialTypeJson"));
               JsonArray requestArray =
                   requestsJson != null ? requestsJson.getJsonArray("requests") : null;
@@ -888,7 +890,7 @@ public class CirculationRepository {
     return mediaType;
   }
 
-  private String getAlertType(boolean inTransit, boolean holdItem, boolean recallItem) {
+  protected static String getAlertType(boolean inTransit, boolean holdItem, boolean recallItem) {
     String alertType;
     if (inTransit || holdItem || recallItem) {
       if (!inTransit) {
@@ -908,6 +910,7 @@ public class CirculationRepository {
     JsonObject valuesJson = new JsonObject();
     JsonObject itemJson = resourceJson != null ? resourceJson.getJsonObject("item")
         : null;
+    valuesJson.put("itemId", itemJson != null ? itemJson.getString("id") : null);
     valuesJson.put("callNumber", itemJson != null ? itemJson.getString("callNumber")
         : null);
     JsonObject itemStatusJson = itemJson != null ? itemJson.getJsonObject("status")
