@@ -1509,4 +1509,20 @@ class CirculationRepositoryTests {
               testContext.completeNow();
             })));
   }
+
+  @Test
+  void testGetAlertType() {
+    assertEquals("01", CirculationRepository.getAlertType(
+        false, true, false));
+    assertEquals("01", CirculationRepository.getAlertType(
+        false, false, true));
+    assertEquals("02", CirculationRepository.getAlertType(
+        true, false, true));
+    assertEquals("02", CirculationRepository.getAlertType(
+        true, true, false));
+    assertEquals("04", CirculationRepository.getAlertType(
+        true, false, false));
+    assertNull(CirculationRepository.getAlertType(
+        false, false, false));
+  }
 }
