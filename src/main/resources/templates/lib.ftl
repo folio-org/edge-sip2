@@ -297,7 +297,9 @@
 </#macro>
 
 <#macro fineItems value>
-  <@variableLengthListField id="AV" value=value/>
+  <#if value?has_content>
+    <@variableLengthListField id="AV" value=value/>
+  </#if>
 </#macro>
 
 <#macro fineItemsCount value>

@@ -662,6 +662,7 @@ public class PatronRepository {
       .map(o -> (JsonObject) o)
       .filter(jo -> "Open".equals(getChildString(jo, FIELD_STATUS, "name")))
       .map(jo -> jo.getString(FIELD_BARCODE))
+      .filter(barcode -> barcode != null)
       .collect(Collectors.toList());
   }
 
