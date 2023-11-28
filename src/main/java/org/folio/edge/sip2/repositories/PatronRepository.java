@@ -657,12 +657,12 @@ public class PatronRepository {
     return getBarcodes(loans, FIELD_ITEM);
   }
 
-  private List<String> getBarcodesForOpenAccounts(JsonArray accounts) {
+  protected static List<String> getBarcodesForOpenAccounts(JsonArray accounts) {
     return accounts.stream()
       .map(o -> (JsonObject) o)
       .filter(jo -> "Open".equals(getChildString(jo, FIELD_STATUS, "name")))
       .map(jo -> jo.getString(FIELD_BARCODE))
-      .filter(barcode -> barcode != null)
+      .filter(Objects::nonNull)
       .collect(Collectors.toList());
   }
 
