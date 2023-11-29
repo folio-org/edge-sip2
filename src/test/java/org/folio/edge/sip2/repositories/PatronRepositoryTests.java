@@ -185,7 +185,8 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(recallsResponse),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+    when(mockPasswordVerifier.doPatronPasswordVerification(
+        eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords
         .builder().extendedUser(extendedUser).build()));
 
@@ -242,6 +243,120 @@ public class PatronRepositoryTests {
         })));
   }
 
+  @Test
+  public void canPatronInformationWithBadPasswordWhenNotRequired(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock PasswordVerifier mockPasswordVerifier) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final String patronIdentifier = "1234567890";
+    final PatronInformation patronInformation = PatronInformation.builder()
+      .language(ENGLISH)
+      .transactionDate(OffsetDateTime.now())
+      .summary(RECALL_ITEMS)
+      .institutionId("diku")
+      .patronIdentifier(patronIdentifier)
+      .terminalPassword("1234")
+      .patronPassword("0989")
+      .build();
+
+    final String userResponseJson = getJsonFromFile("json/user_response.json");
+    final User userResponse = Json.decodeValue(userResponseJson, User.class);
+    final String manualBlocksResponseJson = getJsonFromFile("json/no_manual_blocks_response.json");
+    final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
+    final String overdueResponseJson = getJsonFromFile("json/overdue_response.json");
+    final JsonObject overdueResponse = new JsonObject(overdueResponseJson);
+    final String holdsResponseJson = getJsonFromFile("json/holds_requests_response.json");
+    final JsonObject holdsResponse = new JsonObject(holdsResponseJson);
+    final String openLoansResponseJson = getJsonFromFile("json/open_loans_response.json");
+    final JsonObject openLoansResponse = new JsonObject(openLoansResponseJson);
+    final String recallsResponseJson = getJsonFromFile("json/recall_requests_response.json");
+    final JsonObject recallsResponse = new JsonObject(recallsResponseJson);
+
+    final String accountResponseJson = getJsonFromFile("json/account_request_response.json");
+    final JsonObject accountResponse = new JsonObject(accountResponseJson);
+
+    final ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(userResponse);
+    extendedUser.setPatronGroup("patrons","The Library Patrons", "12335");
+
+
+    when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
+      .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
+      .thenReturn(Future.succeededFuture(accountResponse));
+    when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
+      .thenReturn(Future.succeededFuture(overdueResponse));
+    when(mockCirculationRepository.getRequestsByUserId(
+      any(), eq("Hold"), any(), any(), any()))
+      .thenReturn(Future.succeededFuture(holdsResponse));
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+      .thenReturn(Future.succeededFuture(openLoansResponse));
+    when(mockCirculationRepository.getRequestsByItemId(
+      any(), eq("Recall"), any(), any(), any()))
+      .thenReturn(Future.succeededFuture(recallsResponse),
+        Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
+        Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
+    when(mockPasswordVerifier.doPatronPasswordVerification(
+      eq(patronIdentifier), eq("0989"), any()))
+      .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords
+        .builder().extendedUser(extendedUser).passwordVerified(false).build()));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+      mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
+    patronRepository.performPatronInformationCommand(patronInformation, sessionData).onComplete(
+      testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
+        assertNotNull(patronInformationResponse);
+        assertNotNull(patronInformationResponse.getPatronStatus());
+        assertTrue(patronInformationResponse.getPatronStatus().isEmpty());
+        assertEquals(ENGLISH, patronInformationResponse.getLanguage());
+        assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
+        assertEquals(2, patronInformationResponse.getHoldItemsCount());
+        assertEquals(1, patronInformationResponse.getOverdueItemsCount());
+        assertEquals(3,patronInformationResponse.getChargedItemsCount());
+        assertEquals(1,patronInformationResponse.getFineItemsCount());
+        assertEquals(1, patronInformationResponse.getRecallItemsCount());
+        assertNull(patronInformationResponse.getUnavailableHoldsCount());
+        assertEquals("diku", patronInformationResponse.getInstitutionId());
+        assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
+        assertEquals("Darius Auer", patronInformationResponse.getPersonalName());
+        assertNull(patronInformationResponse.getHoldItemsLimit());
+        assertNull(patronInformationResponse.getOverdueItemsLimit());
+        assertNull(patronInformationResponse.getChargedItemsLimit());
+        assertTrue(patronInformationResponse.getValidPatron());
+        assertFalse(patronInformationResponse.getValidPatronPassword());
+        assertEquals(CurrencyType.USD, patronInformationResponse.getCurrencyType());
+        assertEquals("1.0", patronInformationResponse.getFeeAmount());
+        assertNull(patronInformationResponse.getFeeLimit());
+        assertNotNull(patronInformationResponse.getHoldItems());
+        assertTrue(patronInformationResponse.getHoldItems().isEmpty());
+        assertNotNull(patronInformationResponse.getOverdueItems());
+        assertTrue(patronInformationResponse.getOverdueItems().isEmpty());
+        assertNotNull(patronInformationResponse.getChargedItems());
+        assertTrue(patronInformationResponse.getChargedItems().isEmpty());
+        assertNotNull(patronInformationResponse.getFineItems());
+        assertTrue(patronInformationResponse.getFineItems().isEmpty());
+        assertNotNull(patronInformationResponse.getRecallItems());
+        assertEquals(Arrays.asList("6214635593916"), patronInformationResponse.getRecallItems());
+        assertNotNull(patronInformationResponse.getUnavailableHoldItems());
+        assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
+        assertEquals("00430 Denis Parks, Indianapolis, FL 14654-6001 US",
+          patronInformationResponse.getHomeAddress());
+        assertEquals("earnestine@sipes-stokes-and-durgan.so",
+          patronInformationResponse.getEmailAddress());
+        assertEquals("(916)599-0326",
+          patronInformationResponse.getHomePhoneNumber());
+        assertNull(patronInformationResponse.getScreenMessage());
+        assertNull(patronInformationResponse.getPrintLine());
+
+        testContext.completeNow();
+      })));
+  }
+
   @SuppressWarnings("unchecked")
   @Test
   public void canPerformPatronInformationWithNoUserName(VertxTestContext testContext,
@@ -295,7 +410,7 @@ public class PatronRepositoryTests {
           .thenReturn(Future.succeededFuture(recallsResponse),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
         .extendedUser(extendedUser).build()));
 
@@ -407,7 +522,7 @@ public class PatronRepositoryTests {
           .thenReturn(Future.succeededFuture(recallsResponse),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
         .extendedUser(extendedUser).build()));
 
@@ -517,7 +632,7 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(recallsResponse),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(
             PatronPasswordVerificationRecords.builder()
               .passwordVerified(TRUE)
@@ -858,7 +973,7 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(recallsResponse),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
         .extendedUser(extendedUser).build()));
 
@@ -973,7 +1088,7 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(recallsResponse),
         Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
         Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
         .extendedUser(extendedUser).build()));
 
@@ -1064,7 +1179,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByItemId(
         eq("c70f966b-435f-4879-a7d1-3f66e6699191"), eq("Recall"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(recallsResponse2));
-    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
         .extendedUser(extendedUser).build()));
 
@@ -1141,7 +1256,7 @@ public class PatronRepositoryTests {
         .patronPassword("0989")
         .build();
 
-    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
@@ -1215,7 +1330,7 @@ public class PatronRepositoryTests {
     final ExtendedUser extendedUser = new ExtendedUser();
     extendedUser.setUser(new User.Builder().active(FALSE).build());
 
-    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
         .extendedUser(extendedUser).build()));
 
@@ -1290,7 +1405,7 @@ public class PatronRepositoryTests {
     final ExtendedUser extendedUser = new ExtendedUser();
     extendedUser.setUser(new User.Builder().active(TRUE).build());
 
-    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
           .extendedUser(extendedUser).build()));
 
@@ -1365,7 +1480,7 @@ public class PatronRepositoryTests {
     final ExtendedUser extendedUser = new ExtendedUser();
     extendedUser.setUser(new User.Builder().active(TRUE).build());
 
-    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.failedFuture(new ClientException("Incorrect Password")));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
@@ -1427,7 +1542,7 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
-    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
         .extendedUser(extendedUser).build()));
 
@@ -1525,7 +1640,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
-    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
         .extendedUser(extendedUser).build()));
 
@@ -1623,7 +1738,7 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
-    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
         .extendedUser(extendedUser).build()));
 
