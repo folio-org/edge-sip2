@@ -152,5 +152,35 @@ public class ConfigurationRepositoryTests {
             testContext.completeNow();
           })));
   }
+
+  @Test
+  public void canRetrieveLocaleConfigurationWithAlternateCurrency(
+      Vertx vertx,
+      VertxTestContext testContext, @Mock Clock clock) {
+
+    List<LinkedHashMap<String, String>> configParamsList = new ArrayList<>();
+    LinkedHashMap<String, String> configParamsSet = new LinkedHashMap<>();
+    configParamsSet.put("module", "edge-sip2");
+    configParamsSet.put("configName", "acsTenantConfig");
+    String configKey = String.format("%s.%s.%s", "ORG", "localeSettings", "null");
+
+    configParamsList.add(configParamsSet);
+
+    IResourceProvider<IRequestData> resourceProvider =
+        new DefaultResourceProvider("json/DefaultACSConfigurationNonDefaultedCurrency.json");
+    ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider, clock);
+
+    configRepo.retrieveConfigurations(TestUtils.getMockedSessionData(),
+        configParamsList).onComplete(
+        testContext.succeeding(testTenantConfig -> testContext.verify(() -> {
+          assertNotNull(testTenantConfig);
+
+          JsonObject config = testTenantConfig.get(configKey);
+
+          assertEquals("EUR", config.getString("currency"));
+
+          testContext.completeNow();
+        })));
+  }
 }
 
