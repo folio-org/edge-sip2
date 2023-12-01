@@ -704,4 +704,8 @@
   <@variableLengthField id="FF" value=value/>
 </#macro>
 
+<#macro pickupServicePoint value>
+  <@variableLengthField id="CT" value=value/>
+</#macro>
+
 

@@ -107,9 +107,10 @@ class CirculationRepositoryTests {
             .put("location", new JsonObject()
                 .put("name", "Main Library"))
             .put("materialType", new JsonObject()
-                .put("name", "book")))
+                .put("name", "book"))
             .put("inTransitDestinationServicePoint", new JsonObject()
-                .put("name", "Annex"));
+                .put("name", "Annex"))
+        );
 
 
     final JsonObject getRequestsResponseJson = new JsonObject()
@@ -150,6 +151,7 @@ class CirculationRepositoryTests {
           assertNull(checkinResponse.getScreenMessage());
           assertNull(checkinResponse.getPrintLine());
           assertEquals(callNumber, checkinResponse.getCallNumber());
+          assertEquals("Annex", checkinResponse.getPickupServicePoint());
 
           testContext.completeNow();
         })));
@@ -1506,5 +1508,21 @@ class CirculationRepositoryTests {
 
               testContext.completeNow();
             })));
+  }
+
+  @Test
+  void testGetAlertType() {
+    assertEquals("01", CirculationRepository.getAlertType(
+        false, true, false));
+    assertEquals("01", CirculationRepository.getAlertType(
+        false, false, true));
+    assertEquals("02", CirculationRepository.getAlertType(
+        true, false, true));
+    assertEquals("02", CirculationRepository.getAlertType(
+        true, true, false));
+    assertEquals("04", CirculationRepository.getAlertType(
+        true, false, false));
+    assertNull(CirculationRepository.getAlertType(
+        false, false, false));
   }
 }
