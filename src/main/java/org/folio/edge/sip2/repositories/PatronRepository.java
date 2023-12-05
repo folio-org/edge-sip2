@@ -332,7 +332,7 @@ public class PatronRepository {
         .map(accounts -> totalAmount(accounts, builder));
 
     return getFeeAmountFuture.map(result -> builder
-            .patronStatus(EnumSet.allOf(PatronStatus.class))
+            .patronStatus(EnumSet.noneOf(PatronStatus.class))
             .language(patronStatus.getLanguage())
             .transactionDate(OffsetDateTime.now(clock))
             .institutionId(patronStatus.getInstitutionId())
