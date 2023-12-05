@@ -19,7 +19,6 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.Clock;
