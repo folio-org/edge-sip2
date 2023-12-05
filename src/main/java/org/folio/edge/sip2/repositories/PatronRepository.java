@@ -72,7 +72,6 @@ public class PatronRepository {
   private static final String FIELD_LOANS = "loans";
   private static final String FIELD_BARCODE = "barcode";
   private static final Logger log = LogManager.getLogger();
-  public final static MathContext MONEY_FORMAT = new MathContext(2);
   // These really should come from FOLIO
   static final String MESSAGE_INVALID_PATRON =
       "Your library card number cannot be located. Please see a staff member for assistance.";
