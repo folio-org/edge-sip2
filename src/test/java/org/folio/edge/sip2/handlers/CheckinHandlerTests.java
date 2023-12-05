@@ -38,6 +38,7 @@ public class CheckinHandlerTests {
     final String institutionId = "diku";
     final String itemIdentifier = "1234567890";
     final String currentLocation = UUID.randomUUID().toString();
+    final String servicePoint = "Circ Desk 1";
     final Checkin checkin = Checkin.builder()
         .noBlock(FALSE)
         .transactionDate(OffsetDateTime.now())
@@ -61,6 +62,7 @@ public class CheckinHandlerTests {
             .itemIdentifier(itemIdentifier)
             .permanentLocation("Main Library")
             .callNumber("23457799")
+            .pickupServicePoint(servicePoint)
             .build()));
 
     final CheckinHandler handler = new CheckinHandler(mockCirculationRepository,
@@ -72,7 +74,8 @@ public class CheckinHandlerTests {
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "101YUN"
               + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
-              + "AO" + institutionId + "|AB" + itemIdentifier + "|AQMain Library|CS23457799|CV|";
+              + "AO" + institutionId + "|AB" + itemIdentifier + "|AQMain Library|CS23457799|CV|"
+              + "CT" + servicePoint + "|";
 
           assertEquals(expectedString, sipMessage);
 
@@ -123,7 +126,7 @@ public class CheckinHandlerTests {
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           final String expectedString = "100YUN"
               + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
-              + "AO" + institutionId + "|AB" + itemIdentifier + "|AQ|CS|CV|";
+              + "AO" + institutionId + "|AB" + itemIdentifier + "|AQ|CS|CV|CT|";
 
           assertEquals(expectedString, sipMessage);
 
