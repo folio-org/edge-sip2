@@ -37,7 +37,8 @@
       },
       "feeFineType": "Replacement processing fee",
       "feeFineOwner": "Test",
-      "callNumber": "",
+      "callNumber": "acq-223",
+      "barcode": "22334455",
       "metadata": {
         "createdDate": "2022-09-19T11:26:22.857+00:00",
         "createdByUserId": "90b20de8-71b8-5eb9-9c3e-92fbedac3bed",
