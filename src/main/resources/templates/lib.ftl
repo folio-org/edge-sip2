@@ -297,7 +297,9 @@
 </#macro>
 
 <#macro fineItems value>
-  <@variableLengthListField id="AV" value=value/>
+  <#if value?has_content>
+    <@variableLengthListField id="AV" value=value/>
+  </#if>
 </#macro>
 
 <#macro fineItemsCount value>
@@ -700,6 +702,10 @@
 
 <#macro accountFeeType value>
   <@variableLengthField id="FF" value=value/>
+</#macro>
+
+<#macro pickupServicePoint value>
+  <@variableLengthField id="CT" value=value/>
 </#macro>
 
 

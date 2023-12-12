@@ -1957,6 +1957,16 @@ public class PatronRepositoryTests {
         })));
   }
 
+  @Test
+  void testGetBarcodesForOpenAccounts() {
+    final String accountResponseJson = getJsonFromFile(
+        "json/account_multiple_with_feefines_request_response.json");
+    final JsonObject accountResponse = new JsonObject(accountResponseJson);
+    List<String> barcodeList
+        = PatronRepository.getBarcodesForOpenAccounts(accountResponse.getJsonArray("accounts"));
+    assertEquals(1, barcodeList.size());
+  }
+
   private static JsonObject getManualBlockJsonObject(boolean borrowing, boolean renewals,
       boolean requests) {
     return new JsonObject("{\n"

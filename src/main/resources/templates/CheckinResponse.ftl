@@ -41,3 +41,5 @@
 <@lib.callNumber value=checkinResponse.callNumber!""/>
 <#-- alert type: fixed-length optional field (extension) -->
 <@lib.alertType value=checkinResponse.alertType!""/>
+<#-- pickup service point: variable-length optional field (extension) -->
+<@lib.pickupServicePoint value=checkinResponse.pickupServicePoint!""/>

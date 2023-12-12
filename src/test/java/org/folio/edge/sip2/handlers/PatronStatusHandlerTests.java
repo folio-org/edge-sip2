@@ -70,7 +70,7 @@ class PatronStatusHandlerTests {
     final PatronStatusResponse patronStatusResponse = PatronStatusResponse.builder()
         .personalName("Joe Zee Blow")
         .feeAmount(feeAmount.toString())
-        .patronStatus(EnumSet.allOf(PatronStatus.class))
+        .patronStatus(EnumSet.noneOf(PatronStatus.class))
         .transactionDate(OffsetDateTime.now(clock))
         .institutionId(institutionId)
         .language(Language.UNKNOWN)
@@ -80,7 +80,7 @@ class PatronStatusHandlerTests {
         .build();
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
-    final String expectedString = "24" + "YYYYYYYYYYYYYY" + "000"
+    final String expectedString = "24" + "              " + "000"
         + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
         + "AO" + institutionId + "|" + "AA" + patronIdentifier + "|"
         + "AE" + "Joe Zee Blow" + "|" + "BL" + "Y" + "|" + "CQ" + "Y" + "|"
@@ -135,7 +135,7 @@ class PatronStatusHandlerTests {
     final PatronStatusResponse patronStatusResponse = PatronStatusResponse.builder()
         .personalName("Joe Zee Blow")
         .feeAmount(feeAmount.toString())
-        .patronStatus(EnumSet.allOf(PatronStatus.class))
+        .patronStatus(EnumSet.noneOf(PatronStatus.class))
         .transactionDate(OffsetDateTime.now(clock))
         .institutionId(institutionId)
         .language(Language.UNKNOWN)

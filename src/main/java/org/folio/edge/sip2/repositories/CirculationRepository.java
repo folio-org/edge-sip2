@@ -53,6 +53,7 @@ public class CirculationRepository {
   public static final String TITLE = "title";
   public static final String ITEM_BARCODE = "itemBarcode";
   public static final String SERVICE_POINT_ID = "servicePointId";
+  public static final String ITEM_ID = "itemId";
   private final IResourceProvider<IRequestData> resourceProvider;
   private final PasswordVerifier passwordVerifier;
   private final Clock clock;
@@ -102,20 +103,21 @@ public class CirculationRepository {
         .compose(resource -> {
           log.info("performCheckinCommand resource:{}", resource);
           JsonObject resourceJson = resource.getResource();
-
+          log.debug("performCheckinCommand resource json is {}",
+              () -> resourceJson != null ? resourceJson.encode() : "null");
+          JsonObject valuesJson = extractCheckinValues(resourceJson);
+          log.debug("valuesJson is {}", valuesJson.encode());
           final Future<JsonObject> getRequestsResult = resourceJson != null
-              ? getRequestsByItemId(itemIdentifier, null, null,
+              ? getRequestsByItemId(valuesJson.getString(ITEM_ID), null, null,
                   null, sessionData) : Future.succeededFuture(null);
           return getRequestsResult
             .compose(requestsJson -> {
-              JsonObject valuesJson = extractCheckinValues(resourceJson);
+              log.debug("JSON from getRequestsByItemId is {}",
+                  () -> requestsJson != null ? requestsJson.encode() : "null");
               MediaType mediaType = getMediaType(valuesJson.getJsonObject("itemMaterialTypeJson"));
               JsonArray requestArray =
                   requestsJson != null ? requestsJson.getJsonArray("requests") : null;
-              JsonObject request = requestArray != null && !requestArray.isEmpty()
-                  ? requestArray.getJsonObject(0) : null;
-              final String requestState =
-                  request != null ? request.getString("requestType") : null;
+              final String requestState = getRequestState(requestArray);
               final boolean inTransit = valuesJson.getString("itemStatus") != null
                   && valuesJson.getString("itemStatus").equals("In transit");
               final boolean holdItem = requestState != null && requestState.equals("Hold");
@@ -357,7 +359,7 @@ public class CirculationRepository {
                                                 SessionData sessionData) {
     final Map<String, String> headers = getBaseHeaders();
 
-    final RequestsRequestData requestsRequestData = new RequestsRequestData("itemId", itemId,
+    final RequestsRequestData requestsRequestData = new RequestsRequestData(ITEM_ID, itemId,
         requestType, startItem, endItem, headers, sessionData);
     final Future<IResource> result = resourceProvider.retrieveResource(requestsRequestData);
 
@@ -886,7 +888,7 @@ public class CirculationRepository {
     return mediaType;
   }
 
-  private String getAlertType(boolean inTransit, boolean holdItem, boolean recallItem) {
+  protected static String getAlertType(boolean inTransit, boolean holdItem, boolean recallItem) {
     String alertType;
     if (inTransit || holdItem || recallItem) {
       if (!inTransit) {
@@ -906,6 +908,7 @@ public class CirculationRepository {
     JsonObject valuesJson = new JsonObject();
     JsonObject itemJson = resourceJson != null ? resourceJson.getJsonObject("item")
         : null;
+    valuesJson.put(ITEM_ID, itemJson != null ? itemJson.getString("id") : null);
     valuesJson.put("callNumber", itemJson != null ? itemJson.getString("callNumber")
         : null);
     JsonObject itemStatusJson = itemJson != null ? itemJson.getJsonObject("status")
@@ -921,5 +924,16 @@ public class CirculationRepository {
         : null);
 
     return valuesJson;
+  }
+
+  private String getRequestState(JsonArray requestArray) {
+    if (requestArray == null || requestArray.isEmpty()) {
+      return null;
+    }
+    JsonObject request = requestArray.getJsonObject(0);
+    if (request == null) {
+      return null;
+    }
+    return request.getString("requestType");
   }
 }

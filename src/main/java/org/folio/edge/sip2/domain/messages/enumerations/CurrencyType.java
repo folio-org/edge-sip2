@@ -22,5 +22,11 @@ public enum CurrencyType {
   /** Spanish Peseta. */
   ESP,
   /** Yen. */
-  JPY
+  JPY,
+  /** Euro. */
+  EUR,
+  /** Danish Krone. */
+  DKK,
+  /** Australian Dollar. */
+  AUD
 }
