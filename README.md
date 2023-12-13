@@ -204,7 +204,7 @@ Currently, edge-sip2 implements select SIP messages. Below, is the list of all i
 
 |SIP Request|Implemented|Notes|
 |-----------|-----------|-----|
-|Patron Status Request|No||
+|Patron Status Request|Yes||
 |Checkout|Yes|Response SIP fields hardcoded: "renewal ok" is set to "N", "magnetic media" is set to "U". SIP field "desensitize" is set to "Y" is the FOLIO check out succeeded and "N" when there is failure. Fee/fines related fields are not implemented. The "due date" format is the same as other SIP date/time format strings: "YYYYMMDDZZZZHHMMSS".|
 |Checkin|Yes|Response SIP fields hardcoded: "alert" is set to "N", "magnetic media" is set to "U". Most optional SIP fields are not implemented. The "resensitize" field will be set to "Y" if the FOLIO check in succeeded and "N" if there was a failure.|
 |Block Patron|No||
@@ -213,12 +213,12 @@ Currently, edge-sip2 implements select SIP messages. Below, is the list of all i
 |Login|Yes|The request "location code" should contain the UUID of the service point for the kiosk.|
 |Patron Information|Yes|Response SIP field "hold items count" currently only refers to FOLIO "Hold" requests and not "Page" requests. Only "Hold" request data is returned in the summary results as well. The "charged items count", "fine items count" and "unavailable holds count" are not supported. However, "unavailable holds count" is not implemented due to an oversight as "hold items count" includes all "Hold" requests in any "Open" state, instead of limited to "Open - Awaiting pickup". Likewise, "unavailable holds count" could contain "Hold" requests that are not "Closed" and not "Open - Awaiting pickup". This will likely need to be corrected. The response "patron status" field is partially supported via FOLIO manual blocks where a "borrowing" block will set all privilege codes to "N", a "renewals" block will set the SIP "renewal privileges defined" code to "N", and a "requests" block will set "hold privileges denied" and "recall privileges denied" to "N".|
 |End Patron Session|Yes||
-|Fee Paid|No||
-|Item Information|No||
+|Fee Paid|Yes||
+|Item Information|Yes||
 |Patron Enable|No||
 |Hold|No||
-|Renew|No||
-|Renew All|No||
+|Renew|Yes||
+|Renew All|Yes||
 
 ## Security
 
