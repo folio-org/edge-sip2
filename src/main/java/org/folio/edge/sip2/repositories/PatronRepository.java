@@ -19,6 +19,8 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -373,12 +375,10 @@ public class PatronRepository {
   private PatronInformationResponseBuilder totalAmount(
       JsonObject jo,
       PatronInformationResponseBuilder builder) {
-    Float total = 0.0f;
+    Float total;
     if (jo != null) {
       final JsonArray arr = jo.getJsonArray(FIELD_ACCOUNTS);
-      for (int i = 0; i < arr.size(); i++) {
-        total += arr.getJsonObject(i).getFloat(FIELD_REMAINING);
-      }
+      total = getTotalRemaining(arr);
       log.debug("Total is {}", total);
       return builder.feeAmount(total.toString());
     }
@@ -390,12 +390,19 @@ public class PatronRepository {
       PatronStatusResponseBuilder builder) {
 
     final JsonArray arr = jo.getJsonArray(FIELD_ACCOUNTS);
-    Float total = 0.0f;
-    for (int i = 0;i < arr.size();i++) {
-      total += arr.getJsonObject(i).getFloat(FIELD_REMAINING);
-    }
+    Float total = getTotalRemaining(arr);
     log.debug("Total is {}", total);
     return builder.feeAmount(total.toString());
+  }
+
+  protected static Float getTotalRemaining(JsonArray accounts) {
+    BigDecimal total = BigDecimal.ZERO;
+    for (int i = 0; i < accounts.size(); i++) {
+      BigDecimal bdValue = BigDecimal.valueOf(accounts.getJsonObject(i)
+          .getFloat(FIELD_REMAINING));
+      total = total.add(bdValue);
+    }
+    return total.round(MathContext.DECIMAL32).floatValue();
   }
 
 
