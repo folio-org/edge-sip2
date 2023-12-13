@@ -47,6 +47,7 @@ import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.folio.edge.sip2.domain.messages.requests.PatronStatusRequest;
 import org.folio.edge.sip2.domain.messages.responses.EndSessionResponse;
+import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
 import org.folio.edge.sip2.repositories.domain.ExtendedUser;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.repositories.domain.Personal;
@@ -1955,6 +1956,17 @@ public class PatronRepositoryTests {
           assertEquals("Incorrect Username", endSessionResponse.getMessage());
           testContext.completeNow();
         })));
+  }
+
+  @Test
+  void testForNoFractionalTotals() {
+    JsonArray accounts = new JsonArray();
+    accounts.add(new JsonObject().put("remaining", 0.03f));
+    accounts.add(new JsonObject().put("remaining", 0.02f));
+    accounts.add(new JsonObject().put("remaining", 0.05f));
+    accounts.add(new JsonObject().put("remaining", 0.1f));
+    Float total = PatronRepository.getTotalRemaining(accounts);
+    assertEquals(0.2f, total);
   }
 
   @Test
