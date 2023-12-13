@@ -7,6 +7,8 @@ import io.vertx.core.Future;
 import java.util.Collections;
 import java.util.Objects;
 import javax.inject.Inject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.session.SessionData;
 
@@ -16,6 +18,8 @@ import org.folio.edge.sip2.session.SessionData;
  * @author mreno-EBSCO
  */
 public class PasswordVerifier {
+
+  private static final Logger log = LogManager.getLogger();
   private final UsersRepository usersRepository;
   private final LoginRepository loginRepository;
 
@@ -45,32 +49,7 @@ public class PasswordVerifier {
     final Future<PatronPasswordVerificationRecords> loginFuture;
 
     if (sessionData.isPatronPasswordVerificationRequired()) {
-      loginFuture = usersRepository.getUserById(patronIdentifier, sessionData)
-          .compose(extendedUser -> {
-            if (extendedUser == null) {
-              return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-                  .passwordVerified(FALSE)
-                  .build());
-            }
-
-            return loginRepository.patronLogin(extendedUser.getUser().getUsername(),
-                patronPassword, sessionData)
-              .compose(token -> {
-                if (token != null) {
-                  return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-                    .extendedUser(extendedUser)
-                    .passwordVerified(TRUE)
-                    .build());
-                } else {
-                  return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-                    .extendedUser(extendedUser)
-                    .errorMessages(Collections.singletonList(sessionData.getLoginErrorMessage()))
-                    .passwordVerified(FALSE)
-                    .build());
-                }
-
-              });
-          });
+      loginFuture = doPatronPasswordVerification(patronIdentifier, patronPassword, sessionData);
     } else {
       loginFuture = usersRepository.getUserById(patronIdentifier,
           sessionData).compose(extendedUser -> {
@@ -81,6 +60,55 @@ public class PasswordVerifier {
             return Future.succeededFuture(PatronPasswordVerificationRecords.builder().build());
           });
     }
+
+    return loginFuture;
+  }
+
+  /**
+   * Verifies a patron password
+   * {@code PatronPasswordVerificationRecords} object.
+   * @param patronIdentifier the patron identifier
+   * @param patronPassword the patron password
+   * @param sessionData session data
+   * @return info about the user and whether or not the password was valid
+   */
+  public Future<PatronPasswordVerificationRecords> doPatronPasswordVerification(
+      String patronIdentifier,
+      String patronPassword,
+      SessionData sessionData) {
+    Objects.requireNonNull(patronIdentifier, "patronIdentifier cannot be null");
+    Objects.requireNonNull(sessionData, "sessionData cannot be null");
+
+    log.debug("Calling doPatronPasswordVerification");
+    Future<PatronPasswordVerificationRecords> loginFuture;
+
+    loginFuture = usersRepository.getUserById(patronIdentifier, sessionData)
+      .compose(extendedUser -> {
+        if (extendedUser == null) {
+          return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+              .passwordVerified(FALSE)
+              .build());
+        }
+        log.debug("Got valid user");
+        return loginRepository.patronLogin(extendedUser.getUser().getUsername(),
+            patronPassword, sessionData)
+          .compose(token -> {
+            if (token != null) {
+              log.debug("Valid token");
+              return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+                  .extendedUser(extendedUser)
+                  .passwordVerified(TRUE)
+                  .build());
+            } else {
+              log.debug("Null token");
+              return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+                  .extendedUser(extendedUser)
+                  .errorMessages(Collections.singletonList(sessionData.getLoginErrorMessage()))
+                  .passwordVerified(FALSE)
+                  .build());
+            }
+          });
+      });
 
     return loginFuture;
   }

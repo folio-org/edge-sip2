@@ -48,6 +48,7 @@ import org.folio.edge.sip2.domain.messages.responses.PatronStatusResponse;
 import org.folio.edge.sip2.domain.messages.responses.PatronStatusResponse.PatronStatusResponseBuilder;
 import org.folio.edge.sip2.repositories.domain.Address;
 import org.folio.edge.sip2.repositories.domain.ExtendedUser;
+import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.repositories.domain.Personal;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
@@ -116,14 +117,19 @@ public class PatronRepository {
     final String patronIdentifier = patronInformation.getPatronIdentifier();
     final String patronPassword = patronInformation.getPatronPassword();
 
-    return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
-      .onFailure(throwable -> {
-        if (throwable instanceof ClientException) {
-          sessionData.setErrorResponseMessage(invalidPatron(patronInformation, FALSE).result());
-        }
-      })
+    Future<PatronPasswordVerificationRecords> passwordVerificationFuture = passwordVerifier
+        .doPatronPasswordVerification(patronIdentifier, patronPassword, sessionData);
+    log.debug("Verification return value is {}", passwordVerificationFuture);
+    return passwordVerificationFuture
+        .onFailure(throwable -> {
+          if (throwable instanceof ClientException) {
+            sessionData.setErrorResponseMessage(invalidPatron(patronInformation, FALSE).result());
+          }
+        })
         .compose(verification -> {
-          if (FALSE.equals(verification.getPasswordVerified())) {
+          log.debug("Password verification result is {}", verification);
+          if (sessionData.isPatronPasswordVerificationRequired()
+              && FALSE.equals(verification.getPasswordVerified())) {
             return invalidPatron(patronInformation, FALSE);
           }
           final Future<ExtendedUser> extendedUserFuture
