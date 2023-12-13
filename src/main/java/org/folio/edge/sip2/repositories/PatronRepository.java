@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.edge.sip2.domain.messages.PatronAccountInfo;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
 import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
@@ -609,7 +610,7 @@ public class PatronRepository {
 
   private PatronInformationResponseBuilder addExtendedAccountInfo(JsonObject accounts,
       boolean details, PatronInformationResponseBuilder builder) {
-    List<PatronInformationResponse.PatronAccount> patronAccountList;
+    List<PatronAccountInfo> patronAccountList;
     if (accounts != null) {
       if (details) {
         patronAccountList = getPatronAccountList(accounts);
@@ -686,14 +687,13 @@ public class PatronRepository {
       .collect(Collectors.toList());
   }
 
-  private List<PatronInformationResponse.PatronAccount> getPatronAccountList(
+  private List<PatronAccountInfo> getPatronAccountList(
       JsonObject accountsJson) {
-    List<PatronInformationResponse.PatronAccount> accountList = new ArrayList<>();
+    List<PatronAccountInfo> accountList = new ArrayList<>();
     final JsonArray accountArray = accountsJson.getJsonArray(FIELD_ACCOUNTS);
     for (Object ob : accountArray) {
       JsonObject jo = (JsonObject)ob;
-      PatronInformationResponse.PatronAccount patronAccount =
-          new PatronInformationResponse.PatronAccount();
+      PatronAccountInfo patronAccount = new PatronAccountInfo();
       patronAccount.setFeeFineAmount(jo.getNumber("amount") != null
           ? jo.getNumber("amount").doubleValue() : null);
       patronAccount.setFeeFineRemaining(jo.getNumber(FIELD_REMAINING) != null

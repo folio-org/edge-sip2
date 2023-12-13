@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.edge.sip2.domain.messages.PatronAccountInfo;
 import org.folio.edge.sip2.domain.messages.requests.FeePaid;
 import org.folio.edge.sip2.domain.messages.responses.FeePaidResponse;
 import org.folio.edge.sip2.repositories.domain.User;
@@ -39,6 +40,7 @@ public class FeeFinesRepository {
   private static final String HEADER_ACCEPT = "accept";
   private static final String MIMETYPE_JSON = "application/json";
   private static final String ACCOUNTS_KEY = "accounts";
+  private static final String ACCOUNTS_QUERY_URL = "/accounts?query=";
   private final IResourceProvider<IRequestData> resourceProvider;
   private final UsersRepository usersRepository;
   private Clock clock;
@@ -107,7 +109,7 @@ public class FeeFinesRepository {
     headers.put(HEADER_ACCEPT, MIMETYPE_JSON);
 
     final FeePaymentAccountsRequestData getFeePaymentAccountsRequestData =
-        new FeePaymentAccountsRequestData(userId, headers, sessionData);
+        new FeePaymentAccountsRequestData(userId, headers, null, sessionData);
     final Future<IResource> result =
         resourceProvider.retrieveResource(getFeePaymentAccountsRequestData);
 
@@ -174,12 +176,12 @@ public class FeeFinesRepository {
       .map(IResource::getResource);
   }
 
-  private class GetManualBlocksByUserIdRequestData implements IRequestData {
+  protected static class GetManualBlocksByUserIdRequestData implements IRequestData {
     private final String userId;
     private final Map<String, String> headers;
     private final SessionData sessionData;
 
-    private GetManualBlocksByUserIdRequestData(String barcode, Map<String, String> headers,
+    protected GetManualBlocksByUserIdRequestData(String barcode, Map<String, String> headers,
         SessionData sessionData) {
       this.userId = barcode;
       this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
@@ -204,25 +206,34 @@ public class FeeFinesRepository {
     }
   }
 
-  private class FeePaymentAccountsRequestData implements IRequestData {
+  protected static class FeePaymentAccountsRequestData implements IRequestData {
 
     private String userId;
     private final Map<String, String> headers;
+    private final String accountIdentifier;
     private final SessionData sessionData;
 
-    private FeePaymentAccountsRequestData(
+    protected FeePaymentAccountsRequestData(
         String userId,
         Map<String, String> headers,
+        String accountIdentifier,
         SessionData sessionData) {
       this.userId = userId;
       this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
+      this.accountIdentifier = accountIdentifier;
       this.sessionData = sessionData;
     }
 
     @Override
     public String getPath() {
-      return "/accounts?query="
+      if (accountIdentifier == null || accountIdentifier.isEmpty()) {
+        return ACCOUNTS_QUERY_URL
           + Utils.encode("(userId==" + this.userId + "  and status.name==Open)");
+      } else {
+        return ACCOUNTS_QUERY_URL
+          + Utils.encode("(userId==" + this.userId + " and id==" + this.accountIdentifier
+          + " and status.name==Open)");
+      }
     }
 
     @Override
@@ -236,7 +247,7 @@ public class FeeFinesRepository {
     }
   }
 
-  private class FeePaymentRequestData implements IRequestData {
+  protected static class FeePaymentRequestData implements IRequestData {
 
     private final String amount;
     private final Boolean notifyPatron;
@@ -247,7 +258,7 @@ public class FeeFinesRepository {
     private final Map<String, String> headers;
     private final SessionData sessionData;
 
-    private FeePaymentRequestData(
+    protected FeePaymentRequestData(
         String amount,
         String paymentMethod,
         Boolean notifyPatron,
@@ -303,12 +314,12 @@ public class FeeFinesRepository {
     }
   }
 
-  private class GetAccountByUserIdRequestData implements IRequestData {
+  protected static class GetAccountByUserIdRequestData implements IRequestData {
     private final String userId;
     private final Map<String, String> headers;
     private final SessionData sessionData;
 
-    private GetAccountByUserIdRequestData(String userId, Map<String, String> headers,
+    protected GetAccountByUserIdRequestData(String userId, Map<String, String> headers,
                                                SessionData sessionData) {
       this.userId = userId;
       this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
@@ -318,7 +329,7 @@ public class FeeFinesRepository {
     @Override
     public String getPath() {
       final StringBuilder qSb = new StringBuilder()
-          .append("/accounts?query=")
+          .append(ACCOUNTS_QUERY_URL)
           .append("(userId==")
           .append(userId).append(")").append("&limit=1000");
       return qSb.toString();
@@ -335,13 +346,13 @@ public class FeeFinesRepository {
     }
   }
 
-  private class GetFeeFinesByIdsRequestData implements IRequestData {
+  protected static class GetFeeFinesByIdsRequestData implements IRequestData {
 
     private List<String> idList;
     private final Map<String, String> headers;
     private final SessionData sessionData;
 
-    private GetFeeFinesByIdsRequestData(List<String> idList, Map<String, String> headers,
+    protected GetFeeFinesByIdsRequestData(List<String> idList, Map<String, String> headers,
         SessionData sessionData) {
       this.idList = idList;
       this.headers = headers;
@@ -374,7 +385,6 @@ public class FeeFinesRepository {
 
 
 
-
   /**
    * Perform a feePaid.
    *
@@ -390,16 +400,10 @@ public class FeeFinesRepository {
     final String patronIdentifier = feePaid.getPatronIdentifier();
     final String transactionId = feePaid.getTransactionId();
 
-    String feeIdentifierMatch = "";
-    if (feePaid.getFeeIdentifier() != null) {
-      Pattern startWithUuid = Pattern.compile("^(\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12})");
-      // UUID of the account to be paid
-      Matcher matcher = startWithUuid.matcher(feePaid.getFeeIdentifier());
-      feeIdentifierMatch = "";
-      if (matcher.find()) {
-        feeIdentifierMatch = matcher.group(1);
-      }
-    }
+    List<PatronAccountInfo> patronAccountInfoList = new ArrayList<>();
+
+    String feeIdentifierMatch = matchUuid(feePaid.getFeeIdentifier());
+
     final String feeIdentifier = feeIdentifierMatch;
     log.debug("feeIdentifier = {}", feeIdentifier);
 
@@ -410,13 +414,14 @@ public class FeeFinesRepository {
         final Map<String, String> acctheaders = getBaseHeaders();
 
         FeePaymentAccountsRequestData feePaymentAccountsRequestData =
-            new FeePaymentAccountsRequestData(user.getId(), acctheaders, sessionData);
+            new FeePaymentAccountsRequestData(user.getId(), acctheaders,
+                feeIdentifier, sessionData);
 
-        Future<IResource> result;
-        result = resourceProvider
+        Future<IResource> userAccountDataResult;
+        userAccountDataResult = resourceProvider
             .retrieveResource(feePaymentAccountsRequestData);
 
-        return result
+        return userAccountDataResult
             .otherwiseEmpty()
             .compose(resource -> {
               final BigDecimal amountPaid = new BigDecimal(feePaid.getFeeAmount(), moneyFormat);
@@ -444,6 +449,16 @@ public class FeeFinesRepository {
 
               final Map<String, String> headers = getBaseHeaders();
 
+              for (Object accountOb : acctList) {
+                JsonObject accountJson = (JsonObject) accountOb;
+                PatronAccountInfo patronAccountInfo = new PatronAccountInfo();
+                patronAccountInfo.setId(accountJson.getString("id"));
+                patronAccountInfo.setItemBarcode(accountJson.getString("barcode"));
+                patronAccountInfo.setFeeFineId(accountJson.getString("feeFineId"));
+                patronAccountInfo.setFeeFineAmount(accountJson.getDouble("amount"));
+                patronAccountInfoList.add(patronAccountInfo);
+              }
+
               List<String> acctIdList = getAcctIdList(acctList);
 
               FeePaymentRequestData feePaymentRequestData =
@@ -468,7 +483,9 @@ public class FeeFinesRepository {
                 .otherwiseEmpty()
                 .compose(payresource -> {
                   JsonObject paidResponse = payresource.getResource();
-                  log.debug("paidResponse = {}", paidResponse.encode());
+                  updatePatronAccountInfoList(patronAccountInfoList, paidResponse);
+                  log.debug("paidResponse = {}",
+                      paidResponse != null ? paidResponse.encode() : "null");
                   return Future.succeededFuture(FeePaidResponse.builder()
                     .paymentAccepted(paidResponse == null ? FALSE : TRUE)
                     .transactionDate(OffsetDateTime.now(clock))
@@ -478,6 +495,7 @@ public class FeeFinesRepository {
                     .screenMessage(Optional.of(resource.getErrorMessages())
                         .filter(v -> !v.isEmpty())
                         .orElse(null))
+                    .patronAccountInfoList(patronAccountInfoList)
                     .build());
                 });
             });
@@ -531,5 +549,39 @@ public class FeeFinesRepository {
       }
     }
     return accountJson;
+  }
+
+  private void updatePatronAccountInfoList(List<PatronAccountInfo> patronAccountInfoList,
+      JsonObject feePaidResponseJson) {
+    if (feePaidResponseJson == null) {
+      return;
+    }
+    JsonArray feeFineActionsArray = feePaidResponseJson.getJsonArray("feefineactions");
+    if (feeFineActionsArray != null) {
+      for (Object ob : feeFineActionsArray) {
+        JsonObject actionJson = (JsonObject)ob;
+        String accountId = actionJson.getString("accountId");
+        for (PatronAccountInfo patronAccountInfo : patronAccountInfoList) {
+          if (patronAccountInfo.getId().equals(accountId)) {
+            patronAccountInfo.setFeeFineRemaining(actionJson.getDouble("balance"));
+            patronAccountInfo.setFeeFinePaid(actionJson.getDouble("amountAction"));
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  protected static String matchUuid(String identifier) {
+    String uuidMatch = "";
+    if (identifier != null) {
+      Pattern startWithUuid = Pattern.compile("^(\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12})");
+      // UUID of the account to be paid
+      Matcher matcher = startWithUuid.matcher(identifier);
+      if (matcher.find()) {
+        uuidMatch = matcher.group(1);
+      }
+    }
+    return uuidMatch;
   }
 }

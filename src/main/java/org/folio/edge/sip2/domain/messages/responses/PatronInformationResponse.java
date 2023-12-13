@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import org.folio.edge.sip2.domain.messages.PatronAccountInfo;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.Language;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
@@ -129,7 +130,7 @@ public final class PatronInformationResponse {
   private final String borrowerType;
   /** Extended field - the description of the borrower type. */
   private final String borrowerTypeDescription;
-  private final List<PatronAccount> patronAccountList;
+  private final List<PatronAccountInfo> patronAccountList;
 
 
   /**
@@ -338,7 +339,7 @@ public final class PatronInformationResponse {
     return borrowerTypeDescription;
   }
 
-  public List<PatronAccount> getPatronAccountList() {
+  public List<PatronAccountInfo> getPatronAccountList() {
     return patronAccountList;
   }
 
@@ -482,7 +483,7 @@ public final class PatronInformationResponse {
     private List<String> printLine;
     private String borrowerType;
     private String borrowerTypeDescription;
-    private List<PatronAccount> patronAccountList;
+    private List<PatronAccountInfo> patronAccountList;
 
     private PatronInformationResponseBuilder() {
       super();
@@ -675,7 +676,7 @@ public final class PatronInformationResponse {
     }
 
     public PatronInformationResponseBuilder patronAccountList(
-        List<PatronAccount> patronAccountList) {
+        List<PatronAccountInfo> patronAccountList) {
       this.patronAccountList = patronAccountList;
       return this;
     }
@@ -685,88 +686,5 @@ public final class PatronInformationResponse {
     }
   }
 
-  public static class PatronAccount {
 
-    private String id;
-    private String feeFineType;
-    private Double feeFineAmount;
-    private Double feeFineRemaining;
-    private String itemBarcode;
-    private OffsetDateTime feeCreationDate;
-    private String feeFineId;
-    private String feeDescription;
-    private String itemTitle;
-
-    public String getId() {
-      return id;
-    }
-
-    public void setId(String id) {
-      this.id = id;
-    }
-
-    public String getItemTitle() {
-      return itemTitle;
-    }
-
-    public void setItemTitle(String itemTitle) {
-      this.itemTitle = itemTitle;
-    }
-
-    public String getFeeFineId() {
-      return feeFineId;
-    }
-
-    public void setFeeFineId(String feeFineId) {
-      this.feeFineId = feeFineId;
-    }
-
-    public String getFeeFineType() {
-      return feeFineType;
-    }
-
-    public void setFeeFineType(String feeFineType) {
-      this.feeFineType = feeFineType;
-    }
-
-    public Double getFeeFineAmount() {
-      return feeFineAmount;
-    }
-
-    public Double getFeeFineRemaining() {
-      return feeFineRemaining;
-    }
-
-    public void setFeeFineAmount(Double feeFineAmount) {
-      this.feeFineAmount = feeFineAmount;
-    }
-
-    public void setFeeFineRemaining(Double feeFineRemaining) {
-      this.feeFineRemaining = feeFineRemaining;
-    }
-
-    public String getItemBarcode() {
-      return itemBarcode;
-    }
-
-    public void setItemBarcode(String itemBarcode) {
-      this.itemBarcode = itemBarcode;
-    }
-
-    public OffsetDateTime getFeeCreationDate() {
-      return feeCreationDate;
-    }
-
-    public void setFeeCreationDate(OffsetDateTime feeCreationDate) {
-      this.feeCreationDate = feeCreationDate;
-    }
-
-    public String getFeeDescription() {
-      return feeDescription;
-    }
-
-    public void setFeeDescription(String feeDescription) {
-      this.feeDescription = feeDescription;
-    }
-  }
 }

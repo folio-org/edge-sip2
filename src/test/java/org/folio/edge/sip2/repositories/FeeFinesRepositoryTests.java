@@ -24,8 +24,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.FutureTask;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.FeePaid;
 import org.folio.edge.sip2.repositories.domain.ExtendedUser;
@@ -61,6 +63,76 @@ class FeeFinesRepositoryTests {
         () -> new FeeFinesRepository(null, null, null));
 
     assertEquals("Resource provider cannot be null", thrown.getMessage());
+  }
+
+  @Test
+  void testMatchUuid() {
+    final String accountId1 = "221a077d-5b10-4a58-ac85-8ccf2deb4046";
+    final String accountId2 = "221a077d-5b10-4a58-ac85-8ccf2deb4046somethingelse";
+    final String accountId3 = "12345";
+
+    assertEquals(accountId1, FeeFinesRepository.matchUuid(accountId1));
+    assertEquals(accountId1, FeeFinesRepository.matchUuid(accountId2));
+    assertEquals("", FeeFinesRepository.matchUuid(accountId3));
+  }
+
+  @Test
+  void testRequestData() throws Exception {
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    final String userId = "rjablonski";
+    final String barcode = "abc123";
+    final String accountId = "221a077d-5b10-4a58-ac85-8ccf2deb4046";
+    final String amount = "50.00";
+    final String paymentMethod = "creditcard";
+    final Map<String, String> headers = new HashMap<>();
+    headers.put("x-okapi-token", "1234");
+
+    FeeFinesRepository.GetManualBlocksByUserIdRequestData gmbbuidRequestData =
+        new FeeFinesRepository.GetManualBlocksByUserIdRequestData(
+            barcode, headers, sessionData);
+
+    assertEquals(sessionData, gmbbuidRequestData.getSessionData());
+    assertEquals(headers, gmbbuidRequestData.getHeaders());
+
+    FeeFinesRepository.FeePaymentAccountsRequestData fpaRequestData =
+        new FeeFinesRepository.FeePaymentAccountsRequestData(
+            userId, headers, accountId, sessionData);
+
+    assertEquals(sessionData, fpaRequestData.getSessionData());
+    assertEquals(headers, fpaRequestData.getHeaders());
+    assertTrue(fpaRequestData.getPath().contains(Utils.encode("and id")));
+
+    FeeFinesRepository.FeePaymentAccountsRequestData fpaRequestData2 =
+        new FeeFinesRepository.FeePaymentAccountsRequestData(
+            userId, headers, "", sessionData);
+    assertFalse(fpaRequestData2.getPath().contains(Utils.encode("and id")));
+
+    FeeFinesRepository.FeePaymentAccountsRequestData fpaRequestData3 =
+        new FeeFinesRepository.FeePaymentAccountsRequestData(
+            userId, headers, null, sessionData);
+    assertFalse(fpaRequestData3.getPath().contains(Utils.encode("and id")));
+
+    FeeFinesRepository.FeePaymentRequestData fpRequestData =
+        new FeeFinesRepository.FeePaymentRequestData(
+            amount, paymentMethod, false, accountId,
+            new ArrayList<>(), headers, sessionData);
+
+    assertEquals(sessionData, fpRequestData.getSessionData());
+    assertEquals(headers, fpRequestData.getHeaders());
+
+    FeeFinesRepository.GetAccountByUserIdRequestData gabuiRequestData =
+        new FeeFinesRepository.GetAccountByUserIdRequestData(
+            userId, headers, sessionData);
+
+    assertEquals(sessionData, gabuiRequestData.getSessionData());
+    assertEquals(headers, gabuiRequestData.getHeaders());
+
+    FeeFinesRepository.GetFeeFinesByIdsRequestData gffbiRequestData =
+        new FeeFinesRepository.GetFeeFinesByIdsRequestData(
+            new ArrayList<>(), headers, sessionData);
+
+    assertEquals(sessionData, gffbiRequestData.getSessionData());
+    assertEquals(headers, gffbiRequestData.getHeaders());
   }
 
   @Test
@@ -293,7 +365,79 @@ class FeeFinesRepositoryTests {
   }
 
   @Test
-  void canPerformFeePaidCommand(Vertx vertx,
+  void canPerformBulkFeePaidCommand(Vertx vertx,
+      VertxTestContext testContext
+  ) {
+
+    UsersRepository mockUsersRepository
+        = mock(UsersRepository.class, withSettings().verboseLogging());
+    IResourceProvider<IRequestData> mockFolioProvider
+        = mock(IResourceProvider.class, withSettings().verboseLogging());
+
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final String patronIdentifier = "1029384756";
+    final String feeIdentifier = null;
+    final String transactionId = "7e15ba2d-cc85-4226-963d-d6c7d5c03f26";
+    final String accountId = "4bf0339e-8d4c-46ff-92c2-8a8f8735c30b";
+    final String userId = "62628aed-f753-462c-88ca-3def9f870e7a";
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    final String feeAmount = "20.43";
+    final JsonObject queryAccountResponse = new JsonObject()
+        .put("accounts", new JsonArray()
+        .add(new JsonObject()
+          .put("remaining", 20.43)
+          .put("id", accountId)
+        )
+      );
+    final JsonObject accountPayResponse = new JsonObject()
+        .put("accountId", accountId)
+        .put("amount", feeAmount)
+        .put("remainingAmount", "0");
+
+    final FeePaid feePaid = FeePaid.builder()
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .transactionId(transactionId)
+        .feeAmount(feeAmount)
+        .feeIdentifier(feeIdentifier)
+        .build();
+
+    final User user = new User.Builder().id(userId).build();
+
+    final ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(user);
+
+    when(mockUsersRepository.getUserById(anyString(), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
+
+    when(mockFolioProvider.retrieveResource(
+        argThat(arg -> arg.getPath()
+          .contains(Utils.encode("(userId==" + userId + "  and status.name==Open)")))))
+        .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    when(mockFolioProvider.createResource(
+        argThat(arg -> arg.getPath().contains("/accounts-bulk/pay"))))
+        .thenReturn(Future.succeededFuture(new FolioResource(accountPayResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(
+        mockFolioProvider, mockUsersRepository, clock);
+
+    feeFinesRepository.performFeePaidCommand(feePaid, sessionData).onComplete(
+        testContext.succeeding(feePaidResponse -> testContext.verify(() -> {
+          assertNotNull(feePaidResponse);
+          assertTrue(feePaidResponse.getPaymentAccepted());
+          assertNull(feePaidResponse.getScreenMessage());
+          assertEquals(transactionId, feePaidResponse.getTransactionId());
+          testContext.completeNow();
+        }))
+    );
+
+  }
+
+  @Test
+  void canPerformSpecificFeePaidCommand(Vertx vertx,
       VertxTestContext testContext
   ) {
 
@@ -340,11 +484,14 @@ class FeeFinesRepositoryTests {
 
     when(mockFolioProvider.retrieveResource(
         argThat(arg -> arg.getPath()
-          .endsWith(Utils.encode("userId==" + userId + "  and status.name==Open)")))))
+        .endsWith(Utils.encode("userId==" + userId
+            + " and id==" + feeIdentifier
+            + " and status.name==Open)")))))
         .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
-    when(mockFolioProvider.createResource(any()))
+    when(mockFolioProvider.createResource(
+        argThat(arg -> arg.getPath().contains("/accounts/" + feeIdentifier + "/pay"))))
         .thenReturn(Future.succeededFuture(new FolioResource(accountPayResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
@@ -357,6 +504,72 @@ class FeeFinesRepositoryTests {
           assertTrue(feePaidResponse.getPaymentAccepted());
           assertNull(feePaidResponse.getScreenMessage());
           assertEquals(transactionId, feePaidResponse.getTransactionId());
+          testContext.completeNow();
+        }))
+    );
+
+  }
+
+  @Test
+  void canHandleFailedFeePaid(Vertx vertx, VertxTestContext testContext) {
+
+    UsersRepository mockUsersRepository
+        = mock(UsersRepository.class, withSettings().verboseLogging());
+    IResourceProvider<IRequestData> mockFolioProvider
+        = mock(IResourceProvider.class, withSettings().verboseLogging());
+
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final String patronIdentifier = "1029384756";
+    final String feeIdentifier = "c78489bd-4d1b-4e4f-87d3-caa915946aa4";
+    final String transactionId = "7e15ba2d-cc85-4226-963d-d6c7d5c03f26";
+    final String accountId = "4bf0339e-8d4c-46ff-92c2-8a8f8735c30b";
+    final String userId = "62628aed-f753-462c-88ca-3def9f870e7a";
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    final String feeAmount = "20.43";
+    final JsonObject queryAccountResponse = new JsonObject()
+        .put("accounts", new JsonArray()
+            .add(new JsonObject()
+                .put("remaining", 20.43)
+                .put("id", accountId)
+        )
+      );
+    final JsonObject accountPayResponse = new JsonObject();
+
+    final FeePaid feePaid = FeePaid.builder()
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .transactionId(transactionId)
+        .feeAmount(feeAmount)
+        .feeIdentifier(feeIdentifier)
+        .build();
+
+    final User user = new User.Builder().id(userId).build();
+
+    final ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(user);
+
+    when(mockUsersRepository.getUserById(anyString(), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
+
+    when(mockFolioProvider.retrieveResource(
+        argThat(arg -> arg.getPath()
+            .endsWith(Utils.encode("userId==" + userId
+            + " and id==" + feeIdentifier
+            + " and status.name==Open)")))))
+        .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    when(mockFolioProvider.createResource(
+        argThat(arg -> arg.getPath().contains("/accounts/" + feeIdentifier + "/pay"))))
+            .thenReturn(Future.succeededFuture(new FolioResource(null,
+                MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    final FeeFinesRepository feeFinesRepository = new FeeFinesRepository(
+        mockFolioProvider, mockUsersRepository, clock);
+
+    feeFinesRepository.performFeePaidCommand(feePaid, sessionData).onComplete(
+        testContext.succeeding(feePaidResponse -> testContext.verify(() -> {
+          assertFalse(feePaidResponse.getPaymentAccepted());
           testContext.completeNow();
         }))
     );
@@ -432,7 +645,9 @@ class FeeFinesRepositoryTests {
 
     when(mockFolioProvider.retrieveResource(
         argThat(arg -> arg.getPath()
-            .endsWith(Utils.encode("userId==" + userId + "  and status.name==Open)")))))
+          .endsWith(Utils.encode("userId==" + userId
+              + " and id==" + feeIdentifier
+              + " and status.name==Open)")))))
         .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
@@ -448,4 +663,5 @@ class FeeFinesRepositoryTests {
         }))
     );
   }
+
 }
