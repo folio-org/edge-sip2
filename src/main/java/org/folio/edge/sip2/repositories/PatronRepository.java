@@ -19,6 +19,8 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ import org.folio.edge.sip2.domain.messages.responses.PatronStatusResponse;
 import org.folio.edge.sip2.domain.messages.responses.PatronStatusResponse.PatronStatusResponseBuilder;
 import org.folio.edge.sip2.repositories.domain.Address;
 import org.folio.edge.sip2.repositories.domain.ExtendedUser;
+import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.repositories.domain.Personal;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
@@ -115,14 +118,19 @@ public class PatronRepository {
     final String patronIdentifier = patronInformation.getPatronIdentifier();
     final String patronPassword = patronInformation.getPatronPassword();
 
-    return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
-      .onFailure(throwable -> {
-        if (throwable instanceof ClientException) {
-          sessionData.setErrorResponseMessage(invalidPatron(patronInformation, FALSE).result());
-        }
-      })
+    Future<PatronPasswordVerificationRecords> passwordVerificationFuture = passwordVerifier
+        .doPatronPasswordVerification(patronIdentifier, patronPassword, sessionData);
+    log.debug("Verification return value is {}", passwordVerificationFuture);
+    return passwordVerificationFuture
+        .onFailure(throwable -> {
+          if (throwable instanceof ClientException) {
+            sessionData.setErrorResponseMessage(invalidPatron(patronInformation, FALSE).result());
+          }
+        })
         .compose(verification -> {
-          if (FALSE.equals(verification.getPasswordVerified())) {
+          log.debug("Password verification result is {}", verification);
+          if (sessionData.isPatronPasswordVerificationRequired()
+              && FALSE.equals(verification.getPasswordVerified())) {
             return invalidPatron(patronInformation, FALSE);
           }
           final Future<ExtendedUser> extendedUserFuture
@@ -374,12 +382,10 @@ public class PatronRepository {
   private PatronInformationResponseBuilder totalAmount(
       JsonObject jo,
       PatronInformationResponseBuilder builder) {
-    Float total = 0.0f;
+    Float total;
     if (jo != null) {
       final JsonArray arr = jo.getJsonArray(FIELD_ACCOUNTS);
-      for (int i = 0; i < arr.size(); i++) {
-        total += arr.getJsonObject(i).getFloat(FIELD_REMAINING);
-      }
+      total = getTotalRemaining(arr);
       log.debug("Total is {}", total);
       return builder.feeAmount(total.toString());
     }
@@ -391,12 +397,19 @@ public class PatronRepository {
       PatronStatusResponseBuilder builder) {
 
     final JsonArray arr = jo.getJsonArray(FIELD_ACCOUNTS);
-    Float total = 0.0f;
-    for (int i = 0;i < arr.size();i++) {
-      total += arr.getJsonObject(i).getFloat(FIELD_REMAINING);
-    }
+    Float total = getTotalRemaining(arr);
     log.debug("Total is {}", total);
     return builder.feeAmount(total.toString());
+  }
+
+  protected static Float getTotalRemaining(JsonArray accounts) {
+    BigDecimal total = BigDecimal.ZERO;
+    for (int i = 0; i < accounts.size(); i++) {
+      BigDecimal bdValue = BigDecimal.valueOf(accounts.getJsonObject(i)
+          .getFloat(FIELD_REMAINING));
+      total = total.add(bdValue);
+    }
+    return total.round(MathContext.DECIMAL32).floatValue();
   }
 
 
