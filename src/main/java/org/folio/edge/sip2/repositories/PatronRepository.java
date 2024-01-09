@@ -662,7 +662,7 @@ public class PatronRepository {
     return accounts.stream()
       .map(o -> (JsonObject) o)
       .filter(jo -> "Open".equals(getChildString(jo, FIELD_STATUS, "name")))
-      .filter(jo -> jo.getDouble("remaining") > 0)
+      .filter(jo -> jo.getDouble("remaining") > 0.0)
       .map(jo -> jo.getString(FIELD_BARCODE))
       .filter(Objects::nonNull)
       .collect(Collectors.toList());
@@ -682,10 +682,17 @@ public class PatronRepository {
     for (Object ob : accountArray) {
       JsonObject jo = (JsonObject)ob;
       PatronAccountInfo patronAccount = new PatronAccountInfo();
-      patronAccount.setFeeFineAmount(jo.getNumber("amount") != null
-          ? jo.getNumber("amount").doubleValue() : null);
-      patronAccount.setFeeFineRemaining(jo.getNumber(FIELD_REMAINING) != null
-          ? jo.getNumber(FIELD_REMAINING).doubleValue() : null);
+      String status = jo.getJsonObject("status") != null
+          ? jo.getJsonObject("status").getString("name") : null;
+      Double feeFineRemaining = jo.getNumber(FIELD_REMAINING) != null
+          ? jo.getNumber(FIELD_REMAINING).doubleValue() : null;
+      if (!"Open".equalsIgnoreCase(status) || feeFineRemaining <= 0) {
+        continue;
+      }
+      Double feeFineAmount = jo.getNumber("amount") != null
+          ? jo.getNumber("amount").doubleValue() : null;
+      patronAccount.setFeeFineAmount(feeFineAmount);
+      patronAccount.setFeeFineRemaining(feeFineRemaining);
       patronAccount.setItemBarcode(jo.getString(FIELD_BARCODE));
       patronAccount.setId(jo.getString("id"));
       patronAccount.setFeeFineId(jo.getString("feeFineId"));
