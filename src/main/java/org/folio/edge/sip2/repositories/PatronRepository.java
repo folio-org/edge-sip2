@@ -662,6 +662,7 @@ public class PatronRepository {
     return accounts.stream()
       .map(o -> (JsonObject) o)
       .filter(jo -> "Open".equals(getChildString(jo, FIELD_STATUS, "name")))
+      .filter(jo -> jo.getDouble("remaining") > 0)
       .map(jo -> jo.getString(FIELD_BARCODE))
       .filter(Objects::nonNull)
       .collect(Collectors.toList());
