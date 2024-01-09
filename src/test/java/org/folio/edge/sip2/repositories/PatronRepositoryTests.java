@@ -1175,7 +1175,7 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(recallsResponse),
         Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
         Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("0989"), any()))
+    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
         .extendedUser(extendedUser).build()));
 
