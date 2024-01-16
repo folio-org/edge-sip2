@@ -699,7 +699,7 @@ public class PatronRepository {
           ? jo.getJsonObject("status").getString("name") : null;
       Double feeFineRemaining = jo.getNumber(FIELD_REMAINING) != null
           ? jo.getNumber(FIELD_REMAINING).doubleValue() : null;
-      if (!"Open".equalsIgnoreCase(status) || feeFineRemaining <= 0) {
+      if (!"Open".equalsIgnoreCase(status) || (feeFineRemaining != null && feeFineRemaining <= 0)) {
         continue;
       }
       Double feeFineAmount = jo.getNumber("amount") != null
