@@ -1,0 +1,114 @@
+{
+  "accounts": [
+    {
+      "amount": 1.0,
+      "remaining": 1.0,
+      "dateCreated": "2022-09-19T00:00:01Z",
+      "dateUpdated": "2022-09-19T00:00:01Z",
+      "status": {
+        "name": "Open"
+      },
+      "paymentStatus": {
+        "name": "Outstanding"
+      },
+      "feeFineType": "Overdue fine",
+      "feeFineOwner": "Test",
+      "callNumber": "",
+      "metadata": {
+        "createdDate": "2022-09-19T11:26:22.857+00:00",
+        "createdByUserId": "90b20de8-71b8-5eb9-9c3e-92fbedac3bed",
+        "updatedDate": "2022-09-19T11:26:22.857+00:00",
+        "updatedByUserId": "90b20de8-71b8-5eb9-9c3e-92fbedac3bed"
+      },
+      "userId": "2205005b-ca51-4a04-87fd-938eefa8f6de",
+      "feeFineId": "78b549ec-607c-4d67-805a-828d5e0968da",
+      "ownerId": "8bc51678-06c4-40be-8db5-b40e30fa4daa",
+      "id": "e62cac18-e677-41c3-a6fb-b7cfe8ad9a46",
+      "contributors": []
+    },
+    {
+      "amount": 11.0,
+      "remaining": 11.0,
+      "dateCreated": "2022-09-19T00:00:01Z",
+      "dateUpdated": "2022-09-19T00:00:01Z",
+      "status": {
+        "name": "Closed"
+      },
+      "paymentStatus": {
+        "name": "Outstanding"
+      },
+      "feeFineType": "Test",
+      "feeFineOwner": "Test",
+      "callNumber": "",
+      "metadata": {
+        "createdDate": "2022-09-19T11:26:22.857+00:00",
+        "createdByUserId": "90b20de8-71b8-5eb9-9c3e-92fbedac3bed",
+        "updatedDate": "2022-09-19T11:26:22.857+00:00",
+        "updatedByUserId": "90b20de8-71b8-5eb9-9c3e-92fbedac3bed"
+      },
+      "userId": "2205005b-ca51-4a04-87fd-938eefa8f6de",
+      "feeFineId": "78b549ec-607c-4d67-805a-828d5e0968da",
+      "ownerId": "8bc51678-06c4-40be-8db5-b40e30fa4daa",
+      "id": "f62cac18-e677-41c3-a6fb-b7cfe8ad9a47",
+      "contributors": []
+    },
+    {
+      "amount": 12.0,
+      "remaining": 0.0,
+      "status": {
+        "name": "Open"
+      },
+      "paymentStatus": {
+        "name": "Outstanding"
+      },
+      "feeFineType": "Replacement processing fee",
+      "feeFineOwner": "Test",
+      "callNumber": "acq-223",
+      "barcode": "22334455",
+      "metadata": {
+        "createdDate": "2022-09-19T11:26:22.857+00:00",
+        "createdByUserId": "90b20de8-71b8-5eb9-9c3e-92fbedac3bed",
+        "updatedDate": "2022-09-19T11:26:22.857+00:00",
+        "updatedByUserId": "90b20de8-71b8-5eb9-9c3e-92fbedac3bed"
+      },
+      "userId": "2205005b-ca51-4a04-87fd-938eefa8f6de",
+      "feeFineId": "d640b5c7-5735-4d81-a286-969e64ba4e76",
+      "ownerId": "8bc51678-06c4-40be-8db5-b40e30fa4daa",
+      "id": "406d20c7-d5a9-4642-866f-7f9285738f8a",
+      "contributors": []
+    },
+    {
+      "amount": 100.0,
+      "remaining": 65.66,
+      "dateCreated": "2022-09-19T00:00:01Z",
+      "dateUpdated": "2022-09-19T00:00:01Z",
+      "status": {
+        "name": "Open"
+      },
+      "paymentStatus": {
+        "name": "Outstanding"
+      },
+      "feeFineType": "Overdue fine",
+      "feeFineOwner": "Test",
+      "callNumber": "",
+      "metadata": {
+        "createdDate": "2022-09-19T11:26:22.857+00:00",
+        "createdByUserId": "90b20de8-71b8-5eb9-9c3e-92fbedac3bed",
+        "updatedDate": "2022-09-19T11:26:22.857+00:00",
+        "updatedByUserId": "90b20de8-71b8-5eb9-9c3e-92fbedac3bed"
+      },
+      "userId": "2205005b-ca51-4a04-87fd-938eefa8f6de",
+      "feeFineId": "78b549ec-607c-4d67-805a-828d5e0968da",
+      "ownerId": "8bc51678-06c4-40be-8db5-b40e30fa4daa",
+      "id": "88a6def8-c024-46f2-9bb1-d7051a49bbc2",
+      "contributors": []
+    }
+  ],
+  "totalRecords": 4,
+  "resultInfo": {
+    "totalRecords": 4,
+    "facets": [],
+    "diagnostics": []
+  }
+}
+
