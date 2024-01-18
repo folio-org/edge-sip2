@@ -48,7 +48,9 @@
         "accounts.item.get",
         "users.collection.get",
         "users.item.get",
-        "automated-patron-blocks.collection.get"
+        "automated-patron-blocks.collection.get",
+        "inventory-storage.holdings.item.get",
+        "inventory.instances.item.get"
       ]
     }
   ],

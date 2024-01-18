@@ -293,6 +293,8 @@ All permission associated with edge-sip2
     usergroups.collection.get
     users-bl.item.get
     usergroups.item.get
+    inventory-storage.holdings.item.get
+    inventory.instances.item.get
 ```
 
 #### Security concerns for developers
