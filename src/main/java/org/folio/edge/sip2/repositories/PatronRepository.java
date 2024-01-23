@@ -128,9 +128,12 @@ public class PatronRepository {
           }
         })
         .compose(verification -> {
-          log.debug("Password verification result is {}", verification);
+          log.debug("Password verification result is {}", verification.getPasswordVerified());
+          log.debug("isPatronPasswordVerificationRequest == {}",
+              sessionData.isPatronPasswordVerificationRequired());
           if (sessionData.isPatronPasswordVerificationRequired()
               && FALSE.equals(verification.getPasswordVerified())) {
+            log.debug("Failed due to requiring valid patron password");
             return invalidPatron(patronInformation, FALSE);
           }
           final Future<ExtendedUser> extendedUserFuture
@@ -138,6 +141,7 @@ public class PatronRepository {
           return extendedUserFuture.compose(extendedUser -> {
             User user = extendedUser != null ? extendedUser.getUser() : null;
             if (user == null || FALSE.equals(user.getActive())) {
+              log.debug("User is null or inactive");
               return invalidPatron(patronInformation, null);
             } else {
               final String userId = user.getId();
@@ -147,6 +151,7 @@ public class PatronRepository {
                     patronIdentifier);
                 return invalidPatron(patronInformation, verification.getPasswordVerified());
               }
+              log.debug("Patron information valid");
 
               return validPatron(extendedUser, patronInformation, sessionData,
                   verification.getPasswordVerified());
@@ -244,7 +249,8 @@ public class PatronRepository {
   }
 
   private Future<PatronInformationResponse> validPatron(ExtendedUser extendedUser,
-      PatronInformation patronInformation, SessionData sessionData, Boolean validPassword) {
+      PatronInformation patronInformation, SessionData sessionData, final Boolean validPassword) {
+    log.debug("validPatron called for extended user {}", extendedUser);
     final String userId = extendedUser.getUser().getId();
     final Personal personal = extendedUser.getUser().getPersonal();
     if (personal != null) {

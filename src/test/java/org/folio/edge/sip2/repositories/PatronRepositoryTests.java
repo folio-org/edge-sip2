@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.when;
 
@@ -353,6 +354,109 @@ public class PatronRepositoryTests {
               patronInformationResponse.getHomePhoneNumber());
           assertNull(patronInformationResponse.getScreenMessage());
           assertNull(patronInformationResponse.getPrintLine());
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  void canPatronInformationWithErrorPasswordWhenNotRequired(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock LoginRepository mockLoginRepository) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final String patronIdentifier = "1234567890";
+    final PatronInformation patronInformation = PatronInformation.builder()
+        .language(ENGLISH)
+        .transactionDate(OffsetDateTime.now())
+        .summary(RECALL_ITEMS)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .terminalPassword("1234")
+        .patronPassword("0989")
+        .build();
+
+    final String userResponseJson = getJsonFromFile("json/user_response.json");
+    final User userResponse = Json.decodeValue(userResponseJson, User.class);
+    final String manualBlocksResponseJson = getJsonFromFile("json/no_manual_blocks_response.json");
+    final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
+    final String overdueResponseJson = getJsonFromFile("json/overdue_response.json");
+    final JsonObject overdueResponse = new JsonObject(overdueResponseJson);
+    final String holdsResponseJson = getJsonFromFile("json/holds_requests_response.json");
+    final JsonObject holdsResponse = new JsonObject(holdsResponseJson);
+    final String openLoansResponseJson = getJsonFromFile("json/open_loans_response.json");
+    final JsonObject openLoansResponse = new JsonObject(openLoansResponseJson);
+    final String recallsResponseJson = getJsonFromFile("json/recall_requests_response.json");
+    final JsonObject recallsResponse = new JsonObject(recallsResponseJson);
+
+    final String accountResponseJson = getJsonFromFile("json/account_request_response.json");
+    final JsonObject accountResponse = new JsonObject(accountResponseJson);
+
+    final ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(userResponse);
+    extendedUser.setPatronGroup("patrons","The Library Patrons", "12335");
+
+
+    when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(manualBlocksResponse));
+
+    when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(accountResponse));
+
+    when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(overdueResponse));
+
+    when(mockCirculationRepository.getRequestsByUserId(
+        any(), eq("Hold"), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(holdsResponse));
+
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(openLoansResponse));
+
+    doReturn(Future.succeededFuture(extendedUser))
+        .when(mockUsersRepository).getUserById(anyString(), any());
+
+    when(mockCirculationRepository.getRequestsByItemId(
+        any(), eq("Recall"), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(recallsResponse),
+        Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
+        Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
+
+    doReturn(Future.failedFuture(new Exception("blah")))
+        .when(mockLoginRepository)
+            .patronLogin(eq(extendedUser.getUser().getUsername()), anyString(), any());
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    final PasswordVerifier passwordVerifier
+        = new PasswordVerifier(mockUsersRepository, mockLoginRepository);
+
+    final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+        mockCirculationRepository, mockFeeFinesRepository, passwordVerifier, clock);
+    patronRepository.performPatronInformationCommand(patronInformation, sessionData).onComplete(
+        testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
+          assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
+          assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
+          assertEquals("Darius Auer", patronInformationResponse.getPersonalName());
+          assertTrue(patronInformationResponse.getValidPatron());
+          assertFalse(patronInformationResponse.getValidPatronPassword());
+          assertEquals(CurrencyType.USD, patronInformationResponse.getCurrencyType());
+          assertEquals("1.0", patronInformationResponse.getFeeAmount());
+          assertNull(patronInformationResponse.getFeeLimit());
+          assertNotNull(patronInformationResponse.getHoldItems());
+          assertTrue(patronInformationResponse.getHoldItems().isEmpty());
+          assertNotNull(patronInformationResponse.getOverdueItems());
+          assertTrue(patronInformationResponse.getOverdueItems().isEmpty());
+          assertNotNull(patronInformationResponse.getChargedItems());
+          assertTrue(patronInformationResponse.getChargedItems().isEmpty());
+          assertNotNull(patronInformationResponse.getFineItems());
+          assertTrue(patronInformationResponse.getFineItems().isEmpty());
+          assertNotNull(patronInformationResponse.getRecallItems());
+          assertEquals(Arrays.asList("6214635593916"), patronInformationResponse.getRecallItems());
+          assertNotNull(patronInformationResponse.getUnavailableHoldItems());
+          assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
 
           testContext.completeNow();
         })));
