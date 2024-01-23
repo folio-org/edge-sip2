@@ -107,7 +107,13 @@ public class PasswordVerifier {
                   .passwordVerified(FALSE)
                   .build());
             }
-          });
+          }, throwable -> { //If there was an error, return false for verification
+              return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+                  .extendedUser(extendedUser)
+                  .errorMessages(Collections.singletonList("Unable to login"))
+                  .passwordVerified(FALSE)
+                  .build());
+            });
       });
 
     return loginFuture;
