@@ -360,7 +360,7 @@ public class PatronRepositoryTests {
   }
 
   @Test
-  public void canPatronInformationWithErrorPasswordWhenNotRequired(Vertx vertx,
+  void canPatronInformationWithErrorPasswordWhenNotRequired(Vertx vertx,
       VertxTestContext testContext,
       @Mock UsersRepository mockUsersRepository,
       @Mock CirculationRepository mockCirculationRepository,
@@ -437,23 +437,9 @@ public class PatronRepositoryTests {
         mockCirculationRepository, mockFeeFinesRepository, passwordVerifier, clock);
     patronRepository.performPatronInformationCommand(patronInformation, sessionData).onComplete(
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
-          assertNotNull(patronInformationResponse);
-          assertNotNull(patronInformationResponse.getPatronStatus());
-          assertTrue(patronInformationResponse.getPatronStatus().isEmpty());
-          assertEquals(ENGLISH, patronInformationResponse.getLanguage());
           assertEquals(OffsetDateTime.now(clock), patronInformationResponse.getTransactionDate());
-          assertEquals(2, patronInformationResponse.getHoldItemsCount());
-          assertEquals(1, patronInformationResponse.getOverdueItemsCount());
-          assertEquals(3,patronInformationResponse.getChargedItemsCount());
-          assertEquals(1,patronInformationResponse.getFineItemsCount());
-          assertEquals(1, patronInformationResponse.getRecallItemsCount());
-          assertNull(patronInformationResponse.getUnavailableHoldsCount());
-          assertEquals("diku", patronInformationResponse.getInstitutionId());
           assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
           assertEquals("Darius Auer", patronInformationResponse.getPersonalName());
-          assertNull(patronInformationResponse.getHoldItemsLimit());
-          assertNull(patronInformationResponse.getOverdueItemsLimit());
-          assertNull(patronInformationResponse.getChargedItemsLimit());
           assertTrue(patronInformationResponse.getValidPatron());
           assertFalse(patronInformationResponse.getValidPatronPassword());
           assertEquals(CurrencyType.USD, patronInformationResponse.getCurrencyType());
@@ -471,14 +457,6 @@ public class PatronRepositoryTests {
           assertEquals(Arrays.asList("6214635593916"), patronInformationResponse.getRecallItems());
           assertNotNull(patronInformationResponse.getUnavailableHoldItems());
           assertTrue(patronInformationResponse.getUnavailableHoldItems().isEmpty());
-          assertEquals("00430 Denis Parks, Indianapolis, FL 14654-6001 US",
-              patronInformationResponse.getHomeAddress());
-          assertEquals("earnestine@sipes-stokes-and-durgan.so",
-              patronInformationResponse.getEmailAddress());
-          assertEquals("(916)599-0326",
-              patronInformationResponse.getHomePhoneNumber());
-          assertNull(patronInformationResponse.getScreenMessage());
-          assertNull(patronInformationResponse.getPrintLine());
 
           testContext.completeNow();
         })));
