@@ -228,11 +228,13 @@ public class FeeFinesRepository {
     public String getPath() {
       if (accountIdentifier == null || accountIdentifier.isEmpty()) {
         return ACCOUNTS_QUERY_URL
-          + Utils.encode("(userId==" + this.userId + "  and status.name==Open)");
+          + Utils.encode("(userId==" + this.userId + "  and status.name==Open)")
+          + "&limit=1000";
       } else {
         return ACCOUNTS_QUERY_URL
           + Utils.encode("(userId==" + this.userId + " and id==" + this.accountIdentifier
-          + " and status.name==Open)");
+          + " and status.name==Open)")
+          + "&limit=1000";
       }
     }
 

@@ -484,7 +484,7 @@ class FeeFinesRepositoryTests {
 
     when(mockFolioProvider.retrieveResource(
         argThat(arg -> arg.getPath()
-        .endsWith(Utils.encode("userId==" + userId
+        .contains(Utils.encode("userId==" + userId
             + " and id==" + feeIdentifier
             + " and status.name==Open)")))))
         .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
@@ -553,7 +553,7 @@ class FeeFinesRepositoryTests {
 
     when(mockFolioProvider.retrieveResource(
         argThat(arg -> arg.getPath()
-            .endsWith(Utils.encode("userId==" + userId
+            .contains(Utils.encode("userId==" + userId
             + " and id==" + feeIdentifier
             + " and status.name==Open)")))))
         .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
@@ -645,7 +645,7 @@ class FeeFinesRepositoryTests {
 
     when(mockFolioProvider.retrieveResource(
         argThat(arg -> arg.getPath()
-          .endsWith(Utils.encode("userId==" + userId
+          .contains(Utils.encode("userId==" + userId
               + " and id==" + feeIdentifier
               + " and status.name==Open)")))))
         .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,

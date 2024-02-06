@@ -123,8 +123,18 @@ public class SessionData {
     this.patronPasswordVerificationRequired = patronPasswordVerificationRequired;
   }
 
+  /**
+   * Initialize a new session.
+   *
+   * @param tenant The current tenant
+   * @param fieldDelimiter The delimeter used
+   * @param errorDetectionEnabled Whether or not error detection is enabled
+   * @param charset The preferred charset
+   * @return The new session object
+   */
   public static SessionData createSession(String tenant, char fieldDelimiter,
                                           boolean errorDetectionEnabled, String charset) {
+    log.debug("New session created");
     return new SessionData(tenant, fieldDelimiter, errorDetectionEnabled,
       charset);
   }
