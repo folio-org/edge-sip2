@@ -41,6 +41,7 @@ public class FeeFinesRepository {
   private static final String MIMETYPE_JSON = "application/json";
   private static final String ACCOUNTS_KEY = "accounts";
   private static final String ACCOUNTS_QUERY_URL = "/accounts?query=";
+  private static final String LIMIT_PARAM = "&limit=1000";
   private final IResourceProvider<IRequestData> resourceProvider;
   private final UsersRepository usersRepository;
   private Clock clock;
@@ -228,11 +229,13 @@ public class FeeFinesRepository {
     public String getPath() {
       if (accountIdentifier == null || accountIdentifier.isEmpty()) {
         return ACCOUNTS_QUERY_URL
-          + Utils.encode("(userId==" + this.userId + "  and status.name==Open)");
+          + Utils.encode("(userId==" + this.userId + "  and status.name==Open)")
+          + LIMIT_PARAM;
       } else {
         return ACCOUNTS_QUERY_URL
           + Utils.encode("(userId==" + this.userId + " and id==" + this.accountIdentifier
-          + " and status.name==Open)");
+          + " and status.name==Open)")
+          + LIMIT_PARAM;
       }
     }
 
@@ -331,7 +334,7 @@ public class FeeFinesRepository {
       final StringBuilder qSb = new StringBuilder()
           .append(ACCOUNTS_QUERY_URL)
           .append("(userId==")
-          .append(userId).append(")").append("&limit=1000");
+          .append(userId).append(")").append(LIMIT_PARAM);
       return qSb.toString();
     }
 
