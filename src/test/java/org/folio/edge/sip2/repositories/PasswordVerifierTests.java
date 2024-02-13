@@ -44,7 +44,7 @@ class PasswordVerifierTests {
     extendedUser.setUser(userResponse);
     when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(extendedUser));
-    when(mockLoginRepository.patronLogin(eq("leslie"), eq("0989"), any()))
+    when(mockLoginRepository.patronLoginNoCache(eq("leslie"), eq("0989"), any()))
         .thenReturn(Future.succeededFuture("testToken"));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
@@ -105,7 +105,7 @@ class PasswordVerifierTests {
     extendedUser.setUser(userResponse);
     when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
         .thenReturn(Future.succeededFuture(extendedUser));
-    when(mockLoginRepository.patronLogin(eq("leslie"), eq("0989"), any()))
+    when(mockLoginRepository.patronLoginNoCache(eq("leslie"), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(null));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();

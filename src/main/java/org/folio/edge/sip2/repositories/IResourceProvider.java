@@ -19,5 +19,6 @@ public interface IResourceProvider<T> {
 
   Future<String> loginWithSupplier(String username,
                                    Supplier<Future<String>> getPasswordSupplier,
-                                   SessionData sessionData);
+                                   SessionData sessionData,
+                                   boolean cache);
 }

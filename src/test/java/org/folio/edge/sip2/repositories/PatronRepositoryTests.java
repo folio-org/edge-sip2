@@ -426,7 +426,7 @@ public class PatronRepositoryTests {
 
     doReturn(Future.failedFuture(new Exception("blah")))
         .when(mockLoginRepository)
-            .patronLogin(eq(extendedUser.getUser().getUsername()), anyString(), any());
+            .patronLoginNoCache(eq(extendedUser.getUser().getUsername()), anyString(), any());
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
