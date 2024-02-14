@@ -139,4 +139,42 @@ public class LoginRepositoryTests {
           testContext.completeNow();
         })));
   }
+
+  @Test
+  public void canPatronLoginNoCache(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final String username = "test";
+    final String password = "xyzzy";
+
+    when(mockFolioProvider.loginWithSupplier(any(), any(), any(), anyBoolean()))
+        .thenReturn(Future.succeededFuture("tok"));
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
+    loginRepository.patronLoginNoCache(username, password, sessionData).onComplete(
+        testContext.succeeding(loginResponse -> testContext.verify(() -> {
+          assertNotNull(loginResponse);
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void cannotPatronLoginNoCache(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final String username = "test";
+    final String password = "xyzzy";
+
+    when(mockFolioProvider.loginWithSupplier(any(), any(), any(), anyBoolean()))
+        .thenReturn(Future.succeededFuture(null));
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
+    loginRepository.patronLoginNoCache(username, password, sessionData).onComplete(
+        testContext.succeeding(loginResponse -> testContext.verify(() -> {
+          assertNull(loginResponse);
+          testContext.completeNow();
+        })));
+  }
 }
