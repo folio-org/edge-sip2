@@ -4,12 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,6 +40,13 @@ public class FolioResourceProviderTests {
               .putHeader("content-type", "application/json")
               .putHeader("x-okapi-token", "token-value")
               .end("{\"test\":\"value\"}");
+        } else if (req.path().equals("/authn/login-with-expiry")) {
+          req.response()
+              .setStatusCode(201)
+              .putHeader("content-type", "application/json")
+              .putHeader("x-okapi-token", "token-value")
+              .addCookie(Cookie.cookie("folioAccessToken", "FAKETOKEN"))
+              .end("{}");
         } else {
           req.response()
               .setStatusCode(500)
@@ -133,6 +143,36 @@ public class FolioResourceProviderTests {
         })));
   }
 
+  @Test
+  public void canLogin(
+      Vertx vertx,
+      VertxTestContext testContext) {
+    Future<String> passwordFuture = Future.succeededFuture("password");
+    SessionData sessionData = TestUtils.getMockedSessionData();
+    final FolioResourceProvider folioResourceProvider =
+        new FolioResourceProvider("http://localhost:" + port, WebClient.create(vertx));
+    folioResourceProvider.loginWithSupplier("dummy", () -> passwordFuture, sessionData, false)
+        .onComplete(
+        testContext.succeeding(response -> testContext.verify(() -> {
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void canLoginWithCache(
+      Vertx vertx,
+      VertxTestContext testContext) {
+    Future<String> passwordFuture = Future.succeededFuture("password");
+    SessionData sessionData = TestUtils.getMockedSessionData();
+    final FolioResourceProvider folioResourceProvider =
+        new FolioResourceProvider("http://localhost:" + port, WebClient.create(vertx));
+    folioResourceProvider.loginWithSupplier("dummy", () -> passwordFuture, sessionData, true)
+        .onComplete(
+        testContext.succeeding(response -> testContext.verify(() -> {
+          testContext.completeNow();
+        })));
+  }
+  
   private interface FolioRequestData extends IRequestData {
     @Override
     default SessionData getSessionData() {
