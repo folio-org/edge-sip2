@@ -67,7 +67,8 @@ public class DefaultResourceProvider implements IResourceProvider<IRequestData> 
   @Override
   public Future<String> loginWithSupplier(String username,
                                           Supplier<Future<String>> getPasswordSupplier,
-                                          SessionData sessionData) {
+                                          SessionData sessionData,
+                                          boolean cache) {
     throw new UnsupportedOperationException();
   }
 }

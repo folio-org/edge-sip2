@@ -89,8 +89,7 @@ public class PasswordVerifier {
               .passwordVerified(FALSE)
               .build());
         }
-        log.debug("Got valid user");
-        return loginRepository.patronLogin(extendedUser.getUser().getUsername(),
+        return loginRepository.patronLoginNoCache(extendedUser.getUser().getUsername(),
             patronPassword, sessionData)
           .compose(token -> {
             if (token != null) {

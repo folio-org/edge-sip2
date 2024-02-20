@@ -44,7 +44,7 @@ public class LoginRepository {
 
     Future<String> authToken = null;
     authToken = resourceProvider.loginWithSupplier(user,
-        () -> Future.succeededFuture(password), sessionData);
+        () -> Future.succeededFuture(password), sessionData, true);
 
     if (authToken == null) {
       // Can't continue without an auth token
@@ -77,6 +77,12 @@ public class LoginRepository {
   public Future<String> patronLogin(String patronUserName, String patronPassword,
       SessionData sessionData) {
     return resourceProvider.loginWithSupplier(patronUserName,
-      () -> Future.succeededFuture(patronPassword), sessionData);
+      () -> Future.succeededFuture(patronPassword), sessionData, true);
+  }
+
+  public Future<String> patronLoginNoCache(String patronUserName, String patronPassword,
+      SessionData sessionData) {
+    return resourceProvider.loginWithSupplier(patronUserName,
+      () -> Future.succeededFuture(patronPassword), sessionData, false);
   }
 }
