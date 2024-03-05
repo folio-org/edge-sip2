@@ -15,6 +15,7 @@ import org.folio.edge.sip2.domain.messages.requests.Login;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
+import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.LoginRepository;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
@@ -23,13 +24,17 @@ import org.folio.okapi.common.refreshtoken.client.ClientException;
 public class LoginHandler implements ISip2RequestHandler {
   private static final Logger log = LogManager.getLogger();
 
+  private final ConfigurationRepository configurationRepository;
   private final LoginRepository loginRepository;
   private final Template commandTemplate;
 
   @Inject
-  LoginHandler(LoginRepository loginRepository, @Named("loginResponse") Template commandTemplate) {
+  LoginHandler(LoginRepository loginRepository, ConfigurationRepository configurationRepository,
+      @Named("loginResponse") Template commandTemplate) {
     this.loginRepository = Objects.requireNonNull(loginRepository,
         "LoginRepository cannot be null");
+    this.configurationRepository = Objects.requireNonNull(configurationRepository,
+        "ConfigurationRepository cannot be null");
     this.commandTemplate = Objects.requireNonNull(commandTemplate, "Template cannot be null");
   }
 
@@ -39,8 +44,17 @@ public class LoginHandler implements ISip2RequestHandler {
     final Login login = (Login) message;
 
     log.info("LoginHandler :: execute Login: {}", login::getLoginLogInfo);
-
-    Future<LoginResponse> responseFuture = loginRepository.login(login, sessionData);
+    Future<Boolean> configFuture;
+    if (sessionData.isConfigurationLoaded()) {
+      configFuture = Future.succeededFuture(Boolean.TRUE);
+    } else {
+      configFuture = configurationRepository.getACSStatus(sessionData).map(result -> {
+        return Boolean.TRUE;
+      }).otherwise(Boolean.FALSE);
+    }
+    Future<LoginResponse> responseFuture = configFuture.compose( result -> {
+      return loginRepository.login(login, sessionData);
+    });
 
     responseFuture.onFailure(e -> {
       if (e instanceof ClientException) {
@@ -50,7 +64,6 @@ public class LoginHandler implements ISip2RequestHandler {
             LoginResponse.builder().ok(FALSE).build()));
       }
     });
-
 
     return responseFuture.compose(loginResponse ->
       Future.succeededFuture(
