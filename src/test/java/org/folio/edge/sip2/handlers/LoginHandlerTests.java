@@ -18,6 +18,7 @@ import java.util.Map;
 import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
 import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
 import org.folio.edge.sip2.domain.messages.requests.Login;
+import org.folio.edge.sip2.domain.messages.responses.ACSStatus;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
@@ -66,6 +67,43 @@ public class LoginHandlerTests {
           testContext.completeNow();
         })));
   }
+
+  @Test
+  public void canExecuteASampleLoginUsingHandlerWithFailedConfig(
+      @Mock LoginRepository mockLoginRepository,
+      @Mock ConfigurationRepository mockConfigurationRepository,
+      Vertx vertx,
+      VertxTestContext testContext) {
+    final Login login = Login.builder()
+        .uidAlgorithm(UIDAlgorithm.NO_ENCRYPTION)
+        .pwdAlgorithm(PWDAlgorithm.NO_ENCRYPTION)
+        .loginUserId("test")
+        .loginPassword("xyzzy")
+        .locationCode("library")
+        .build();
+
+    when(mockLoginRepository.login(any(), any()))
+        .thenReturn(Future.succeededFuture(LoginResponse.builder().ok(TRUE).build()));
+
+    when(mockConfigurationRepository.getACSStatus(any()))
+        .thenReturn(Future.failedFuture("Unable to load config"));
+
+    final LoginHandler handler = new LoginHandler(mockLoginRepository,
+        mockConfigurationRepository,
+        FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    handler.execute(login, sessionData).onComplete(
+        testContext.succeeding(sipMessage -> testContext.verify(() -> {
+          final String expectedString = "941";
+
+          assertEquals(expectedString, sipMessage);
+
+          testContext.completeNow();
+        })));
+  }
+
 
   @Test
   public void canExecuteASampleFailedLoginUsingHandler(
