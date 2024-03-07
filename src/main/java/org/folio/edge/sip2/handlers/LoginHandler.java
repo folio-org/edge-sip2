@@ -52,7 +52,7 @@ public class LoginHandler implements ISip2RequestHandler {
         return Boolean.TRUE;
       }).otherwise(Boolean.FALSE);
     }
-    Future<LoginResponse> responseFuture = configFuture.compose( result -> {
+    Future<LoginResponse> responseFuture = configFuture.compose(result -> {
       return loginRepository.login(login, sessionData);
     });
 

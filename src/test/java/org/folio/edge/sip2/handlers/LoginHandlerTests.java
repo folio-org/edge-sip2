@@ -163,7 +163,8 @@ public class LoginHandlerTests {
   @Test
   public void cannotCreateHandlerDueToMissingTemplate() {
     final NullPointerException thrown = assertThrows(NullPointerException.class,
-        () -> new LoginHandler(mock(LoginRepository.class), mock(ConfigurationRepository.class), null));
+        () -> new LoginHandler(mock(LoginRepository.class), mock(ConfigurationRepository.class),
+            null));
 
     assertEquals("Template cannot be null", thrown.getMessage());
   }
