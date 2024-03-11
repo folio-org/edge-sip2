@@ -89,7 +89,7 @@ public class PasswordVerifier {
               .passwordVerified(FALSE)
               .build());
         }
-        log.debug("Got extendedUser {}", extendedUser.toString());
+        log.debug("Got extendedUser {}", extendedUser);
         log.debug("Calling patronLoginNoCache with username {}",
             extendedUser.getUser().getUsername());
         return loginRepository.patronLoginNoCache(extendedUser.getUser().getUsername(),

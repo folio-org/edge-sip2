@@ -155,10 +155,6 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
       request.putHeader(entry.getKey(), entry.getValue());
     }
 
-    //TODO: delete this
-    log.debug(
-        "Getting token to set headers with using username {} and password {} from sessiondata",
-        sessionData.getUsername(), sessionData.getPassword());
     Future<String> token = loginWithSupplier(sessionData.getUsername(),
         () -> Future.succeededFuture(sessionData.getPassword()), sessionData, true);
     token.onFailure(throwable ->
