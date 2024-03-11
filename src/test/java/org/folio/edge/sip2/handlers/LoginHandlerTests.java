@@ -51,6 +51,9 @@ public class LoginHandlerTests {
     when(mockLoginRepository.login(any(), any()))
         .thenReturn(Future.succeededFuture(LoginResponse.builder().ok(TRUE).build()));
 
+    when(mockConfigurationRepository.getACSStatus(any()))
+        .thenReturn(Future.succeededFuture(ACSStatus.builder().checkinOk(true).build()));
+
     final LoginHandler handler = new LoginHandler(mockLoginRepository,
         mockConfigurationRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE));
@@ -67,6 +70,7 @@ public class LoginHandlerTests {
           testContext.completeNow();
         })));
   }
+
 
   @Test
   public void canExecuteASampleLoginUsingHandlerWithFailedConfig(
@@ -105,6 +109,7 @@ public class LoginHandlerTests {
   }
 
 
+
   @Test
   public void canExecuteASampleFailedLoginUsingHandler(
       @Mock LoginRepository mockLoginRepository,
@@ -122,12 +127,14 @@ public class LoginHandlerTests {
     when(mockLoginRepository.login(any(), any()))
         .thenReturn(Future.succeededFuture(LoginResponse.builder().ok(FALSE).build()));
 
+    when(mockConfigurationRepository.getACSStatus(any()))
+        .thenReturn(Future.succeededFuture(ACSStatus.builder().checkinOk(true).build()));
+
     final LoginHandler handler = new LoginHandler(mockLoginRepository,
         mockConfigurationRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
-    sessionData.setConfigurationLoaded(true);
 
     handler.execute(login, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
@@ -161,7 +168,7 @@ public class LoginHandlerTests {
         FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
-    sessionData.setConfigurationLoaded(true);
+
     LoginResponse loginResponse = LoginResponse.builder().ok(FALSE).build();
     sessionData.setErrorResponseMessage(constructLoginResponse(loginResponse));
     handler.execute(login, sessionData).onComplete(

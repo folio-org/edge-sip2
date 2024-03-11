@@ -23,6 +23,11 @@ public class User {
     externalSystemId = builder.externalSystemId;
   }
 
+  public String toString() {
+    return String.format("id: %s, barcode: %s, username: %s, active: %b, externalSystemId: %s",
+        id, barcode, username, active, externalSystemId);
+  }
+
   public String getId() {
     return id;
   }
