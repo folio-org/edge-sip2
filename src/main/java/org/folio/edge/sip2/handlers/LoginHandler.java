@@ -50,8 +50,8 @@ public class LoginHandler implements ISip2RequestHandler {
         .compose(loginResponse ->
             configurationRepository.getACSStatus(sessionData)
             .map(loginResponse)
-            .recover(cause -> Future.succeededFuture(loginResponse));
-          //Even if it fails, just do the login
+            .recover(cause -> Future.succeededFuture(loginResponse))
+        //Even if it fails, just do the login
         );
 
     responseFuture.onFailure(e -> {
