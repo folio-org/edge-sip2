@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.handlers.CheckinHandler;
@@ -66,6 +67,7 @@ public class MainVerticle extends AbstractVerticle {
 
   private static final int HEALTH_CHECK_PORT = 8081;
   private static final String  HEALTH_CHECK_PATH = "/admin/health";
+  private static final String IPADDRESS = "ipAddress";
   private Map<Command, ISip2RequestHandler> handlers;
   private NetServer server;
   private final Logger log = LogManager.getLogger();
@@ -124,6 +126,7 @@ public class MainVerticle extends AbstractVerticle {
     server.connectHandler(socket -> {
 
       String clientAddress = socket.remoteAddress().host();
+      ThreadContext.put(IPADDRESS, clientAddress);
       JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
           clientAddress);
 
