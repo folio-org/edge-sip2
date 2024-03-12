@@ -159,6 +159,7 @@ public abstract class BaseTest {
     options.setConnectTimeout(2);
     options.setIdleTimeout(2);
     options.setIdleTimeoutUnit(TimeUnit.SECONDS);
+    options.setHostnameVerificationAlgorithm("HTTPS");
 
     if (testInfo != null && testInfo.getTags().contains(TLS_ENABLED)) {
       options.setSsl(true);
