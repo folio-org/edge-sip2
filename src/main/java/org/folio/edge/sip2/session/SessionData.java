@@ -21,6 +21,7 @@ public class SessionData {
   private String timeZone;
   private String currency;
   private boolean patronPasswordVerificationRequired;
+  private boolean configurationLoaded;
 
   private static final Logger log = LogManager.getLogger();
   private static final String DEFAULT_CURRENCY = "USD";
@@ -33,6 +34,7 @@ public class SessionData {
     this.fieldDelimiter = fieldDelimiter;
     this.errorDetectionEnabled = errorDetectionEnabled;
     this.charset = charset;
+    this.configurationLoaded = false;
   }
 
   public String getScLocation() {
@@ -127,7 +129,7 @@ public class SessionData {
    * Initialize a new session.
    *
    * @param tenant The current tenant
-   * @param fieldDelimiter The delimeter used
+   * @param fieldDelimiter The delimiter used
    * @param errorDetectionEnabled Whether or not error detection is enabled
    * @param charset The preferred charset
    * @return The new session object
@@ -171,5 +173,13 @@ public class SessionData {
     } else {
       this.currency = currency;
     }
+  }
+
+  public void setConfigurationLoaded(boolean loaded) {
+    this.configurationLoaded = loaded;
+  }
+
+  public boolean isConfigurationLoaded() {
+    return this.configurationLoaded;
   }
 }
