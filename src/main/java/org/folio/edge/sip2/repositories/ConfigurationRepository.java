@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
@@ -44,6 +45,7 @@ public class ConfigurationRepository {
    * @param resourceProvider This can be DefaultResourceProvider or any provider in the future.
    */
 
+  @Inject
   public ConfigurationRepository(IResourceProvider<IRequestData> resourceProvider, Clock clock) {
     this.resourceProvider = Objects.requireNonNull(resourceProvider,
         "ConfigGateway cannot be null");

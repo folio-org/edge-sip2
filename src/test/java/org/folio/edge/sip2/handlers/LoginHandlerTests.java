@@ -18,10 +18,12 @@ import java.util.Map;
 import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
 import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
 import org.folio.edge.sip2.domain.messages.requests.Login;
+import org.folio.edge.sip2.domain.messages.responses.ACSStatus;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
+import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.LoginRepository;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
@@ -35,6 +37,7 @@ public class LoginHandlerTests {
   @Test
   public void canExecuteASampleLoginUsingHandler(
       @Mock LoginRepository mockLoginRepository,
+      @Mock ConfigurationRepository mockConfigurationRepository,
       Vertx vertx,
       VertxTestContext testContext) {
     final Login login = Login.builder()
@@ -48,7 +51,49 @@ public class LoginHandlerTests {
     when(mockLoginRepository.login(any(), any()))
         .thenReturn(Future.succeededFuture(LoginResponse.builder().ok(TRUE).build()));
 
+    when(mockConfigurationRepository.getACSStatus(any()))
+        .thenReturn(Future.succeededFuture(ACSStatus.builder().checkinOk(true).build()));
+
     final LoginHandler handler = new LoginHandler(mockLoginRepository,
+        mockConfigurationRepository,
+        FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    sessionData.setConfigurationLoaded(true);
+
+    handler.execute(login, sessionData).onComplete(
+        testContext.succeeding(sipMessage -> testContext.verify(() -> {
+          final String expectedString = "941";
+
+          assertEquals(expectedString, sipMessage);
+
+          testContext.completeNow();
+        })));
+  }
+
+
+  @Test
+  public void canExecuteASampleLoginUsingHandlerWithFailedConfig(
+      @Mock LoginRepository mockLoginRepository,
+      @Mock ConfigurationRepository mockConfigurationRepository,
+      Vertx vertx,
+      VertxTestContext testContext) {
+    final Login login = Login.builder()
+        .uidAlgorithm(UIDAlgorithm.NO_ENCRYPTION)
+        .pwdAlgorithm(PWDAlgorithm.NO_ENCRYPTION)
+        .loginUserId("test")
+        .loginPassword("xyzzy")
+        .locationCode("library")
+        .build();
+
+    when(mockLoginRepository.login(any(), any()))
+        .thenReturn(Future.succeededFuture(LoginResponse.builder().ok(TRUE).build()));
+
+    when(mockConfigurationRepository.getACSStatus(any()))
+        .thenReturn(Future.failedFuture("Unable to load config"));
+
+    final LoginHandler handler = new LoginHandler(mockLoginRepository,
+        mockConfigurationRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
@@ -63,9 +108,12 @@ public class LoginHandlerTests {
         })));
   }
 
+
+
   @Test
   public void canExecuteASampleFailedLoginUsingHandler(
       @Mock LoginRepository mockLoginRepository,
+      @Mock ConfigurationRepository mockConfigurationRepository,
       Vertx vertx,
       VertxTestContext testContext) {
     final Login login = Login.builder()
@@ -79,7 +127,11 @@ public class LoginHandlerTests {
     when(mockLoginRepository.login(any(), any()))
         .thenReturn(Future.succeededFuture(LoginResponse.builder().ok(FALSE).build()));
 
+    when(mockConfigurationRepository.getACSStatus(any()))
+        .thenReturn(Future.succeededFuture(ACSStatus.builder().checkinOk(true).build()));
+
     final LoginHandler handler = new LoginHandler(mockLoginRepository,
+        mockConfigurationRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
@@ -97,6 +149,7 @@ public class LoginHandlerTests {
   @Test
    void canExecuteFailedLoginUsingHandler(
       @Mock LoginRepository mockLoginRepository,
+      @Mock ConfigurationRepository mockConfigurationRepository,
       Vertx vertx,
       VertxTestContext testContext) {
     final Login login = Login.builder()
@@ -111,9 +164,11 @@ public class LoginHandlerTests {
         .thenReturn(Future.failedFuture(new ClientException("Incorrect username")));
 
     final LoginHandler handler = new LoginHandler(mockLoginRepository,
+        mockConfigurationRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
     LoginResponse loginResponse = LoginResponse.builder().ok(FALSE).build();
     sessionData.setErrorResponseMessage(constructLoginResponse(loginResponse));
     handler.execute(login, sessionData).onComplete(
@@ -145,7 +200,7 @@ public class LoginHandlerTests {
   public void cannotCreateHandlerDueToMissingLoginRepository() {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
-        () -> new LoginHandler(null, null));
+        () -> new LoginHandler(null, null,null));
 
     assertEquals("LoginRepository cannot be null", thrown.getMessage());
   }
@@ -153,7 +208,8 @@ public class LoginHandlerTests {
   @Test
   public void cannotCreateHandlerDueToMissingTemplate() {
     final NullPointerException thrown = assertThrows(NullPointerException.class,
-        () -> new LoginHandler(mock(LoginRepository.class), null));
+        () -> new LoginHandler(mock(LoginRepository.class), mock(ConfigurationRepository.class),
+            null));
 
     assertEquals("Template cannot be null", thrown.getMessage());
   }
