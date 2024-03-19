@@ -67,11 +67,25 @@ public class SessionData {
     return username;
   }
 
+  /**
+   * Check to see if a given status is invalid for checkin.
+   *
+   * @param status The status to check
+   * @return True if the status is okay to checkin
+   */
   public boolean isValidCheckinStatus(String status) {
     if (this.rejectedCheckinStatusList.contains(status)) {
       return false;
     }
     return true;
+  }
+
+  /**
+   * Set the list of item statuses to reject checkin on.
+   * @param list The list of statuses
+   */
+  public void setInvalidCheckinStatusList(List<String> list) {
+    this.rejectedCheckinStatusList = list;
   }
 
   public void setUsername(String username) {

@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -28,8 +29,8 @@ import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -61,9 +62,10 @@ class CirculationRepositoryTests {
    void canCreateCirculationRepository(
       @Mock IResourceProvider<IRequestData> mockFolioResource,
       @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository mockItemRepository,
       @Mock Clock clock) {
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioResource, mockPasswordVerifier, clock);
+        mockFolioResource, mockPasswordVerifier, mockItemRepository, clock);
 
     assertNotNull(circulationRepository);
   }
@@ -72,7 +74,7 @@ class CirculationRepositoryTests {
   void cannotCreateCirculationRepositoryWhenResourceProviderIsNull() {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
-        () -> new CirculationRepository(null, null, null));
+        () -> new CirculationRepository(null, null, null, null));
 
     assertEquals("Resource provider cannot be null", thrown.getMessage());
   }
@@ -81,7 +83,8 @@ class CirculationRepositoryTests {
   void canCheckin(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository mockItemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime returnDate = OffsetDateTime.now();
     final String currentLocation = UUID.randomUUID().toString();
@@ -128,10 +131,14 @@ class CirculationRepositoryTests {
         .thenReturn(Future.succeededFuture(new FolioResource(getRequestsResponseJson,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
+    when(mockItemRepository.getItemById(anyString(), any()))
+        .thenReturn(Future.succeededFuture(
+            new JsonObject().put("status", new JsonObject().put("name", "Available"))));
+
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, mockItemRepository, clock);
     circulationRepository.performCheckinCommand(checkin, sessionData).onComplete(
         testContext.succeeding(checkinResponse -> testContext.verify(() -> {
           assertNotNull(checkinResponse);
@@ -161,7 +168,8 @@ class CirculationRepositoryTests {
   void canCheckinWithoutTitleIdentifier(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository mockItemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime returnDate = OffsetDateTime.now();
     final String currentLocation = UUID.randomUUID().toString();
@@ -197,10 +205,14 @@ class CirculationRepositoryTests {
         .thenReturn(Future.succeededFuture(new FolioResource(getRequestsResponseJson,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
+    when(mockItemRepository.getItemById(anyString(), any()))
+        .thenReturn(Future.succeededFuture(
+        new JsonObject().put("status", new JsonObject().put("name", "Available"))));
+
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, mockItemRepository, clock);
     circulationRepository.performCheckinCommand(checkin, sessionData).onComplete(
         testContext.succeeding(checkinResponse -> testContext.verify(() -> {
           assertNotNull(checkinResponse);
@@ -228,7 +240,8 @@ class CirculationRepositoryTests {
   void cannotCheckin(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository mockItemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime returnDate = OffsetDateTime.now();
     final String currentLocation = UUID.randomUUID().toString();
@@ -248,10 +261,14 @@ class CirculationRepositoryTests {
     when(mockFolioProvider.createResource(any()))
         .thenReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")));
 
+    when(mockItemRepository.getItemById(anyString(), any()))
+        .thenReturn(Future.succeededFuture(
+        new JsonObject().put("status", new JsonObject().put("name", "Available"))));
+
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, mockItemRepository, clock);
     circulationRepository.performCheckinCommand(checkin, sessionData).onComplete(
         testContext.succeeding(checkinResponse -> testContext.verify(() -> {
           assertNotNull(checkinResponse);
@@ -276,10 +293,72 @@ class CirculationRepositoryTests {
   }
 
   @Test
+  void cannotCheckinDueToItemStatus(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository mockItemRepository) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final OffsetDateTime returnDate = OffsetDateTime.now();
+    final String currentLocation = UUID.randomUUID().toString();
+    final String itemIdentifier = "1234567890";
+    final String titleIdentifier = "Some Cool Book";
+    final String callNumber = "9983235487258";
+    final Checkin checkin = Checkin.builder()
+        .noBlock(FALSE)
+        .transactionDate(OffsetDateTime.now())
+        .returnDate(returnDate)
+        .currentLocation(currentLocation)
+        .institutionId("diku")
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .cancel(FALSE)
+        .build();
+
+    final JsonObject checkinResponseJson = new JsonObject()
+        .put("item", new JsonObject()
+            .put("callNumber", callNumber)
+            .put("title", titleIdentifier)
+            .put("location", new JsonObject()
+                .put("name", "Main Library"))
+            .put("materialType", new JsonObject()
+                .put("name", "book"))
+            .put("inTransitDestinationServicePoint", new JsonObject()
+                .put("name", "Annex"))
+        );
+
+
+
+
+    when(mockItemRepository.getItemById(anyString(), any()))
+        .thenReturn(Future.succeededFuture(
+        new JsonObject().put("status", new JsonObject().put("name", "Withdrawn"))));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    List<String> rejectList = new ArrayList<>();
+    rejectList.add("Withdrawn");
+    sessionData.setInvalidCheckinStatusList(rejectList);
+
+    final CirculationRepository circulationRepository = new CirculationRepository(
+        mockFolioProvider, mockPasswordVerifier, mockItemRepository, clock);
+    circulationRepository.performCheckinCommand(checkin, sessionData).onComplete(
+        testContext.succeeding(checkinResponse -> testContext.verify(() -> {
+          assertNotNull(checkinResponse);
+          assertFalse(checkinResponse.getOk());
+          assertEquals(checkinResponse.getScreenMessage().get(0),
+              "Item status 'Withdrawn' is not valid for checkin");
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
   void canCheckout(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
@@ -313,7 +392,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.performCheckoutCommand(checkout, sessionData).onComplete(
         testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
@@ -343,9 +422,10 @@ class CirculationRepositoryTests {
 
   @Test
   void cantCheckout(Vertx vertx,
-                   VertxTestContext testContext,
-                   @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                   @Mock PasswordVerifier mockPasswordVerifier) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
@@ -390,7 +470,7 @@ class CirculationRepositoryTests {
         .build());
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.performCheckoutCommand(checkout, sessionData).onComplete(
         testContext.failing(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
@@ -402,9 +482,10 @@ class CirculationRepositoryTests {
 
   @Test
   void canRenew(Vertx vertx,
-                          VertxTestContext testContext,
-                          @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                          @Mock PasswordVerifier mockPasswordVerifier) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
@@ -436,7 +517,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.performRenewCommand(renew, sessionData).onComplete(
         testContext.succeeding(renewResponse -> testContext.verify(() -> {
           assertNotNull(renewResponse);
@@ -465,9 +546,10 @@ class CirculationRepositoryTests {
 
   @Test
   void canRenewWithTitleIdentifier(Vertx vertx,
-                       VertxTestContext testContext,
-                       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                       @Mock PasswordVerifier mockPasswordVerifier) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
@@ -499,7 +581,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.performRenewCommand(renew, sessionData).onComplete(
         testContext.succeeding(renewResponse -> testContext.verify(() -> {
           assertNotNull(renewResponse);
@@ -528,9 +610,10 @@ class CirculationRepositoryTests {
 
   @Test
   void canNotRenewWithoutTitleAndItemIdentifier(Vertx vertx,
-                                          VertxTestContext testContext,
-                                          @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                                          @Mock PasswordVerifier mockPasswordVerifier) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
@@ -554,7 +637,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.performRenewCommand(renew, sessionData).onComplete(
         testContext.succeeding(renewResponse -> testContext.verify(() -> {
           assertNotNull(renewResponse);
@@ -584,7 +667,8 @@ class CirculationRepositoryTests {
   void canRenewAll(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final String patronIdentifier = "1029384756";
     final Clock clock = TestUtils.getUtcFixedClock();
     final String title = "Some book";
@@ -632,7 +716,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
 
     circulationRepository.performRenewAllCommand(renewAll, sessionData).onComplete(
         testContext.succeeding(renewAllResponse -> testContext.verify(() -> {
@@ -653,7 +737,8 @@ class CirculationRepositoryTests {
   void cannotRenewAllWithBadPassword(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final String patronIdentifier = "1029384756";
     final Clock clock = TestUtils.getUtcFixedClock();
     final String title = "Some book";
@@ -676,7 +761,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
 
     circulationRepository.performRenewAllCommand(renewAll, sessionData).onComplete(
         testContext.succeeding(renewAllResponse -> testContext.verify(() -> {
@@ -694,7 +779,8 @@ class CirculationRepositoryTests {
   void canCheckoutRequiredPassword(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
@@ -736,7 +822,7 @@ class CirculationRepositoryTests {
     sessionData.setPatronPasswordVerificationRequired(true);
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.performCheckoutCommand(checkout, sessionData).onComplete(
         testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
@@ -768,7 +854,8 @@ class CirculationRepositoryTests {
   void cannotCheckoutRequiredPasswordWithBadPassword(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate =  OffsetDateTime.now(clock).plusDays(30);
     final String patronIdentifier = "1029384756";
@@ -799,7 +886,7 @@ class CirculationRepositoryTests {
     sessionData.setPatronPasswordVerificationRequired(true);
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.performCheckoutCommand(checkout, sessionData).onComplete(
         testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
@@ -831,11 +918,10 @@ class CirculationRepositoryTests {
 
   @Test
   void cannotRenewRequiredPasswordWithBadPassword(Vertx vertx,
-                                                            VertxTestContext testContext,
-                                                            @Mock IResourceProvider<IRequestData>
-                                                             mockFolioProvider,
-                                                            @Mock PasswordVerifier
-                                                             mockPasswordVerifier) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate =  OffsetDateTime.now(clock).plusDays(30);
     final String patronIdentifier = "1029384756";
@@ -864,7 +950,7 @@ class CirculationRepositoryTests {
     sessionData.setPatronPasswordVerificationRequired(true);
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.performRenewCommand(renew, sessionData).onComplete(
         testContext.succeeding(renewResponse -> testContext.verify(() -> {
           assertNotNull(renewResponse);
@@ -958,7 +1044,8 @@ class CirculationRepositoryTests {
   void cannotCheckout(String errorMessage, List<String> expectedErrors, Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate = OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
@@ -1002,7 +1089,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.performCheckoutCommand(checkout, sessionData).onComplete(
         testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
@@ -1032,9 +1119,10 @@ class CirculationRepositoryTests {
   @ParameterizedTest
   @MethodSource("provideCirculationAndSearchErrors")
   void cannotCheckoutGetTitleFailed(String errorMessage, List<String> expectedErrors, Vertx vertx,
-                      VertxTestContext testContext,
-                      @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                      @Mock PasswordVerifier mockPasswordVerifier) {
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate = OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
@@ -1073,7 +1161,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.performCheckoutCommand(checkout, sessionData).onComplete(
         testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
@@ -1104,10 +1192,11 @@ class CirculationRepositoryTests {
   @ParameterizedTest
   @MethodSource("provideCirculationAndTitleNotFound")
   void cannotCheckoutAndTitleNotFoundInSearch(String errorMessage, List<String> expectedErrors,
-                                              Vertx vertx,
-                      VertxTestContext testContext,
-                      @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                      @Mock PasswordVerifier mockPasswordVerifier) {
+      Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate = OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
@@ -1143,7 +1232,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.performCheckoutCommand(checkout, sessionData).onComplete(
         testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
@@ -1173,11 +1262,12 @@ class CirculationRepositoryTests {
   @ParameterizedTest
   @MethodSource("provideCirculationAndTitleNotFound")
   void cannotCheckoutAndTitleNotFoundInSearchandReturnNull(String errorMessage,
-                                                           List<String> expectedErrors,
-                                                           Vertx vertx,
-                                            VertxTestContext testContext,
-                                            @Mock IResourceProvider<IRequestData> mockFolioProvider,
-                                              @Mock PasswordVerifier mockPasswordVerifier) {
+      List<String> expectedErrors,
+      Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate = OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
@@ -1211,7 +1301,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.performCheckoutCommand(checkout, sessionData).onComplete(
         testContext.succeeding(checkoutResponse -> testContext.verify(() -> {
           assertNotNull(checkoutResponse);
@@ -1243,7 +1333,8 @@ class CirculationRepositoryTests {
   void canGetLoansByUserId(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String userId = UUID.randomUUID().toString();
     final String itemId = UUID.randomUUID().toString();
@@ -1268,7 +1359,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.getLoansByUserId(userId, null, null, sessionData).onComplete(
         testContext.succeeding(loansResponse -> testContext.verify(() -> {
           assertNotNull(loansResponse);
@@ -1288,7 +1379,8 @@ class CirculationRepositoryTests {
   void cannotGetLoansByUserId(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String userId = UUID.randomUUID().toString();
 
@@ -1298,7 +1390,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.getLoansByUserId(userId, null, null, sessionData).onComplete(
         testContext.succeeding(loansResponse -> testContext.verify(() -> {
           assertNull(loansResponse);
@@ -1310,7 +1402,8 @@ class CirculationRepositoryTests {
   void canGetOverdueLoansByUserId(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String userId = UUID.randomUUID().toString();
     final String itemId = UUID.randomUUID().toString();
@@ -1337,7 +1430,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.getOverdueLoansByUserId(userId, OffsetDateTime.now(clock), null, null,
         sessionData).onComplete(testContext.succeeding(loansResponse -> testContext.verify(() -> {
           assertNotNull(loansResponse);
@@ -1356,7 +1449,8 @@ class CirculationRepositoryTests {
   void cannotGetOverdueLoansByUserId(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String userId = UUID.randomUUID().toString();
 
@@ -1367,7 +1461,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.getOverdueLoansByUserId(userId, OffsetDateTime.now(clock), null, null,
         sessionData).onComplete(testContext.succeeding(loansResponse -> testContext.verify(() -> {
           assertNull(loansResponse);
@@ -1379,7 +1473,8 @@ class CirculationRepositoryTests {
   void canGetRequestsByItemId(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String userId = UUID.randomUUID().toString();
     final String itemId = UUID.randomUUID().toString();
@@ -1406,7 +1501,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.getRequestsByItemId(itemId, "Recall", null, null, sessionData)
         .onComplete(testContext.succeeding(requestsResponse -> testContext.verify(() -> {
           assertNotNull(requestsResponse);
@@ -1425,7 +1520,8 @@ class CirculationRepositoryTests {
   void cannotGetRequestsByItemId(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String itemId = UUID.randomUUID().toString();
 
@@ -1435,7 +1531,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.getRequestsByItemId(itemId, "Recall", null, null,
         sessionData).onComplete(testContext.succeeding(
             requestsResponse -> testContext.verify(() -> {
@@ -1449,7 +1545,8 @@ class CirculationRepositoryTests {
   void canGetRequestsByUserId(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String userId = UUID.randomUUID().toString();
     final String itemId = UUID.randomUUID().toString();
@@ -1470,7 +1567,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.getRequestsByUserId(userId, "Hold", null, null, sessionData)
         .onComplete(testContext.succeeding(requestsResponse -> testContext.verify(() -> {
           assertNotNull(requestsResponse);
@@ -1490,7 +1587,8 @@ class CirculationRepositoryTests {
   void cannotGetRequestsByUserId(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier) {
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     final String userId = UUID.randomUUID().toString();
 
@@ -1500,7 +1598,7 @@ class CirculationRepositoryTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
-        mockFolioProvider, mockPasswordVerifier, clock);
+        mockFolioProvider, mockPasswordVerifier, itemRepository, clock);
     circulationRepository.getRequestsByUserId(userId, "Hold", null, null,
         sessionData).onComplete(testContext.succeeding(
             requestsResponse -> testContext.verify(() -> {

@@ -6,6 +6,7 @@ import static org.folio.edge.sip2.utils.JsonUtils.getChildString;
 import static org.folio.edge.sip2.utils.JsonUtils.getSubChildString;
 
 import io.vertx.core.Future;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.time.Clock;
@@ -56,16 +57,19 @@ public class CirculationRepository {
   public static final String ITEM_ID = "itemId";
   private final IResourceProvider<IRequestData> resourceProvider;
   private final PasswordVerifier passwordVerifier;
+  private final ItemRepository itemRepository;
   private final Clock clock;
 
 
   @Inject
   CirculationRepository(IResourceProvider<IRequestData> resourceProvider,
-      PasswordVerifier passwordVerifier, Clock clock) {
+      PasswordVerifier passwordVerifier, ItemRepository itemRepository, Clock clock) {
     this.resourceProvider = Objects.requireNonNull(resourceProvider,
         "Resource provider cannot be null");
     this.passwordVerifier = Objects.requireNonNull(passwordVerifier,
         "Password verifier cannot be null");
+    this.itemRepository = Objects.requireNonNull(itemRepository,
+        "Item Repository cannot be null");
     this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
   }
 
@@ -95,64 +99,81 @@ public class CirculationRepository {
 
     final CheckinRequestData checkinRequestData =
         new CheckinRequestData(body, headers, sessionData);
-    final Future<IResource> checkinResult = resourceProvider
-        .createResource(checkinRequestData);
 
-    return checkinResult
-        .otherwise(() -> null)
-        .compose(resource -> {
-          log.info("performCheckinCommand resource:{}", resource);
-          JsonObject resourceJson = resource.getResource();
-          log.debug("performCheckinCommand resource json is {}",
-              () -> resourceJson != null ? resourceJson.encode() : "null");
-          JsonObject valuesJson = extractCheckinValues(resourceJson);
-          log.debug("valuesJson is {}", valuesJson.encode());
-          final Future<JsonObject> getRequestsResult = resourceJson != null
-              ? getRequestsByItemId(valuesJson.getString(ITEM_ID), null, null,
+    return itemRepository.getItemById(itemIdentifier, sessionData).compose(itemJson -> {
+      String status = itemJson.getJsonObject("status").getString("name");
+      if (sessionData.isValidCheckinStatus(status)) {
+        final Future<IResource> checkinResult = resourceProvider
+            .createResource(checkinRequestData);
+
+        return checkinResult
+            .otherwise(() -> null)
+            .compose(resource -> {
+              log.info("performCheckinCommand resource:{}", resource);
+              JsonObject resourceJson = resource.getResource();
+              log.debug("performCheckinCommand resource json is {}",
+                  () -> resourceJson != null ? resourceJson.encode() : "null");
+              JsonObject valuesJson = extractCheckinValues(resourceJson);
+              log.debug("valuesJson is {}", valuesJson.encode());
+              final Future<JsonObject> getRequestsResult = resourceJson != null
+                  ? getRequestsByItemId(valuesJson.getString(ITEM_ID), null, null,
                   null, sessionData) : Future.succeededFuture(null);
-          return getRequestsResult
-            .compose(requestsJson -> {
-              log.debug("JSON from getRequestsByItemId is {}",
-                  () -> requestsJson != null ? requestsJson.encode() : "null");
-              MediaType mediaType = getMediaType(valuesJson.getJsonObject("itemMaterialTypeJson"));
-              JsonArray requestArray =
-                  requestsJson != null ? requestsJson.getJsonArray("requests") : null;
-              final String requestState = getRequestState(requestArray);
-              final boolean inTransit = valuesJson.getString("itemStatus") != null
-                  && valuesJson.getString("itemStatus").equals("In transit");
-              final boolean holdItem = requestState != null && requestState.equals("Hold");
-              final boolean recallItem = requestState != null && requestState.equals("Recall");
-              final boolean alert = inTransit || holdItem || recallItem;
-              final String alertType = getAlertType(inTransit, holdItem, recallItem);
-              return Future.succeededFuture(
-                CheckinResponse.builder()
-                  .ok(resourceJson == null ? FALSE : TRUE)
-                  .resensitize(resourceJson == null ? FALSE : TRUE)
-                  .magneticMedia(null)
-                  .alert(alert)
-                  .alertType(alertType)
-                  .transactionDate(OffsetDateTime.now(clock))
-                  .institutionId(institutionId)
-                  .itemIdentifier(itemIdentifier)
-                  .callNumber(valuesJson.getString("callNumber"))
-                  .mediaType(mediaType)
-                  .pickupServicePoint(valuesJson.getString("servicePoint"))
-                  // if the title is not available, use the item identifier passed in to the
-                  // checkin.
-                  // this allows the kiosk to show something related to the item that could be used
-                  // by the patron to identify which item this checkin response applies to.
-                  .titleIdentifier(resource.getResource() == null ? itemIdentifier
-                    : getChildString(resource.getResource(), "item", TITLE, itemIdentifier))
-                  // this is probably not the permanent location
-                  // this might require a call to inventory
-                  .permanentLocation(
-                    resource.getResource() == null ? UNKNOWN
-                      : getSubChildString(resource.getResource(),
-                      Arrays.asList("item", "location"), "name", UNKNOWN))
-                    .build());
-            });
-        }
-      );
+              return getRequestsResult
+                .compose(requestsJson -> {
+                  log.debug("JSON from getRequestsByItemId is {}",
+                      () -> requestsJson != null ? requestsJson.encode() : "null");
+                  MediaType mediaType
+                      = getMediaType(valuesJson.getJsonObject("itemMaterialTypeJson"));
+                  JsonArray requestArray =
+                      requestsJson != null ? requestsJson.getJsonArray("requests") : null;
+                  final String requestState = getRequestState(requestArray);
+                  final boolean inTransit = valuesJson.getString("itemStatus") != null
+                      && valuesJson.getString("itemStatus").equals("In transit");
+                  final boolean holdItem = requestState != null && requestState.equals("Hold");
+                  final boolean recallItem = requestState != null && requestState.equals("Recall");
+                  final boolean alert = inTransit || holdItem || recallItem;
+                  final String alertType = getAlertType(inTransit, holdItem, recallItem);
+                  return Future.succeededFuture(
+                      CheckinResponse.builder()
+                          .ok(resourceJson == null ? FALSE : TRUE)
+                          .resensitize(resourceJson == null ? FALSE : TRUE)
+                          .magneticMedia(null)
+                          .alert(alert)
+                          .alertType(alertType)
+                          .transactionDate(OffsetDateTime.now(clock))
+                          .institutionId(institutionId)
+                          .itemIdentifier(itemIdentifier)
+                          .callNumber(valuesJson.getString("callNumber"))
+                          .mediaType(mediaType)
+                          .pickupServicePoint(valuesJson.getString("servicePoint"))
+                          // if the title is not available, use the item identifier passed in to the
+                          // checkin.
+                          // this allows the kiosk to show something related to the item
+                          // that could be used
+                          // by the patron to identify which item this checkin response applies to.
+                          .titleIdentifier(resource.getResource() == null ? itemIdentifier
+                              : getChildString(resource.getResource(),
+                              "item", TITLE, itemIdentifier))
+                          // this is probably not the permanent location
+                          // this might require a call to inventory
+                          .permanentLocation(
+                              resource.getResource() == null ? UNKNOWN
+                                  : getSubChildString(resource.getResource(),
+                              Arrays.asList("item", "location"), "name", UNKNOWN))
+                          .build()
+                  );
+                });
+            }
+          );
+      } else {
+        return Future.succeededFuture(CheckinResponse.builder()
+            .ok(false)
+            .screenMessage(
+                Collections.singletonList("Item status '" + status + "' is not valid for checkin"))
+            .build());
+      }
+    });
+
   }
 
   /**
