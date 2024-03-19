@@ -27,6 +27,17 @@ public class ExtendedUser {
     this.patronGroup = newPatronGroup;
   }
 
+  /**
+   * Get extended user as string.
+   *
+   * @return the string representation
+   */
+  public String toString() {
+    return String.format("user: %s, patronGroup: %s",
+        user != null ? user.toString() : null,
+        patronGroup != null ? patronGroup.getGroup() : null);
+  }
+
   public class PatronGroup {
     private String group;
     private String desc;
