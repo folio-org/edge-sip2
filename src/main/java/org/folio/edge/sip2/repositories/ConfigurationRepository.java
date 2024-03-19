@@ -236,7 +236,7 @@ public class ConfigurationRepository {
 
   private List<String> getListFromString(String stringVal) {
     if (stringVal == null || stringVal.isEmpty()) {
-      return null;
+      return Collections.emptyList();
     }
     return Arrays.asList(stringVal.split(","));
   }

@@ -77,8 +77,8 @@ public class SessionData {
    * @return True if the status is okay to checkin
    */
   public boolean isValidCheckinStatus(String status) {
-    //Case-insensitive search of whether or not we have the status in question
-    return !this.rejectedCheckinStatusList.stream().anyMatch(status::equalsIgnoreCase);
+    //Case-insensitive search of whether we have the status in question
+    return this.rejectedCheckinStatusList.stream().noneMatch(status::equalsIgnoreCase);
   }
 
   /**
