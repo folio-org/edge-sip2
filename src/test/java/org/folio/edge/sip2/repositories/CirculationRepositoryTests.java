@@ -346,8 +346,8 @@ class CirculationRepositoryTests {
         testContext.succeeding(checkinResponse -> testContext.verify(() -> {
           assertNotNull(checkinResponse);
           assertFalse(checkinResponse.getOk());
-          assertEquals(checkinResponse.getScreenMessage().get(0),
-              "Item status 'Withdrawn' is not valid for checkin");
+          assertEquals("Item status 'Withdrawn' is not valid for checkin",
+              checkinResponse.getScreenMessage().get(0));
 
           testContext.completeNow();
         })));

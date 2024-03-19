@@ -111,9 +111,10 @@ public class ConfigurationRepositoryTests {
           assertEquals("diku", status.getLibraryName());
           assertEquals("SE10", status.getTerminalLocation());
           assertEquals(OffsetDateTime.now(clock), status.getDateTimeSync());
-          assertFalse(sessionData.isValidCheckinStatus("Withdrawn"));
-          assertFalse(sessionData.isValidCheckinStatus("Restricted"));
+          assertFalse(sessionData.isValidCheckinStatus("WITHDRAWN"));
+          assertFalse(sessionData.isValidCheckinStatus("restricted"));
           assertTrue(sessionData.isValidCheckinStatus("Lost and paid"));
+          assertTrue(sessionData.isValidCheckinStatus("AVAILABLE"));
 
           assertEquals(2, status.getSupportedMessages().size());
           Messages[] supportedMsgsArr = status.getSupportedMessages().toArray(new Messages[2]);
