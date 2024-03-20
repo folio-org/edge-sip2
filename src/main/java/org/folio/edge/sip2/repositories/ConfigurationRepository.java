@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonObject;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -60,6 +61,7 @@ public class ConfigurationRepository {
    */
   public Future<ACSStatus> getACSStatus(SessionData sessionData) {
     log.debug("getACSStatus sessionData:{}",sessionData);
+
     LinkedHashMap<String, String> tenantLevelQueryParams = new LinkedHashMap<>();
     tenantLevelQueryParams.put(KEY_CONFIG_MODULE, CONFIG_MODULE);
     tenantLevelQueryParams.put(KEY_CONFIG_NAME, TENANT_CONFIG_NAME);
@@ -203,6 +205,11 @@ public class ConfigurationRepository {
           config.getJsonArray("supportedMessages")));
       sessionData.setPatronPasswordVerificationRequired(
           config.getBoolean("patronPasswordVerificationRequired", Boolean.FALSE));
+      List<String> invalidStatusList = getListFromString(
+          config.getString("invalidCheckinStatuses"));
+      if (invalidStatusList != null) {
+        sessionData.setInvalidCheckinStatusList(invalidStatusList);
+      }
     }
   }
 
@@ -225,6 +232,13 @@ public class ConfigurationRepository {
         .filter(el -> ((JsonObject) el).getString("isSupported").equalsIgnoreCase("Y"))
         .map(el -> Messages.valueOf(((JsonObject) el).getString("messageName")))
         .collect(Collectors.toSet());
+  }
+
+  private List<String> getListFromString(String stringVal) {
+    if (stringVal == null || stringVal.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return Arrays.asList(stringVal.split(","));
   }
 
   class ConfigurationRequestData implements IRequestData {

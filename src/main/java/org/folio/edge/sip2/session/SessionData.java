@@ -1,5 +1,7 @@
 package org.folio.edge.sip2.session;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.PreviousMessage;
@@ -21,6 +23,7 @@ public class SessionData {
   private String timeZone;
   private String currency;
   private boolean patronPasswordVerificationRequired;
+  private List<String> rejectedCheckinStatusList;
   private boolean configurationLoaded;
 
   private static final Logger log = LogManager.getLogger();
@@ -34,7 +37,9 @@ public class SessionData {
     this.fieldDelimiter = fieldDelimiter;
     this.errorDetectionEnabled = errorDetectionEnabled;
     this.charset = charset;
+    this.rejectedCheckinStatusList = new ArrayList<>();
     this.configurationLoaded = false;
+
   }
 
   public String getScLocation() {
@@ -63,6 +68,25 @@ public class SessionData {
 
   public String getUsername() {
     return username;
+  }
+
+  /**
+   * Check to see if a given status is invalid for checkin.
+   *
+   * @param status The status to check
+   * @return True if the status is okay to checkin
+   */
+  public boolean isValidCheckinStatus(String status) {
+    //Case-insensitive search of whether we have the status in question
+    return this.rejectedCheckinStatusList.stream().noneMatch(status::equalsIgnoreCase);
+  }
+
+  /**
+   * Set the list of item statuses to reject checkin on.
+   * @param list The list of statuses
+   */
+  public void setInvalidCheckinStatusList(List<String> list) {
+    this.rejectedCheckinStatusList = list;
   }
 
   public void setUsername(String username) {

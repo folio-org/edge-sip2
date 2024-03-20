@@ -2,8 +2,10 @@ package org.folio.edge.sip2.repositories;
 
 import static io.vertx.core.Future.succeededFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -56,7 +58,8 @@ public class ConfigurationRepositoryTests {
           +  "\"onlineStatus\": false,\"statusUpdateOk\": false,\"offlineOk\":true,"
           +  "\"protocolVersion\":\"1.23\",\"institutionId\":\"diku\","
           +   "\"screenMessage\":\"Hello, welcome\","
-          +  "\"printLine\":\"testing\"}");
+          +  "\"printLine\":\"testing\","
+          + "\"invalidCheckinStatuses\":\"Withdrawn,Restricted\"}");
 
     tenantConfigObject.put("module", "edge-sip2");
     tenantConfigObject.put("configName", "acsTenantConfig");
@@ -108,6 +111,10 @@ public class ConfigurationRepositoryTests {
           assertEquals("diku", status.getLibraryName());
           assertEquals("SE10", status.getTerminalLocation());
           assertEquals(OffsetDateTime.now(clock), status.getDateTimeSync());
+          assertFalse(sessionData.isValidCheckinStatus("WITHDRAWN"));
+          assertFalse(sessionData.isValidCheckinStatus("restricted"));
+          assertTrue(sessionData.isValidCheckinStatus("Lost and paid"));
+          assertTrue(sessionData.isValidCheckinStatus("AVAILABLE"));
 
           assertEquals(2, status.getSupportedMessages().size());
           Messages[] supportedMsgsArr = status.getSupportedMessages().toArray(new Messages[2]);
