@@ -1,3 +1,19 @@
+## 3.2.0 2024-03-22
+* [SIP2-155](https://issues.folio.org/browse/SIP2-155): SIP2: extend the Patron Information Response on fee fields
+* [SIP2-177](https://issues.folio.org/browse/SIP2-177): Patron Status Command always returns all statuses as 'Y'
+* [SIP2-175](https://issues.folio.org/browse/SIP2-175): SIP2: No fine items summary returned in Patron Information response (63)
+* [SIP2-169](https://issues.folio.org/browse/SIP2-169): Checkin response gives wrong values for items in transit (CT &CV)
+* [SIP2-174](https://issues.folio.org/browse/SIP2-174): SIP2: extend Patron information Response with valid patron password (CQ)
+* [SIP2-180](https://issues.folio.org/browse/SIP2-180): SIP2: Patron Information Response respond with fractional amount in BV field
+* [SIP2-160](https://issues.folio.org/browse/SIP2-160): SIP2: extend the Fee Paid to enable to pay fee items
+* [SIP2-181](https://issues.folio.org/browse/SIP2-181): Patron Information Response fee item summary responds with closed fees
+* [SIP2-182](https://issues.folio.org/browse/SIP2-182): Sip2 Needed User permissions not listed
+* [SIP2-188](https://issues.folio.org/browse/SIP2-188): SIP2: different BV amounts in Patron Information Response (64) and  Patron Status Response (24)
+* [SIP2-194](https://issues.folio.org/browse/SIP2-194): edgs-sip2 Quesnelia 2024 R1 - Vertex update
+* [SIP2-192](https://issues.folio.org/browse/SIP2-192): Load configuration on login request
+* [SIP2-186](https://issues.folio.org/browse/SIP2-186): SIP2: Reject checkins on dedicated items statuses
+
+
 ## 3.1.0 2023-10-12 
 * [SIP2-121](https://issues.folio.org/browse/SIP2-121): SIP2: Renew response
 * [SIP2-94](https://issues.folio.org/browse/SIP2-94): Non SIP2 protocol error occurs when faced with exceptional situations
