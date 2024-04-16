@@ -55,7 +55,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
   @Override
   public Future<IResource> retrieveResource(IRequestData requestData) {
-    log.debug("retrieve resource {}", requestData::getPath);
+    log.info("retrieve resource {}", requestData::getPath);
 
     final HttpRequest<Buffer> request =
         client.getAbs(okapiUrl + requestData.getPath());
@@ -96,19 +96,19 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
     tokenClient = Client.createLoginClient(clientOptions, TokenCacheFactory.get(),
         sessionData.getTenant(), username, getPasswordSupplier);
-    tokenClient.getToken()
-        .onFailure(e -> {
-          log.error("Unable to get the access token ",e);
-          sessionData.setAuthenticationToken(null);
-          sessionData.setLoginErrorMessage(e.getMessage());
-        });
-    log.info("The login token is {}", tokenClient.getToken().toString());
-    return tokenClient.getToken();
+    return tokenClient.getToken().compose(token -> {
+      log.info("The login token is {}", token);
+      return Future.succeededFuture(token);
+    }).onFailure(e -> {
+      log.error("Unable to get the access token ", e);
+      sessionData.setAuthenticationToken(null);
+      sessionData.setLoginErrorMessage(e.getMessage());
+    });
   }
 
   @Override
   public Future<IResource> createResource(IRequestData requestData) {
-    log.debug("Create resource {}, body: {}",
+    log.info("Create resource {}, body: {}",
         requestData::getPath,
         () -> requestData.getBody().encodePrettily());
 
