@@ -102,7 +102,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
           sessionData.setAuthenticationToken(null);
           sessionData.setLoginErrorMessage(e.getMessage());
         });
-    log.info("The login token is ", tokenClient.getToken().toString());
+    log.info("The login token is {}", tokenClient.getToken().toString());
     return tokenClient.getToken();
   }
 
@@ -156,7 +156,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         sessionData.setErrorResponseMessage("Access token missing.")
     )
         .onSuccess(accessToken -> {
-          log.info("The access token is ", accessToken);
+          log.info("The access token is {}", accessToken);
           sessionData.setErrorResponseMessage(null);
           sessionData.setAuthenticationToken(accessToken);
         });
