@@ -256,7 +256,7 @@ public final class Parser {
   }
 
   private Command parseCommandIdentifier(String message) {
-    log.info("The command is ", message);
+    log.info("The command is {}", message);
     final Command command = Command.find(message.substring(0, 2));
 
     log.debug("Found command: {}", command);

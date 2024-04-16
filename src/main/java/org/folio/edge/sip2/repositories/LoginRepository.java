@@ -55,7 +55,7 @@ public class LoginRepository {
 
     return authToken
      .compose(token -> {
-       log.info("The auth token is ", token);
+       log.info("The auth token is {}", token);
        sessionData.setAuthenticationToken(token);
        sessionData.setScLocation(locationCode);
        return Future.succeededFuture(
