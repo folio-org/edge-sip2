@@ -150,6 +150,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
       request.putHeader(entry.getKey(), entry.getValue());
     }
 
+    log.info("It came here 1");
     Future<String> token = loginWithSupplier(sessionData.getUsername(),
         () -> Future.succeededFuture(sessionData.getPassword()), sessionData);
     token.onFailure(throwable ->
@@ -159,16 +160,10 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
           log.info("The access token is {}", accessToken);
           sessionData.setErrorResponseMessage(null);
           sessionData.setAuthenticationToken(accessToken);
+          log.info(HEADER_X_OKAPI_TOKEN + ": {}", accessToken);
+          request.putHeader(HEADER_X_OKAPI_TOKEN, accessToken);
+          request.putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant());
         });
-
-    final String authenticationToken = sessionData.getAuthenticationToken();
-    if (authenticationToken != null) {
-      log.info(HEADER_X_OKAPI_TOKEN + ": {}", authenticationToken);
-      request.putHeader(HEADER_X_OKAPI_TOKEN, authenticationToken);
-    }
-
-    log.info(HEADER_X_OKAPI_TENANT + ": {}", sessionData.getTenant());
-    request.putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant());
   }
 
   private static IResource toIResource(HttpResponse<JsonObject> httpResponse) {

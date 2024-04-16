@@ -42,6 +42,7 @@ public class LoginRepository {
     sessionData.setUsername(user);
     sessionData.setPassword(password);
 
+    log.info("It came here 2");
     Future<String> authToken = null;
     authToken = resourceProvider.loginWithSupplier(user,
         () -> Future.succeededFuture(password), sessionData);
@@ -77,6 +78,7 @@ public class LoginRepository {
    */
   public Future<String> patronLogin(String patronUserName, String patronPassword,
       SessionData sessionData) {
+    log.info("It came here 3");
     return resourceProvider.loginWithSupplier(patronUserName,
       () -> Future.succeededFuture(patronPassword), sessionData);
   }
