@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.repositories;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
@@ -58,16 +59,16 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     log.info("retrieve resource {}", requestData::getPath);
 
     final HttpRequest<Buffer> request =
-        client.getAbs(okapiUrl + requestData.getPath());
+      client.getAbs(okapiUrl + requestData.getPath());
 
-    setHeaders(requestData.getHeaders(), request,
-        Objects.requireNonNull(requestData.getSessionData(), "SessionData cannot be null"));
-
-    return request
+    // Set headers and obtain token
+    return Future.<Void>future(promise -> {
+      setHeaders(requestData.getHeaders(), request,
+        Objects.requireNonNull(requestData.getSessionData(), "SessionData cannot be null"), promise);
+    }).compose(v -> {
+      // Send request after headers are set and token is obtained
+      return request
         .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, getErrorConverter()))
-        // Some APIs return application/json, some return with the charset
-        // parameter (e.g. circulation). So we can't use the built-in JSON
-        // predicate here.
         .expect(ResponsePredicate.contentType(Arrays.asList(
           "application/json",
           "application/json; charset=utf-8")))
@@ -75,8 +76,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         .send()
         .map(FolioResourceProvider::toIResource)
         .onFailure(e -> log.error("Request failed", e));
+    });
   }
-
   /**
    * Login and set the access token in session data object.
    * @param username UserName
@@ -109,26 +110,27 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   @Override
   public Future<IResource> createResource(IRequestData requestData) {
     log.info("Create resource {}, body: {}",
-        requestData::getPath,
-        () -> requestData.getBody().encodePrettily());
+      requestData::getPath,
+      () -> requestData.getBody().encodePrettily());
 
     final HttpRequest<Buffer> request =
-        client.postAbs(okapiUrl + requestData.getPath());
+      client.postAbs(okapiUrl + requestData.getPath());
 
-    setHeaders(requestData.getHeaders(), request, requestData.getSessionData());
-
-    return request
+    // Set headers and obtain token
+    return Future.<Void>future(promise -> {
+      setHeaders(requestData.getHeaders(), request, requestData.getSessionData(), promise);
+    }).compose(v -> {
+      // Send request after headers are set and token is obtained
+      return request
         .expect(ResponsePredicate.create(ResponsePredicate.SC_SUCCESS, getErrorConverter()))
-        // Some APIs return application/json, some return with the charset
-        // parameter (e.g. circulation). So we can't use the built-in JSON
-        // predicate here.
         .expect(ResponsePredicate.contentType(Arrays.asList(
-            "application/json",
-            "application/json; charset=utf-8")))
+          "application/json",
+          "application/json; charset=utf-8")))
         .as(BodyCodec.jsonObject())
         .sendJsonObject(requestData.getBody())
         .map(FolioResourceProvider::toIResource)
         .onFailure(e -> log.error("Request failed", e));
+    });
   }
 
   @Override
@@ -142,28 +144,29 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   }
 
   private void setHeaders(
-      Map<String, String> headers,
-      HttpRequest<Buffer> request,
-      SessionData sessionData) {
+    Map<String, String> headers,
+    HttpRequest<Buffer> request,
+    SessionData sessionData,
+    Promise<Void> promise) {
     for (Map.Entry<String,String> entry : Optional.ofNullable(headers)
-        .orElse(Collections.emptyMap()).entrySet()) {
+      .orElse(Collections.emptyMap()).entrySet()) {
       request.putHeader(entry.getKey(), entry.getValue());
     }
 
     log.info("It came here 1");
     Future<String> token = loginWithSupplier(sessionData.getUsername(),
-        () -> Future.succeededFuture(sessionData.getPassword()), sessionData);
+      () -> Future.succeededFuture(sessionData.getPassword()), sessionData);
     token.onFailure(throwable ->
-        sessionData.setErrorResponseMessage("Access token missing.")
-    )
-        .onSuccess(accessToken -> {
-          log.info("The access token is {}", accessToken);
-          sessionData.setErrorResponseMessage(null);
-          sessionData.setAuthenticationToken(accessToken);
-          log.info(HEADER_X_OKAPI_TOKEN + ": {}", accessToken);
-          request.putHeader(HEADER_X_OKAPI_TOKEN, accessToken);
-          request.putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant());
-        });
+      sessionData.setErrorResponseMessage("Access token missing.")
+    ).onSuccess(accessToken -> {
+      log.info("The access token is {}", accessToken);
+      sessionData.setErrorResponseMessage(null);
+      sessionData.setAuthenticationToken(accessToken);
+      log.info(HEADER_X_OKAPI_TOKEN + ": {}", accessToken);
+      request.putHeader(HEADER_X_OKAPI_TOKEN, accessToken);
+      request.putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant());
+      promise.complete();
+    });
   }
 
   private static IResource toIResource(HttpResponse<JsonObject> httpResponse) {
