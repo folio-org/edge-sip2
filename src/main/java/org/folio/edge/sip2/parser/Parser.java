@@ -67,7 +67,7 @@ public final class Parser {
   public Message<Object> parseMessage(String message) {
     log.debug("Message to parse: {}", message);
 
-    // All messages must have at least a 2 character command code. 
+    // All messages must have at least a 2 character command code.
     if (message == null || message.length() < 2) {
       return Message.builder()
           .command(UNKNOWN)
@@ -256,6 +256,7 @@ public final class Parser {
   }
 
   private Command parseCommandIdentifier(String message) {
+    log.info("The command is ", message);
     final Command command = Command.find(message.substring(0, 2));
 
     log.debug("Found command: {}", command);

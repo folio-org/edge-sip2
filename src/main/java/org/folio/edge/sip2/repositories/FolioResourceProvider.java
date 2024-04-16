@@ -102,6 +102,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
           sessionData.setAuthenticationToken(null);
           sessionData.setLoginErrorMessage(e.getMessage());
         });
+    log.info("The login token is ", tokenClient.getToken());
     return tokenClient.getToken();
   }
 
