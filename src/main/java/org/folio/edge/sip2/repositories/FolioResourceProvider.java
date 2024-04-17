@@ -61,12 +61,9 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     final HttpRequest<Buffer> request =
         client.getAbs(okapiUrl + requestData.getPath());
 
-    return Future.<Void>future(promise -> {
-      setHeaders(requestData.getHeaders(), request,
+    return Future.<Void>future(promise -> setHeaders(requestData.getHeaders(), request,
           Objects.requireNonNull(requestData.getSessionData(),
-            "SessionData cannot be null"), promise);
-    }).compose(v -> {
-      return request
+            "SessionData cannot be null"), promise)).compose(v -> request
         .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, getErrorConverter()))
         .expect(ResponsePredicate.contentType(Arrays.asList(
           "application/json",
@@ -74,8 +71,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         .as(BodyCodec.jsonObject())
         .send()
         .map(FolioResourceProvider::toIResource)
-        .onFailure(e -> log.error("Request failed", e));
-    });
+        .onFailure(e -> log.error("Request failed", e))
+    );
   }
   /**
    * Login and set the access token in session data object.
@@ -116,12 +113,9 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     final HttpRequest<Buffer> request =
         client.postAbs(okapiUrl + requestData.getPath());
 
-    // Set headers and obtain token
-    return Future.<Void>future(promise -> {
-      setHeaders(requestData.getHeaders(), request, requestData.getSessionData(), promise);
-    }).compose(v -> {
-      // Send request after headers are set and token is obtained
-      return request
+    return Future.<Void>future(promise -> setHeaders(requestData.getHeaders(),
+        request, requestData.getSessionData(), promise))
+      .compose(v -> request
         .expect(ResponsePredicate.create(ResponsePredicate.SC_SUCCESS, getErrorConverter()))
         .expect(ResponsePredicate.contentType(Arrays.asList(
           "application/json",
@@ -129,8 +123,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         .as(BodyCodec.jsonObject())
         .sendJsonObject(requestData.getBody())
         .map(FolioResourceProvider::toIResource)
-        .onFailure(e -> log.error("Request failed", e));
-    });
+        .onFailure(e -> log.error("Request failed", e)));
   }
 
   @Override
