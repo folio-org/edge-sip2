@@ -59,12 +59,13 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     log.info("retrieve resource {}", requestData::getPath);
 
     final HttpRequest<Buffer> request =
-      client.getAbs(okapiUrl + requestData.getPath());
+        client.getAbs(okapiUrl + requestData.getPath());
 
     // Set headers and obtain token
     return Future.<Void>future(promise -> {
       setHeaders(requestData.getHeaders(), request,
-        Objects.requireNonNull(requestData.getSessionData(), "SessionData cannot be null"), promise);
+          Objects.requireNonNull(requestData.getSessionData(),
+            "SessionData cannot be null"), promise);
     }).compose(v -> {
       // Send request after headers are set and token is obtained
       return request
@@ -85,6 +86,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
    * @param sessionData session data
    * @return
    */
+
   public Future<String> loginWithSupplier(
       String username,
       Supplier<Future<String>> getPasswordSupplier,
@@ -110,11 +112,11 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   @Override
   public Future<IResource> createResource(IRequestData requestData) {
     log.info("Create resource {}, body: {}",
-      requestData::getPath,
-      () -> requestData.getBody().encodePrettily());
+        requestData::getPath,
+        () -> requestData.getBody().encodePrettily());
 
     final HttpRequest<Buffer> request =
-      client.postAbs(okapiUrl + requestData.getPath());
+        client.postAbs(okapiUrl + requestData.getPath());
 
     // Set headers and obtain token
     return Future.<Void>future(promise -> {
@@ -144,20 +146,20 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   }
 
   private void setHeaders(
-    Map<String, String> headers,
-    HttpRequest<Buffer> request,
-    SessionData sessionData,
-    Promise<Void> promise) {
+      Map<String, String> headers,
+      HttpRequest<Buffer> request,
+      SessionData sessionData,
+      Promise<Void> promise) {
     for (Map.Entry<String,String> entry : Optional.ofNullable(headers)
-      .orElse(Collections.emptyMap()).entrySet()) {
+        .orElse(Collections.emptyMap()).entrySet()) {
       request.putHeader(entry.getKey(), entry.getValue());
     }
 
     log.info("It came here 1");
     Future<String> token = loginWithSupplier(sessionData.getUsername(),
-      () -> Future.succeededFuture(sessionData.getPassword()), sessionData);
+        () -> Future.succeededFuture(sessionData.getPassword()), sessionData);
     token.onFailure(throwable ->
-      sessionData.setErrorResponseMessage("Access token missing.")
+        sessionData.setErrorResponseMessage("Access token missing.")
     ).onSuccess(accessToken -> {
       log.info("The access token is {}", accessToken);
       sessionData.setErrorResponseMessage(null);

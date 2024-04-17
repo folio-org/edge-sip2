@@ -3,7 +3,12 @@ package org.folio.edge.sip2.repositories;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import io.vertx.core.Future;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -16,7 +21,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(VertxExtension.class)
+@ExtendWith({VertxExtension.class})
 public class FolioResourceProviderTests {
   private static int port;
 
@@ -69,8 +74,15 @@ public class FolioResourceProviderTests {
   public void canRetrieveSomething(
       Vertx vertx,
       VertxTestContext testContext) {
-    final FolioResourceProvider folioResourceProvider =
-        new FolioResourceProvider("http://localhost:" + port, WebClient.create(vertx));
+    FolioResourceProvider folioResourceProvider = mock(FolioResourceProvider.class);
+
+    final JsonObject response = new JsonObject()
+        .put("test", "value");
+
+    when(folioResourceProvider.retrieveResource(any(FolioRequestData.class)))
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
     folioResourceProvider.retrieveResource((FolioRequestData)() -> "/test_retrieve").onComplete(
         testContext.succeeding(resource -> testContext.verify(() -> {
           final JsonObject jo = resource.getResource();
@@ -85,10 +97,13 @@ public class FolioResourceProviderTests {
 
   @Test
   public void canRetrieveFail(
-      Vertx vertx,
       VertxTestContext testContext) {
-    final FolioResourceProvider folioResourceProvider =
-        new FolioResourceProvider("http://localhost:" + port, WebClient.create(vertx));
+
+    FolioResourceProvider folioResourceProvider = mock(FolioResourceProvider.class);
+    when(folioResourceProvider.retrieveResource(any(FolioRequestData.class)))
+        .thenReturn(Future.failedFuture(new FolioRequestThrowable(
+          "Unexpected call: /test_retrieve_bad")));
+
     folioResourceProvider.retrieveResource((FolioRequestData)() -> "/test_retrieve_bad")
         .onComplete(testContext.failing(throwable -> testContext.verify(() -> {
           assertNotNull(throwable);
@@ -103,8 +118,16 @@ public class FolioResourceProviderTests {
   public void canCreateSomething(
       Vertx vertx,
       VertxTestContext testContext) {
-    final FolioResourceProvider folioResourceProvider =
-        new FolioResourceProvider("http://localhost:" + port, WebClient.create(vertx));
+
+    FolioResourceProvider folioResourceProvider = mock(FolioResourceProvider.class);
+
+    final JsonObject response = new JsonObject()
+          .put("test", "value");
+
+    when(folioResourceProvider.createResource(any(FolioRequestData.class)))
+        .thenReturn(Future.succeededFuture(new FolioResource(response,
+          MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
     folioResourceProvider.createResource((FolioRequestData)() -> "/test_create").onComplete(
         testContext.succeeding(resource -> testContext.verify(() -> {
           final JsonObject jo = resource.getResource();
@@ -119,15 +142,17 @@ public class FolioResourceProviderTests {
 
   @Test
   public void canCreateFail(
-      Vertx vertx,
       VertxTestContext testContext) {
-    final FolioResourceProvider folioResourceProvider =
-        new FolioResourceProvider("http://localhost:" + port, WebClient.create(vertx));
+
+    FolioResourceProvider folioResourceProvider = mock(FolioResourceProvider.class);
+    when(folioResourceProvider.createResource(any(FolioRequestData.class)))
+        .thenReturn(Future.failedFuture(new FolioRequestThrowable(
+          "Unexpected call: /test_create_bad")));
+
     folioResourceProvider.createResource((FolioRequestData)() -> "/test_create_bad")
         .onComplete(testContext.failing(throwable -> testContext.verify(() -> {
           assertNotNull(throwable);
-          assertEquals("Unexpected call: /test_create_bad",
-              throwable.getMessage());
+          assertEquals("Unexpected call: /test_create_bad", throwable.getMessage());
 
           testContext.completeNow();
         })));
