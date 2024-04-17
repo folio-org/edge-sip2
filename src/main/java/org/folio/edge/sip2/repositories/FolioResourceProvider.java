@@ -56,18 +56,16 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
   @Override
   public Future<IResource> retrieveResource(IRequestData requestData) {
-    log.info("retrieve resource {}", requestData::getPath);
+    log.debug("retrieve resource {}", requestData::getPath);
 
     final HttpRequest<Buffer> request =
         client.getAbs(okapiUrl + requestData.getPath());
 
-    // Set headers and obtain token
     return Future.<Void>future(promise -> {
       setHeaders(requestData.getHeaders(), request,
           Objects.requireNonNull(requestData.getSessionData(),
             "SessionData cannot be null"), promise);
     }).compose(v -> {
-      // Send request after headers are set and token is obtained
       return request
         .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, getErrorConverter()))
         .expect(ResponsePredicate.contentType(Arrays.asList(
@@ -100,7 +98,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     tokenClient = Client.createLoginClient(clientOptions, TokenCacheFactory.get(),
         sessionData.getTenant(), username, getPasswordSupplier);
     return tokenClient.getToken().compose(token -> {
-      log.info("The login token is {}", token);
+      log.debug("The login token is {}", token);
       return Future.succeededFuture(token);
     }).onFailure(e -> {
       log.error("Unable to get the access token ", e);
@@ -111,7 +109,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
   @Override
   public Future<IResource> createResource(IRequestData requestData) {
-    log.info("Create resource {}, body: {}",
+    log.debug("Create resource {}, body: {}",
         requestData::getPath,
         () -> requestData.getBody().encodePrettily());
 
@@ -155,16 +153,13 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
       request.putHeader(entry.getKey(), entry.getValue());
     }
 
-    log.info("It came here 1");
     Future<String> token = loginWithSupplier(sessionData.getUsername(),
         () -> Future.succeededFuture(sessionData.getPassword()), sessionData);
     token.onFailure(throwable ->
         sessionData.setErrorResponseMessage("Access token missing.")
     ).onSuccess(accessToken -> {
-      log.info("The access token is {}", accessToken);
       sessionData.setErrorResponseMessage(null);
       sessionData.setAuthenticationToken(accessToken);
-      log.info(HEADER_X_OKAPI_TOKEN + ": {}", accessToken);
       request.putHeader(HEADER_X_OKAPI_TOKEN, accessToken);
       request.putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant());
       promise.complete();

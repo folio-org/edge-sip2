@@ -7,8 +7,6 @@ import io.vertx.core.Future;
 import java.util.Collections;
 import java.util.Objects;
 import javax.inject.Inject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.session.SessionData;
 
@@ -20,8 +18,6 @@ import org.folio.edge.sip2.session.SessionData;
 public class PasswordVerifier {
   private final UsersRepository usersRepository;
   private final LoginRepository loginRepository;
-
-  private static final Logger log = LogManager.getLogger();
 
   @Inject
   PasswordVerifier(UsersRepository usersRepository, LoginRepository loginRepository) {
@@ -61,7 +57,6 @@ public class PasswordVerifier {
                 patronPassword, sessionData)
               .compose(token -> {
                 if (token != null) {
-                  log.info("The patronLogin token is ", token);
                   return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
                     .extendedUser(extendedUser)
                     .passwordVerified(TRUE)

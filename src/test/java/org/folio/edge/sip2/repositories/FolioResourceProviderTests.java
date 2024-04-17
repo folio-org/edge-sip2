@@ -21,7 +21,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith({VertxExtension.class})
+@ExtendWith(VertxExtension.class)
 public class FolioResourceProviderTests {
   private static int port;
 
