@@ -2,28 +2,51 @@ package org.folio.edge.sip2.repositories;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpRequest;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import java.util.ArrayList;
+import java.util.List;
 import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(VertxExtension.class)
+@ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class FolioResourceProviderTests {
   private static int port;
+  @Mock
+  WebClient client;
+
+  @InjectMocks
+  FolioResourceProvider provider;
+
+  @Mock
+  HttpRequest<Buffer> httpRequest;
+
+  @Mock
+  HttpResponse<Buffer> httpResponse;
+
+
 
   @Timeout(5000)
   @BeforeAll
@@ -167,5 +190,41 @@ public class FolioResourceProviderTests {
       sessionData.setPassword("testpassword");
       return sessionData;
     }
+  }
+
+  @Test
+  void loginWithSupplier_Success() {
+    final String username = "testUser";
+    final SessionData sessionData = SessionData.createSession("testTenant", '|', false, "IBM850");
+
+    when(client.postAbs(anyString())).thenReturn(httpRequest);
+    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+    List<String> cookies = new ArrayList<>();
+    cookies.add("folioAccessToken=cookieValue");
+    when(httpResponse.cookies()).thenReturn(cookies);
+    when(httpRequest.sendJsonObject(any())).thenReturn(Future.succeededFuture(httpResponse));
+    when(httpResponse.statusCode()).thenReturn(201);
+
+    Future<String> result = provider.loginWithSupplier(username, ()
+        -> Future.succeededFuture("testPassword"), sessionData);
+
+    assertTrue(result.succeeded());
+    assertEquals("cookieValue", result.result());
+  }
+
+  @Test
+  void loginWithSupplier_Failure() {
+    final String username = "testUser";
+    final SessionData sessionData = SessionData.createSession("testTenant", '|', false, "IBM850");
+    when(client.postAbs(anyString())).thenReturn(httpRequest);
+    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+    List<String> cookies = new ArrayList<>();
+    cookies.add("folioAccessToken=cookieValue");
+
+    Future<String> result = provider.loginWithSupplier(username, ()
+        -> Future.succeededFuture("testPassword"), sessionData);
+
+    assertTrue(result.failed());
+    assertNull(sessionData.getAuthenticationToken());
   }
 }
