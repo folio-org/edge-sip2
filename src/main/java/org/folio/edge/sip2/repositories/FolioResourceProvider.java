@@ -173,7 +173,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   }
 
   private static IResource toIResource(HttpResponse<JsonObject> httpResponse) {
-    log.info("FOLIO response body: {}", () -> httpResponse.bodyAsJsonObject().encodePrettily());
+    log.info("FOLIO response body: {}", () -> httpResponse.body().encodePrettily());
     return new FolioResource(httpResponse.body(), httpResponse.headers());
   }
 
