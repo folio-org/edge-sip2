@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.repositories;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,6 +24,7 @@ import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.session.SessionData;
@@ -245,6 +247,23 @@ public class FolioResourceProviderTests {
 
     assertTrue(result.succeeded());
     assertEquals("cookieValue", result.result());
+
+    FolioRequestData requestData = mock(FolioRequestData.class);
+    when(requestData.getPath()).thenReturn("/test");
+    JsonObject responseBodyJson = new JsonObject().put("test", "value");
+    when(requestData.getBody()).thenReturn(responseBodyJson);
+    when(requestData.getHeaders()).thenReturn(Collections
+        .singletonMap("Content-Type", "application/json"));
+    when(requestData.getSessionData()).thenReturn(TestUtils.getMockedSessionData());
+
+    when(client.postAbs(anyString())).thenReturn(httpRequest);
+
+
+
+    Future<IResource> result1 = provider.createResource(requestData);
+
+    assertFalse(result1.succeeded());
+    assertNull(result1.result());
   }
 
   @Test
