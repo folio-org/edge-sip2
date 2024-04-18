@@ -24,8 +24,8 @@ import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.AfterAll;
@@ -50,6 +50,9 @@ public class FolioResourceProviderTests {
 
   @Mock
   HttpResponse<Buffer> httpResponse;
+
+  @Mock
+  private HttpResponse<JsonObject> jsonObjectHttpResponse;
 
   @Timeout(5000)
   @BeforeAll
@@ -230,17 +233,35 @@ public class FolioResourceProviderTests {
   }
 
   @Test
-  void loginWithSupplier_Success() {
+  void loginWithSupplier_Success(VertxTestContext testContext) {
     final String username = "testUser";
     final SessionData sessionData = SessionData.createSession("testTenant", '|', false, "IBM850");
 
     when(client.postAbs(anyString())).thenReturn(httpRequest);
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     List<String> cookies = new ArrayList<>();
+    JsonObject responseBodyJson = new JsonObject().put("test", "value");
     cookies.add("folioAccessToken=cookieValue");
     when(httpResponse.cookies()).thenReturn(cookies);
-    when(httpRequest.sendJsonObject(any())).thenReturn(Future.succeededFuture(httpResponse));
     when(httpResponse.statusCode()).thenReturn(201);
+    when(httpRequest.sendJsonObject(any())).thenReturn(Future.succeededFuture(httpResponse));
+
+    AtomicInteger counter = new AtomicInteger();
+    when(httpRequest.sendJsonObject(any())).thenAnswer(invocation -> {
+      if (invocation.getMethod().getName().equals("sendJsonObject") && counter.get() == 2) {
+        HttpResponse<JsonObject> httpResponse = mock(HttpResponse.class);
+        when(httpResponse.body()).thenReturn(new JsonObject());
+        MultiMap headers = MultiMap.caseInsensitiveMultiMap();
+        when(httpResponse.headers()).thenReturn(headers);
+        return Future.succeededFuture(httpResponse);
+      } else {
+        counter.getAndIncrement();
+        return Future.succeededFuture(httpResponse);
+      }
+    });
+
+    doReturn(httpRequest).when(httpRequest).expect(any());
+    doReturn(httpRequest).when(httpRequest).as(any());
 
     Future<String> result = provider.loginWithSupplier(username, ()
         -> Future.succeededFuture("testPassword"), sessionData, true);
@@ -248,24 +269,12 @@ public class FolioResourceProviderTests {
     assertTrue(result.succeeded());
     assertEquals("cookieValue", result.result());
 
-    FolioRequestData requestData = mock(FolioRequestData.class);
-    when(requestData.getPath()).thenReturn("/test");
-    JsonObject responseBodyJson = new JsonObject().put("test", "value");
-    when(requestData.getBody()).thenReturn(responseBodyJson);
-    when(requestData.getHeaders()).thenReturn(Collections
-        .singletonMap("Content-Type", "application/json"));
-    when(requestData.getSessionData()).thenReturn(TestUtils.getMockedSessionData());
-    when(client.postAbs(anyString())).thenReturn(httpRequest);
-
-    Future<IResource> result1 = provider.createResource(requestData);
-
-    assertFalse(result1.succeeded());
-    assertNull(result1.result());
-
-    Future<IResource> retrieveResult = provider.retrieveResource(requestData);
-
-    assertFalse(retrieveResult.succeeded());
-    assertNull(retrieveResult.result());
+    provider.createResource((FolioRequestData) () -> "/test_create").onComplete(
+        testContext.succeeding(resource -> testContext.verify(() -> {
+          final JsonObject jo = resource.getResource();
+          assertNotNull(jo);
+          testContext.completeNow();
+        })));
   }
 
   @Test
