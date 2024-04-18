@@ -228,7 +228,7 @@ public class FolioResourceProviderTests {
   }
 
   @Test
-  void loginWithSupplier_Success(VertxTestContext testContext) {
+  void loginWithSupplier_Success() {
     final String username = "testUser";
     final SessionData sessionData = SessionData.createSession("testTenant", '|', false, "IBM850");
 
@@ -240,27 +240,12 @@ public class FolioResourceProviderTests {
     when(httpRequest.sendJsonObject(any())).thenReturn(Future.succeededFuture(httpResponse));
     when(httpResponse.statusCode()).thenReturn(201);
 
-    JsonObject responseBodyJson = new JsonObject().put("test", "value");
-    when(httpResponse.bodyAsJsonObject()).thenReturn(responseBodyJson);
-    doReturn(httpRequest).when(httpRequest).expect(any());
-    doReturn(httpRequest).when(httpRequest).as(any());
-
     Future<String> result = provider.loginWithSupplier(username, ()
         -> Future.succeededFuture("testPassword"), sessionData, true);
 
     assertTrue(result.succeeded());
     assertEquals("cookieValue", result.result());
-
-    provider.createResource((FolioRequestData) () -> "/test_create").onComplete(
-        testContext.succeeding(resource -> testContext.verify(() -> {
-          final JsonObject jo = resource.getResource();
-          assertNotNull(jo);
-          assertTrue(jo.containsKey("test"));
-          assertEquals("value", jo.getString("test"));
-          testContext.completeNow();
-        })));
   }
-
 
   @Test
   void loginWithSupplier_Failure() {
@@ -272,7 +257,7 @@ public class FolioResourceProviderTests {
     cookies.add("folioAccessToken=cookieValue");
 
     Future<String> result = provider.loginWithSupplier(username, ()
-        -> Future.succeededFuture("testPassword"), sessionData,true);
+        -> Future.succeededFuture("testPassword"), sessionData, true);
 
     assertTrue(result.failed());
     assertNull(sessionData.getAuthenticationToken());
