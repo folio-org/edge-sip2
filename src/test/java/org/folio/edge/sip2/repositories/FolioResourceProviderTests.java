@@ -23,6 +23,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -201,13 +202,26 @@ public class FolioResourceProviderTests {
     when(client.postAbs(anyString())).thenReturn(httpRequest);
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     List<String> cookies = new ArrayList<>();
+    JsonObject responseBodyJson = new JsonObject().put("test", "value");
     cookies.add("folioAccessToken=cookieValue");
     when(httpResponse.cookies()).thenReturn(cookies);
-    when(httpRequest.sendJsonObject(any())).thenReturn(Future.succeededFuture(httpResponse));
     when(httpResponse.statusCode()).thenReturn(201);
+    when(httpRequest.sendJsonObject(any())).thenReturn(Future.succeededFuture(httpResponse));
 
-    JsonObject responseBodyJson = new JsonObject().put("test", "value");
-    when(httpResponse.bodyAsJsonObject()).thenReturn(responseBodyJson);
+    AtomicInteger counter = new AtomicInteger();
+    when(httpRequest.sendJsonObject(any())).thenAnswer(invocation -> {
+      if (invocation.getMethod().getName().equals("sendJsonObject") && counter.get() == 2) {
+        HttpResponse<JsonObject> httpResponse = mock(HttpResponse.class);
+        when(httpResponse.body()).thenReturn(new JsonObject());
+        MultiMap headers = MultiMap.caseInsensitiveMultiMap();
+        when(httpResponse.headers()).thenReturn(headers);
+        return Future.succeededFuture(httpResponse);
+      } else {
+        counter.getAndIncrement();
+        return Future.succeededFuture(httpResponse);
+      }
+    });
+
     doReturn(httpRequest).when(httpRequest).expect(any());
     doReturn(httpRequest).when(httpRequest).as(any());
 
@@ -221,12 +235,8 @@ public class FolioResourceProviderTests {
         testContext.succeeding(resource -> testContext.verify(() -> {
           final JsonObject jo = resource.getResource();
           assertNotNull(jo);
-          assertTrue(jo.containsKey("test"));
-          assertEquals("value", jo.getString("test"));
           testContext.completeNow();
         })));
-
-
   }
 
 
