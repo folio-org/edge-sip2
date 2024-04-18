@@ -255,15 +255,17 @@ public class FolioResourceProviderTests {
     when(requestData.getHeaders()).thenReturn(Collections
         .singletonMap("Content-Type", "application/json"));
     when(requestData.getSessionData()).thenReturn(TestUtils.getMockedSessionData());
-
     when(client.postAbs(anyString())).thenReturn(httpRequest);
-
-
 
     Future<IResource> result1 = provider.createResource(requestData);
 
     assertFalse(result1.succeeded());
     assertNull(result1.result());
+
+    Future<IResource> retrieveResult = provider.retrieveResource(requestData);
+
+    assertFalse(retrieveResult.succeeded());
+    assertNull(retrieveResult.result());
   }
 
   @Test
