@@ -1,3 +1,6 @@
+## 3.2.1 2024-04-19
+* [SIP2-195](https://issues.folio.org/browse/SIP2-195): FolioResourceProvider is submitting expired access tokens to FOLIO
+
 ## 3.2.0 2024-03-22
 * [SIP2-155](https://issues.folio.org/browse/SIP2-155): SIP2: extend the Patron Information Response on fee fields
 * [SIP2-177](https://issues.folio.org/browse/SIP2-177): Patron Status Command always returns all statuses as 'Y'
