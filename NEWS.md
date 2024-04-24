@@ -1,3 +1,6 @@
+## 3.1.2 2024-04-22
+* [SIP2-169](https://issues.folio.org/browse/SIP2-169) Correct issue with incorrect values for items in transit from checkin response (backport)
+
 ## 3.1.1 2023-11-06
 * [SIP2-178](https://issues.folio.org/browse/SIP2-178) Vert.x 4.4.6 fixing Netty HTTP/2 DoS (CVE-2023-44487)
 
