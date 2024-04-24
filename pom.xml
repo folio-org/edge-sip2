@@ -26,7 +26,7 @@
     <url>https://github.com/folio-org/edge-sip2.git</url>
     <connection>scm:git:git://github.com/folio-org/edge-sip2.git</connection>
     <developerConnection>scm:git:git@github.com:folio-org/edge-sip2.git</developerConnection>
-    <tag>v3.1.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <issueManagement>

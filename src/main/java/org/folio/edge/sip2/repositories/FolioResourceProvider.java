@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.repositories;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
@@ -60,23 +61,19 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     final HttpRequest<Buffer> request =
         client.getAbs(okapiUrl + requestData.getPath());
 
-    setHeaders(requestData.getHeaders(), request,
-        Objects.requireNonNull(requestData.getSessionData(), "SessionData cannot be null"));
-
-    return request
+    return Future.<Void>future(promise -> setHeaders(requestData.getHeaders(), request,
+          Objects.requireNonNull(requestData.getSessionData(),
+            "SessionData cannot be null"), promise)).compose(v -> request
         .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, getErrorConverter()))
-        // Some APIs return application/json, some return with the charset
-        // parameter (e.g. circulation). So we can't use the built-in JSON
-        // predicate here.
         .expect(ResponsePredicate.contentType(Arrays.asList(
           "application/json",
           "application/json; charset=utf-8")))
         .as(BodyCodec.jsonObject())
         .send()
         .map(FolioResourceProvider::toIResource)
-        .onFailure(e -> log.error("Request failed", e));
+        .onFailure(e -> log.error("Request failed", e))
+    );
   }
-
   /**
    * Login and set the access token in session data object.
    * @param username UserName
@@ -84,6 +81,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
    * @param sessionData session data
    * @return
    */
+
   public Future<String> loginWithSupplier(
       String username,
       Supplier<Future<String>> getPasswordSupplier,
@@ -96,13 +94,14 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
     tokenClient = Client.createLoginClient(clientOptions, TokenCacheFactory.get(),
         sessionData.getTenant(), username, getPasswordSupplier);
-    tokenClient.getToken()
-        .onFailure(e -> {
-          log.error("Unable to get the access token ",e);
-          sessionData.setAuthenticationToken(null);
-          sessionData.setLoginErrorMessage(e.getMessage());
-        });
-    return tokenClient.getToken();
+    return tokenClient.getToken().compose(token -> {
+      log.debug("The login token is {}", token);
+      return Future.succeededFuture(token);
+    }).onFailure(e -> {
+      log.error("Unable to get the access token ", e);
+      sessionData.setAuthenticationToken(null);
+      sessionData.setLoginErrorMessage(e.getMessage());
+    });
   }
 
   @Override
@@ -114,20 +113,17 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     final HttpRequest<Buffer> request =
         client.postAbs(okapiUrl + requestData.getPath());
 
-    setHeaders(requestData.getHeaders(), request, requestData.getSessionData());
-
-    return request
+    return Future.<Void>future(promise -> setHeaders(requestData.getHeaders(),
+        request, requestData.getSessionData(), promise))
+      .compose(v -> request
         .expect(ResponsePredicate.create(ResponsePredicate.SC_SUCCESS, getErrorConverter()))
-        // Some APIs return application/json, some return with the charset
-        // parameter (e.g. circulation). So we can't use the built-in JSON
-        // predicate here.
         .expect(ResponsePredicate.contentType(Arrays.asList(
-            "application/json",
-            "application/json; charset=utf-8")))
+          "application/json",
+          "application/json; charset=utf-8")))
         .as(BodyCodec.jsonObject())
         .sendJsonObject(requestData.getBody())
         .map(FolioResourceProvider::toIResource)
-        .onFailure(e -> log.error("Request failed", e));
+        .onFailure(e -> log.error("Request failed", e)));
   }
 
   @Override
@@ -143,7 +139,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   private void setHeaders(
       Map<String, String> headers,
       HttpRequest<Buffer> request,
-      SessionData sessionData) {
+      SessionData sessionData,
+      Promise<Void> promise) {
     for (Map.Entry<String,String> entry : Optional.ofNullable(headers)
         .orElse(Collections.emptyMap()).entrySet()) {
       request.putHeader(entry.getKey(), entry.getValue());
@@ -153,20 +150,13 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         () -> Future.succeededFuture(sessionData.getPassword()), sessionData);
     token.onFailure(throwable ->
         sessionData.setErrorResponseMessage("Access token missing.")
-    )
-        .onSuccess(accessToken -> {
-          sessionData.setErrorResponseMessage(null);
-          sessionData.setAuthenticationToken(accessToken);
-        });
-
-    final String authenticationToken = sessionData.getAuthenticationToken();
-    if (authenticationToken != null) {
-      log.debug(HEADER_X_OKAPI_TOKEN + ": {}", authenticationToken);
-      request.putHeader(HEADER_X_OKAPI_TOKEN, authenticationToken);
-    }
-
-    log.info(HEADER_X_OKAPI_TENANT + ": {}", sessionData.getTenant());
-    request.putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant());
+    ).onSuccess(accessToken -> {
+      sessionData.setErrorResponseMessage(null);
+      sessionData.setAuthenticationToken(accessToken);
+      request.putHeader(HEADER_X_OKAPI_TOKEN, accessToken);
+      request.putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant());
+      promise.complete();
+    });
   }
 
   private static IResource toIResource(HttpResponse<JsonObject> httpResponse) {
