@@ -1,3 +1,6 @@
+## 3.1.3 2024-04-25
+* [SIP2-198](https://issues.folio.org/browse/SIP2-198) FolioResourceProvider is submitting expired access tokens to FOLIO
+
 ## 3.1.2 2024-04-22
 * [SIP2-169](https://issues.folio.org/browse/SIP2-169) Correct issue with incorrect values for items in transit from checkin response (backport)
 
