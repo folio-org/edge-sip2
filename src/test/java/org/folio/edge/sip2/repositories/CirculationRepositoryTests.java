@@ -1628,4 +1628,18 @@ class CirculationRepositoryTests {
     assertNull(CirculationRepository.getAlertType(
         false, false, false));
   }
+
+  @Test void testGetRequestPatronBarcode(
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository mockItemrepository) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    CirculationRepository circulationRepository
+        = new CirculationRepository(mockFolioProvider, mockPasswordVerifier,
+        mockItemrepository, clock);
+    assertNull(circulationRepository.getRequestPatronBarcode(null));
+    assertNull(circulationRepository.getRequestPatronBarcode(new JsonArray()));
+    assertNull(circulationRepository.getRequestPatronBarcode(new JsonArray()
+        .add(new JsonObject())));
+  }
 }

@@ -958,7 +958,7 @@ public class CirculationRepository {
     return request.getString("requestType");
   }
 
-  private String getRequestPatronBarcode(JsonArray requestArray) {
+  protected String getRequestPatronBarcode(JsonArray requestArray) {
     if (requestArray == null || requestArray.isEmpty()) {
       return null;
     }
