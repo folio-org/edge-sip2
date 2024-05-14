@@ -271,6 +271,24 @@ $ java -jar edge-sip2-fat.jar -conf '{"port":1234,"okapiUrl":"https://folio-snap
 |`path`|string|File system path to JKS key store|
 |`password`|string|The password for the JKS key store|
 
+### System Properties
+
+| Property                  | Default             | Description                                                                |
+|---------------------------|---------------------|----------------------------------------------------------------------------|
+| `port`                    | `8081`              | Server port to listen on                                                   |
+| `okapi_url`               | *required*          | Where to find Okapi (URL)                                                  |
+| `secure_store`            | `Ephemeral`         | Type of secure store to use.  Valid: `Ephemeral`, `AwsSsm`, `Vault`        |
+| `secure_store_props`      | `NA`                | Path to a properties file specifying secure store configuration            |
+| `token_cache_ttl_ms`      | `3600000`           | How long to cache JWTs, in milliseconds (ms)                               |
+| `null_token_cache_ttl_ms` | `30000`             | How long to cache login failure (null JWTs), in milliseconds (ms)          |
+| `token_cache_capacity`    | `100`               | Max token cache size                                                       |
+| `log_level`               | `INFO`              | Log4j Log Level                                                            |
+| `request_timeout_ms`      | `30000`             | Request Timeout                                                            |
+| `ssl_enabled`             | `false`             | Set whether SSL/TLS is enabled, if enabled BCFKS security provider is used |
+| `keystore_path`           | `NA`                | Set the path to the key store                                              |
+| `keystore_password`       | `NA`                | Set the password for the key store                                         |
+| `key_alias`               | `NA`                | Optional identifier that points to a specific key within the key store     |
+| `api_key_sources`         | `PARAM,HEADER,PATH` | Defines the sources (order of precendence) of the API key.                 |
 ## Permissions
 All permission associated with edge-sip2
 ```

@@ -158,7 +158,17 @@
       <artifactId>commons-net</artifactId>
       <version>3.9.0</version>
     </dependency>
-
+    <!-- library provides the basic cryptographic functionality complying with FIPS -->
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bc-fips</artifactId>
+      <version>1.0.2.5</version>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-codegen</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <!-- Test dependencies -->
     <dependency>
       <groupId>io.vertx</groupId>

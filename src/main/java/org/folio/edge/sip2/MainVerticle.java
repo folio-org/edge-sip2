@@ -15,9 +15,21 @@ import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 import static org.folio.edge.sip2.parser.Command.UNKNOWN;
+import static org.folio.edge.sip2.utils.Utils.BCFKS_TYPE;
+import static org.folio.edge.sip2.utils.Utils.SYS_KEYSTORE_PASSWORD;
+import static org.folio.edge.sip2.utils.Utils.SYS_KEYSTORE_PATH;
+import static org.folio.edge.sip2.utils.Utils.SYS_KEY_ALIAS;
+
+import java.nio.charset.Charset;
+import java.security.Security;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
 import io.micrometer.core.instrument.Timer;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -27,19 +39,16 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.pointer.JsonPointer;
+import io.vertx.core.net.KeyStoreOptions;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
 import io.vertx.ext.web.client.WebClient;
-import java.nio.charset.Charset;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.handlers.CheckinHandler;
@@ -115,6 +124,21 @@ public class MainVerticle extends AbstractVerticle {
     NetServerOptions options = new NetServerOptions(
         config().getJsonObject("netServerOptions", new JsonObject()))
         .setPort(port);
+
+    // initialize ssl if keystore_path and keystore_password are populated
+    String keystorePath = config().getString(SYS_KEYSTORE_PATH);
+    String keystorePassword = config().getString(SYS_KEYSTORE_PASSWORD);
+    if (keystorePath != null && keystorePassword != null) {
+      log.info("Enabling WebClient TLS/SSL configuration with using BCFIPS provider");
+      options.setSsl(true);
+      Security.addProvider(new BouncyCastleFipsProvider());
+      options.setKeyCertOptions(new KeyStoreOptions()
+        .setType(BCFKS_TYPE)
+        .setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
+        .setPath(keystorePath)
+        .setPassword(keystorePassword)
+        .setAlias(config().getString(SYS_KEY_ALIAS)));
+    }
 
     server = vertx.createNetServer(options);
 
