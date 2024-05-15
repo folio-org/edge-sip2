@@ -22,11 +22,6 @@ import org.folio.edge.sip2.repositories.RequestThrowable;
  *
  */
 public final class Utils {
-  public static final String SYS_KEYSTORE_PATH = "keystore_path";
-  public static final String SYS_KEYSTORE_PASSWORD = "keystore_password";
-  public static final String SYS_KEY_ALIAS = "key_alias";
-  // Security BCFKS provider
-  public static final String BCFKS_TYPE = "BCFKS";
 
   private Utils() {
     super();

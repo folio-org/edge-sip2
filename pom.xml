@@ -164,11 +164,6 @@
       <artifactId>bc-fips</artifactId>
       <version>1.0.2.5</version>
     </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-codegen</artifactId>
-      <scope>provided</scope>
-    </dependency>
     <!-- Test dependencies -->
     <dependency>
       <groupId>io.vertx</groupId>
@@ -414,7 +409,7 @@
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <manifestEntries>
-                    <Main-Class>io.vertx.core.Launcher</Main-Class>
+                    <Main-Class>org.folio.edge.sip2.Sip2Launcher</Main-Class>
                     <Main-Verticle>${exec.mainClass}</Main-Verticle>
                     <Multi-Release>true</Multi-Release>
                   </manifestEntries>

@@ -15,13 +15,8 @@ import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 import static org.folio.edge.sip2.parser.Command.UNKNOWN;
-import static org.folio.edge.sip2.utils.Utils.BCFKS_TYPE;
-import static org.folio.edge.sip2.utils.Utils.SYS_KEYSTORE_PASSWORD;
-import static org.folio.edge.sip2.utils.Utils.SYS_KEYSTORE_PATH;
-import static org.folio.edge.sip2.utils.Utils.SYS_KEY_ALIAS;
 
 import java.nio.charset.Charset;
-import java.security.Security;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +43,6 @@ import io.vertx.ext.web.client.WebClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
-import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.handlers.CheckinHandler;
@@ -77,6 +71,15 @@ public class MainVerticle extends AbstractVerticle {
   private static final int HEALTH_CHECK_PORT = 8081;
   private static final String  HEALTH_CHECK_PATH = "/admin/health";
   private static final String IPADDRESS = "ipAddress";
+  private static final String SYS_PORT = "port";
+  private static final String SYS_SSL_ENABLED = "ssl_enabled";
+  private static final String SYS_KEYSTORE_PATH = "keystore_path";
+  private static final String SYS_KEYSTORE_PASSWORD = "keystore_password";
+  private static final String SYS_KEYSTORE_TYPE = "keystore_type";
+  private static final String SYS_KEYSTORE_PROVIDER = "keystore_provider";
+  private static final String SYS_KEY_ALIAS = "key_alias";
+  private static final String SYS_KEY_ALIAS_PASSWORD = "key_alias_password";
+
   private Map<Command, ISip2RequestHandler> handlers;
   private NetServer server;
   private final Logger log = LogManager.getLogger();
@@ -115,32 +118,34 @@ public class MainVerticle extends AbstractVerticle {
     TokenCacheFactory.initialize(config()
         .getInteger(SYS_TOKEN_CACHE_CAPACITY, DEFAULT_TOKEN_CACHE_CAPACITY));
 
-
     // We need to reduce the complexity of this method...
     setupHanlders();
 
     //set Config object's defaults
-    int port = config().getInteger("port"); // move port to netServerOptions
-    NetServerOptions options = new NetServerOptions(
+    final int port = config().getInteger(SYS_PORT);
+    log.info("Using port: {}", port); // move port to netServerOptions
+    NetServerOptions serverOptions = new NetServerOptions(
         config().getJsonObject("netServerOptions", new JsonObject()))
         .setPort(port);
 
-    // initialize ssl if keystore_path and keystore_password are populated
-    String keystorePath = config().getString(SYS_KEYSTORE_PATH);
-    String keystorePassword = config().getString(SYS_KEYSTORE_PASSWORD);
-    if (keystorePath != null && keystorePassword != null) {
-      log.info("Enabling WebClient TLS/SSL configuration with using BCFIPS provider");
-      options.setSsl(true);
-      Security.addProvider(new BouncyCastleFipsProvider());
-      options.setKeyCertOptions(new KeyStoreOptions()
-        .setType(BCFKS_TYPE)
-        .setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
-        .setPath(keystorePath)
-        .setPassword(keystorePassword)
-        .setAlias(config().getString(SYS_KEY_ALIAS)));
-    }
+    // netserveroptions don't have compression support
+//    final boolean isCompressionSupported = config().getBoolean(SYS_RESPONSE_COMPRESSION);
+//    logger.info("Response compression enabled: {}", isCompressionSupported);
+//    serverOptions.setCompressionSupported(isCompressionSupported);
 
-    server = vertx.createNetServer(options);
+    // initialize ssl if keystore_path and keystore_password are populated
+    final boolean isSslEnabled = config().getBoolean(SYS_SSL_ENABLED);
+    if (isSslEnabled) {
+      log.info("Enabling Vertx Http Server with TLS/SSL configuration...");
+      serverOptions.setSsl(true);
+      serverOptions.setKeyCertOptions(new KeyStoreOptions()
+        .setType(config().getString(SYS_KEYSTORE_TYPE))
+        .setProvider(config().getString(SYS_KEYSTORE_PROVIDER))
+        .setPath(config().getString(SYS_KEYSTORE_PATH))
+        .setPassword(config().getString(SYS_KEYSTORE_PASSWORD))
+        .setAlias(config().getString(SYS_KEY_ALIAS))
+        .setAliasPassword(config().getString(SYS_KEY_ALIAS_PASSWORD)));
+    }
 
     log.info("Deployed verticle at port {}", port);
 
