@@ -129,9 +129,9 @@ public class MainVerticle extends AbstractVerticle {
         .setPort(port);
 
     // netserveroptions don't have compression support
-//    final boolean isCompressionSupported = config().getBoolean(SYS_RESPONSE_COMPRESSION);
-//    logger.info("Response compression enabled: {}", isCompressionSupported);
-//    serverOptions.setCompressionSupported(isCompressionSupported);
+    //    final boolean isCompressionSupported = config().getBoolean(SYS_RESPONSE_COMPRESSION);
+    //    logger.info("Response compression enabled: {}", isCompressionSupported);
+    //    serverOptions.setCompressionSupported(isCompressionSupported);
 
     // initialize ssl if keystore_path and keystore_password are populated
     final boolean isSslEnabled = config().getBoolean(SYS_SSL_ENABLED);
