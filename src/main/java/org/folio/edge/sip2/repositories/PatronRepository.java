@@ -86,10 +86,12 @@ public class PatronRepository {
   static final String NULL_SESSION_DATA_MSG = "SessionData cannot be null";
   static final String NULL_END_PATRON_SESSION_MSG = "EndPatronSession cannot be null";
   static final String NULL_PATRON_STATUS_MSG = "PatronStatus cannot be null";
+  static final String NULL_USER_REPO_MSG = "Users repository cannot be null";
 
   private final CirculationRepository circulationRepository;
   private final FeeFinesRepository feeFinesRepository;
   private final PasswordVerifier passwordVerifier;
+  private final UsersRepository usersRepository;
   private final Clock clock;
 
   @Inject
@@ -98,6 +100,7 @@ public class PatronRepository {
     this.circulationRepository = Objects.requireNonNull(circulationRepository, NULL_CIRC_REPO_MSG);
     this.feeFinesRepository = Objects.requireNonNull(feeFinesRepository, NULL_FEE_REPO_MSG);
     this.passwordVerifier = Objects.requireNonNull(passwordVerifier, NULL_PASS_VERIFY_MSG);
+    this.usersRepository = Objects.requireNonNull(usersRepository, NULL_USER_REPO_MSG);
     this.clock = Objects.requireNonNull(clock, NULL_CLOCK_MSG);
   }
 
@@ -118,8 +121,8 @@ public class PatronRepository {
     final String patronIdentifier = patronInformation.getPatronIdentifier();
     final String patronPassword = patronInformation.getPatronPassword();
 
-    Future<PatronPasswordVerificationRecords> passwordVerificationFuture = passwordVerifier
-        .doPatronPasswordVerification(patronIdentifier, patronPassword, sessionData);
+    Future<PatronPasswordVerificationRecords> passwordVerificationFuture
+        = forceVerifyPinOrPassword(patronIdentifier, patronPassword, sessionData);
     log.debug("Verification return value is {}", passwordVerificationFuture);
     return passwordVerificationFuture
         .onFailure(throwable -> {
@@ -177,7 +180,7 @@ public class PatronRepository {
     log.debug("IsPatronVerificationRequired: {}",
         sessionData.isPatronPasswordVerificationRequired());
 
-    return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+    return verifyPinOrPassword(patronIdentifier, patronPassword, sessionData)
       .onFailure(throwable -> {
         if (throwable instanceof ClientException) {
           sessionData.setErrorResponseMessage(invalidPatron(patronStatus, FALSE).result());
@@ -229,7 +232,7 @@ public class PatronRepository {
     final String patronIdentifier = endPatronSession.getPatronIdentifier();
     final String patronPassword = endPatronSession.getPatronPassword();
 
-    return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+    return verifyPinOrPassword(patronIdentifier, patronPassword, sessionData)
       .onFailure(throwable -> {
         if (throwable instanceof ClientException) {
           sessionData.setErrorResponseMessage(EndSessionResponse.builder()
@@ -358,6 +361,9 @@ public class PatronRepository {
 
     );
   }
+
+
+
 
 
   private PatronInformationResponseBuilder populateChargedCount(JsonObject loans,
@@ -836,6 +842,28 @@ public class PatronRepository {
       }
     }
     return null;
+  }
+
+  private Future<PatronPasswordVerificationRecords> verifyPinOrPassword(
+    String patronIdentifier,
+    String patronPassword,
+    SessionData sessionData
+  ) {
+    if (sessionData.isUsePinForPatronVerification()) {
+      return usersRepository.verifyPatronPin(patronIdentifier, patronPassword, sessionData);
+    }
+    return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData);
+  }
+
+  private Future<PatronPasswordVerificationRecords> forceVerifyPinOrPassword(
+    String patronIdentifier,
+    String patronPassword,
+    SessionData sessionData
+  ) {
+    if (sessionData.isUsePinForPatronVerification()) {
+      return usersRepository.doPatronPinVerification(patronIdentifier, patronPassword, sessionData);
+    }
+    return passwordVerifier.doPatronPasswordVerification(patronIdentifier, patronPassword, sessionData);
   }
 }
 
