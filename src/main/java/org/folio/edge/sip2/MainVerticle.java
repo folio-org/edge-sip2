@@ -1,6 +1,14 @@
 package org.folio.edge.sip2;
 
 import static java.lang.Boolean.FALSE;
+import static org.folio.edge.core.Constants.SYS_HTTP_SERVER_KEYSTORE_PASSWORD;
+import static org.folio.edge.core.Constants.SYS_HTTP_SERVER_KEYSTORE_PATH;
+import static org.folio.edge.core.Constants.SYS_HTTP_SERVER_KEYSTORE_PROVIDER;
+import static org.folio.edge.core.Constants.SYS_HTTP_SERVER_KEYSTORE_TYPE;
+import static org.folio.edge.core.Constants.SYS_HTTP_SERVER_KEY_ALIAS;
+import static org.folio.edge.core.Constants.SYS_HTTP_SERVER_KEY_ALIAS_PASSWORD;
+import static org.folio.edge.core.Constants.SYS_HTTP_SERVER_SSL_ENABLED;
+import static org.folio.edge.core.Constants.SYS_RESPONSE_COMPRESSION;
 import static org.folio.edge.sip2.parser.Command.CHECKIN;
 import static org.folio.edge.sip2.parser.Command.CHECKOUT;
 import static org.folio.edge.sip2.parser.Command.END_PATRON_SESSION;
@@ -22,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.amazonaws.util.StringUtils;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -31,12 +40,12 @@ import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.pointer.JsonPointer;
 import io.vertx.core.net.KeyStoreOptions;
 import io.vertx.core.net.NetServer;
-import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
 import io.vertx.ext.web.client.WebClient;
@@ -68,18 +77,12 @@ import org.folio.edge.sip2.utils.TenantUtils;
 
 public class MainVerticle extends AbstractVerticle {
 
+  private static final Logger logger = LogManager.getLogger(MainVerticle.class);
+
   private static final int HEALTH_CHECK_PORT = 8081;
   private static final String  HEALTH_CHECK_PATH = "/admin/health";
   private static final String IPADDRESS = "ipAddress";
   private static final String SYS_PORT = "port";
-  private static final String SYS_SSL_ENABLED = "ssl_enabled";
-  private static final String SYS_KEYSTORE_PATH = "keystore_path";
-  private static final String SYS_KEYSTORE_PASSWORD = "keystore_password";
-  private static final String SYS_KEYSTORE_TYPE = "keystore_type";
-  private static final String SYS_KEYSTORE_PROVIDER = "keystore_provider";
-  private static final String SYS_KEY_ALIAS = "key_alias";
-  private static final String SYS_KEY_ALIAS_PASSWORD = "key_alias_password";
-
   private Map<Command, ISip2RequestHandler> handlers;
   private NetServer server;
   private final Logger log = LogManager.getLogger();
@@ -123,29 +126,16 @@ public class MainVerticle extends AbstractVerticle {
 
     //set Config object's defaults
     final int port = config().getInteger(SYS_PORT);
-    log.info("Using port: {}", port); // move port to netServerOptions
-    NetServerOptions serverOptions = new NetServerOptions(
-        config().getJsonObject("netServerOptions", new JsonObject()))
-        .setPort(port);
+    log.info("Using port: {}", port);
+    final HttpServerOptions serverOptions = new HttpServerOptions();
+    // move port to httpServerOptions
+    // initialize response compression
+    final boolean isCompressionSupported = config().getBoolean(SYS_RESPONSE_COMPRESSION);
+    logger.info("Response compression enabled: {}", isCompressionSupported);
+    serverOptions.setCompressionSupported(isCompressionSupported);
 
-    // netserveroptions don't have compression support
-    //    final boolean isCompressionSupported = config().getBoolean(SYS_RESPONSE_COMPRESSION);
-    //    logger.info("Response compression enabled: {}", isCompressionSupported);
-    //    serverOptions.setCompressionSupported(isCompressionSupported);
-
-    // initialize ssl if keystore_path and keystore_password are populated
-    final boolean isSslEnabled = config().getBoolean(SYS_SSL_ENABLED);
-    if (isSslEnabled) {
-      log.info("Enabling Vertx Http Server with TLS/SSL configuration...");
-      serverOptions.setSsl(true);
-      serverOptions.setKeyCertOptions(new KeyStoreOptions()
-        .setType(config().getString(SYS_KEYSTORE_TYPE))
-        .setProvider(config().getString(SYS_KEYSTORE_PROVIDER))
-        .setPath(config().getString(SYS_KEYSTORE_PATH))
-        .setPassword(config().getString(SYS_KEYSTORE_PASSWORD))
-        .setAlias(config().getString(SYS_KEY_ALIAS))
-        .setAliasPassword(config().getString(SYS_KEY_ALIAS_PASSWORD)));
-    }
+    // initialize tls/ssl configuration for web server
+    configureSslIfEnabled(serverOptions);
 
     log.info("Deployed verticle at port {}", port);
 
@@ -244,6 +234,39 @@ public class MainVerticle extends AbstractVerticle {
     // after tenant config is loaded, start listening for messages
     lsitenToMessages(startFuture);
 
+  }
+
+  private void configureSslIfEnabled(HttpServerOptions serverOptions) {
+    final boolean isSslEnabled = config().getBoolean(SYS_HTTP_SERVER_SSL_ENABLED);
+    if (isSslEnabled) {
+      logger.info("Enabling Vertx Http Server with TLS/SSL configuration...");
+      serverOptions.setSsl(true);
+      String keystoreType = config().getString(SYS_HTTP_SERVER_KEYSTORE_TYPE);
+      if (StringUtils.isNullOrEmpty(keystoreType)) {
+        throw new IllegalStateException("'keystore_type' system param must be specified when ssl_enabled = true");
+      }
+      logger.info("Using {} keystore type for SSL/TLS", keystoreType);
+      String keystoreProvider = config().getString(SYS_HTTP_SERVER_KEYSTORE_PROVIDER);
+      logger.info("Using {} keystore provider for SSL/TLS", keystoreProvider);
+      String keystorePath = config().getString(SYS_HTTP_SERVER_KEYSTORE_PATH);
+      if (StringUtils.isNullOrEmpty(keystorePath)) {
+        throw new IllegalStateException("'keystore_path' system param must be specified when ssl_enabled = true");
+      }
+      String keystorePassword = config().getString(SYS_HTTP_SERVER_KEYSTORE_PASSWORD);
+      if (StringUtils.isNullOrEmpty(keystorePassword)) {
+        throw new IllegalStateException("'keystore_password' system param must be specified when ssl_enabled = true");
+      }
+      String keyAlias = config().getString(SYS_HTTP_SERVER_KEY_ALIAS);
+      String keyAliasPassword = config().getString(SYS_HTTP_SERVER_KEY_ALIAS_PASSWORD);
+
+      serverOptions.setKeyCertOptions(new KeyStoreOptions()
+        .setType(keystoreType)
+        .setProvider(keystoreProvider)
+        .setPath(keystorePath)
+        .setPassword(keystorePassword)
+        .setAlias(keyAlias)
+        .setAliasPassword(keyAliasPassword));
+    }
   }
 
   private void lsitenToMessages(Promise<Void> startFuture) {
