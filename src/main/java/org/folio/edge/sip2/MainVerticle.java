@@ -1,13 +1,6 @@
 package org.folio.edge.sip2;
 
 import static java.lang.Boolean.FALSE;
-import static org.folio.edge.core.Constants.SYS_HTTP_SERVER_KEYSTORE_PASSWORD;
-import static org.folio.edge.core.Constants.SYS_HTTP_SERVER_KEYSTORE_PATH;
-import static org.folio.edge.core.Constants.SYS_HTTP_SERVER_KEYSTORE_PROVIDER;
-import static org.folio.edge.core.Constants.SYS_HTTP_SERVER_KEYSTORE_TYPE;
-import static org.folio.edge.core.Constants.SYS_HTTP_SERVER_KEY_ALIAS;
-import static org.folio.edge.core.Constants.SYS_HTTP_SERVER_KEY_ALIAS_PASSWORD;
-import static org.folio.edge.core.Constants.SYS_HTTP_SERVER_SSL_ENABLED;
 import static org.folio.edge.core.Constants.SYS_RESPONSE_COMPRESSION;
 import static org.folio.edge.sip2.parser.Command.CHECKIN;
 import static org.folio.edge.sip2.parser.Command.CHECKOUT;
@@ -30,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.amazonaws.util.StringUtils;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -44,7 +36,6 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.pointer.JsonPointer;
-import io.vertx.core.net.KeyStoreOptions;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
@@ -52,6 +43,7 @@ import io.vertx.ext.web.client.WebClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+import org.folio.edge.core.utils.SslConfigurationUtil;
 import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.handlers.CheckinHandler;
@@ -135,7 +127,7 @@ public class MainVerticle extends AbstractVerticle {
     serverOptions.setCompressionSupported(isCompressionSupported);
 
     // initialize tls/ssl configuration for web server
-    configureSslIfEnabled(serverOptions);
+    SslConfigurationUtil.configureSslServerOptionsIfEnabled(config(), serverOptions);
 
     log.info("Deployed verticle at port {}", port);
 
@@ -234,39 +226,6 @@ public class MainVerticle extends AbstractVerticle {
     // after tenant config is loaded, start listening for messages
     lsitenToMessages(startFuture);
 
-  }
-
-  private void configureSslIfEnabled(HttpServerOptions serverOptions) {
-    final boolean isSslEnabled = config().getBoolean(SYS_HTTP_SERVER_SSL_ENABLED);
-    if (isSslEnabled) {
-      logger.info("Enabling Vertx Http Server with TLS/SSL configuration...");
-      serverOptions.setSsl(true);
-      String keystoreType = config().getString(SYS_HTTP_SERVER_KEYSTORE_TYPE);
-      if (StringUtils.isNullOrEmpty(keystoreType)) {
-        throw new IllegalStateException("'keystore_type' system param must be specified when ssl_enabled = true");
-      }
-      logger.info("Using {} keystore type for SSL/TLS", keystoreType);
-      String keystoreProvider = config().getString(SYS_HTTP_SERVER_KEYSTORE_PROVIDER);
-      logger.info("Using {} keystore provider for SSL/TLS", keystoreProvider);
-      String keystorePath = config().getString(SYS_HTTP_SERVER_KEYSTORE_PATH);
-      if (StringUtils.isNullOrEmpty(keystorePath)) {
-        throw new IllegalStateException("'keystore_path' system param must be specified when ssl_enabled = true");
-      }
-      String keystorePassword = config().getString(SYS_HTTP_SERVER_KEYSTORE_PASSWORD);
-      if (StringUtils.isNullOrEmpty(keystorePassword)) {
-        throw new IllegalStateException("'keystore_password' system param must be specified when ssl_enabled = true");
-      }
-      String keyAlias = config().getString(SYS_HTTP_SERVER_KEY_ALIAS);
-      String keyAliasPassword = config().getString(SYS_HTTP_SERVER_KEY_ALIAS_PASSWORD);
-
-      serverOptions.setKeyCertOptions(new KeyStoreOptions()
-        .setType(keystoreType)
-        .setProvider(keystoreProvider)
-        .setPath(keystorePath)
-        .setPassword(keystorePassword)
-        .setAlias(keyAlias)
-        .setAliasPassword(keyAliasPassword));
-    }
   }
 
   private void lsitenToMessages(Promise<Void> startFuture) {
