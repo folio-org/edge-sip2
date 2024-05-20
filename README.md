@@ -271,7 +271,14 @@ $ java -jar edge-sip2-fat.jar -conf '{"port":1234,"okapiUrl":"https://folio-snap
 |`path`|string|File system path to JKS key store|
 |`password`|string|The password for the JKS key store|
 
+## Security Configuration
+
+Configuration information is specified in two forms:
+1. System Properties - General configuration
+2. Properties File - Configuration specific to the desired secure store
+
 ### System Properties
+
 | Property                  | Default             | Description                                                               |
 |---------------------------|---------------------|---------------------------------------------------------------------------|
 | `port`                    | `8081`              | Server port to listen on                                                  |
@@ -283,15 +290,41 @@ $ java -jar edge-sip2-fat.jar -conf '{"port":1234,"okapiUrl":"https://folio-snap
 | `token_cache_capacity`    | `100`               | Max token cache size                                                      |
 | `log_level`               | `INFO`              | Log4j Log Level                                                           |
 | `request_timeout_ms`      | `30000`             | Request Timeout                                                           |
-| `ssl_enabled`             | `false`             | Set whether SSL/TLS is enabled for Vertx Http Server                      |
-| `keystore_type`           | `NA`                | Set the key store type                                                    |
-| `keystore_provider`       | `NA`                | Set the provider name of the key store                                    |
-| `keystore_path`           | `NA`                | Set the path to the key store file                                        |
-| `keystore_password`       | `NA`                | Set the password for the key store                                        |
-| `key_alias`               | `NA`                | Optional param that points to a specific key within the key store         |
-| `key_alias_password`      | `NA`                | Optional param that points to a password of `key_alias` if it protected   |
 | `api_key_sources`         | `PARAM,HEADER,PATH` | Defines the sources (order of precendence) of the API key.                |
 
+### System Properties for TLS configuration for Http server
+To configure Transport Layer Security (TLS) for the HTTP server in an edge module, the following configuration parameters should be used.
+Parameters marked as Required are required only in case when ssl_enabled is set to true.
+
+| Property                          | Default           | Description                                                                                 |
+|-----------------------------------|-------------------|---------------------------------------------------------------------------------------------|
+| `http-server.ssl_enabled`         | `false`           | Set whether SSL/TLS is enabled for Vertx Http Server                                        |
+| `http-server.keystore_type`       | `NA`              | (Required). Set the type of the keystore. Common types include `JKS`, `PKCS12`, and `BCFKS` |
+| `http-server.keystore_provider`   | `NA`              | Set the provider name of the key store                                                      |
+| `http-server.keystore_path`       | `NA`              | (Required). Set the location of the keystore file in the local file system                  |
+| `http-server.keystore_password`   | `NA`              | (Required). Set the password for the keystore                                               |
+| `http-server.key_alias`           | `NA`              | Set the alias of the key within the keystore.                                               |
+| `http-server.key_alias_password`  | `NA`              | Optional param that points to a password of `key_alias` if it protected                     |
+
+### System Properties for TLS configuration for Web Client
+To configure Transport Layer Security (TLS) for Web clients in the edge module, you can use the following configuration parameters.
+Truststore parameters for configuring Web clients are optional even when ssl_enabled = true.
+If truststore parameters need to be populated, truststore_type, truststore_path and truststore_password are required.
+
+| Property                          | Default           | Description                                                                      |
+|-----------------------------------|-------------------|----------------------------------------------------------------------------------|
+| `web-client.ssl_enabled`          | `false`           | Set whether SSL/TLS is enabled for Vertx Http Server                             |
+| `web-client.truststore_type`      | `NA`              | Set the type of the keystore. Common types include `JKS`, `PKCS12`, and `BCFKS`  |
+| `web-client.truststore_provider`  | `NA`              | Set the provider name of the key store                                           |
+| `web-client.truststore_path`      | `NA`              | Set the location of the keystore file in the local file system                   |
+| `web-client.truststore_password`  | `NA`              | Set the password for the keystore                                                |
+| `web-client.key_alias`            | `NA`              | Set the alias of the key within the keystore.                                    |
+| `web-client.key_alias_password`   | `NA`              | Optional param that points to a password of `key_alias` if it protected          |
+
+
+## Additional information
+
+There will be a single instance of okapi client per OkapiClientFactory and per tenant, which means that this client should never be closed or else there will be runtime errors. To enforce this behaviour, method close() has been removed from OkapiClient class.
 
 ## Permissions
 All permission associated with edge-sip2
