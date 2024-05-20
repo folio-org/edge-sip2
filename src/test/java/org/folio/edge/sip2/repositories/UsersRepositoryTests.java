@@ -323,9 +323,9 @@ public class UsersRepositoryTests {
         .when(mockFolioProvider).retrieveResource(
             argThat((IRequestData data2) -> data2.getPath().equals(expectedUsersBlQueryPath)));
 
-     doReturn(Future.succeededFuture(new FolioResource(userResponse,
+    doReturn(Future.succeededFuture(new FolioResource(userResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
-        .when(mockFolioProvider).retrieveResource(
+          .when(mockFolioProvider).retrieveResource(
             argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
@@ -341,9 +341,9 @@ public class UsersRepositoryTests {
 
   }
 
-    @Test
+  @Test
   public void cannotDoPatronPinVerification(Vertx vertx, VertxTestContext vertxTestContext,
-      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+        @Mock IResourceProvider<IRequestData> mockFolioProvider) {
     final String userId = "4f0e711c-d583-41e0-9555-b62f1725023f";
     final String pin = "1234";
     final String barcode = "997383903573496";
@@ -367,7 +367,7 @@ public class UsersRepositoryTests {
         .when(mockFolioProvider).retrieveResource(
             argThat((IRequestData data2) -> data2.getPath().equals(expectedUsersBlQueryPath)));
 
-     doReturn(Future.succeededFuture(new FolioResource(userResponse,
+    doReturn(Future.succeededFuture(new FolioResource(userResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
         .when(mockFolioProvider).retrieveResource(
             argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));

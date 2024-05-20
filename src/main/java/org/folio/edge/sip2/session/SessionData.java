@@ -147,10 +147,12 @@ public class SessionData {
   }
 
   /**
-   * Are we to use patron pin instead of the password for verification?
+   * Are we to use patron pin instead of the password for verification.
    * @return boolean true or false
    */
-  public boolean isUsePinForPatronVerification() { return usePinForPatronVerification; }
+  public boolean isUsePinForPatronVerification() {
+    return usePinForPatronVerification;
+  }
 
   public void setPatronPasswordVerificationRequired(boolean patronPasswordVerificationRequired) {
     this.patronPasswordVerificationRequired = patronPasswordVerificationRequired;

@@ -259,12 +259,13 @@ public class UsersRepository {
    * @param identifier The user barcode
    * @param pin The user pin
    * @param sessionData Current sessiondata
-   * @return PatronPasswordVerificationRecords future indicating whether or not verification was successful
+   * @return PatronPasswordVerificationRecords future indicating whether or not verification was
+   *         successful
    */
   public Future<PatronPasswordVerificationRecords> verifyPatronPin(
-    String identifier,
-    String pin,
-    SessionData sessionData
+      String identifier,
+      String pin,
+      SessionData sessionData
   ) {
     final Future<PatronPasswordVerificationRecords> verifyFuture;
     if (sessionData.isPatronPasswordVerificationRequired()) {
@@ -275,7 +276,8 @@ public class UsersRepository {
           return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
               .extendedUser(extendedUser).build());
         }
-        return Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()); //null user
+        return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .build()); //null user
       });
     }
     return verifyFuture;
@@ -287,7 +289,8 @@ public class UsersRepository {
    * @param identifier The user barcode
    * @param pin The user pin
    * @param sessionData Current sessiondata
-   * @return PatronPasswordVerificationRecords future indicating whether or not verification was successful
+   * @return PatronPasswordVerificationRecords future indicating whether or not verification was
+   *         successful
    */
   public Future<PatronPasswordVerificationRecords> doPatronPinVerification(
       String identifier,
@@ -302,7 +305,7 @@ public class UsersRepository {
           .build());
       }
       PinVerifyRequestData pinVerifyRequestData
-        = new PinVerifyRequestData(extendedUser.getUser().getId(), pin, headers, sessionData);
+          = new PinVerifyRequestData(extendedUser.getUser().getId(), pin, headers, sessionData);
       Future<IResource> pinResult = resourceProvider.createResource(pinVerifyRequestData);
       return pinResult
         .compose(pinCheckResult -> {
@@ -318,13 +321,13 @@ public class UsersRepository {
               .passwordVerified(Boolean.TRUE)
               .build());
           }
-        }, throwable -> { //Return false one error
-          return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-            .extendedUser(extendedUser)
-            .errorMessages(Collections.singletonList("Error verifying PIN"))
-            .passwordVerified(Boolean.FALSE)
-            .build());
-        });
+        }, throwable -> { //Return false on error
+            return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+                .extendedUser(extendedUser)
+                .errorMessages(Collections.singletonList("Error verifying PIN"))
+                .passwordVerified(Boolean.FALSE)
+                .build());
+          });
     });
   }
 }

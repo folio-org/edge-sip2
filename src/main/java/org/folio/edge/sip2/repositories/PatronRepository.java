@@ -845,9 +845,9 @@ public class PatronRepository {
   }
 
   private Future<PatronPasswordVerificationRecords> verifyPinOrPassword(
-    String patronIdentifier,
-    String patronPassword,
-    SessionData sessionData
+      String patronIdentifier,
+      String patronPassword,
+      SessionData sessionData
   ) {
     if (sessionData.isUsePinForPatronVerification()) {
       return usersRepository.verifyPatronPin(patronIdentifier, patronPassword, sessionData);
@@ -856,14 +856,15 @@ public class PatronRepository {
   }
 
   private Future<PatronPasswordVerificationRecords> forceVerifyPinOrPassword(
-    String patronIdentifier,
-    String patronPassword,
-    SessionData sessionData
+      String patronIdentifier,
+      String patronPassword,
+      SessionData sessionData
   ) {
     if (sessionData.isUsePinForPatronVerification()) {
       return usersRepository.doPatronPinVerification(patronIdentifier, patronPassword, sessionData);
     }
-    return passwordVerifier.doPatronPasswordVerification(patronIdentifier, patronPassword, sessionData);
+    return passwordVerifier.doPatronPasswordVerification(patronIdentifier, patronPassword,
+        sessionData);
   }
 }
 
