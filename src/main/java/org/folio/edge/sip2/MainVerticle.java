@@ -32,14 +32,13 @@ import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import java.nio.charset.Charset;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-
-import io.vertx.ext.web.client.WebClientOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -117,9 +116,9 @@ public class MainVerticle extends AbstractVerticle {
     //set Config object's defaults
     final int port = config().getInteger(SYS_PORT);
     log.info("Using port: {}", port);
-    NetServerOptions options = new NetServerOptions(
-      config().getJsonObject("netServerOptions", new JsonObject()))
-      .setPort(port);
+    NetServerOptions options = new NetServerOptions(config()
+          .getJsonObject("netServerOptions", new JsonObject()));
+    options.setPort(port);
 
     // move port to httpServerOptions
     // initialize response compression
