@@ -1,7 +1,6 @@
 package org.folio.edge.sip2;
 
 import static java.lang.Boolean.FALSE;
-import static org.folio.edge.core.Constants.SYS_RESPONSE_COMPRESSION;
 import static org.folio.edge.sip2.parser.Command.CHECKIN;
 import static org.folio.edge.sip2.parser.Command.CHECKOUT;
 import static org.folio.edge.sip2.parser.Command.END_PATRON_SESSION;
@@ -22,6 +21,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -32,7 +32,6 @@ import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.pointer.JsonPointer;
@@ -41,10 +40,11 @@ import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
-import org.folio.edge.core.utils.SslConfigurationUtil;
+import org.folio.edge.core.Constants;
 import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.handlers.CheckinHandler;
@@ -69,8 +69,6 @@ import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.TenantUtils;
 
 public class MainVerticle extends AbstractVerticle {
-
-  private static final Logger logger = LogManager.getLogger(MainVerticle.class);
 
   private static final int HEALTH_CHECK_PORT = 8081;
   private static final String  HEALTH_CHECK_PATH = "/admin/health";
@@ -331,7 +329,9 @@ public class MainVerticle extends AbstractVerticle {
   private void setupHanlders() {
     if (handlers == null) {
       String okapiUrl = config().getString("okapiUrl");
-      final WebClient webClient = WebClient.create(vertx);
+      Integer timeout = config().getInteger(Constants.SYS_REQUEST_TIMEOUT_MS);
+      WebClientOptions webClientOptions = initDefaultWebClientOptions(timeout);
+      final WebClient webClient = WebClient.create(vertx, webClientOptions);
       final Injector injector = Guice.createInjector(
           new FolioResourceProviderModule(okapiUrl, webClient),
           new ApplicationModule());
@@ -351,6 +351,12 @@ public class MainVerticle extends AbstractVerticle {
       handlers.put(RENEW,  injector.getInstance(RenewHandler.class));
       handlers.put(RENEW_ALL,  injector.getInstance(RenewAllHandler.class));
     }
+  }
+
+  private WebClientOptions initDefaultWebClientOptions(int timeout) {
+    return new WebClientOptions()
+      .setIdleTimeoutUnit(TimeUnit.MILLISECONDS).setIdleTimeout(timeout)
+      .setConnectTimeout(timeout);
   }
 
   private void callAdminHealthCheckService() {
