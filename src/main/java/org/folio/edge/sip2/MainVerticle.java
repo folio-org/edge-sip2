@@ -37,6 +37,7 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.pointer.JsonPointer;
 import io.vertx.core.net.NetServer;
+import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
 import io.vertx.ext.web.client.WebClient;
@@ -119,20 +120,19 @@ public class MainVerticle extends AbstractVerticle {
     //set Config object's defaults
     final int port = config().getInteger(SYS_PORT);
     log.info("Using port: {}", port);
-    final HttpServerOptions serverOptions = new HttpServerOptions();
+    NetServerOptions options = new NetServerOptions(
+      config().getJsonObject("netServerOptions", new JsonObject()))
+      .setPort(port);
+
     // move port to httpServerOptions
     // initialize response compression
-    final boolean isCompressionSupported = config().getBoolean(SYS_RESPONSE_COMPRESSION);
-    logger.info("Response compression enabled: {}", isCompressionSupported);
-    serverOptions.setCompressionSupported(isCompressionSupported);
-
-    // initialize tls/ssl configuration for web server
-    SslConfigurationUtil.configureSslServerOptionsIfEnabled(config(), serverOptions);
 
     log.info("Deployed verticle at port {}", port);
 
     final Metrics metrics = Metrics.getMetrics(port);
     metricsMap.putIfAbsent(port, metrics);
+
+    server = vertx.createNetServer(options);
 
     server.connectHandler(socket -> {
 
