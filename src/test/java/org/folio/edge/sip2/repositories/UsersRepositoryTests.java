@@ -373,6 +373,7 @@ public class UsersRepositoryTests {
             argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPatronPasswordVerificationRequired(true);
     final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
 
     usersRepository.doPatronPinVerification(barcode, pin, sessionData).onComplete(
