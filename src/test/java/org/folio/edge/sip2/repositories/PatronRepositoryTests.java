@@ -246,7 +246,7 @@ public class PatronRepositoryTests {
   }
 
 
-@Test
+  @Test
   public void canPatronInformationWithPinVerification(Vertx vertx,
       VertxTestContext testContext,
       @Mock UsersRepository mockUsersRepository,
