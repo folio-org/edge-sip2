@@ -353,6 +353,7 @@ public class MainVerticle extends AbstractVerticle {
 
   private WebClientOptions initDefaultWebClientOptions(int timeout) {
     return new WebClientOptions()
+      .setSsl(true)
       .setIdleTimeoutUnit(TimeUnit.MILLISECONDS).setIdleTimeout(timeout)
       .setConnectTimeout(timeout);
   }
