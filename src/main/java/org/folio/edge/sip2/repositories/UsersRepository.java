@@ -306,22 +306,16 @@ public class UsersRepository {
       }
       PinVerifyRequestData pinVerifyRequestData
           = new PinVerifyRequestData(extendedUser.getUser().getId(), pin, headers, sessionData);
+      log.debug("Attempting to verify pin");
       Future<IResource> pinResult = resourceProvider.createResource(pinVerifyRequestData);
       return pinResult
         .compose(pinCheckResult -> {
-          if (pinResult.failed()) {
-            return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-              .extendedUser(extendedUser)
-              .errorMessages(pinCheckResult.getErrorMessages())
-              .passwordVerified(Boolean.FALSE)
-              .build());
-          } else {
-            return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-              .extendedUser(extendedUser)
-              .passwordVerified(Boolean.TRUE)
-              .build());
-          }
+          return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .extendedUser(extendedUser)
+            .passwordVerified(Boolean.TRUE)
+            .build());
         }, throwable -> { //Return false on error
+            log.debug("Error on pin check");
             return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
                 .extendedUser(extendedUser)
                 .errorMessages(Collections.singletonList("Error verifying PIN"))

@@ -359,7 +359,8 @@ public class UsersRepositoryTests {
 
     final String expectedUsersBlQueryPath = "/bl-users/by-id/" + userId;
 
-    doReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")))
+    //doReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")))
+    doReturn(Future.failedFuture("Failed"))
             .when(mockFolioProvider).createResource(any());
 
     doReturn(Future.succeededFuture(new FolioResource(userBlResponse,
