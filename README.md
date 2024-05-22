@@ -298,6 +298,7 @@ All permission associated with edge-sip2
     inventory-storage.holdings.item.get
     inventory.instances.item.get
     feefines.collection.get
+    patron-pin.validate
 ```
 
 #### Security concerns for developers
