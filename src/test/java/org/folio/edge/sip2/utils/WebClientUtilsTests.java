@@ -71,10 +71,9 @@ public class WebClientUtilsTests {
   @Test
   void testCreateWebClientWithEmptyCertPaths(Vertx vertx) {
     JsonObject config = new JsonObject().put(SYS_NET_SERVER_OPTIONS, new JsonObject()
-      .put(SYS_PEM_KEY_CERT_OPTIONS, new JsonObject()
-          .put(SYS_CERT_PATHS, new JsonArray())));
+        .put(SYS_PEM_KEY_CERT_OPTIONS, new JsonObject().put(SYS_CERT_PATHS, new JsonArray())));
     Assertions.assertThrows(WebClientConfigException.class,
-      () -> WebClientUtils.create(vertx, config));
+        () -> WebClientUtils.create(vertx, config));
   }
 
   @Test
