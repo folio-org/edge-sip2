@@ -62,7 +62,8 @@ public class WebClientUtilsTests {
   void testCreateWebClientWithMissingCertPaths(Vertx vertx) {
     JsonObject config = new JsonObject().put(SYS_NET_SERVER_OPTIONS, new JsonObject()
         .put(SYS_PEM_KEY_CERT_OPTIONS, new JsonObject()));
-    Assertions.assertThrows(WebClientConfigException.class, () -> WebClientUtils.create(vertx, config));
+    Assertions.assertThrows(WebClientConfigException.class,
+        () -> WebClientUtils.create(vertx, config));
   }
 
   @Test
