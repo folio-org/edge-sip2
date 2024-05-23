@@ -17,7 +17,6 @@ public class WebClientUtils {
   public static final String SYS_NET_SERVER_OPTIONS = "netServerOptions";
   public static final String SYS_PEM_KEY_CERT_OPTIONS = "pemKeyCertOptions";
   public static final String SYS_CERT_PATHS = "certPaths";
-
   private static final Logger log = LogManager.getLogger();
 
   private WebClientUtils() {
@@ -25,11 +24,12 @@ public class WebClientUtils {
 
   public static WebClient create(Vertx vertx, JsonObject config) {
     JsonObject netServerOptions = config.getJsonObject(SYS_NET_SERVER_OPTIONS);
-    if (Objects.nonNull(netServerOptions) && netServerOptions.containsKey(SYS_PEM_KEY_CERT_OPTIONS)) {
+    if (Objects.nonNull(netServerOptions) &&
+      netServerOptions.containsKey(SYS_PEM_KEY_CERT_OPTIONS)) {
       log.info("Creating WebClient with TLS on...");
 
       JsonArray certPaths = netServerOptions.getJsonObject(SYS_PEM_KEY_CERT_OPTIONS)
-        .getJsonArray(SYS_CERT_PATHS);
+          .getJsonArray(SYS_CERT_PATHS);
       if (Objects.isNull(certPaths)) {
         throw new RuntimeException("No TLS certPaths were found in config");
       }
