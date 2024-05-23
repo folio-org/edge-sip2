@@ -33,14 +33,13 @@ import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.core.parsetools.RecordParser;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import java.nio.charset.Charset;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
-import io.vertx.ext.web.client.WebClientOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -327,13 +326,14 @@ public class MainVerticle extends AbstractVerticle {
       JsonObject jsonObject = config().getJsonObject("netServerOptions", new JsonObject());
 
       final WebClient webClient;
-      if (!jsonObject.containsKey("pemKeyCertOptions") && Objects.nonNull(jsonObject.getJsonObject("pemKeyCertOptions"))) {
+      if (!jsonObject.containsKey("pemKeyCertOptions")
+          && Objects.nonNull(jsonObject.getJsonObject("pemKeyCertOptions"))) {
         @SuppressWarnings("unchecked")
         Optional<String> optionalCertPath = jsonObject.getJsonObject("pemKeyCertOptions")
-          .getJsonArray("certPaths")
-          .getList()
-          .stream()
-          .findAny();
+            .getJsonArray("certPaths")
+            .getList()
+            .stream()
+            .findAny();
         if (optionalCertPath.isEmpty()) {
           throw new RuntimeException("TLS certPaths is not found in config");
         }
@@ -341,8 +341,8 @@ public class MainVerticle extends AbstractVerticle {
         final PemTrustOptions pemTrustOptions = new PemTrustOptions();
         pemTrustOptions.addCertPath(optionalCertPath.get());
         final WebClientOptions webClientOptions = new WebClientOptions()
-          .setSsl(true)
-          .setTrustOptions(pemTrustOptions);
+            .setSsl(true)
+            .setTrustOptions(pemTrustOptions);
         webClient = WebClient.create(vertx, webClientOptions);
       } else {
         webClient = WebClient.create(vertx);
