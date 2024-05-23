@@ -25,11 +25,13 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.pointer.JsonPointer;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.NetSocket;
+import io.vertx.core.net.PemTrustOptions;
 import io.vertx.core.parsetools.RecordParser;
 import io.vertx.ext.web.client.WebClient;
 import java.nio.charset.Charset;
@@ -37,6 +39,9 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+
+import io.vertx.ext.web.client.WebClientOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -320,7 +325,27 @@ public class MainVerticle extends AbstractVerticle {
   private void setupHanlders() {
     if (handlers == null) {
       String okapiUrl = config().getString("okapiUrl");
-      final WebClient webClient = WebClient.create(vertx);
+      JsonObject jsonObject = config().getJsonObject("netServerOptions", new JsonObject());
+      if (!jsonObject.containsKey("pemKeyCertOptions")) {
+        throw new RuntimeException("TLS pemKeyCertOptions is not found in config");
+      }
+
+      @SuppressWarnings("unchecked")
+      Optional<String> optionalCertPath = jsonObject.getJsonObject("pemKeyCertOptions")
+        .getJsonArray("certPaths")
+        .getList()
+        .stream()
+        .findAny();
+      if (optionalCertPath.isEmpty()) {
+        throw new RuntimeException("TLS certPaths is not found in config");
+      }
+
+      final PemTrustOptions pemTrustOptions = new PemTrustOptions();
+      pemTrustOptions.addCertPath(optionalCertPath.get());
+      final WebClientOptions webClientOptions = new WebClientOptions()
+        .setSsl(true)
+        .setTrustOptions(pemTrustOptions);
+      final WebClient webClient = WebClient.create(vertx, webClientOptions);
       final Injector injector = Guice.createInjector(
           new FolioResourceProviderModule(okapiUrl, webClient),
           new ApplicationModule());
