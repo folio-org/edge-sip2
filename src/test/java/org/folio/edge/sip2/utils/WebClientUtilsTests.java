@@ -12,15 +12,15 @@ import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import java.io.IOException;
 import io.vertx.core.json.JsonObject;
+import java.net.ServerSocket;
 import io.vertx.core.net.SelfSignedCertificate;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.io.IOException;
-import java.net.ServerSocket;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -82,7 +82,7 @@ public class WebClientUtilsTests {
         .send()
         .onComplete(testContext.succeeding(response -> {
           String message = response.body().toString();
-          log.info("WebClient sent message to server port {}, response message: {}", serverPort, message);
+          log.info("WebClient sent message to port {}, message: {}", serverPort, message);
           Assertions.assertEquals(HttpResponseStatus.OK.code(), response.statusCode());
           Assertions.assertEquals(RESPONSE_MESSAGE, message);
           testContext.completeNow();
@@ -102,8 +102,8 @@ public class WebClientUtilsTests {
     webClient.get(serverPort, "localhost", "/")
         .send()
         .onComplete(testContext.failing(err -> {
-           log.info("Connection error: ", err);
-           testContext.completeNow();
+          log.info("Connection error: ", err);
+          testContext.completeNow();
         }));
   }
 

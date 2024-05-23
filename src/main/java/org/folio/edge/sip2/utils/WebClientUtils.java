@@ -3,13 +3,12 @@ package org.folio.edge.sip2.utils;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.util.Objects;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.Objects;
 
 public class WebClientUtils {
 
@@ -22,10 +21,16 @@ public class WebClientUtils {
   private WebClientUtils() {
   }
 
+  /**
+   * Create WebClient with TLS
+   * @param vertx instance
+   * @param config json config
+   * @return WebClient
+   */
   public static WebClient create(Vertx vertx, JsonObject config) {
     JsonObject netServerOptions = config.getJsonObject(SYS_NET_SERVER_OPTIONS);
-    if (Objects.nonNull(netServerOptions) &&
-      netServerOptions.containsKey(SYS_PEM_KEY_CERT_OPTIONS)) {
+    if (Objects.nonNull(netServerOptions)
+        && netServerOptions.containsKey(SYS_PEM_KEY_CERT_OPTIONS)) {
       log.info("Creating WebClient with TLS on...");
 
       JsonArray certPaths = netServerOptions.getJsonObject(SYS_PEM_KEY_CERT_OPTIONS)
