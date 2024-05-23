@@ -66,6 +66,7 @@ import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.TenantUtils;
+import org.folio.edge.sip2.utils.WebClientUtils;
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -324,30 +325,7 @@ public class MainVerticle extends AbstractVerticle {
   private void setupHanlders() {
     if (handlers == null) {
       String okapiUrl = config().getString("okapiUrl");
-      JsonObject jsonObject = config().getJsonObject("netServerOptions", new JsonObject());
-
-      final WebClient webClient;
-      if (!jsonObject.containsKey("pemKeyCertOptions") && Objects.nonNull(jsonObject.getJsonObject("pemKeyCertOptions"))) {
-        @SuppressWarnings("unchecked")
-        Optional<String> optionalCertPath = jsonObject.getJsonObject("pemKeyCertOptions")
-          .getJsonArray("certPaths")
-          .getList()
-          .stream()
-          .findAny();
-        if (optionalCertPath.isEmpty()) {
-          throw new RuntimeException("TLS certPaths is not found in config");
-        }
-
-        final PemTrustOptions pemTrustOptions = new PemTrustOptions();
-        pemTrustOptions.addCertPath(optionalCertPath.get());
-        final WebClientOptions webClientOptions = new WebClientOptions()
-          .setSsl(true)
-          .setTrustOptions(pemTrustOptions);
-        webClient = WebClient.create(vertx, webClientOptions);
-      } else {
-        webClient = WebClient.create(vertx);
-      }
-
+      final WebClient webClient = WebClientUtils.create(vertx, config());
       final Injector injector = Guice.createInjector(
           new FolioResourceProviderModule(okapiUrl, webClient),
           new ApplicationModule());
