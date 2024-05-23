@@ -325,26 +325,29 @@ public class MainVerticle extends AbstractVerticle {
     if (handlers == null) {
       String okapiUrl = config().getString("okapiUrl");
       JsonObject jsonObject = config().getJsonObject("netServerOptions", new JsonObject());
-      if (!jsonObject.containsKey("pemKeyCertOptions")) {
-        throw new RuntimeException("TLS pemKeyCertOptions is not found in config");
+
+      final WebClient webClient;
+      if (!jsonObject.containsKey("pemKeyCertOptions") && Objects.nonNull(jsonObject.getJsonObject("pemKeyCertOptions"))) {
+        @SuppressWarnings("unchecked")
+        Optional<String> optionalCertPath = jsonObject.getJsonObject("pemKeyCertOptions")
+          .getJsonArray("certPaths")
+          .getList()
+          .stream()
+          .findAny();
+        if (optionalCertPath.isEmpty()) {
+          throw new RuntimeException("TLS certPaths is not found in config");
+        }
+
+        final PemTrustOptions pemTrustOptions = new PemTrustOptions();
+        pemTrustOptions.addCertPath(optionalCertPath.get());
+        final WebClientOptions webClientOptions = new WebClientOptions()
+          .setSsl(true)
+          .setTrustOptions(pemTrustOptions);
+        webClient = WebClient.create(vertx, webClientOptions);
+      } else {
+        webClient = WebClient.create(vertx);
       }
 
-      @SuppressWarnings("unchecked")
-      Optional<String> optionalCertPath = jsonObject.getJsonObject("pemKeyCertOptions")
-        .getJsonArray("certPaths")
-        .getList()
-        .stream()
-        .findAny();
-      if (optionalCertPath.isEmpty()) {
-        throw new RuntimeException("TLS certPaths is not found in config");
-      }
-
-      final PemTrustOptions pemTrustOptions = new PemTrustOptions();
-      pemTrustOptions.addCertPath(optionalCertPath.get());
-      final WebClientOptions webClientOptions = new WebClientOptions()
-        .setSsl(true)
-        .setTrustOptions(pemTrustOptions);
-      final WebClient webClient = WebClient.create(vertx, webClientOptions);
       final Injector injector = Guice.createInjector(
           new FolioResourceProviderModule(okapiUrl, webClient),
           new ApplicationModule());
