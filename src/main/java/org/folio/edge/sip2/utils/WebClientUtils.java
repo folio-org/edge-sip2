@@ -31,7 +31,7 @@ public class WebClientUtils {
       JsonArray certPaths = netServerOptions.getJsonObject(SYS_PEM_KEY_CERT_OPTIONS)
         .getJsonArray(SYS_CERT_PATHS);
       if (Objects.isNull(certPaths)) {
-        throw new RuntimeException("No TLS certPaths were added into the PemTrustOptions");
+        throw new RuntimeException("No TLS certPaths were found in config");
       }
 
       final PemTrustOptions pemTrustOptions = new PemTrustOptions();
