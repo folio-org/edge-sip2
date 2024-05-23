@@ -102,8 +102,8 @@ public class WebClientUtilsTests {
     webClient.get(serverPort, "localhost", "/")
         .send()
         .onComplete(testContext.failing(err -> {
-          log.info("Connection error: ", err);
-          testContext.completeNow();
+           log.info("Connection error: ", err);
+           testContext.completeNow();
         }));
   }
 

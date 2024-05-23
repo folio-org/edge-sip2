@@ -38,8 +38,8 @@ public class WebClientUtils {
       certPaths.forEach(entry -> pemTrustOptions.addCertPath((String) entry));
 
       final WebClientOptions webClientOptions = new WebClientOptions()
-        .setSsl(true)
-        .setTrustOptions(pemTrustOptions);
+          .setSsl(true)
+          .setTrustOptions(pemTrustOptions);
       return WebClient.create(vertx, webClientOptions);
     } else {
       log.info("Creating WebClient without TLS off...");
