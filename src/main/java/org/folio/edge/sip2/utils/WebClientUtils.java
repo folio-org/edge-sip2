@@ -3,12 +3,13 @@ package org.folio.edge.sip2.utils;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import java.util.Objects;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
+import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 
 public class WebClientUtils {
 
@@ -22,7 +23,7 @@ public class WebClientUtils {
   }
 
   /**
-   * Create WebClient with TLS
+   * Create WebClient with TLS.
    * @param vertx instance
    * @param config json config
    * @return WebClient
