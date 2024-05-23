@@ -34,39 +34,39 @@ public class WebClientUtilsTests {
   private SelfSignedCertificate selfSignedCertificate;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     this.serverPort = getRandomPort();
     this.selfSignedCertificate = SelfSignedCertificate.create();
   }
 
   @AfterEach
-  public void tearDown() {
+  void tearDown() {
     this.serverPort = null;
     this.selfSignedCertificate = null;
   }
 
   @Test
-  public void testCreateWebClientTlsOff(Vertx vertx) {
+  void testCreateWebClientTlsOff(Vertx vertx) {
     JsonObject config = new JsonObject();
     Assertions.assertDoesNotThrow(() -> WebClientUtils.create(vertx, config));
   }
 
   @Test
-  public void testCreateWebClientTlsOn(Vertx vertx) {
+  void testCreateWebClientTlsOn(Vertx vertx) {
     JsonObject config = new JsonObject().put(SYS_NET_SERVER_OPTIONS, new JsonObject()
         .put(SYS_PEM_KEY_CERT_OPTIONS, selfSignedCertificate.keyCertOptions().toJson()));
     Assertions.assertDoesNotThrow(() -> WebClientUtils.create(vertx, config));
   }
 
   @Test
-  public void testCreateWebClientWithMissingCertPaths(Vertx vertx) {
+  void testCreateWebClientWithMissingCertPaths(Vertx vertx) {
     JsonObject config = new JsonObject().put(SYS_NET_SERVER_OPTIONS, new JsonObject()
         .put(SYS_PEM_KEY_CERT_OPTIONS, new JsonObject()));
-    Assertions.assertThrows(RuntimeException.class, () -> WebClientUtils.create(vertx, config));
+    Assertions.assertThrows(WebClientConfigException.class, () -> WebClientUtils.create(vertx, config));
   }
 
   @Test
-  public void testWebClientServerCommunication(Vertx vertx, VertxTestContext testContext) {
+  void testWebClientServerCommunication(Vertx vertx, VertxTestContext testContext) {
     JsonObject sipConfig = getCommonSipConfig(vertx);
 
     sipConfig.put(SYS_PORT, serverPort);
@@ -88,7 +88,7 @@ public class WebClientUtilsTests {
   }
 
   @Test
-  public void testFailingWebClientServerCommunication(Vertx vertx, VertxTestContext testContext) {
+  void testFailingWebClientServerCommunication(Vertx vertx, VertxTestContext testContext) {
     JsonObject sipConfig = getCommonSipConfig(vertx);
 
     sipConfig.put(SYS_PORT, serverPort);
