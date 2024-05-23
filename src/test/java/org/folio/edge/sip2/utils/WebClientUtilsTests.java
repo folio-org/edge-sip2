@@ -1,5 +1,6 @@
 package org.folio.edge.sip2.utils;
 
+import static org.folio.edge.sip2.utils.WebClientUtils.SYS_CERT_PATHS;
 import static org.folio.edge.sip2.utils.WebClientUtils.SYS_NET_SERVER_OPTIONS;
 import static org.folio.edge.sip2.utils.WebClientUtils.SYS_PEM_KEY_CERT_OPTIONS;
 import static org.folio.edge.sip2.utils.WebClientUtils.SYS_PORT;
@@ -10,6 +11,7 @@ import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.SelfSignedCertificate;
 import io.vertx.ext.web.client.WebClient;
@@ -35,7 +37,7 @@ public class WebClientUtilsTests {
 
   @BeforeEach
   void setup() {
-    this.serverPort = getRandomPort();
+    this.serverPort = getAvailablePort();
     this.selfSignedCertificate = SelfSignedCertificate.create();
   }
 
@@ -64,6 +66,15 @@ public class WebClientUtilsTests {
         .put(SYS_PEM_KEY_CERT_OPTIONS, new JsonObject()));
     Assertions.assertThrows(WebClientConfigException.class,
         () -> WebClientUtils.create(vertx, config));
+  }
+
+  @Test
+  void testCreateWebClientWithEmptyCertPaths(Vertx vertx) {
+    JsonObject config = new JsonObject().put(SYS_NET_SERVER_OPTIONS, new JsonObject()
+      .put(SYS_PEM_KEY_CERT_OPTIONS, new JsonObject()
+          .put(SYS_CERT_PATHS, new JsonArray())));
+    Assertions.assertThrows(WebClientConfigException.class,
+      () -> WebClientUtils.create(vertx, config));
   }
 
   @Test
@@ -131,7 +142,7 @@ public class WebClientUtilsTests {
     return fileSystem.readFileBlocking("test-sip2.conf").toJsonObject();
   }
 
-  private static int getRandomPort() {
+  private static int getAvailablePort() {
     do {
       try (ServerSocket socket = new ServerSocket(0)) {
         return socket.getLocalPort();
