@@ -1,7 +1,5 @@
 package org.folio.edge.sip2.utils;
 
-
-
 import static org.folio.edge.sip2.utils.WebClientUtils.SYS_NET_SERVER_OPTIONS;
 import static org.folio.edge.sip2.utils.WebClientUtils.SYS_PEM_KEY_CERT_OPTIONS;
 import static org.folio.edge.sip2.utils.WebClientUtils.SYS_PORT;
@@ -12,13 +10,13 @@ import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import java.io.IOException;
 import io.vertx.core.json.JsonObject;
-import java.net.ServerSocket;
 import io.vertx.core.net.SelfSignedCertificate;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import java.io.IOException;
+import java.net.ServerSocket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
