@@ -69,7 +69,7 @@ public class WebClientUtilsTests {
     JsonObject certPaths = new JsonObject().put(SYS_CERT_PATHS, certPathsArray);
 
     JsonObject config = new JsonObject().put(SYS_NET_SERVER_OPTIONS, new JsonObject()
-      .put(SYS_PEM_KEY_CERT_OPTIONS, certPaths));
+        .put(SYS_PEM_KEY_CERT_OPTIONS, certPaths));
     Assertions.assertDoesNotThrow(() -> WebClientUtils.create(vertx, config));
   }
 
