@@ -62,6 +62,7 @@ import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.TenantUtils;
+import org.folio.edge.sip2.utils.WebClientUtils;
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -320,7 +321,7 @@ public class MainVerticle extends AbstractVerticle {
   private void setupHanlders() {
     if (handlers == null) {
       String okapiUrl = config().getString("okapiUrl");
-      final WebClient webClient = WebClient.create(vertx);
+      final WebClient webClient = WebClientUtils.create(vertx, config());
       final Injector injector = Guice.createInjector(
           new FolioResourceProviderModule(okapiUrl, webClient),
           new ApplicationModule());
