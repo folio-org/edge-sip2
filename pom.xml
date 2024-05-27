@@ -42,7 +42,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <exec.mainClass>org.folio.edge.sip2.MainVerticle</exec.mainClass>
-    <vertx.version>4.5.4</vertx.version>
+    <vertx.version>4.5.7</vertx.version>
     <log4j2.version>2.23.0</log4j2.version>
     <micrometer.version>1.9.4</micrometer.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
