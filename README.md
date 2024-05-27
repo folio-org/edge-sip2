@@ -53,7 +53,7 @@ command line arguments to point it to the right path (e.g. `-conf /path/to/confi
 
 |Config option|Type|Description|
 |-------------|--|-----------|
-|`port`|int|The port the module will use to bind, typically 1024 < port < 65,535.|
+|`port`|int|The port the module will use to bind, typically 1024 <= port <= 65,535; must not be 8081 that is used for health check.|
 |`okapiUrl`|string|The URL of the Okapi server used by FOLIO.|
 |`tenantConfigRetrieverOptions`|JSON object|Location for tenant configuration.|
 |`scanPeriod`|int|Frequency in msec that sip2 will check for and reload tenant configuration changes.|
@@ -303,6 +303,10 @@ All permission associated with edge-sip2
 #### Security concerns for developers
 
 For local development, there is no requirement to encrypt communications from a SIP2 client to edge-sip2. Unencrypted TCP sockets are the default when launching edge-sip2 as described in the [Configuration](#configuration) section. Encrypted communication from a SIP2 client is only required when explicitly configured via the [above options](#security) and is up to the developer to provide that secure connection for edge-sip2.
+
+## Health check
+
+A GET /admin/health request sent to port 8081 gets a response with 200 HTTP status code.
 
 ## Metrics
 
