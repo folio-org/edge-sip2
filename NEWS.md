@@ -3,6 +3,8 @@
 * [SIP2-201](https://issues.folio.org/browse/SIP2-201): Enhance SIP2 Endpoint Security with TLS and FIPS-140-2 Compliant Cryptography
 * [SIP2-202](https://issues.folio.org/browse/SIP2-202): Vert.x 4.5.7 fixing netty form POST OOM CVE-2024-29025
 
+## 3.2.1 2024-04-19
+* [SIP2-195](https://issues.folio.org/browse/SIP2-195): FolioResourceProvider is submitting expired access tokens to FOLIO
 
 ## 3.2.0 2024-03-22
 * [SIP2-155](https://issues.folio.org/browse/SIP2-155): SIP2: extend the Patron Information Response on fee fields
