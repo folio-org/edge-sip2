@@ -228,6 +228,12 @@ public class UsersRepository {
     return headers;
   }
 
+  private Map<String, String> getAcceptTextHeaders() {
+    final Map<String, String> headers = new HashMap<>();
+    headers.put("accept", "text/plain");
+    return headers;
+  }
+
   /**
    * Check to see if a given userId/pin combo is valid or not.
    * @param userId The user id
@@ -296,7 +302,7 @@ public class UsersRepository {
       String identifier,
       String pin,
       SessionData sessionData) {
-    final Map<String, String> headers = getBaseHeaders();
+    final Map<String, String> headers = getAcceptTextHeaders();
 
     return getUserById(identifier, sessionData).compose(extendedUser -> {
       if (extendedUser == null) {
@@ -307,7 +313,7 @@ public class UsersRepository {
       PinVerifyRequestData pinVerifyRequestData
           = new PinVerifyRequestData(extendedUser.getUser().getId(), pin, headers, sessionData);
       log.debug("Attempting to verify pin");
-      Future<IResource> pinResult = resourceProvider.createResource(pinVerifyRequestData);
+      Future<Boolean> pinResult = resourceProvider.doPinCheck(pinVerifyRequestData);
       return pinResult
         .compose(pinCheckResult -> {
           return Future.succeededFuture(PatronPasswordVerificationRecords.builder()

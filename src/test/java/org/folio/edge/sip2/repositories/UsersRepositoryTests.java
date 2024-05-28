@@ -314,9 +314,8 @@ public class UsersRepositoryTests {
     final String expectedUsersBlQueryPath = "/bl-users/by-id/" + userId;
 
     doReturn(Future.succeededFuture(
-        new FolioResource(null, MultiMap.caseInsensitiveMultiMap()
-            .add("x-okapi-token", "4321"))))
-            .when(mockFolioProvider).createResource(any());
+        Boolean.TRUE))
+            .when(mockFolioProvider).doPinCheck(any());
 
     doReturn(Future.succeededFuture(new FolioResource(userBlResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
@@ -361,7 +360,7 @@ public class UsersRepositoryTests {
 
     //doReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")))
     doReturn(Future.failedFuture("Failed"))
-            .when(mockFolioProvider).createResource(any());
+            .when(mockFolioProvider).doPinCheck(any());
 
     doReturn(Future.succeededFuture(new FolioResource(userBlResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
@@ -404,9 +403,8 @@ public class UsersRepositoryTests {
     final String expectedUsersBlQueryPath = "/bl-users/by-id/" + userId;
 
     doReturn(Future.succeededFuture(
-        new FolioResource(null, MultiMap.caseInsensitiveMultiMap()
-            .add("x-okapi-token", "4321"))))
-            .when(mockFolioProvider).createResource(any());
+        Boolean.TRUE))
+            .when(mockFolioProvider).doPinCheck(any());
 
     doReturn(Future.succeededFuture(new FolioResource(userBlResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
