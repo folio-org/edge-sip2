@@ -1,3 +1,9 @@
+## 3.2.2 2024-05-28
+* [SIP2-200](https://issues.folio.org/browse/SIP2-200): Enhance WebClient TLS Configuration for Secure Connections to OKAPI
+* [SIP2-201](https://issues.folio.org/browse/SIP2-201): Enhance SIP2 Endpoint Security with TLS and FIPS-140-2 Compliant Cryptography
+* [SIP2-202](https://issues.folio.org/browse/SIP2-202): Vert.x 4.5.7 fixing netty form POST OOM CVE-2024-29025
+
+
 ## 3.2.0 2024-03-22
 * [SIP2-155](https://issues.folio.org/browse/SIP2-155): SIP2: extend the Patron Information Response on fee fields
 * [SIP2-177](https://issues.folio.org/browse/SIP2-177): Patron Status Command always returns all statuses as 'Y'

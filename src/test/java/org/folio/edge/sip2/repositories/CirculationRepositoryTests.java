@@ -91,7 +91,6 @@ class CirculationRepositoryTests {
     final String itemIdentifier = "1234567890";
     final String titleIdentifier = "Some Cool Book";
     final String callNumber = "9983235487258";
-    final String patronBarcode = "1122334455";
     final Checkin checkin = Checkin.builder()
         .noBlock(FALSE)
         .transactionDate(OffsetDateTime.now())
@@ -121,11 +120,7 @@ class CirculationRepositoryTests {
         .put("requests", new JsonArray()
             .add(new JsonObject()
                 .put("requestType", "Hold")
-                .put("requestLevel", "Item")
-                .put("requester", new JsonObject()
-                    .put("barcode", patronBarcode))
-            )
-        )
+                .put("requestLevel", "Item")))
         .put("totalRecords", 1);
 
     when(mockFolioProvider.createResource(any()))
@@ -157,7 +152,7 @@ class CirculationRepositoryTests {
           assertEquals("Main Library", checkinResponse.getPermanentLocation());
           assertEquals(titleIdentifier, checkinResponse.getTitleIdentifier());
           assertNull(checkinResponse.getSortBin());
-          assertEquals(patronBarcode, checkinResponse.getPatronIdentifier());
+          assertNull(checkinResponse.getPatronIdentifier());
           assertEquals(MediaType.BOOK, checkinResponse.getMediaType());
           assertNull(checkinResponse.getItemProperties());
           assertNull(checkinResponse.getScreenMessage());
@@ -1627,19 +1622,5 @@ class CirculationRepositoryTests {
         true, false, false));
     assertNull(CirculationRepository.getAlertType(
         false, false, false));
-  }
-
-  @Test void testGetRequestPatronBarcode(
-      @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier,
-      @Mock ItemRepository mockItemrepository) {
-    final Clock clock = TestUtils.getUtcFixedClock();
-    CirculationRepository circulationRepository
-        = new CirculationRepository(mockFolioProvider, mockPasswordVerifier,
-        mockItemrepository, clock);
-    assertNull(circulationRepository.getRequestPatronBarcode(null));
-    assertNull(circulationRepository.getRequestPatronBarcode(new JsonArray()));
-    assertNull(circulationRepository.getRequestPatronBarcode(new JsonArray()
-        .add(new JsonObject())));
   }
 }

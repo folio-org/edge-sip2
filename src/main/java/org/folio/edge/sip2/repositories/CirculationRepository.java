@@ -144,7 +144,6 @@ public class CirculationRepository {
                           .itemIdentifier(itemIdentifier)
                           .callNumber(valuesJson.getString("callNumber"))
                           .mediaType(mediaType)
-                          .patronIdentifier(getRequestPatronBarcode(requestArray))
                           .pickupServicePoint(valuesJson.getString("servicePoint"))
                           // if the title is not available, use the item identifier passed in to the
                           // checkin.
@@ -956,20 +955,5 @@ public class CirculationRepository {
       return null;
     }
     return request.getString("requestType");
-  }
-
-  protected String getRequestPatronBarcode(JsonArray requestArray) {
-    if (requestArray == null || requestArray.isEmpty()) {
-      return null;
-    }
-    JsonObject request = requestArray.getJsonObject(0);
-    if (request == null) {
-      return null;
-    }
-    JsonObject requesterJson = request.getJsonObject("requester");
-    if (requesterJson == null) {
-      return null;
-    }
-    return requesterJson.getString("barcode");
   }
 }
