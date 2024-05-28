@@ -62,6 +62,7 @@ import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.TenantUtils;
+import org.folio.edge.sip2.utils.WebClientUtils;
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -320,7 +321,7 @@ public class MainVerticle extends AbstractVerticle {
   private void setupHanlders() {
     if (handlers == null) {
       String okapiUrl = config().getString("okapiUrl");
-      final WebClient webClient = WebClient.create(vertx);
+      final WebClient webClient = WebClientUtils.create(vertx, config());
       final Injector injector = Guice.createInjector(
           new FolioResourceProviderModule(okapiUrl, webClient),
           new ApplicationModule());
@@ -358,10 +359,10 @@ public class MainVerticle extends AbstractVerticle {
       }
     });
 
+    var msg = "Listening for /admin/health requests at port " + HEALTH_CHECK_PORT;
     httpServer.listen(HEALTH_CHECK_PORT)
-        .onSuccess(x -> log.info("Health endpoint is listening now"))
-        .onFailure(e -> log.error("The call to admin health check service "
-          + "failed due to : {}", e.getMessage(), e));
+        .onSuccess(x -> log.info("{} now", msg))
+        .onFailure(e -> log.error("{} failed: {}", msg, e.getMessage(), e));
   }
 
   @Override
