@@ -58,7 +58,7 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
-  public void canMakeAFailingRequest(Vertx vertx, VertxTestContext testContext) {
+  void canMakeAFailingRequest(Vertx vertx, VertxTestContext testContext) {
     callService("9300CNMartin|COpassword|\r",
         testContext, vertx, result -> {
           final String expectedString = "940\r";
