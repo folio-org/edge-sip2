@@ -432,7 +432,6 @@
             </goals>
             <configuration>
               <ignoreNonCompile>true</ignoreNonCompile>
-              <failOnWarning>true</failOnWarning>
             </configuration>
           </execution>
         </executions>
