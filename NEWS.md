@@ -1,3 +1,6 @@
+## 3.2.3 2024-05-29
+* [SIP2-205](https://issues.folio.org/browse/SIP2-205): edge-sip2 release issue, main process exit with error in description
+
 ## 3.2.2 2024-05-28
 * [SIP2-200](https://issues.folio.org/browse/SIP2-200): Enhance WebClient TLS Configuration for Secure Connections to OKAPI
 * [SIP2-201](https://issues.folio.org/browse/SIP2-201): Enhance SIP2 Endpoint Security with TLS and FIPS-140-2 Compliant Cryptography
