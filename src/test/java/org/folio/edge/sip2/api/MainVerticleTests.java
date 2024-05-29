@@ -58,6 +58,15 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
+  public void canMakeAFailingRequest(Vertx vertx, VertxTestContext testContext) {
+    callService("9300CNMartin|COpassword|\r",
+        testContext, vertx, result -> {
+          final String expectedString = "940\r";
+          assertEquals(expectedString, result);
+        });
+  }
+
+  @Test
   public void cannotCheckoutWithInvalidCommandCode(Vertx vertx, VertxTestContext testContext) {
     callService("blablabalb\r", testContext, vertx, result -> {
       assertTrue(result.contains("Problems handling the request"));

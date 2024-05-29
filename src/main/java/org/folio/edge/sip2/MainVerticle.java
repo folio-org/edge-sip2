@@ -285,6 +285,7 @@ public class MainVerticle extends AbstractVerticle {
           String responseMessage = (String) sessionData.getErrorResponseMessage();
           if (responseMessage != null) {
             handler.writeHistory(sessionData, message, responseMessage);
+            responseMessage += messageDelimiter;
           }
           sample.stop(metrics.commandTimer(message.getCommand()));
           socket.write(responseMessage != null ? responseMessage
