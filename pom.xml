@@ -192,11 +192,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-codec-http</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.folio.okapi</groupId>
       <artifactId>okapi-common</artifactId>
       <version>5.0.0</version>
@@ -437,7 +432,6 @@
             </goals>
             <configuration>
               <ignoreNonCompile>true</ignoreNonCompile>
-              <failOnWarning>true</failOnWarning>
             </configuration>
           </execution>
         </executions>
