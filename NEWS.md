@@ -1,3 +1,7 @@
+## 3.2.4 2024-05-30
+* [SIP2-208](https://issues.folio.org/browse/SIP2-208): \r missing from error response message
+* [SIP2-209](https://issues.folio.org/browse/SIP2-209): EdgeSip2IT for "mvn verify"
+
 ## 3.2.3 2024-05-29
 * [SIP2-205](https://issues.folio.org/browse/SIP2-205): edge-sip2 release issue, main process exit with error in description
 
