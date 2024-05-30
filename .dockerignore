@@ -1,0 +1,5 @@
+# Only the fat jar file is needed for the Docker container
+*
+!target/*-fat.jar
+# Dockerfile is needed for Testcontainers
+!Dockerfile
