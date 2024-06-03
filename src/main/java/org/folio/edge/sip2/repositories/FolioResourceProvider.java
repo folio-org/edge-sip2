@@ -122,7 +122,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     log.debug("Doing pin verification at {}", requestData::getPath);
 
     final HttpRequest<Buffer> request =
-        client.getAbs(okapiUrl + requestData.getPath());
+        client.postAbs(okapiUrl + requestData.getPath());
 
     return Future.<Void>future(promise -> setHeaders(
         requestData.getHeaders(), request, requestData.getSessionData(),
