@@ -16,6 +16,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.Cookie;
+import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
@@ -231,6 +232,44 @@ public class FolioResourceProviderTests {
       return sessionData;
     }
   }
+
+  private class FakeRequestDataForPinVerify implements IRequestData {
+    @Override
+    public SessionData getSessionData() {
+      SessionData sessionData = SessionData.createSession("diku", '|', true, "IBM850");
+      sessionData.setUsername("testUser");
+      sessionData.setPassword("testpassword");
+      sessionData.setPatronPasswordVerificationRequired(true);
+      sessionData.setUsePinForPatronVerification(true);
+      return sessionData;
+    }
+
+    @Override
+    public String getPath() {
+      return null;
+    }
+  }
+
+  @Test
+  void doPinCheckSuccess(Vertx vertx, VertxTestContext testContext) {
+    when(client.postAbs(anyString())).thenReturn(httpRequest);
+    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+    when(httpResponse.statusCode()).thenReturn(201);
+    doReturn(httpRequest).when(httpRequest).expect(any());
+    when(httpRequest.sendJsonObject(any())).thenReturn(Future.succeededFuture(httpResponse));
+    doReturn(httpRequest).when(httpRequest).as(any());
+    List<String> cookies = new ArrayList<>();
+    cookies.add("folioAccessToken=cookieValue");
+    when(httpResponse.cookies()).thenReturn(cookies);
+    FakeRequestDataForPinVerify fakeRequestDataForPinVerify = new FakeRequestDataForPinVerify();
+
+    Future<Boolean> result = provider.doPinCheck(fakeRequestDataForPinVerify);
+    result.onComplete(testContext.succeeding(response -> testContext.verify(() -> {
+      assertTrue(response);
+      testContext.completeNow();
+    })));
+  }
+
 
   @Test
   void loginWithSupplier_Success(VertxTestContext testContext) {

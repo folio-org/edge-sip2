@@ -140,6 +140,7 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
 |`supportedMessages`|`object[]`|An array objects that indicate to the kiosk which messages are supported by the edge-sip2 module.|
 |`patronPasswordVerificationRequired`|`boolean`|Indicates whether or not SIP commands that supply a patron password will attempt to verify the password by attempting a FOLIO login with these supplied patron credentials. A failed patron login will fail the SIP request.|
  |`invalidCheckinStatuses`|`string`|A comma-separated list of item statuses that will block an attempt to checkin a given item via SIP2. |
+ |`usePinForPatronVerification`|`boolean`|Indicates whether or not to use patron PIN instead of password for verification.|
 
 #### `supportedMessages` object properties
 
@@ -298,6 +299,7 @@ All permission associated with edge-sip2
     inventory-storage.holdings.item.get
     inventory.instances.item.get
     feefines.collection.get
+    patron-pin.validate
 ```
 
 #### Security concerns for developers

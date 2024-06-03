@@ -71,4 +71,9 @@ public class DefaultResourceProvider implements IResourceProvider<IRequestData> 
                                           boolean cache) {
     throw new UnsupportedOperationException();
   }
+
+  @Override
+  public Future<Boolean> doPinCheck(IRequestData data) {
+    throw new UnsupportedOperationException();
+  }
 }

@@ -113,6 +113,29 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     });
   }
 
+  /**
+   * Verify a pin.
+   * @param requestData The request data with the path and payload
+   * @return Boolean True if successful
+   */
+  public Future<Boolean> doPinCheck(IRequestData requestData) {
+    log.debug("Doing pin verification at {}", requestData::getPath);
+
+    final HttpRequest<Buffer> request =
+        client.postAbs(okapiUrl + requestData.getPath());
+
+    return Future.<Void>future(promise -> setHeaders(
+        requestData.getHeaders(), request, requestData.getSessionData(),
+        promise))
+      .compose(v -> request
+        .expect(ResponsePredicate.create(ResponsePredicate.SC_SUCCESS, getErrorConverter()))
+        .as(BodyCodec.jsonObject())
+        .sendJsonObject(requestData.getBody())
+        .map(Boolean.TRUE)
+        .onFailure(e -> log.error("Pin check failed", e)));
+  }
+
+
   @Override
   public Future<IResource> createResource(IRequestData requestData) {
     log.debug("Create resource {}, body: {}",
