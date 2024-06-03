@@ -469,6 +469,33 @@ public class UsersRepositoryTests {
   }
 
   @Test
+  public void doPatronPinVerifyNullUser(Vertx vertx, VertxTestContext vertxTestContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+
+    final String barcode = "997383903573496";
+
+    final String expectedUsersQueryPath = "/users?limit=1&query="
+        + Utils.encode("(barcode==" + barcode
+        + " or externalSystemId==" + barcode
+        + " or username==" + barcode + ')');
+
+    doReturn(Future.failedFuture(new NoStackTraceThrowable("Null User or Something")))
+        .when(mockFolioProvider).retrieveResource(
+        argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
+
+    usersRepository.doPatronPinVerification(barcode, "1234", sessionData).onComplete(
+        vertxTestContext.succeeding(pinResult -> vertxTestContext.verify(() -> {
+          assertNotNull(pinResult);
+          assertFalse(pinResult.getPasswordVerified());
+          vertxTestContext.completeNow();
+        })));
+  }
+
+  @Test
   public void cannotGetUserWithFailedExtendLookup(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
@@ -505,5 +532,10 @@ public class UsersRepositoryTests {
 
           testContext.completeNow();
         })));
+  }
+
+  @Test
+  public void testPinRequestData() {
+
   }
 }
