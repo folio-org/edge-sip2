@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.junit5.VertxTestContext;
 import java.text.SimpleDateFormat;
@@ -54,6 +53,15 @@ public class MainVerticleTests extends BaseTest {
     callService("9300CNMartin|COpassword|\r",
         testContext, vertx, result -> {
           final String expectedString = "941\r";
+          assertEquals(expectedString, result);
+        });
+  }
+
+  @Test
+  void canMakeAFailingRequest(Vertx vertx, VertxTestContext testContext) {
+    callService("9300CNMartin|COpassword|\r",
+        testContext, vertx, result -> {
+          final String expectedString = "940\r";
           assertEquals(expectedString, result);
         });
   }

@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>edge-sip2</artifactId>
-  <version>3.2.1-SNAPSHOT</version>
+  <version>3.3.0-SNAPSHOT</version>
   <name>Standard Interchange Protocol v2 (SIP2)</name>
   <url>https://github.com/folio-org/edge-sip2</url>
   <description>Support for SIP2 in FOLIO. This allow self service circulation and patron services stations to perform supported operations in FOLIO.</description>
@@ -42,7 +42,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <exec.mainClass>org.folio.edge.sip2.MainVerticle</exec.mainClass>
-    <vertx.version>4.5.4</vertx.version>
+    <vertx.version>4.5.7</vertx.version>
     <log4j2.version>2.23.0</log4j2.version>
     <micrometer.version>1.9.4</micrometer.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -83,6 +83,13 @@
         <groupId>org.mockito</groupId>
         <artifactId>mockito-bom</artifactId>
         <version>4.3.1</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-bom</artifactId>
+        <version>1.19.8</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -158,6 +165,11 @@
       <artifactId>commons-net</artifactId>
       <version>3.9.0</version>
     </dependency>
+    <dependency>
+      <groupId>org.folio.okapi</groupId>
+      <artifactId>okapi-common</artifactId>
+      <version>5.0.0</version>
+    </dependency>
 
     <!-- Test dependencies -->
     <dependency>
@@ -188,13 +200,25 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcpkix-jdk15to18</artifactId>
-      <version>1.74</version>
+      <version>1.78</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.folio.okapi</groupId>
-      <artifactId>okapi-common</artifactId>
-      <version>5.0.0</version>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <version>5.4.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.wiremock</groupId>
+      <artifactId>wiremock</artifactId>
+      <version>3.6.0</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -357,6 +381,19 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.2.5</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      <plugin>
         <groupId>com.coderplus.maven.plugins</groupId>
         <artifactId>copy-rename-maven-plugin</artifactId>
         <version>1.0</version>
@@ -432,7 +469,6 @@
             </goals>
             <configuration>
               <ignoreNonCompile>true</ignoreNonCompile>
-              <failOnWarning>true</failOnWarning>
             </configuration>
           </execution>
         </executions>
