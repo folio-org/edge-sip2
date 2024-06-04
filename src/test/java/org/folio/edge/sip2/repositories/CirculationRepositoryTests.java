@@ -108,6 +108,10 @@ class CirculationRepositoryTests {
         .build();
 
     final JsonObject checkinResponseJson = new JsonObject()
+        .put("loan", new JsonObject()
+          .put("borrower", new JsonObject()
+            .put("barcode", patronBarcode))
+        )
         .put("item", new JsonObject()
             .put("callNumber", callNumber)
             .put("title", titleIdentifier)
@@ -118,7 +122,6 @@ class CirculationRepositoryTests {
             .put("inTransitDestinationServicePoint", new JsonObject()
                 .put("name", "Annex"))
         );
-
 
     final JsonObject getRequestsResponseJson = new JsonObject()
         .put("requests", new JsonArray()
@@ -1674,7 +1677,7 @@ class CirculationRepositoryTests {
         false, false, false));
   }
 
-  @Test void testGetRequestPatronBarcode(
+  @Test void testGetCheckinPatronBarcode(
       @Mock IResourceProvider<IRequestData> mockFolioProvider,
       @Mock PasswordVerifier mockPasswordVerifier,
       @Mock ItemRepository mockItemrepository,
@@ -1683,9 +1686,9 @@ class CirculationRepositoryTests {
     CirculationRepository circulationRepository
         = new CirculationRepository(mockFolioProvider, mockPasswordVerifier,
         mockItemrepository, usersRepository, clock);
-    assertNull(circulationRepository.getRequestPatronBarcode(null));
-    assertNull(circulationRepository.getRequestPatronBarcode(new JsonArray()));
-    assertNull(circulationRepository.getRequestPatronBarcode(new JsonArray()
-        .add(new JsonObject())));
+    assertNull(circulationRepository.getPatronBarcodeFromCheckin(null));
+    assertNull(circulationRepository.getPatronBarcodeFromCheckin(new JsonObject()));
+    assertNull(circulationRepository.getPatronBarcodeFromCheckin(
+        new JsonObject().put("loan", new JsonObject())));
   }
 }
