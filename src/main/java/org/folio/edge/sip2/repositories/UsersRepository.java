@@ -198,7 +198,7 @@ public class UsersRepository {
 
     @Override
     public String getPath() {
-      return "/patron-pin";
+      return "/patron-pin/verify";
     }
 
     @Override
