@@ -134,11 +134,7 @@ public class PatronRepository {
           log.debug("Password verification result is {}", verification.getPasswordVerified());
           log.debug("isPatronPasswordVerificationRequest == {}",
               sessionData.isPatronPasswordVerificationRequired());
-          if (sessionData.isPatronPasswordVerificationRequired()
-              && FALSE.equals(verification.getPasswordVerified())) {
-            log.debug("Failed due to requiring valid patron password");
-            return invalidPatron(patronInformation, FALSE);
-          }
+
           final Future<ExtendedUser> extendedUserFuture
               = Future.succeededFuture(verification.getExtendedUser());
           return extendedUserFuture.compose(extendedUser -> {
