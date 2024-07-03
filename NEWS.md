@@ -1,3 +1,6 @@
+## 3.2.5 2024-07-03
+* [SIP2-214](https://issues.folio.org/browse/SIP2-214): Disable host veryfing in FIPS mode
+
 ## 3.2.4 2024-05-30
 * [SIP2-208](https://issues.folio.org/browse/SIP2-208): \r missing from error response message
 * [SIP2-209](https://issues.folio.org/browse/SIP2-209): EdgeSip2IT for "mvn verify"
