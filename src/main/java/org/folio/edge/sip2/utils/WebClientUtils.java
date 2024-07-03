@@ -45,7 +45,8 @@ public class WebClientUtils {
 
       final WebClientOptions webClientOptions = new WebClientOptions()
           .setSsl(true)
-          .setTrustOptions(pemTrustOptions);
+          .setTrustOptions(pemTrustOptions)
+          .setVerifyHost(false); //Hardcoded now. Later it could be configurable using env vars.
       return WebClient.create(vertx, webClientOptions);
     } else {
       log.info("Creating WebClient with TLS off...");
