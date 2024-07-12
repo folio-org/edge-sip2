@@ -126,6 +126,7 @@ public class MainVerticle extends AbstractVerticle {
 
     server.connectHandler(socket -> {
 
+      log.info("Calling again and again..");
       String clientAddress = socket.remoteAddress().host();
       ThreadContext.put(IPADDRESS, clientAddress);
       JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
@@ -139,6 +140,7 @@ public class MainVerticle extends AbstractVerticle {
       final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
 
       socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
+        log.info("Inside the handler method ");
         final Timer.Sample sample = metrics.sample();
 
         if (Objects.isNull(sessionData.getTenant())) {
