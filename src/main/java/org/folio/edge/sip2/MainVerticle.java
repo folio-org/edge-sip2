@@ -128,9 +128,11 @@ public class MainVerticle extends AbstractVerticle {
 
       log.info("Calling again and again..");
       String clientAddress = socket.remoteAddress().host();
-      // Log the client's IP address and port
-      // Get the client's port
+
       int clientPort = socket.remoteAddress().port();
+      log.info("The host address is {}",socket.remoteAddress().hostAddress());
+      log.info("The socket name is {}",socket.remoteAddress().hostName());
+
       log.info("Client connected from IP address: " + clientAddress + " and port: " + clientPort);
 
       ThreadContext.put(IPADDRESS, clientAddress);
