@@ -127,22 +127,22 @@ public class MainVerticle extends AbstractVerticle {
 
     server.connectHandler(socket -> {
 
-      log.info("Calling again and again..");
+      //log.info("Calling again and again..");
       String clientAddress = socket.remoteAddress().host();
 
       int clientPort = socket.remoteAddress().port();
 
 
-      log.info("The host address is {}",socket.remoteAddress().hostAddress());
-      log.info("The socket name is {}",socket.remoteAddress().hostName());
+      //log.info("The host address is {}",socket.remoteAddress().hostAddress());
+      //log.info("The socket name is {}",socket.remoteAddress().hostName());
 
-      log.info("Client connected from IP address: " + clientAddress + " and port: " + clientPort);
+
 
       ThreadContext.put(IPADDRESS, clientAddress);
       JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
           clientAddress);
 
-      log.info("The session data is created for {}", tenantConfig.getString("tenant"));
+      //log.info("The session data is created for {}", tenantConfig.getString("tenant"));
 
       final SessionData sessionData = SessionData.createSession(
           tenantConfig.getString("tenant"),
@@ -162,7 +162,8 @@ public class MainVerticle extends AbstractVerticle {
 
         final String messageString = buffer.getString(0, buffer.length(), sessionData.getCharset());
 
-        log.debug("Received message: {}", messageString);
+        log.info("Client connected from IP address: " + clientAddress + " and port: " + clientPort);
+        log.info("Received message: {}", messageString);
 
         Command command = UNKNOWN;
 
