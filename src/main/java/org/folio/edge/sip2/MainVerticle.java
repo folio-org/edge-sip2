@@ -115,7 +115,8 @@ public class MainVerticle extends AbstractVerticle {
     int port = config().getInteger("port"); // move port to netServerOptions
     NetServerOptions options = new NetServerOptions(
         config().getJsonObject("netServerOptions", new JsonObject()))
-        .setPort(port);
+        .setPort(port)
+      .setIdleTimeout(30);
 
     server = vertx.createNetServer(options);
 
@@ -130,6 +131,8 @@ public class MainVerticle extends AbstractVerticle {
       String clientAddress = socket.remoteAddress().host();
 
       int clientPort = socket.remoteAddress().port();
+
+
       log.info("The host address is {}",socket.remoteAddress().hostAddress());
       log.info("The socket name is {}",socket.remoteAddress().hostName());
 
