@@ -73,7 +73,31 @@ public class TenantUtils {
           return sn.getInfo().isInRange(clientIP);
         })
         .findFirst();
+    // port
     return tcOpt.orElse(sip2config);
   }
+
+  public static JsonObject lookupTenantConfigForIPaddress(JsonObject sip2config, String clientIP, int clientPort) {
+
+    if (!sip2config.containsKey(SC_TENANTS)) {
+      log.debug("LookupTenantConfig scTenants key not found in config, "
+        + "support for muti-tenant not available");
+      return sip2config;
+    }
+    log.info("Inside lookupTenantConfigForIPaddress");
+
+    Optional<JsonObject> tcOpt = sip2config.getJsonArray(SC_TENANTS).stream()
+      .map(o -> (JsonObject) o)
+      .filter(jo -> {
+        SubnetUtils sn = new SubnetUtils(jo.getString(SC_SUBNET));
+        sn.setInclusiveHostCount(true);
+        log.info("The clientIP {}, SN {}, return value {}, clientPort {}", clientIP, sn, sn.getInfo().isInRange(clientIP), clientPort);
+        return sn.getInfo().isInRange(clientIP) && jo.getString("port").equals(clientPort);
+      })
+      .findFirst();
+    // port
+    return tcOpt.orElse(sip2config);
+  }
+
 
 }

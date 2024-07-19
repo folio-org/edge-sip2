@@ -115,8 +115,8 @@ public class MainVerticle extends AbstractVerticle {
     int port = config().getInteger("port"); // move port to netServerOptions
     NetServerOptions options = new NetServerOptions(
         config().getJsonObject("netServerOptions", new JsonObject()))
-        .setPort(port)
-      .setIdleTimeout(30);
+        .setPort(port);
+//      .setIdleTimeout(30);
 
     server = vertx.createNetServer(options);
 
@@ -130,6 +130,7 @@ public class MainVerticle extends AbstractVerticle {
       //log.info("Calling again and again..");
       String clientAddress = socket.remoteAddress().host();
 
+
       int clientPort = socket.remoteAddress().port();
 
 
@@ -140,7 +141,7 @@ public class MainVerticle extends AbstractVerticle {
 
       ThreadContext.put(IPADDRESS, clientAddress);
       JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
-          clientAddress);
+          clientAddress, clientPort);
 
       //log.info("The session data is created for {}", tenantConfig.getString("tenant"));
 
