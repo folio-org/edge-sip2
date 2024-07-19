@@ -96,7 +96,7 @@ public class TenantUtils {
         boolean isInRange = sn.getInfo().isInRange(clientIP);
         boolean isPortMatch = !jo.containsKey("port");
 //          || jo.getString("port").equals(clientPort);
-        return isInRange && isPortMatch;
+        return isPortMatch;
       })
       .findFirst();
     // port
