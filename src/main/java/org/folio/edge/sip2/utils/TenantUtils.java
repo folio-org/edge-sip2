@@ -92,7 +92,9 @@ public class TenantUtils {
         SubnetUtils sn = new SubnetUtils(jo.getString(SC_SUBNET));
         sn.setInclusiveHostCount(true);
         log.info("The clientIP {}, SN {}, return value {}, clientPort {}", clientIP, sn, sn.getInfo().isInRange(clientIP), clientPort);
-        return sn.getInfo().isInRange(clientIP) && jo.getString("port").equals(clientPort);
+        boolean isInRange = sn.getInfo().isInRange(clientIP);
+        boolean isPortMatch = !jo.containsKey("port") || jo.getString("port").equals(clientPort);
+        return isInRange && isPortMatch;
       })
       .findFirst();
     // port
