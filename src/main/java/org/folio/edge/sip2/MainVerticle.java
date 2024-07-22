@@ -71,7 +71,7 @@ public class MainVerticle extends AbstractVerticle {
   private static final String  HEALTH_CHECK_PATH = "/admin/health";
   private static final String IPADDRESS = "ipAddress";
   private Map<Command, ISip2RequestHandler> handlers;
-  private NetServer server;
+  //private NetServer server;
   private final Logger log = LogManager.getLogger();
   private final Map<Integer, Metrics> metricsMap = new HashMap<>();
   private JsonObject multiTenantConfig = new JsonObject();
@@ -133,7 +133,7 @@ public class MainVerticle extends AbstractVerticle {
         config().getJsonObject("netServerOptions", new JsonObject()))
         .setPort(port);
 
-    server = vertx.createNetServer(options);
+    NetServer server = vertx.createNetServer(options);
 
     log.info("Deployed verticle at port {}", port);
 
@@ -242,12 +242,12 @@ public class MainVerticle extends AbstractVerticle {
     configRetriever = ConfigRetriever.create(vertx, crOptions);
 
     // after tenant config is loaded, start listening for messages
-    lsitenToMessages(startFuture);
+    lsitenToMessages(startFuture, server);
   }
 
   }
 
-  private void lsitenToMessages(Promise<Void> startFuture) {
+  private void lsitenToMessages(Promise<Void> startFuture, NetServer server) {
 
     configRetriever.getConfig(ar -> {
       if (ar.succeeded()) {
@@ -398,16 +398,16 @@ public class MainVerticle extends AbstractVerticle {
   @Override
   public void stop(Promise<Void> stopFuture) {
     configRetriever.close();
-    server.close(result -> {
-      if (result.succeeded()) {
-        metricsMap.values().stream().forEach(Metrics::stop);
-        stopFuture.complete();
-        log.info("MainVerticle stopped successfully!");
-      } else {
-        log.error("Failed to stop MainVerticle", result.cause());
-        stopFuture.fail(result.cause());
-      }
-    });
+//    server.close(result -> {
+//      if (result.succeeded()) {
+//        metricsMap.values().stream().forEach(Metrics::stop);
+//        stopFuture.complete();
+//        log.info("MainVerticle stopped successfully!");
+//      } else {
+//        log.error("Failed to stop MainVerticle", result.cause());
+//        stopFuture.fail(result.cause());
+//      }
+//    });
   }
 
   private void handleInvalidMessage(
