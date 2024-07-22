@@ -25,6 +25,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.pointer.JsonPointer;
 import io.vertx.core.net.NetServer;
@@ -105,18 +106,32 @@ public class MainVerticle extends AbstractVerticle {
 
     // initialize the TokenCache
     TokenCacheFactory.initialize(config()
-        .getInteger(SYS_TOKEN_CACHE_CAPACITY, DEFAULT_TOKEN_CACHE_CAPACITY));
+      .getInteger(SYS_TOKEN_CACHE_CAPACITY, DEFAULT_TOKEN_CACHE_CAPACITY));
 
 
     // We need to reduce the complexity of this method...
     setupHanlders();
 
     //set Config object's defaults
-    int port = config().getInteger("port"); // move port to netServerOptions
-    NetServerOptions options = new NetServerOptions(
+//    int port = config().getInteger("port"); // move port to netServerOptions
+//    NetServerOptions options = new NetServerOptions(
+//        config().getJsonObject("netServerOptions", new JsonObject()))
+//        .setPort(port);
+//      .setIdleTimeout(30);
+
+    // Get the list of ports from the configuration
+    JsonArray ports = config().getJsonArray("ports");
+
+    if (ports == null || ports.isEmpty()) {
+      throw new IllegalArgumentException("No ports specified in the configuration");
+    }
+
+    // Iterate over the list of ports and create a NetServer for each
+    for (int i = 0; i < ports.size(); i++) {
+      int port = ports.getInteger(i);
+      NetServerOptions options = new NetServerOptions(
         config().getJsonObject("netServerOptions", new JsonObject()))
         .setPort(port);
-//      .setIdleTimeout(30);
 
     server = vertx.createNetServer(options);
 
@@ -129,8 +144,6 @@ public class MainVerticle extends AbstractVerticle {
 
       //log.info("Calling again and again..");
       String clientAddress = socket.remoteAddress().host();
-
-
       int clientPort = socket.remoteAddress().port();
 
 
@@ -138,18 +151,17 @@ public class MainVerticle extends AbstractVerticle {
       //log.info("The socket name is {}",socket.remoteAddress().hostName());
 
 
-
       ThreadContext.put(IPADDRESS, clientAddress);
       JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
-          clientAddress, clientPort);
+        clientAddress, clientPort);
 
       //log.info("The session data is created for {}", tenantConfig.getString("tenant"));
 
       final SessionData sessionData = SessionData.createSession(
-          tenantConfig.getString("tenant"),
-          tenantConfig.getString("fieldDelimiter", "|").charAt(0),
-          tenantConfig.getBoolean("errorDetectionEnabled", FALSE),
-          tenantConfig.getString("charset", "IBM850"));
+        tenantConfig.getString("tenant"),
+        tenantConfig.getString("fieldDelimiter", "|").charAt(0),
+        tenantConfig.getBoolean("errorDetectionEnabled", FALSE),
+        tenantConfig.getString("charset", "IBM850"));
       final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
 
       socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
@@ -170,11 +182,11 @@ public class MainVerticle extends AbstractVerticle {
 
         try {
           final Parser parser = Parser.builder()
-              .delimiter(sessionData.getFieldDelimiter())
-              .charset(Charset.forName(sessionData.getCharset()))
-              .errorDetectionEnabled(sessionData.isErrorDetectionEnabled())
-              .timezone(sessionData.getTimeZone())
-              .build();
+            .delimiter(sessionData.getFieldDelimiter())
+            .charset(Charset.forName(sessionData.getCharset()))
+            .errorDetectionEnabled(sessionData.isErrorDetectionEnabled())
+            .timezone(sessionData.getTimeZone())
+            .build();
 
           //parsing
           final Message<Object> message = parser.parseMessage(messageString);
@@ -185,14 +197,14 @@ public class MainVerticle extends AbstractVerticle {
           if (!message.isValid()) {
             log.error("Message is invalid: {}", messageString);
             handleInvalidMessage(message, socket, sessionData, messageDelimiter, sample,
-                metrics);
+              metrics);
             return;
           }
 
           //check if the previous message needs resending
           if (requiredResending(sessionData, message)) {
             resendPreviousMessage(sessionData, sample,
-                metrics, socket, command);
+              metrics, socket, command);
             return;
           }
 
@@ -205,9 +217,9 @@ public class MainVerticle extends AbstractVerticle {
           }
 
           executeHandler(message,
-              sessionData, messageDelimiter,
-              handler, sample,
-              socket, metrics);
+            sessionData, messageDelimiter,
+            handler, sample,
+            socket, metrics);
         } catch (Exception ex) {
           String message = "Problems handling the request: " + ex.getMessage();
           log.error(message, ex);
@@ -231,6 +243,7 @@ public class MainVerticle extends AbstractVerticle {
 
     // after tenant config is loaded, start listening for messages
     lsitenToMessages(startFuture);
+  }
 
   }
 
