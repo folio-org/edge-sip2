@@ -11,10 +11,13 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.PatronAccountInfo;
@@ -41,7 +44,7 @@ class FeePaidHandlerTests {
     final String accountIdentifier = "c78489bd-4d1b-4e4f-87d3-caa915946aa4";
     final String feeFineIdentifier = "9ffed8e5-d1b2-4857-a07b-30199204783d";
     final String transactionId = "7e15ba2d-cc85-4226-963d-d6c7d5c03f26";
-    final String feeAmount = "66.67";
+    final String feeAmountString = "66.67";
     final String itemBarcode = "a32451";
     final List<PatronAccountInfo> patronAccountInfoList = new ArrayList<>();
     final PatronAccountInfo patronAccountInfo = new PatronAccountInfo();
@@ -65,7 +68,7 @@ class FeePaidHandlerTests {
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
         .transactionId(transactionId)
-        .feeAmount(feeAmount)
+        .feeAmount(feeAmountString)
         .feeIdentifier(accountIdentifier)
         .build();
 
@@ -83,15 +86,20 @@ class FeePaidHandlerTests {
     final FeePaidHandler handler = new FeePaidHandler(mockFeeFinesRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.FEE_PAID_RESPONSE));
 
+    final double feeRemaining = 3.33;
+    DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.getDefault());
+    DecimalFormat format = new DecimalFormat("###.00", symbols);
+    String feeRemainingString = format.format(feeRemaining);
+
     final String expectedString = "38" + "Y"
         + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
         + "AO" + "diku" + "|" + "AA" + patronIdentifier + "|"
         + "BK" + transactionId + "|"
         + "CG" + accountIdentifier + "|"
-        + "FA" + "3.33" + "|"
+        + "FA" + feeRemainingString + "|"
         + "FC" + "13.11.2023" + "|"
         + "FE" + feeFineIdentifier + "|"
-        + "FG" + feeAmount + "|";
+        + "FG" + feeAmountString + "|";
 
     handler.execute(feePaid, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
