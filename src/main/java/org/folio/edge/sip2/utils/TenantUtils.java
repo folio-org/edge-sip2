@@ -78,24 +78,23 @@ public class TenantUtils {
   }
 
   public static JsonObject lookupTenantConfigForIPaddress(JsonObject sip2config, String clientIP,
-                                                          int clientPort) {
+                                                          int port) {
 
     if (!sip2config.containsKey(SC_TENANTS)) {
       log.debug("LookupTenantConfig scTenants key not found in config, "
         + "support for muti-tenant not available");
       return sip2config;
     }
-    log.info("Inside lookupTenantConfigForIPaddress");
+    log.info("Inside lookupTenantConfigForIPaddress serverPort {}", port);
 
     Optional<JsonObject> tcOpt = sip2config.getJsonArray(SC_TENANTS).stream()
       .map(o -> (JsonObject) o)
       .filter(jo -> {
         SubnetUtils sn = new SubnetUtils(jo.getString(SC_SUBNET));
         sn.setInclusiveHostCount(true);
-        log.info("The clientIP {}, SN {}, return value {}, clientPort {}", clientIP, sn, sn.getInfo().isInRange(clientIP), clientPort);
+        log.info("The clientIP {}, SN {}, return value {}, port {}", clientIP, sn, sn.getInfo().isInRange(clientIP), port);
         boolean isInRange = sn.getInfo().isInRange(clientIP);
-        boolean isPortMatch = !jo.containsKey("port");
-//          || jo.getString("port").equals(clientPort);
+        boolean isPortMatch = !jo.containsKey("port") || jo.getString("port").equals(port);
         return isPortMatch;
       })
       .findFirst();
