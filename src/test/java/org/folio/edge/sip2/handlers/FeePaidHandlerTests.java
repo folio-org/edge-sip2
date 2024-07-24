@@ -44,11 +44,16 @@ class FeePaidHandlerTests {
     final String accountIdentifier = "c78489bd-4d1b-4e4f-87d3-caa915946aa4";
     final String feeFineIdentifier = "9ffed8e5-d1b2-4857-a07b-30199204783d";
     final String transactionId = "7e15ba2d-cc85-4226-963d-d6c7d5c03f26";
-    final String feeAmountString = "66.67";
+    final double feeAmount = 66.67;
     final String itemBarcode = "a32451";
     final List<PatronAccountInfo> patronAccountInfoList = new ArrayList<>();
     final PatronAccountInfo patronAccountInfo = new PatronAccountInfo();
     final String feeFineCreationDate = "2023-11-13T10:15:02+01:00";
+    final double feeRemaining = 3.33;
+    final DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.getDefault());
+    final DecimalFormat format = new DecimalFormat("###.00", symbols);
+    final String feeRemainingString = format.format(feeRemaining);
+    final String feeAmountString = format.format(feeAmount);
 
     patronAccountInfo.setId(accountIdentifier);
     patronAccountInfo.setFeeFinePaid(66.67);
@@ -85,11 +90,6 @@ class FeePaidHandlerTests {
 
     final FeePaidHandler handler = new FeePaidHandler(mockFeeFinesRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.FEE_PAID_RESPONSE));
-
-    final double feeRemaining = 3.33;
-    DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.getDefault());
-    DecimalFormat format = new DecimalFormat("###.00", symbols);
-    String feeRemainingString = format.format(feeRemaining);
 
     final String expectedString = "38" + "Y"
         + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
