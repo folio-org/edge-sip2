@@ -85,15 +85,16 @@ public class TenantUtils {
         + "support for muti-tenant not available");
       return sip2config;
     }
-    log.info("Inside lookupTenantConfigForIPaddress serverPort {}", port);
+    //log.info("Inside lookupTenantConfigForIPaddress serverPort {}", port);
 
     Optional<JsonObject> tcOpt = sip2config.getJsonArray(SC_TENANTS).stream()
       .map(o -> (JsonObject) o)
       .filter(jo -> {
         SubnetUtils sn = new SubnetUtils(jo.getString(SC_SUBNET));
         sn.setInclusiveHostCount(true);
-        log.info("The clientIP {}, SN {}, return value {}, port {}", clientIP, sn, sn.getInfo().isInRange(clientIP), port);
+      //  log.info("The clientIP {}, SN {}, return value {}, port {}", clientIP, sn, sn.getInfo().isInRange(clientIP), port);
         boolean isInRange = sn.getInfo().isInRange(clientIP);
+        log.info("The jo port {} and the port {}", jo.getString("port"),port);
         boolean isPortMatch = !jo.containsKey("port") || jo.getString("port").equals(port);
         return isPortMatch;
       })

@@ -135,7 +135,7 @@ public class MainVerticle extends AbstractVerticle {
 
     NetServer server = vertx.createNetServer(options);
 
-    log.info("Deployed verticle at port {}", port);
+    //log.info("Deployed verticle at port {}", port);
 
     final Metrics metrics = Metrics.getMetrics(port);
     metricsMap.putIfAbsent(port, metrics);
