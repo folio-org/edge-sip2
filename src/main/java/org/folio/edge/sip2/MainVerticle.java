@@ -155,7 +155,7 @@ public class MainVerticle extends AbstractVerticle {
       JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
         clientAddress, port);
 
-      //log.info("The session data is created for {}", tenantConfig.getString("tenant"));
+      log.info("The session data is created for {}", tenantConfig.getString("tenant"));
 
       final SessionData sessionData = SessionData.createSession(
         tenantConfig.getString("tenant"),
