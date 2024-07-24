@@ -94,8 +94,9 @@ public class TenantUtils {
         sn.setInclusiveHostCount(true);
       //  log.info("The clientIP {}, SN {}, return value {}, port {}", clientIP, sn, sn.getInfo().isInRange(clientIP), port);
         boolean isInRange = sn.getInfo().isInRange(clientIP);
-        log.info("The jo port {} and the port {} are they equal {}", jo.getString("port"),port, jo.getString("port").equals(port));
-        boolean isPortMatch = !jo.containsKey("port") || jo.getString("port").equals(port);
+        log.info("The jo port {} and the port {} are they equal {}", jo.getString("port"),
+          port, Integer.parseInt(jo.getString("port")) == port);
+        boolean isPortMatch = !jo.containsKey("port")  || Integer.parseInt(jo.getString("port")) == port;
         return isPortMatch;
       })
       .findFirst();
