@@ -113,25 +113,25 @@ public class MainVerticle extends AbstractVerticle {
     setupHanlders();
 
     //set Config object's defaults
-//    int port = config().getInteger("port"); // move port to netServerOptions
-//    NetServerOptions options = new NetServerOptions(
-//        config().getJsonObject("netServerOptions", new JsonObject()))
-//        .setPort(port);
-//      .setIdleTimeout(30);
-
-    // Get the list of ports from the configuration
-    JsonArray ports = config().getJsonArray("ports");
-
-    if (ports == null || ports.isEmpty()) {
-      throw new IllegalArgumentException("No ports specified in the configuration");
-    }
-
-    // Iterate over the list of ports and create a NetServer for each
-    for (int i = 0; i < ports.size(); i++) {
-      int port = ports.getInteger(i);
-      NetServerOptions options = new NetServerOptions(
+    int port = config().getInteger("port"); // move port to netServerOptions
+    NetServerOptions options = new NetServerOptions(
         config().getJsonObject("netServerOptions", new JsonObject()))
         .setPort(port);
+
+
+    // Get the list of ports from the configuration
+//    JsonArray ports = config().getJsonArray("ports");
+
+//    if (ports == null || ports.isEmpty()) {
+//      throw new IllegalArgumentException("No ports specified in the configuration");
+//    }
+
+    // Iterate over the list of ports and create a NetServer for each
+    //for (int i = 0; i < ports.size(); i++) {
+      //int port = ports.getInteger(i);
+//      NetServerOptions options = new NetServerOptions(
+//        config().getJsonObject("netServerOptions", new JsonObject()))
+//        .setPort(port);
 
     NetServer server = vertx.createNetServer(options);
 
@@ -243,7 +243,7 @@ public class MainVerticle extends AbstractVerticle {
 
     // after tenant config is loaded, start listening for messages
     lsitenToMessages(startFuture, server);
-  }
+//  }
 
   }
 
