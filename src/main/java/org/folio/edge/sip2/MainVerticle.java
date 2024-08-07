@@ -139,7 +139,6 @@ public class MainVerticle extends AbstractVerticle {
       server.connectHandler(socket -> {
 
         String clientAddress = socket.remoteAddress().host();
-        int clientPort = socket.remoteAddress().port();
 
         ThreadContext.put(IPADDRESS, clientAddress);
         JsonObject tenantConfig = ports.size() > 1

@@ -11,6 +11,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
@@ -68,7 +69,9 @@ public abstract class BaseTest {
 
     FileSystem fs = vertx.fileSystem();
     JsonObject sipConfig = fs.readFileBlocking("test-sip2.conf").toJsonObject();
-    sipConfig.put("port", port);
+    JsonArray portsArray = new JsonArray();
+    portsArray.add(port);
+    sipConfig.put("ports", portsArray);
     if (testInfo.getTags().contains(TLS_ENABLED)) {
       final SelfSignedCertificate certificate = SelfSignedCertificate.create();
       sipConfig.put("netServerOptions", new JsonObject()

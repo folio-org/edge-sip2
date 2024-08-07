@@ -101,7 +101,7 @@ public class TenantUtils {
         .filter(jo -> {
           SubnetUtils sn = new SubnetUtils(jo.getString(SC_SUBNET));
           sn.setInclusiveHostCount(true);
-          return  Integer.parseInt(jo.getString("port")) == port
+          return  (jo.containsKey("port") && Integer.parseInt(jo.getString("port")) == port)
             || sn.getInfo().isInRange(clientIP);
         })
         .findFirst();
