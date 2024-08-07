@@ -69,40 +69,42 @@ public class TenantUtils {
         .filter(jo -> {
           SubnetUtils sn = new SubnetUtils(jo.getString(SC_SUBNET));
           sn.setInclusiveHostCount(true);
-          log.info("The clientIP {}, SN {}, return value {}", clientIP, sn, sn.getInfo().isInRange(clientIP));
           return sn.getInfo().isInRange(clientIP);
         })
         .findFirst();
-    // port
+
     return tcOpt.orElse(sip2config);
   }
 
+  /**
+   * Returns JSON config for tenant whose subnet encompasses a client IP address.
+   * @param sip2config SIP2 edge module config.
+   *         Contains a JSON array (scTenants) of tenant configs,
+   *         each with a scSubnet element with a CIDR-notation string value.
+   * @param clientIP IPv4 address of client SC used as lookup to find tenant config
+   *     @returns tenant config whose scSubnet encompasses clientIP.
+   *         Returns the sip2conf itself if it does not contain a scTenants element or
+   *         the scTenants array has no tenant with subnet in range for clientIP.
+   * @param port Tenant specific port value.
+   * @return
+   */
   public static JsonObject lookupTenantConfigForIPaddress(JsonObject sip2config, String clientIP,
                                                           int port) {
-
     if (!sip2config.containsKey(SC_TENANTS)) {
       log.debug("LookupTenantConfig scTenants key not found in config, "
-        + "support for muti-tenant not available");
+          + "support for muti-tenant not available");
       return sip2config;
     }
-    //log.info("Inside lookupTenantConfigForIPaddress serverPort {}", port);
 
     Optional<JsonObject> tcOpt = sip2config.getJsonArray(SC_TENANTS).stream()
-      .map(o -> (JsonObject) o)
-      .filter(jo -> {
-        SubnetUtils sn = new SubnetUtils(jo.getString(SC_SUBNET));
-        sn.setInclusiveHostCount(true);
-      //  log.info("The clientIP {}, SN {}, return value {}, port {}", clientIP, sn, sn.getInfo().isInRange(clientIP), port);
-        boolean isInRange = sn.getInfo().isInRange(clientIP);
-        log.info("The jo port {} and the port {} are they equal {}", jo.getString("port"),
-          port, Integer.parseInt(jo.getString("port")) == port);
-        boolean isPortMatch = !jo.containsKey("port")  || Integer.parseInt(jo.getString("port")) == port;
-        return isPortMatch;
-      })
-      .findFirst();
-    // port
+        .map(o -> (JsonObject) o)
+        .filter(jo -> {
+          SubnetUtils sn = new SubnetUtils(jo.getString(SC_SUBNET));
+          sn.setInclusiveHostCount(true);
+          return  Integer.parseInt(jo.getString("port")) == port
+            || sn.getInfo().isInRange(clientIP);
+        })
+        .findFirst();
     return tcOpt.orElse(sip2config);
   }
-
-
 }

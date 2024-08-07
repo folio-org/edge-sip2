@@ -16,6 +16,24 @@ import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 import static org.folio.edge.sip2.parser.Command.UNKNOWN;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import io.micrometer.core.instrument.Timer;
+import io.vertx.config.ConfigRetriever;
+import io.vertx.config.ConfigRetrieverOptions;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.pointer.JsonPointer;
+import io.vertx.core.net.NetServer;
+import io.vertx.core.net.NetServerOptions;
+import io.vertx.core.net.NetSocket;
+import io.vertx.core.parsetools.RecordParser;
+import io.vertx.ext.web.client.WebClient;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -24,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -51,27 +68,6 @@ import org.folio.edge.sip2.parser.Parser;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.TenantUtils;
 import org.folio.edge.sip2.utils.WebClientUtils;
-
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-
-import io.micrometer.core.instrument.Timer;
-import io.vertx.config.ConfigRetriever;
-import io.vertx.config.ConfigRetrieverOptions;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.pointer.JsonPointer;
-import io.vertx.core.net.NetServer;
-import io.vertx.core.net.NetServerOptions;
-import io.vertx.core.net.NetSocket;
-import io.vertx.core.parsetools.RecordParser;
-import io.vertx.ext.web.client.WebClient;
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -114,7 +110,7 @@ public class MainVerticle extends AbstractVerticle {
 
     // initialize the TokenCache
     TokenCacheFactory.initialize(config()
-      .getInteger(SYS_TOKEN_CACHE_CAPACITY, DEFAULT_TOKEN_CACHE_CAPACITY));
+        .getInteger(SYS_TOKEN_CACHE_CAPACITY, DEFAULT_TOKEN_CACHE_CAPACITY));
 
 
     // We need to reduce the complexity of this method...
@@ -131,113 +127,113 @@ public class MainVerticle extends AbstractVerticle {
     for (int i = 0; i < ports.size(); i++) {
       int port = ports.getInteger(i);
       NetServerOptions options = new NetServerOptions(
-        config().getJsonObject("netServerOptions", new JsonObject()))
-        .setPort(port);
+          config().getJsonObject("netServerOptions", new JsonObject()))
+          .setPort(port);
 
-    NetServer server = vertx.createNetServer(options);
-    servers.add(server);
+      NetServer server = vertx.createNetServer(options);
+      servers.add(server);
 
-    final Metrics metrics = Metrics.getMetrics(port);
-    metricsMap.putIfAbsent(port, metrics);
+      final Metrics metrics = Metrics.getMetrics(port);
+      metricsMap.putIfAbsent(port, metrics);
 
-    server.connectHandler(socket -> {
+      server.connectHandler(socket -> {
 
-      String clientAddress = socket.remoteAddress().host();
-      int clientPort = socket.remoteAddress().port();
+        String clientAddress = socket.remoteAddress().host();
+        int clientPort = socket.remoteAddress().port();
 
-      ThreadContext.put(IPADDRESS, clientAddress);
-      JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
-        clientAddress, port);
+        ThreadContext.put(IPADDRESS, clientAddress);
+        JsonObject tenantConfig = ports.size() > 1
+            ? TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
+            clientAddress, port) :
+            TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig, clientAddress);
 
-      log.info("The session data is created for {}", tenantConfig.getString("tenant"));
+        log.info("The session data is created for {}", tenantConfig.getString("tenant"));
 
-      final SessionData sessionData = SessionData.createSession(
-        tenantConfig.getString("tenant"),
-        tenantConfig.getString("fieldDelimiter", "|").charAt(0),
-        tenantConfig.getBoolean("errorDetectionEnabled", FALSE),
-        tenantConfig.getString("charset", "IBM850"));
-      final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
+        final SessionData sessionData = SessionData.createSession(
+            tenantConfig.getString("tenant"),
+            tenantConfig.getString("fieldDelimiter", "|").charAt(0),
+            tenantConfig.getBoolean("errorDetectionEnabled", FALSE),
+            tenantConfig.getString("charset", "IBM850"));
+        final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
 
-      socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
-        log.info("Inside the handler method ");
-        final Timer.Sample sample = metrics.sample();
+        socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
+          log.info("Inside the handler method ");
+          final Timer.Sample sample = metrics.sample();
 
-        if (Objects.isNull(sessionData.getTenant())) {
-          log.error("No tenant configured for address: {}  message ignored.", clientAddress);
-          return;
-        }
-
-        final String messageString = buffer.getString(0, buffer.length(), sessionData.getCharset());
-
-        log.info("Client connected from IP address: " + clientAddress + " and port: " + clientPort);
-        log.info("Received message: {}", messageString);
-
-        Command command = UNKNOWN;
-
-        try {
-          final Parser parser = Parser.builder()
-            .delimiter(sessionData.getFieldDelimiter())
-            .charset(Charset.forName(sessionData.getCharset()))
-            .errorDetectionEnabled(sessionData.isErrorDetectionEnabled())
-            .timezone(sessionData.getTimeZone())
-            .build();
-
-          //parsing
-          final Message<Object> message = parser.parseMessage(messageString);
-
-          command = message.getCommand();
-
-          //process validation results
-          if (!message.isValid()) {
-            log.error("Message is invalid: {}", messageString);
-            handleInvalidMessage(message, socket, sessionData, messageDelimiter, sample,
-              metrics);
+          if (Objects.isNull(sessionData.getTenant())) {
+            log.error("No tenant configured for address: {}  message ignored.", clientAddress);
             return;
           }
 
-          //check if the previous message needs resending
-          if (requiredResending(sessionData, message)) {
-            resendPreviousMessage(sessionData, sample,
-              metrics, socket, command);
-            return;
-          }
+          final String messageString = buffer.getString(0, buffer.length(),
+              sessionData.getCharset());
 
-          ISip2RequestHandler handler = handlers.get(command);
+          Command command = UNKNOWN;
 
-          if (handler == null) {
-            log.error("Error locating handler for command {}", command.name());
+          try {
+            final Parser parser = Parser.builder()
+                .delimiter(sessionData.getFieldDelimiter())
+                .charset(Charset.forName(sessionData.getCharset()))
+                .errorDetectionEnabled(sessionData.isErrorDetectionEnabled())
+                .timezone(sessionData.getTimeZone())
+                .build();
+
+            //parsing
+            final Message<Object> message = parser.parseMessage(messageString);
+
+            command = message.getCommand();
+
+            //process validation results
+            if (!message.isValid()) {
+              log.error("Message is invalid: {}", messageString);
+              handleInvalidMessage(message, socket, sessionData, messageDelimiter, sample,
+                  metrics);
+              return;
+            }
+
+            //check if the previous message needs resending
+            if (requiredResending(sessionData, message)) {
+              resendPreviousMessage(sessionData, sample,
+                  metrics, socket, command);
+              return;
+            }
+
+            ISip2RequestHandler handler = handlers.get(command);
+
+            if (handler == null) {
+              log.error("Error locating handler for command {}", command.name());
+              sample.stop(metrics.commandTimer(command));
+              return;
+            }
+
+            executeHandler(message,
+                sessionData, messageDelimiter,
+                handler, sample,
+                socket, metrics);
+          } catch (Exception ex) {
+            String message = "Problems handling the request: " + ex.getMessage();
+            log.error(message, ex);
+            // Return an error message for now for the sake of negative testing.
+            // Will find a better way to handle negative test cases.
             sample.stop(metrics.commandTimer(command));
-            return;
+            socket.write(message + messageDelimiter, sessionData.getCharset());
+            metrics.requestError();
           }
-
-          executeHandler(message,
-            sessionData, messageDelimiter,
-            handler, sample,
-            socket, metrics);
-        } catch (Exception ex) {
-          String message = "Problems handling the request: " + ex.getMessage();
-          log.error(message, ex);
-          // Return an error message for now for the sake of negative testing.
-          // Will find a better way to handle negative test cases.
-          sample.stop(metrics.commandTimer(command));
-          socket.write(message + messageDelimiter, sessionData.getCharset());
-          metrics.requestError();
-        }
-      }));
-      socket.exceptionHandler(t -> {
-        log.info("Socket exceptionHandler caught an issue, see error logs for more details");
-        log.error("Socket exception", t);
-        metrics.socketError();
+        }));
+        socket.exceptionHandler(t -> {
+          log.info("Socket exceptionHandler caught an issue, see error logs for more details");
+          log.error("Socket exception", t);
+          metrics.socketError();
+        });
       });
-    });
 
-    JsonObject crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
-    ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
-    configRetriever = ConfigRetriever.create(vertx, crOptions);
+      JsonObject crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
+      ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
+      configRetriever = ConfigRetriever.create(vertx, crOptions);
 
-    // after tenant config is loaded, start listening for messages
-    lsitenToMessages(startFuture, server);
-  }
+      // after tenant config is loaded, start listening for messages
+      lsitenToMessages(startFuture, server);
+    }
 
   }
 
@@ -394,8 +390,8 @@ public class MainVerticle extends AbstractVerticle {
     configRetriever.close();
 
     List<Future<Void>> stopFutures = servers.stream()
-      .map(NetServer::close)
-      .collect(Collectors.toList());
+        .map(NetServer::close)
+        .collect(Collectors.toList());
 
     Future.all(stopFutures).onComplete(ar -> {
       if (ar.succeeded()) {
