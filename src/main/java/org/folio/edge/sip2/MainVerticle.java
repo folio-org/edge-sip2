@@ -16,28 +16,15 @@ import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 import static org.folio.edge.sip2.parser.Command.UNKNOWN;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import io.micrometer.core.instrument.Timer;
-import io.vertx.config.ConfigRetriever;
-import io.vertx.config.ConfigRetrieverOptions;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Promise;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.pointer.JsonPointer;
-import io.vertx.core.net.NetServer;
-import io.vertx.core.net.NetServerOptions;
-import io.vertx.core.net.NetSocket;
-import io.vertx.core.parsetools.RecordParser;
-import io.vertx.ext.web.client.WebClient;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -65,13 +52,34 @@ import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.TenantUtils;
 import org.folio.edge.sip2.utils.WebClientUtils;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+
+import io.micrometer.core.instrument.Timer;
+import io.vertx.config.ConfigRetriever;
+import io.vertx.config.ConfigRetrieverOptions;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.pointer.JsonPointer;
+import io.vertx.core.net.NetServer;
+import io.vertx.core.net.NetServerOptions;
+import io.vertx.core.net.NetSocket;
+import io.vertx.core.parsetools.RecordParser;
+import io.vertx.ext.web.client.WebClient;
+
 public class MainVerticle extends AbstractVerticle {
 
   private static final int HEALTH_CHECK_PORT = 8081;
   private static final String  HEALTH_CHECK_PATH = "/admin/health";
   private static final String IPADDRESS = "ipAddress";
   private Map<Command, ISip2RequestHandler> handlers;
-  //private NetServer server;
+  private List<NetServer> servers = new ArrayList<>();
   private final Logger log = LogManager.getLogger();
   private final Map<Integer, Metrics> metricsMap = new HashMap<>();
   private JsonObject multiTenantConfig = new JsonObject();
@@ -112,13 +120,6 @@ public class MainVerticle extends AbstractVerticle {
     // We need to reduce the complexity of this method...
     setupHanlders();
 
-    //set Config object's defaults
-//    int port = config().getInteger("port"); // move port to netServerOptions
-//    NetServerOptions options = new NetServerOptions(
-//        config().getJsonObject("netServerOptions", new JsonObject()))
-//        .setPort(port);
-//      .setIdleTimeout(30);
-
     // Get the list of ports from the configuration
     JsonArray ports = config().getJsonArray("ports");
 
@@ -134,22 +135,15 @@ public class MainVerticle extends AbstractVerticle {
         .setPort(port);
 
     NetServer server = vertx.createNetServer(options);
-
-    //log.info("Deployed verticle at port {}", port);
+    servers.add(server);
 
     final Metrics metrics = Metrics.getMetrics(port);
     metricsMap.putIfAbsent(port, metrics);
 
     server.connectHandler(socket -> {
 
-      //log.info("Calling again and again..");
       String clientAddress = socket.remoteAddress().host();
       int clientPort = socket.remoteAddress().port();
-
-
-      //log.info("The host address is {}",socket.remoteAddress().hostAddress());
-      //log.info("The socket name is {}",socket.remoteAddress().hostName());
-
 
       ThreadContext.put(IPADDRESS, clientAddress);
       JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
@@ -398,16 +392,21 @@ public class MainVerticle extends AbstractVerticle {
   @Override
   public void stop(Promise<Void> stopFuture) {
     configRetriever.close();
-//    server.close(result -> {
-//      if (result.succeeded()) {
-//        metricsMap.values().stream().forEach(Metrics::stop);
-//        stopFuture.complete();
-//        log.info("MainVerticle stopped successfully!");
-//      } else {
-//        log.error("Failed to stop MainVerticle", result.cause());
-//        stopFuture.fail(result.cause());
-//      }
-//    });
+
+    List<Future<Void>> stopFutures = servers.stream()
+      .map(NetServer::close)
+      .collect(Collectors.toList());
+
+    Future.all(stopFutures).onComplete(ar -> {
+      if (ar.succeeded()) {
+        metricsMap.values().forEach(Metrics::stop);
+        stopFuture.complete();
+        log.info("MainVerticle stopped successfully!");
+      } else {
+        log.error("Failed to stop MainVerticle", ar.cause());
+        stopFuture.fail(ar.cause());
+      }
+    });
   }
 
   private void handleInvalidMessage(
