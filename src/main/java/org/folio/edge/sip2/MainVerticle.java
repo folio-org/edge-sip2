@@ -389,7 +389,7 @@ public class MainVerticle extends AbstractVerticle {
 
     List<Future<Void>> stopFutures = servers.stream()
         .map(NetServer::close)
-        .collect(Collectors.toList());
+        .toList();
 
     Future.all(stopFutures).onComplete(ar -> {
       if (ar.succeeded()) {
