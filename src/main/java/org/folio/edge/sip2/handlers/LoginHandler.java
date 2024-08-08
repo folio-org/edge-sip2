@@ -40,7 +40,7 @@ public class LoginHandler implements ISip2RequestHandler {
 
   @Override
   public Future<String> execute(Object message, SessionData sessionData) {
-    log.info("LoginHandler :: execute message:{} sessionData:{}",message,sessionData);
+    log.debug("LoginHandler :: execute message:{} sessionData:{}",message,sessionData);
     final Login login = (Login) message;
 
     log.info("LoginHandler :: execute Login: {}", login::getLoginLogInfo);

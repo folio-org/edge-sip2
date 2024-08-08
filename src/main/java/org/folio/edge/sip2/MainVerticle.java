@@ -41,7 +41,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -145,8 +144,6 @@ public class MainVerticle extends AbstractVerticle {
         JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
             clientAddress, port);
 
-        log.info("The session data is created for {}", tenantConfig.getString("tenant"));
-
         final SessionData sessionData = SessionData.createSession(
             tenantConfig.getString("tenant"),
             tenantConfig.getString("fieldDelimiter", "|").charAt(0),
@@ -155,7 +152,6 @@ public class MainVerticle extends AbstractVerticle {
         final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
 
         socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
-          log.info("Inside the handler method ");
           final Timer.Sample sample = metrics.sample();
 
           if (Objects.isNull(sessionData.getTenant())) {

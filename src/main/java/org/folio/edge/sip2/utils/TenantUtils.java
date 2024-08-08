@@ -64,7 +64,6 @@ public class TenantUtils {
           + "support for muti-tenant not available");
       return sip2config;
     }
-    log.info("Inside lookupTenantConfigForIPaddress");
 
     Optional<JsonObject> tcOpt = sip2config.getJsonArray(SC_TENANTS).stream()
         .map(o -> (JsonObject) o)
