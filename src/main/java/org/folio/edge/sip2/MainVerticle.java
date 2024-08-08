@@ -141,10 +141,9 @@ public class MainVerticle extends AbstractVerticle {
         String clientAddress = socket.remoteAddress().host();
 
         ThreadContext.put(IPADDRESS, clientAddress);
-        JsonObject tenantConfig = ports.size() > 1
-            ? TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
-            clientAddress, port) :
-            TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig, clientAddress);
+
+        JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
+            clientAddress, port);
 
         log.info("The session data is created for {}", tenantConfig.getString("tenant"));
 
