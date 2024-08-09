@@ -67,13 +67,22 @@ public class TenantUtils {
 
     Optional<JsonObject> tcOpt = sip2config.getJsonArray(SC_TENANTS).stream()
         .map(o -> (JsonObject) o)
-        .filter(jo -> {
-          SubnetUtils sn = new SubnetUtils(jo.getString(SC_SUBNET));
-          sn.setInclusiveHostCount(true);
-          return  (jo.containsKey("port") && Integer.parseInt(jo.getString("port")) == port)
-            || sn.getInfo().isInRange(clientIP);
-        })
+        .filter(jo -> jo.containsKey("port") && Integer.parseInt(jo.getString("port")) == port)
         .findFirst();
+
+    if (tcOpt.isPresent()) {
+      return tcOpt.get();
+    }
+
+    // If no port match, check if the client IP is in range
+    tcOpt = sip2config.getJsonArray(SC_TENANTS).stream()
+      .map(o -> (JsonObject) o)
+      .filter(jo -> {
+        SubnetUtils sn = new SubnetUtils(jo.getString(SC_SUBNET));
+        sn.setInclusiveHostCount(true);
+        return sn.getInfo().isInRange(clientIP);
+      })
+      .findFirst();
 
     return tcOpt.orElse(sip2config);
   }

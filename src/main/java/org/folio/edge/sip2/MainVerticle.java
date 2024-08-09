@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -107,22 +108,19 @@ public class MainVerticle extends AbstractVerticle {
 
     callAdminHealthCheckService();
 
-    // initialize the TokenCache
+    // Initialize the TokenCache
     TokenCacheFactory.initialize(config()
         .getInteger(SYS_TOKEN_CACHE_CAPACITY, DEFAULT_TOKEN_CACHE_CAPACITY));
 
-
-    // We need to reduce the complexity of this method...
     setupHanlders();
 
-    // Get the list of ports from the configuration
     JsonArray ports = config().getJsonArray("ports");
-
     if (ports == null || ports.isEmpty()) {
       throw new IllegalArgumentException("No ports specified in the configuration");
     }
 
-    // Iterate over the list of ports and create a NetServer for each
+    AtomicInteger remainingServers = new AtomicInteger(ports.size());
+
     for (int i = 0; i < ports.size(); i++) {
       int port = ports.getInteger(i);
       NetServerOptions options = new NetServerOptions(
@@ -225,14 +223,18 @@ public class MainVerticle extends AbstractVerticle {
       ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
       configRetriever = ConfigRetriever.create(vertx, crOptions);
 
-      // after tenant config is loaded, start listening for messages
-      lsitenToMessages(startFuture, server);
+      // After tenant config is loaded, start listening for messages
+      lsitenToMessages(Promise.promise(), server).onComplete(ar -> {
+        if (ar.failed()) {
+          startFuture.fail(ar.cause());
+        } else if (remainingServers.decrementAndGet() == 0) {
+          startFuture.complete();
+        }
+      });
     }
-
   }
 
-  private void lsitenToMessages(Promise<Void> startFuture, NetServer server) {
-
+  private Future<Void> lsitenToMessages(Promise<Void> promise, NetServer server) {
     configRetriever.getConfig(ar -> {
       if (ar.succeeded()) {
         multiTenantConfig = ar.result();
@@ -240,17 +242,17 @@ public class MainVerticle extends AbstractVerticle {
 
         server.listen(result -> {
           if (result.succeeded()) {
-            log.info("MainVerticle deployed successfuly, server is now listening!");
-            startFuture.complete();
+            log.info("Server is now listening!");
+            promise.complete();
           } else {
-            log.error("Failed to deploy MainVerticle", result.cause());
-            startFuture.fail(result.cause());
+            log.error("Failed to start server", result.cause());
+            promise.fail(result.cause());
           }
         });
 
       } else {
         log.error("Failed to load tenant config", ar.cause());
-        startFuture.fail(ar.cause());
+        promise.fail(ar.cause());
       }
     });
 
@@ -258,6 +260,8 @@ public class MainVerticle extends AbstractVerticle {
       multiTenantConfig = change.getNewConfiguration();
       log.info("Tenant config changed: {}", () -> multiTenantConfig.encodePrettily());
     });
+
+    return promise.future();
   }
 
   /**
