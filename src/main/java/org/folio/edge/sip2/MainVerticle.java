@@ -22,9 +22,11 @@ import io.micrometer.core.instrument.Timer;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.pointer.JsonPointer;
 import io.vertx.core.net.NetServer;
@@ -33,10 +35,13 @@ import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
 import io.vertx.ext.web.client.WebClient;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -70,7 +75,7 @@ public class MainVerticle extends AbstractVerticle {
   private static final String  HEALTH_CHECK_PATH = "/admin/health";
   private static final String IPADDRESS = "ipAddress";
   private Map<Command, ISip2RequestHandler> handlers;
-  private NetServer server;
+  private List<NetServer> servers = new ArrayList<>();
   private final Logger log = LogManager.getLogger();
   private final Map<Integer, Metrics> metricsMap = new HashMap<>();
   private JsonObject multiTenantConfig = new JsonObject();
@@ -103,123 +108,133 @@ public class MainVerticle extends AbstractVerticle {
 
     callAdminHealthCheckService();
 
-    // initialize the TokenCache
+    // Initialize the TokenCache
     TokenCacheFactory.initialize(config()
         .getInteger(SYS_TOKEN_CACHE_CAPACITY, DEFAULT_TOKEN_CACHE_CAPACITY));
 
-
-    // We need to reduce the complexity of this method...
     setupHanlders();
 
-    //set Config object's defaults
-    int port = config().getInteger("port"); // move port to netServerOptions
-    NetServerOptions options = new NetServerOptions(
-        config().getJsonObject("netServerOptions", new JsonObject()))
-        .setPort(port);
+    JsonArray ports = config().getJsonArray("ports");
+    if (ports == null || ports.isEmpty()) {
+      throw new IllegalArgumentException("No ports specified in the configuration");
+    }
 
-    server = vertx.createNetServer(options);
+    AtomicInteger remainingServers = new AtomicInteger(ports.size());
 
-    log.info("Deployed verticle at port {}", port);
+    for (int i = 0; i < ports.size(); i++) {
+      int port = ports.getInteger(i);
+      NetServerOptions options = new NetServerOptions(
+          config().getJsonObject("netServerOptions", new JsonObject()))
+          .setPort(port);
 
-    final Metrics metrics = Metrics.getMetrics(port);
-    metricsMap.putIfAbsent(port, metrics);
+      NetServer server = vertx.createNetServer(options);
+      servers.add(server);
 
-    server.connectHandler(socket -> {
+      final Metrics metrics = Metrics.getMetrics(port);
+      metricsMap.putIfAbsent(port, metrics);
 
-      String clientAddress = socket.remoteAddress().host();
-      ThreadContext.put(IPADDRESS, clientAddress);
-      JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
-          clientAddress);
+      server.connectHandler(socket -> {
 
-      final SessionData sessionData = SessionData.createSession(
-          tenantConfig.getString("tenant"),
-          tenantConfig.getString("fieldDelimiter", "|").charAt(0),
-          tenantConfig.getBoolean("errorDetectionEnabled", FALSE),
-          tenantConfig.getString("charset", "IBM850"));
-      final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
+        String clientAddress = socket.remoteAddress().host();
 
-      socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
-        final Timer.Sample sample = metrics.sample();
+        ThreadContext.put(IPADDRESS, clientAddress);
 
-        if (Objects.isNull(sessionData.getTenant())) {
-          log.error("No tenant configured for address: {}  message ignored.", clientAddress);
-          return;
-        }
+        JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
+            clientAddress, port);
 
-        final String messageString = buffer.getString(0, buffer.length(), sessionData.getCharset());
+        final SessionData sessionData = SessionData.createSession(
+            tenantConfig.getString("tenant"),
+            tenantConfig.getString("fieldDelimiter", "|").charAt(0),
+            tenantConfig.getBoolean("errorDetectionEnabled", FALSE),
+            tenantConfig.getString("charset", "IBM850"));
+        final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
 
-        log.debug("Received message: {}", messageString);
+        socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
+          final Timer.Sample sample = metrics.sample();
 
-        Command command = UNKNOWN;
-
-        try {
-          final Parser parser = Parser.builder()
-              .delimiter(sessionData.getFieldDelimiter())
-              .charset(Charset.forName(sessionData.getCharset()))
-              .errorDetectionEnabled(sessionData.isErrorDetectionEnabled())
-              .timezone(sessionData.getTimeZone())
-              .build();
-
-          //parsing
-          final Message<Object> message = parser.parseMessage(messageString);
-
-          command = message.getCommand();
-
-          //process validation results
-          if (!message.isValid()) {
-            log.error("Message is invalid: {}", messageString);
-            handleInvalidMessage(message, socket, sessionData, messageDelimiter, sample,
-                metrics);
+          if (Objects.isNull(sessionData.getTenant())) {
+            log.error("No tenant configured for address: {}  message ignored.", clientAddress);
             return;
           }
 
-          //check if the previous message needs resending
-          if (requiredResending(sessionData, message)) {
-            resendPreviousMessage(sessionData, sample,
-                metrics, socket, command);
-            return;
-          }
+          final String messageString = buffer.getString(0, buffer.length(),
+              sessionData.getCharset());
 
-          ISip2RequestHandler handler = handlers.get(command);
+          Command command = UNKNOWN;
 
-          if (handler == null) {
-            log.error("Error locating handler for command {}", command.name());
+          try {
+            final Parser parser = Parser.builder()
+                .delimiter(sessionData.getFieldDelimiter())
+                .charset(Charset.forName(sessionData.getCharset()))
+                .errorDetectionEnabled(sessionData.isErrorDetectionEnabled())
+                .timezone(sessionData.getTimeZone())
+                .build();
+
+            //parsing
+            final Message<Object> message = parser.parseMessage(messageString);
+
+            command = message.getCommand();
+
+            //process validation results
+            if (!message.isValid()) {
+              log.error("Message is invalid: {}", messageString);
+              handleInvalidMessage(message, socket, sessionData, messageDelimiter, sample,
+                  metrics);
+              return;
+            }
+
+            //check if the previous message needs resending
+            if (requiredResending(sessionData, message)) {
+              resendPreviousMessage(sessionData, sample,
+                  metrics, socket, command);
+              return;
+            }
+
+            ISip2RequestHandler handler = handlers.get(command);
+
+            if (handler == null) {
+              log.error("Error locating handler for command {}", command.name());
+              sample.stop(metrics.commandTimer(command));
+              return;
+            }
+
+            executeHandler(message,
+                sessionData, messageDelimiter,
+                handler, sample,
+                socket, metrics);
+          } catch (Exception ex) {
+            String message = "Problems handling the request: " + ex.getMessage();
+            log.error(message, ex);
+            // Return an error message for now for the sake of negative testing.
+            // Will find a better way to handle negative test cases.
             sample.stop(metrics.commandTimer(command));
-            return;
+            socket.write(message + messageDelimiter, sessionData.getCharset());
+            metrics.requestError();
           }
-
-          executeHandler(message,
-              sessionData, messageDelimiter,
-              handler, sample,
-              socket, metrics);
-        } catch (Exception ex) {
-          String message = "Problems handling the request: " + ex.getMessage();
-          log.error(message, ex);
-          // Return an error message for now for the sake of negative testing.
-          // Will find a better way to handle negative test cases.
-          sample.stop(metrics.commandTimer(command));
-          socket.write(message + messageDelimiter, sessionData.getCharset());
-          metrics.requestError();
-        }
-      }));
-      socket.exceptionHandler(t -> {
-        log.info("Socket exceptionHandler caught an issue, see error logs for more details");
-        log.error("Socket exception", t);
-        metrics.socketError();
+        }));
+        socket.exceptionHandler(t -> {
+          log.info("Socket exceptionHandler caught an issue, see error logs for more details");
+          log.error("Socket exception", t);
+          metrics.socketError();
+        });
       });
-    });
 
-    JsonObject crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
-    ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
-    configRetriever = ConfigRetriever.create(vertx, crOptions);
+      JsonObject crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
+      ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
+      configRetriever = ConfigRetriever.create(vertx, crOptions);
 
-    // after tenant config is loaded, start listening for messages
-    lsitenToMessages(startFuture);
-
+      // After tenant config is loaded, start listening for messages
+      lsitenToMessages(Promise.promise(), server).onComplete(ar -> {
+        if (ar.failed()) {
+          startFuture.fail(ar.cause());
+        } else if (remainingServers.decrementAndGet() == 0) {
+          startFuture.complete();
+        }
+      });
+    }
   }
 
-  private void lsitenToMessages(Promise<Void> startFuture) {
-
+  private Future<Void> lsitenToMessages(Promise<Void> promise, NetServer server) {
     configRetriever.getConfig(ar -> {
       if (ar.succeeded()) {
         multiTenantConfig = ar.result();
@@ -227,17 +242,17 @@ public class MainVerticle extends AbstractVerticle {
 
         server.listen(result -> {
           if (result.succeeded()) {
-            log.info("MainVerticle deployed successfuly, server is now listening!");
-            startFuture.complete();
+            log.info("Server is now listening!");
+            promise.complete();
           } else {
-            log.error("Failed to deploy MainVerticle", result.cause());
-            startFuture.fail(result.cause());
+            log.error("Failed to start server", result.cause());
+            promise.fail(result.cause());
           }
         });
 
       } else {
         log.error("Failed to load tenant config", ar.cause());
-        startFuture.fail(ar.cause());
+        promise.fail(ar.cause());
       }
     });
 
@@ -245,6 +260,8 @@ public class MainVerticle extends AbstractVerticle {
       multiTenantConfig = change.getNewConfiguration();
       log.info("Tenant config changed: {}", () -> multiTenantConfig.encodePrettily());
     });
+
+    return promise.future();
   }
 
   /**
@@ -369,14 +386,19 @@ public class MainVerticle extends AbstractVerticle {
   @Override
   public void stop(Promise<Void> stopFuture) {
     configRetriever.close();
-    server.close(result -> {
-      if (result.succeeded()) {
-        metricsMap.values().stream().forEach(Metrics::stop);
+
+    List<Future<Void>> stopFutures = servers.stream()
+        .map(NetServer::close)
+        .toList();
+
+    Future.all(stopFutures).onComplete(ar -> {
+      if (ar.succeeded()) {
+        metricsMap.values().forEach(Metrics::stop);
         stopFuture.complete();
         log.info("MainVerticle stopped successfully!");
       } else {
-        log.error("Failed to stop MainVerticle", result.cause());
-        stopFuture.fail(result.cause());
+        log.error("Failed to stop MainVerticle", ar.cause());
+        stopFuture.fail(ar.cause());
       }
     });
   }

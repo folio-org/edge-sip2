@@ -24,7 +24,7 @@ The -conf option can either specify the filename of the configuration or inline 
 Here is a sample sip2.conf file:
 ```
 { 
-  "port": 6443,
+  "ports": [6443],
   "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
   "tenantConfigRetrieverOptions": {
     "scanPeriod": 300000,
@@ -41,11 +41,11 @@ Here is a sample sip2.conf file:
 ```
 For inline JSON, the format is:
 ```
--conf '{"port":1234,"okapiUrl":"https://folio-snapshot-okapi.dev.folio.org".....}'
+-conf '{"ports":1234,"okapiUrl":"https://folio-snapshot-okapi.dev.folio.org".....}'
 ```
 On Windows, inline JSON configuration is in double quotes and the inner double quotes should be escaped, for example:
 ```
--conf "{\"port\":1234,\"okapiUrl\":\"https://folio-snapshot-okapi.dev.folio.org\"....}"
+-conf "{\"ports\":[1234],\"okapiUrl\":\"https://folio-snapshot-okapi.dev.folio.org\"....}"
 ``` 
 
 One option is to mount the configuration files to the Docker container and provide
@@ -53,7 +53,7 @@ command line arguments to point it to the right path (e.g. `-conf /path/to/confi
 
 |Config option|Type|Description|
 |-------------|--|-----------|
-|`port`|int|The port the module will use to bind, typically 1024 <= port <= 65,535; must not be 8081 that is used for health check.|
+|`ports`|int array|The port(s) the module will use to bind, typically 1024 <= port <= 65,535; must not be 8081 that is used for health check.|
 |`okapiUrl`|string|The URL of the Okapi server used by FOLIO.|
 |`tenantConfigRetrieverOptions`|JSON object|Location for tenant configuration.|
 |`scanPeriod`|int|Frequency in msec that sip2 will check for and reload tenant configuration changes.|
@@ -73,6 +73,7 @@ Here is a sample sip2-tenants.conf file:
 "scTenants": [
   {
   "scSubnet": "11.11.00.00/16",
+  "port": 6443,
   "tenant": "test_tenant1",
   "errorDetectionEnabled": true,
   "messageDelimiter": "\r",
@@ -95,6 +96,7 @@ Here is a sample sip2-tenants.conf file:
 |-------------|----|-----------|
 |`scTenants`|JSON array|Array of sip2 tenant configurations.|
 |`scSubnet`|string|IPv4 CIDR of a tenant's self service kiosk. This is used to identify the tenant configuration for an incoming kiosk connection. |
+|`port`|int|Port assigned for a tenant.  |
 |`tenant`|string|The FOLIO assigned tenant ID. |
 |`errorDetectionEnabled`|boolean|Indicates whether or not the self service kiosk will be using SIP error detection in messages sent to and from this module. Defaults to "false".|
 |`messageDelimiter`|string|The character sequence that indicates the end of a single SIP message. This is available in case the self check kiosk is not compliant with the SIP specification. The default is "\\r"|
@@ -109,7 +111,7 @@ Edge-sip2 supports [various locations](https://vertx.io/docs/vertx-config/java/#
 Here is a sample sip2.conf for storing tenant config in S3:
 
     {
-    "port": 6443,
+    "ports": [6443],
     "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
     "tenantConfigRetrieverOptions": {
       "scanPeriod": 300000,
@@ -245,7 +247,7 @@ connect = sip2.example.com:6443
 Example edge-sip2 configuration:
 
 ```bash
-$ java -jar edge-sip2-fat.jar -conf '{"port":1234,"okapiUrl":"https://folio-snapshot-okapi.dev.folio.org","tenant":"diku","netServerOptions":{"ssl":true,"pemKeyCertOptions":{"certPaths":["cert.crt"],"keyPaths":["cert.key"]}}}'
+$ java -jar edge-sip2-fat.jar -conf '{"ports":[1234],"okapiUrl":"https://folio-snapshot-okapi.dev.folio.org","tenant":"diku","netServerOptions":{"ssl":true,"pemKeyCertOptions":{"certPaths":["cert.crt"],"keyPaths":["cert.key"]}}}'
 ```
 
 |Config option|Type|Description|
@@ -370,7 +372,7 @@ $ cp micrometer-registry-prometheus-1.1.5.jar simpleclient_common-0.5.0.jar simp
 Then run a container from the FOLIO docker hub image (either snapshot `folioci/edge-sip2` or released `folioorg/edge-sip2`):
 
 ```
-$ docker run -v /my/metrics/libs:/metrics -p 6443:6443 --expose 8081 -p 8081:8081  -e JAVA_OPTIONS="-Dvertx.metrics.options.enabled=true " -e JAVA_CLASSPATH=/metrics/*:/usr/verticles/edge-sip2-fat.jar -e JAVA_MAIN_CLASS=io.vertx.core.Launcher folioci/edge-sip2 run org.folio.edge.sip2.MainVerticle -conf '{"port":6443,"okapiUrl":"https://folio-okapi.example.com","tenant":"diku","messageDelimiter":"\r","errorDetectionEnabled":true,"charset":"ISO-8859-1"}' -options '{"metricsOptions":{"labels":["LOCAL","REMOTE","HTTP_PATH","HTTP_METHOD","HTTP_CODE","CLASS_NAME"],"enabled":true,"prometheusOptions":{"enabled":true,"startEmbeddedServer":true,"embeddedServerOptions":{"port":8081}}}}'
+$ docker run -v /my/metrics/libs:/metrics -p 6443:6443 --expose 8081 -p 8081:8081  -e JAVA_OPTIONS="-Dvertx.metrics.options.enabled=true " -e JAVA_CLASSPATH=/metrics/*:/usr/verticles/edge-sip2-fat.jar -e JAVA_MAIN_CLASS=io.vertx.core.Launcher folioci/edge-sip2 run org.folio.edge.sip2.MainVerticle -conf '{"ports":[6443],"okapiUrl":"https://folio-okapi.example.com","tenant":"diku","messageDelimiter":"\r","errorDetectionEnabled":true,"charset":"ISO-8859-1"}' -options '{"metricsOptions":{"labels":["LOCAL","REMOTE","HTTP_PATH","HTTP_METHOD","HTTP_CODE","CLASS_NAME"],"enabled":true,"prometheusOptions":{"enabled":true,"startEmbeddedServer":true,"embeddedServerOptions":{"port":8081}}}}'
 ```
 
 This example shows how to launch with the Prometheus binding. Since Prometheus needs to scrape the metrics, we need to expose port for the HTTP server.

@@ -11,6 +11,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
@@ -49,6 +50,8 @@ public abstract class BaseTest {
   protected MainVerticle myVerticle;
   private final int port = getRandomPort();
 
+  private final int port1 = getRandomPort();
+
   static {
     System.setProperty("vertx.logger-delegate-factory-class-name",
         "io.vertx.core.logging.Log4j2LogDelegateFactory");
@@ -68,7 +71,10 @@ public abstract class BaseTest {
 
     FileSystem fs = vertx.fileSystem();
     JsonObject sipConfig = fs.readFileBlocking("test-sip2.conf").toJsonObject();
-    sipConfig.put("port", port);
+    JsonArray portsArray = new JsonArray();
+    portsArray.add(port);
+    portsArray.add(port1);
+    sipConfig.put("ports", portsArray);
     if (testInfo.getTags().contains(TLS_ENABLED)) {
       final SelfSignedCertificate certificate = SelfSignedCertificate.create();
       sipConfig.put("netServerOptions", new JsonObject()
