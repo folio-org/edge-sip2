@@ -117,20 +117,28 @@ public class MainVerticle extends AbstractVerticle {
     Object portObject = config().getValue("port");
     List<Integer> portList = new ArrayList<>();
 
+    if (portObject == null) {
+      throw new IllegalArgumentException("Port configuration cannot be null");
+    }
+
     if (portObject instanceof Integer) {
       portList.add((Integer) portObject);
-    } else if (portObject instanceof JsonArray) {
-      JsonArray portsArray = (JsonArray) portObject;
-      for (int i = 0; i < portsArray.size(); i++) {
-        if (!portsArray.getValue(i).getClass().equals(Integer.class)) {
-          throw new IllegalArgumentException("Port value at index " + i + " is not an integer");
-        }
-        portList.add(portsArray.getInteger(i));
+    } else if (portObject instanceof JsonArray portsArray) {
+      if (portsArray.isEmpty()) {
+        throw new IllegalArgumentException("Port configuration list cannot be empty");
       }
+
+      portsArray.forEach(port -> {
+        if (!(port instanceof Integer)) {
+          throw new IllegalArgumentException("Port value " + port + " is not an integer");
+        }
+        portList.add((Integer) port);
+      });
     } else {
       throw new IllegalArgumentException("Port configuration must be an integer "
         + "or a list of integers");
     }
+
 
 
     AtomicInteger remainingServers = new AtomicInteger(portList.size());
