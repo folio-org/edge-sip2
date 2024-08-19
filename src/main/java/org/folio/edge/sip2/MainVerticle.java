@@ -114,15 +114,29 @@ public class MainVerticle extends AbstractVerticle {
 
     setupHanlders();
 
-    JsonArray ports = config().getJsonArray("ports");
-    if (ports == null || ports.isEmpty()) {
-      throw new IllegalArgumentException("No ports specified in the configuration");
+    Object portObject = config().getValue("port");
+    List<Integer> portList = new ArrayList<>();
+
+    if (portObject instanceof Integer) {
+      portList.add((Integer) portObject);
+    } else if (portObject instanceof JsonArray) {
+      JsonArray portsArray = (JsonArray) portObject;
+      for (int i = 0; i < portsArray.size(); i++) {
+        if (!portsArray.getValue(i).getClass().equals(Integer.class)) {
+          throw new IllegalArgumentException("Port value at index " + i + " is not an integer");
+        }
+        portList.add(portsArray.getInteger(i));
+      }
+    } else {
+      throw new IllegalArgumentException("Port configuration must be an integer "
+        + "or a list of integers");
     }
 
-    AtomicInteger remainingServers = new AtomicInteger(ports.size());
 
-    for (int i = 0; i < ports.size(); i++) {
-      int port = ports.getInteger(i);
+    AtomicInteger remainingServers = new AtomicInteger(portList.size());
+
+    for (int i = 0; i < portList.size(); i++) {
+      int port = portList.get(i);
       NetServerOptions options = new NetServerOptions(
           config().getJsonObject("netServerOptions", new JsonObject()))
           .setPort(port);

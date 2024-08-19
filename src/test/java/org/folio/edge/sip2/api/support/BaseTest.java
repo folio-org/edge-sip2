@@ -50,8 +50,6 @@ public abstract class BaseTest {
   protected MainVerticle myVerticle;
   private final int port = getRandomPort();
 
-  private final int port1 = getRandomPort();
-
   static {
     System.setProperty("vertx.logger-delegate-factory-class-name",
         "io.vertx.core.logging.Log4j2LogDelegateFactory");
@@ -71,10 +69,7 @@ public abstract class BaseTest {
 
     FileSystem fs = vertx.fileSystem();
     JsonObject sipConfig = fs.readFileBlocking("test-sip2.conf").toJsonObject();
-    JsonArray portsArray = new JsonArray();
-    portsArray.add(port);
-    portsArray.add(port1);
-    sipConfig.put("ports", portsArray);
+    sipConfig.put("port", port);
     if (testInfo.getTags().contains(TLS_ENABLED)) {
       final SelfSignedCertificate certificate = SelfSignedCertificate.create();
       sipConfig.put("netServerOptions", new JsonObject()
