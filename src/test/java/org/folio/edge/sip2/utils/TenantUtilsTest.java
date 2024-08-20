@@ -9,7 +9,7 @@ class TenantUtilsTest {
 
   private static String multiTenantConfig = ""
       + "{"
-      + "  \"ports\": [6443],"
+      + "  \"port\": 6443,"
       + "  \"okapiUrl\": \"http://${okapi_lb_url}:${okapi_port}\","
       + "  \"scTenants\": ["
       + "    {"
@@ -101,6 +101,8 @@ class TenantUtilsTest {
       + "  \"messageDelimiter\": \"\\r\","
       + "  \"charset\": \"ISO-8859-1\""
       + "}";
+
+
 
   private static int defaultPort = 0;
 

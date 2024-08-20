@@ -114,6 +114,127 @@ public class MainVerticle extends AbstractVerticle {
 
     setupHanlders();
 
+    var portList = determinePorts();
+
+    if (portList.size() > 0) {
+      AtomicInteger remainingServers = new AtomicInteger(portList.size());
+
+      for (int i = 0; i < portList.size(); i++) {
+        int port = portList.get(i);
+        NetServerOptions options = new NetServerOptions(
+            config().getJsonObject("netServerOptions", new JsonObject()))
+            .setPort(port);
+
+        NetServer server = vertx.createNetServer(options);
+        servers.add(server);
+
+        final Metrics metrics = Metrics.getMetrics(port);
+        metricsMap.putIfAbsent(port, metrics);
+
+        server.connectHandler(socket -> {
+
+          String clientAddress = socket.remoteAddress().host();
+
+          ThreadContext.put(IPADDRESS, clientAddress);
+
+          JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
+              clientAddress, port);
+
+          final SessionData sessionData = SessionData.createSession(
+              tenantConfig.getString("tenant"),
+              tenantConfig.getString("fieldDelimiter", "|").charAt(0),
+              tenantConfig.getBoolean("errorDetectionEnabled", FALSE),
+              tenantConfig.getString("charset", "IBM850"));
+          final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
+
+          socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
+            final Timer.Sample sample = metrics.sample();
+
+            if (Objects.isNull(sessionData.getTenant())) {
+              log.error("No tenant configured for address: {}  message ignored.", clientAddress);
+              return;
+            }
+
+            final String messageString = buffer.getString(0, buffer.length(),
+                sessionData.getCharset());
+
+            Command command = UNKNOWN;
+
+            try {
+              final Parser parser = Parser.builder()
+                  .delimiter(sessionData.getFieldDelimiter())
+                  .charset(Charset.forName(sessionData.getCharset()))
+                  .errorDetectionEnabled(sessionData.isErrorDetectionEnabled())
+                  .timezone(sessionData.getTimeZone())
+                  .build();
+
+              //parsing
+              final Message<Object> message = parser.parseMessage(messageString);
+
+              command = message.getCommand();
+
+              //process validation results
+              if (!message.isValid()) {
+                log.error("Message is invalid: {}", messageString);
+                handleInvalidMessage(message, socket, sessionData, messageDelimiter, sample,
+                    metrics);
+                return;
+              }
+
+              //check if the previous message needs resending
+              if (requiredResending(sessionData, message)) {
+                resendPreviousMessage(sessionData, sample,
+                    metrics, socket, command);
+                return;
+              }
+
+              ISip2RequestHandler handler = handlers.get(command);
+
+              if (handler == null) {
+                log.error("Error locating handler for command {}", command.name());
+                sample.stop(metrics.commandTimer(command));
+                return;
+              }
+
+              executeHandler(message,
+                  sessionData, messageDelimiter,
+                  handler, sample,
+                  socket, metrics);
+            } catch (Exception ex) {
+              String message = "Problems handling the request: " + ex.getMessage();
+              log.error(message, ex);
+              // Return an error message for now for the sake of negative testing.
+              // Will find a better way to handle negative test cases.
+              sample.stop(metrics.commandTimer(command));
+              socket.write(message + messageDelimiter, sessionData.getCharset());
+              metrics.requestError();
+            }
+          }));
+          socket.exceptionHandler(t -> {
+            log.info("Socket exceptionHandler caught an issue, see error logs for more details");
+            log.error("Socket exception", t);
+            metrics.socketError();
+          });
+        });
+
+        JsonObject crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
+        ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
+        configRetriever = ConfigRetriever.create(vertx, crOptions);
+
+        // After tenant config is loaded, start listening for messages
+        lsitenToMessages(Promise.promise(), server).onComplete(ar -> {
+          if (ar.failed()) {
+            startFuture.fail(ar.cause());
+          } else if (remainingServers.decrementAndGet() == 0) {
+            startFuture.complete();
+          }
+        });
+      }
+    }
+  }
+
+  private List<Integer> determinePorts() {
+
     Object portObject = config().getValue("port");
     List<Integer> portList = new ArrayList<>();
 
@@ -123,7 +244,8 @@ public class MainVerticle extends AbstractVerticle {
 
     if (portObject instanceof Integer) {
       portList.add((Integer) portObject);
-    } else if (portObject instanceof JsonArray portsArray) {
+    } else if (portObject instanceof JsonArray) {
+      JsonArray portsArray = (JsonArray) portObject;
       if (portsArray.isEmpty()) {
         throw new IllegalArgumentException("Port configuration list cannot be empty");
       }
@@ -134,126 +256,13 @@ public class MainVerticle extends AbstractVerticle {
         }
         portList.add((Integer) port);
       });
-    } else {
+    }  else {
       throw new IllegalArgumentException("Port configuration must be an integer "
         + "or a list of integers");
     }
 
+    return portList;
 
-
-    AtomicInteger remainingServers = new AtomicInteger(portList.size());
-
-    for (int i = 0; i < portList.size(); i++) {
-      int port = portList.get(i);
-      NetServerOptions options = new NetServerOptions(
-          config().getJsonObject("netServerOptions", new JsonObject()))
-          .setPort(port);
-
-      NetServer server = vertx.createNetServer(options);
-      servers.add(server);
-
-      final Metrics metrics = Metrics.getMetrics(port);
-      metricsMap.putIfAbsent(port, metrics);
-
-      server.connectHandler(socket -> {
-
-        String clientAddress = socket.remoteAddress().host();
-
-        ThreadContext.put(IPADDRESS, clientAddress);
-
-        JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
-            clientAddress, port);
-
-        final SessionData sessionData = SessionData.createSession(
-            tenantConfig.getString("tenant"),
-            tenantConfig.getString("fieldDelimiter", "|").charAt(0),
-            tenantConfig.getBoolean("errorDetectionEnabled", FALSE),
-            tenantConfig.getString("charset", "IBM850"));
-        final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
-
-        socket.handler(RecordParser.newDelimited(messageDelimiter, buffer -> {
-          final Timer.Sample sample = metrics.sample();
-
-          if (Objects.isNull(sessionData.getTenant())) {
-            log.error("No tenant configured for address: {}  message ignored.", clientAddress);
-            return;
-          }
-
-          final String messageString = buffer.getString(0, buffer.length(),
-              sessionData.getCharset());
-
-          Command command = UNKNOWN;
-
-          try {
-            final Parser parser = Parser.builder()
-                .delimiter(sessionData.getFieldDelimiter())
-                .charset(Charset.forName(sessionData.getCharset()))
-                .errorDetectionEnabled(sessionData.isErrorDetectionEnabled())
-                .timezone(sessionData.getTimeZone())
-                .build();
-
-            //parsing
-            final Message<Object> message = parser.parseMessage(messageString);
-
-            command = message.getCommand();
-
-            //process validation results
-            if (!message.isValid()) {
-              log.error("Message is invalid: {}", messageString);
-              handleInvalidMessage(message, socket, sessionData, messageDelimiter, sample,
-                  metrics);
-              return;
-            }
-
-            //check if the previous message needs resending
-            if (requiredResending(sessionData, message)) {
-              resendPreviousMessage(sessionData, sample,
-                  metrics, socket, command);
-              return;
-            }
-
-            ISip2RequestHandler handler = handlers.get(command);
-
-            if (handler == null) {
-              log.error("Error locating handler for command {}", command.name());
-              sample.stop(metrics.commandTimer(command));
-              return;
-            }
-
-            executeHandler(message,
-                sessionData, messageDelimiter,
-                handler, sample,
-                socket, metrics);
-          } catch (Exception ex) {
-            String message = "Problems handling the request: " + ex.getMessage();
-            log.error(message, ex);
-            // Return an error message for now for the sake of negative testing.
-            // Will find a better way to handle negative test cases.
-            sample.stop(metrics.commandTimer(command));
-            socket.write(message + messageDelimiter, sessionData.getCharset());
-            metrics.requestError();
-          }
-        }));
-        socket.exceptionHandler(t -> {
-          log.info("Socket exceptionHandler caught an issue, see error logs for more details");
-          log.error("Socket exception", t);
-          metrics.socketError();
-        });
-      });
-
-      JsonObject crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
-      ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
-      configRetriever = ConfigRetriever.create(vertx, crOptions);
-
-      // After tenant config is loaded, start listening for messages
-      lsitenToMessages(Promise.promise(), server).onComplete(ar -> {
-        if (ar.failed()) {
-          startFuture.fail(ar.cause());
-        } else if (remainingServers.decrementAndGet() == 0) {
-          startFuture.complete();
-        }
-      });
-    }
   }
 
   private Future<Void> lsitenToMessages(Promise<Void> promise, NetServer server) {
