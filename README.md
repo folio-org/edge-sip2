@@ -53,7 +53,7 @@ command line arguments to point it to the right path (e.g. `-conf /path/to/confi
 
 |Config option|Type|Description|
 |-------------|--|-----------|
-|`ports`|int|The port the module will use to bind, typically 1024 <= port <= 65,535; must not be 8081 that is used for health check.|
+|`port`|int|The port the module will use to bind, typically 1024 <= port <= 65,535; must not be 8081 that is used for health check.|
 |`okapiUrl`|string|The URL of the Okapi server used by FOLIO.|
 |`tenantConfigRetrieverOptions`|JSON object|Location for tenant configuration.|
 |`scanPeriod`|int|Frequency in msec that sip2 will check for and reload tenant configuration changes.|
