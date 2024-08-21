@@ -3,8 +3,6 @@ package org.folio.edge.sip2.api;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.stream.Stream;
-
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
@@ -12,6 +10,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import java.util.stream.Stream;
 import org.folio.edge.sip2.MainVerticle;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -94,7 +93,7 @@ class PortConfigTest  {
         });
       } else {
         testContext.failNow(new RuntimeException("Deployment should have "
-          + "failed with invalid port"));
+            + "failed with invalid port"));
       }
     });
   }

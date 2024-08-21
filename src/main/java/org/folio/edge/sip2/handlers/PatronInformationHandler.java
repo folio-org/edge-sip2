@@ -62,7 +62,7 @@ public class PatronInformationHandler implements ISip2RequestHandler {
    * Create Patron Information Response message.
    * @param sessionData sessionData
    * @param patronInformationResponse patronInformationResponse
-   * @return
+   * @return response string
    */
   private String createPatronInformationResponse(
       SessionData sessionData,

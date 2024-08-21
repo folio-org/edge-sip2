@@ -64,7 +64,7 @@ public class EndPatronSessionHandler implements ISip2RequestHandler {
    * Create End Patron Response message.
    * @param sessionData sessionData
    * @param endSessionResponse endSessionResponse
-   * @return
+   * @return response String
    */
   private String createEndPatronResponse(
       SessionData sessionData,

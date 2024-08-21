@@ -15,41 +15,42 @@ public class TenantUtils {
     super();
   }
 
-  /** Returns JSON config for tenant whose subnet encompasses a client IP address.
+  /**
+   * Returns JSON config for tenant whose subnet encompasses a client IP address.
    *
    * @param sip2config - SIP2 edge module config.
    *     Contains a JSON array (scTenants) of tenant configs,
    *     each with a scSubnet element with a CIDR-notation string value.
-   *
+   *     <p>
    *     I.E:<br>
-   * <pre>
-       {
-        "scTenants": [
-          {
-            "scSubnet": "11.11.00.00/16",
-            "tenant": "diku",
-            "errorDetectionEnabled": true,
-            "messageDelimiter": "\r",
-            "charset": "ISO-8859-1"
-          },
-          {
-            "scSubnet": "22.22.00.00/16",
-            "tenant": "test_tenant",
-            "errorDetectionEnabled": true,
-            "messageDelimiter": "\r",
-            "charset": "ISO-8859-1"
-          },
-          {
-            "scSubnet": "33.33.00.00/16",
-            "tenant": "test_tenant",
-            "errorDetectionEnabled": true,
-            "messageDelimiter": "\r",
-            "charset": "ISO-8859-1"
-          }
-        ]
-      }
-   * </pre>
-   *
+   *     <pre>
+   *     {
+   *      "scTenants": [
+   *        {
+   *          "scSubnet": "11.11.00.00/16",
+   *          "tenant": "diku",
+   *          "errorDetectionEnabled": true,
+   *          "messageDelimiter": "\r",
+   *          "charset": "ISO-8859-1"
+   *        },
+   *        {
+   *          "scSubnet": "22.22.00.00/16",
+   *          "tenant": "test_tenant",
+   *          "errorDetectionEnabled": true,
+   *          "messageDelimiter": "\r",
+   *          "charset": "ISO-8859-1"
+   *        },
+   *        {
+   *          "scSubnet": "33.33.00.00/16",
+   *          "tenant": "test_tenant",
+   *          "errorDetectionEnabled": true,
+   *          "messageDelimiter": "\r",
+   *          "charset": "ISO-8859-1"
+   *        }
+   *      ]
+   *     }
+   *     </pre>
+   *     </p>
    * @param clientIP - IPv4 address of client SC used as lookup to find tenant config
    * @param port Tenant specific port value.
    * @returns tenant config whose scSubnet encompasses clientIP.

@@ -706,7 +706,7 @@ public class CirculationRepository {
    * Build Failed Renew Response.
    * @param institutionId institutionId
    * @param sessionData sessionData
-   * @return
+   * @return renewResponse
    */
   private RenewResponse buildFailedRenewResponse(
       String institutionId,
