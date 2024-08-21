@@ -3,6 +3,8 @@ package org.folio.edge.sip2.api;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.util.stream.Stream;
+
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
@@ -13,13 +15,16 @@ import io.vertx.junit5.VertxTestContext;
 import org.folio.edge.sip2.MainVerticle;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class PortConfigTest  {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class PortConfigTest  {
 
-  protected MainVerticle myVerticle;
 
   @Test
   @DisplayName("Should handle single port configuration correctly")
@@ -29,7 +34,7 @@ public class PortConfigTest  {
     sipConfig.put("port", 54321);
     DeploymentOptions opt = new DeploymentOptions();
     opt.setConfig(sipConfig);
-    myVerticle = new MainVerticle();
+    MainVerticle myVerticle = new MainVerticle();
 
     vertx.deployVerticle(myVerticle, opt, res -> {
       if (res.succeeded()) {
@@ -52,7 +57,7 @@ public class PortConfigTest  {
 
     DeploymentOptions opt = new DeploymentOptions();
     opt.setConfig(sipConfig);
-    myVerticle = new MainVerticle();
+    MainVerticle myVerticle = new MainVerticle();
 
     vertx.deployVerticle(myVerticle, opt, res -> {
       if (res.succeeded()) {
@@ -64,37 +69,17 @@ public class PortConfigTest  {
     });
   }
 
-  @Test
-  @DisplayName("Should fail with invalid port configuration")
-  void invalidPortConfigTest(Vertx vertx, VertxTestContext testContext) {
-    FileSystem fs = vertx.fileSystem();
-    JsonObject sipConfig = fs.readFileBlocking("test-sip2.conf").toJsonObject();
-    sipConfig.put("port", "invalidPort");
-
-    DeploymentOptions opt = new DeploymentOptions();
-    opt.setConfig(sipConfig);
-    MainVerticle myVerticle = new MainVerticle();
-
-    vertx.deployVerticle(myVerticle, opt, res -> {
-      if (res.failed()) {
-        Throwable cause = res.cause();
-        testContext.verify(() -> {
-          assertTrue(cause instanceof IllegalArgumentException);
-          testContext.completeNow();
-        });
-      } else {
-        testContext.failNow(new RuntimeException("Deployment should "
-            + "have failed with invalid port"));
-      }
-    });
+  static Stream<String> invalidPortConfigs() {
+    return Stream.of("invalidPort", "", null);
   }
 
-  @Test
-  @DisplayName("Should handle empty port configuration gracefully")
-  void emptyPortConfigTest(Vertx vertx, VertxTestContext testContext) {
+  @ParameterizedTest
+  @MethodSource("invalidPortConfigs")
+  @DisplayName("Should fail with invalid port configurations")
+  void invalidPortConfigTest(String portConfig, Vertx vertx, VertxTestContext testContext) {
     FileSystem fs = vertx.fileSystem();
     JsonObject sipConfig = fs.readFileBlocking("test-sip2.conf").toJsonObject();
-    sipConfig.put("port", "");
+    sipConfig.put("port", portConfig);
 
     DeploymentOptions opt = new DeploymentOptions();
     opt.setConfig(sipConfig);
@@ -109,32 +94,7 @@ public class PortConfigTest  {
         });
       } else {
         testContext.failNow(new RuntimeException("Deployment should have "
-            + "failed with invalid port"));
-      }
-    });
-  }
-
-  @Test
-  @DisplayName("Should handle null port configuration gracefully")
-  void nullPortConfigTest(Vertx vertx, VertxTestContext testContext) {
-    FileSystem fs = vertx.fileSystem();
-    JsonObject sipConfig = fs.readFileBlocking("test-sip2.conf").toJsonObject();
-    sipConfig.remove("port");
-
-    DeploymentOptions opt = new DeploymentOptions();
-    opt.setConfig(sipConfig);
-    MainVerticle myVerticle = new MainVerticle();
-
-    vertx.deployVerticle(myVerticle, opt, res -> {
-      if (res.failed()) {
-        Throwable cause = res.cause();
-        testContext.verify(() -> {
-          assertTrue(cause instanceof IllegalArgumentException);
-          testContext.completeNow();
-        });
-      } else {
-        testContext.failNow(new RuntimeException("Deployment should have "
-            + "failed with invalid port"));
+          + "failed with invalid port"));
       }
     });
   }

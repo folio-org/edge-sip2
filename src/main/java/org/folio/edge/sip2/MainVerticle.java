@@ -116,7 +116,7 @@ public class MainVerticle extends AbstractVerticle {
 
     var portList = determinePorts();
 
-    if (portList.size() > 0) {
+    if (!portList.isEmpty()) {
       AtomicInteger remainingServers = new AtomicInteger(portList.size());
 
       for (int i = 0; i < portList.size(); i++) {
@@ -242,19 +242,18 @@ public class MainVerticle extends AbstractVerticle {
       throw new IllegalArgumentException("Port configuration cannot be null");
     }
 
-    if (portObject instanceof Integer) {
-      portList.add((Integer) portObject);
-    } else if (portObject instanceof JsonArray) {
-      JsonArray portsArray = (JsonArray) portObject;
+    if (portObject instanceof Integer integer) {
+      portList.add(integer);
+    } else if (portObject instanceof JsonArray portsArray) {
       if (portsArray.isEmpty()) {
         throw new IllegalArgumentException("Port configuration list cannot be empty");
       }
 
       portsArray.forEach(port -> {
-        if (!(port instanceof Integer)) {
+        if (!(port instanceof Integer integerPort)) {
           throw new IllegalArgumentException("Port value " + port + " is not an integer");
         }
-        portList.add((Integer) port);
+        portList.add(integerPort);
       });
     }  else {
       throw new IllegalArgumentException("Port configuration must be an integer "
