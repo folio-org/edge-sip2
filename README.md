@@ -395,7 +395,7 @@ To configure sip2 for a port dedicated to a specific tenant, two modifications a
   }
 }
 ```
-2. In the sip2-tenants.conf, include a new property named 'port' and assign it the dedicated port value as indexed in the array from the previous conf file. Note that the 'port' property is optional. If it is absent, the system will operate as it currently does and will determine the tenant based on the scSubnet IP range, as shown below:
+2. In the sip2-tenants.conf, include a new property named 'port' and assign it the dedicated port value as indexed in the array from the previous conf file, as shown below:
 ```
 {
 "scTenants": [
@@ -418,9 +418,9 @@ To configure sip2 for a port dedicated to a specific tenant, two modifications a
   "charset": "ISO-8859-1"
   },
    {
-  "scSubnet": "22.22.00.00/16",
+  "scSubnet": "33.33.00.00/16",
   "port": "6445",
-  "tenant": "test_tenant2",
+  "tenant": "test_tenant3",
   "errorDetectionEnabled": true,
   "messageDelimiter": "\r",
   "fieldDelimiter": "\|",
@@ -429,6 +429,59 @@ To configure sip2 for a port dedicated to a specific tenant, two modifications a
 ]
 }
 ```
+
+## Setting up SIP2 using a single port for all tenants
+To set up SIP2 using one port across all tenants, you need to make two changes:
+1. Specify the single port value in the sip2.conf file, as illustrated below:
+```
+{ 
+  "port": 6443,
+  "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
+  "tenantConfigRetrieverOptions": {
+    "scanPeriod": 300000,
+    "stores": [{
+      "type": "file",
+      "format": "json",
+      "config": {
+        "path": "sip2-tenants.conf"
+      },
+      "optional": false
+    }]
+  }
+}
+```
+2. In the sip2-tenants.conf file, list multiple tenant names along with their corresponding scSubnet range values. These entries will allow the setup of multiple tenants to the designated port, as depicted below:
+```
+{
+"scTenants": [
+  {
+  "scSubnet": "11.11.00.00/16",
+  "tenant": "test_tenant1",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "fieldDelimiter": "\|",
+  "charset": "ISO-8859-1"
+  },
+  {
+  "scSubnet": "22.22.00.00/16",
+  "tenant": "test_tenant2",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "fieldDelimiter": "\|",
+  "charset": "ISO-8859-1"
+  },
+   {
+  "scSubnet": "33.33.00.00/16",
+  "tenant": "test_tenant3",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "fieldDelimiter": "\|",
+  "charset": "ISO-8859-1"
+  }
+]
+}
+```
+
 
 ## Common Problems
 
