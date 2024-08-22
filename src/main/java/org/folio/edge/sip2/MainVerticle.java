@@ -282,7 +282,7 @@ public class MainVerticle extends AbstractVerticle {
         }
         portList.add(integerPort);
       });
-    }  else {
+    } else {
       throw new IllegalArgumentException("Port configuration must be an integer "
         + "or a list of integers");
     }
