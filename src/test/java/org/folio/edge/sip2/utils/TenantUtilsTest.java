@@ -204,7 +204,7 @@ class TenantUtilsTest {
 
 
   private String getTenantFromPort(String config, String ip, int port) {
-    JsonObject tc = TenantUtils.lookupTenantConfigForIPaddress(new JsonObject(config), ip, port);
+    JsonObject tc = TenantUtils.lookupTenantConfigForIpAddress(new JsonObject(config), ip, port);
     return tc.getString("tenant");
   }
 

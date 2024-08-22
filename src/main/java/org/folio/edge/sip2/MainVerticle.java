@@ -136,7 +136,7 @@ public class MainVerticle extends AbstractVerticle {
 
         ThreadContext.put(IPADDRESS, clientAddress);
 
-        JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIPaddress(multiTenantConfig,
+        JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIpAddress(multiTenantConfig,
               clientAddress, port);
 
         final SessionData sessionData = getSessionData(tenantConfig);
