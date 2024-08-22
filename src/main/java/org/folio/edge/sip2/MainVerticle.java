@@ -181,8 +181,9 @@ public class MainVerticle extends AbstractVerticle {
     final Timer.Sample sample = metrics.sample();
 
     if (Objects.isNull(sessionData.getTenant())) {
+      String clientAddress = socket.remoteAddress().host();
       log.error("No tenant configured for address: {}  message ignored.",
-          socket.remoteAddress().host());
+          clientAddress);
       return;
     }
 
@@ -215,7 +216,8 @@ public class MainVerticle extends AbstractVerticle {
       ISip2RequestHandler handler = handlers.get(command);
 
       if (handler == null) {
-        log.error("Error locating handler for command {}", command.name());
+        String commandName = command.name();
+        log.error("Error locating handler for command {}", commandName);
         sample.stop(metrics.commandTimer(command));
         return;
       }
