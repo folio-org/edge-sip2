@@ -60,7 +60,7 @@ public class RenewHandler implements ISip2RequestHandler {
    * Construct Renew Response Message.
    * @param sessionData sessionData
    * @param renewResponse renewResponse
-   * @return
+   * @return response String
    */
   private String constructRenewResponse(SessionData sessionData, RenewResponse renewResponse) {
     log.info("RenewResponse: {}", () -> renewResponse);
