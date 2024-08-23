@@ -19,11 +19,15 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Stream;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
 import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -160,10 +164,28 @@ public class ConfigurationRepositoryTests {
           })));
   }
 
-  @Test
+  /**
+   * Tests the retrieval of locale configuration with alternate currency settings from a JSON file.
+   * This method verifies that the configuration repository correctly loads the currency value
+   * based on the provided JSON file.
+   *
+   * <p>This is a parameterized test that accepts different JSON files and their expected
+   * currency values to ensure that the configuration repository behaves as expected for
+   * various inputs.</p>
+   *
+   * @param jsonFilePath     the path to the JSON file containing the configuration settings
+   * @param expectedCurrency the expected currency code that should be retrieved from
+   *                         the configuration
+   * @param testContext      the test context for managing asynchronous test execution
+   * @param clock            a mock clock used to control time-sensitive operations
+   */
+  @ParameterizedTest
+  @MethodSource("provideJsonFilesAndExpectedCurrencies")
   public void canRetrieveLocaleConfigurationWithAlternateCurrency(
-      Vertx vertx,
-      VertxTestContext testContext, @Mock Clock clock) {
+      String jsonFilePath,
+      String expectedCurrency,
+      VertxTestContext testContext,
+      @Mock Clock clock) {
 
     List<LinkedHashMap<String, String>> configParamsList = new ArrayList<>();
     LinkedHashMap<String, String> configParamsSet = new LinkedHashMap<>();
@@ -174,7 +196,7 @@ public class ConfigurationRepositoryTests {
     configParamsList.add(configParamsSet);
 
     IResourceProvider<IRequestData> resourceProvider =
-        new DefaultResourceProvider("json/DefaultACSConfigurationNonDefaultedCurrency.json");
+        new DefaultResourceProvider(jsonFilePath);
     ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider, clock);
 
     configRepo.retrieveConfigurations(TestUtils.getMockedSessionData(),
@@ -184,10 +206,17 @@ public class ConfigurationRepositoryTests {
 
           JsonObject config = testTenantConfig.get(configKey);
 
-          assertEquals("EUR", config.getString("currency"));
+          assertEquals(expectedCurrency, config.getString("currency"));
 
           testContext.completeNow();
         })));
+  }
+
+  private static Stream<Arguments> provideJsonFilesAndExpectedCurrencies() {
+    return Stream.of(
+      Arguments.of("json/DefaultACSConfigurationNonDefaultedCurrency.json", "EUR"),
+      Arguments.of("json/DefaultACSConfigurationCopCurrency.json", "COP")
+    );
   }
 }
 
