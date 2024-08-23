@@ -83,7 +83,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
    * @param username UserName
    * @param getPasswordSupplier PasswordSupplier
    * @param sessionData session data
-   * @return
+   * @return response
    */
 
   public Future<String> loginWithSupplier(

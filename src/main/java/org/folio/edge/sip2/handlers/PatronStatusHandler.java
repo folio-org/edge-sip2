@@ -60,7 +60,7 @@ public class PatronStatusHandler implements ISip2RequestHandler {
    * Create Patron Status Response Message.
    * @param sessionData Session Data
    * @param patronStatusResponse Patron Status Response
-   * @return
+   * @return response String
    */
   public String createPatronStatusResponse(
       SessionData sessionData,

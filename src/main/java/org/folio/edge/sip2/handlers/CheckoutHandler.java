@@ -61,7 +61,7 @@ public class CheckoutHandler implements ISip2RequestHandler {
    * Construct CheckOut Response Message.
    * @param sessionData sessionData
    * @param checkoutResponse checkoutResponse
-   * @return
+   * @return response string
    */
   private String constructCheckoutResponse(
       SessionData sessionData,

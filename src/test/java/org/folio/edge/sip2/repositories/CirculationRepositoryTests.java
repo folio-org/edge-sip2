@@ -221,7 +221,7 @@ class CirculationRepositoryTests {
 
     when(mockItemRepository.getItemById(anyString(), any()))
         .thenReturn(Future.succeededFuture(
-        new JsonObject().put("status", new JsonObject().put("name", "Available"))));
+          new JsonObject().put("status", new JsonObject().put("name", "Available"))));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -279,7 +279,7 @@ class CirculationRepositoryTests {
 
     when(mockItemRepository.getItemById(anyString(), any()))
         .thenReturn(Future.succeededFuture(
-        new JsonObject().put("status", new JsonObject().put("name", "Available"))));
+          new JsonObject().put("status", new JsonObject().put("name", "Available"))));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -351,7 +351,7 @@ class CirculationRepositoryTests {
 
     when(mockItemRepository.getItemById(anyString(), any()))
         .thenReturn(Future.succeededFuture(
-        new JsonObject().put("status", new JsonObject().put("name", "Withdrawn"))));
+          new JsonObject().put("status", new JsonObject().put("name", "Withdrawn"))));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
     List<String> rejectList = new ArrayList<>();

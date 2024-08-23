@@ -60,7 +60,7 @@ public class RenewAllHandler implements ISip2RequestHandler {
    * Construct Renew All Response Message.
    * @param sessionData sessionData
    * @param renewAllResponse renewAllResponse
-   * @return
+   * @return response String
    */
   private String constructRenewAllResponse(
       SessionData sessionData,
