@@ -310,7 +310,7 @@ public class PatronRepository {
         .map(result -> {
           log.info("validPatron language:{} institutionId:{}",
               patronInformation.getLanguage(),patronInformation.getInstitutionId());
-          return builder
+          builder
             // Get tenant language from config along with the timezone
             .borrowerType(extendedUser.getPatronGroup().getGroup())
             .borrowerTypeDescription(extendedUser.getPatronGroup().getDesc())
@@ -320,9 +320,11 @@ public class PatronRepository {
             .institutionId(patronInformation.getInstitutionId())
             .patronIdentifier(patronInformation.getPatronIdentifier())
             .validPatron(TRUE)
-            .validPatronPassword(validPassword)
-            .currencyType(matchCurrency(sessionData.getCurrency()))
-            .build();
+            .currencyType(matchCurrency(sessionData.getCurrency()));
+          if ( sessionData.isAlwaysCheckPatronPassword() || sessionData.isPatronPasswordVerificationRequired()) {
+            builder.validPatronPassword(validPassword);
+          }
+          return builder.build();
           }
         );
   }

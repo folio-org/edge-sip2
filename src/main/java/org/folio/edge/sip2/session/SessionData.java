@@ -26,6 +26,7 @@ public class SessionData {
   private List<String> rejectedCheckinStatusList;
   private boolean configurationLoaded;
   private boolean usePinForPatronVerification;
+  private boolean alwaysCheckPatronPassword;
 
   private static final Logger log = LogManager.getLogger();
   private static final String DEFAULT_CURRENCY = "USD";
@@ -40,6 +41,8 @@ public class SessionData {
     this.charset = charset;
     this.rejectedCheckinStatusList = new ArrayList<>();
     this.configurationLoaded = false;
+    this.usePinForPatronVerification = false;
+    this.alwaysCheckPatronPassword = true;
 
   }
 
@@ -210,6 +213,14 @@ public class SessionData {
     } else {
       this.currency = currency;
     }
+  }
+
+  public void setAlwaysCheckPatronPassword(boolean flag) {
+    this.alwaysCheckPatronPassword = flag;
+  }
+
+  public boolean isAlwaysCheckPatronPassword() {
+    return alwaysCheckPatronPassword;
   }
 
   public void setConfigurationLoaded(boolean loaded) {
