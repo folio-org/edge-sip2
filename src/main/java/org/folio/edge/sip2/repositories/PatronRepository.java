@@ -310,19 +310,22 @@ public class PatronRepository {
         .map(result -> {
           log.info("validPatron language:{} institutionId:{}",
               patronInformation.getLanguage(),patronInformation.getInstitutionId());
-          return builder
-            // Get tenant language from config along with the timezone
-            .borrowerType(extendedUser.getPatronGroup().getGroup())
-            .borrowerTypeDescription(extendedUser.getPatronGroup().getDesc())
-            .language(patronInformation.getLanguage())
-            .transactionDate(OffsetDateTime.now(clock))
-            .unavailableHoldsCount(null)
-            .institutionId(patronInformation.getInstitutionId())
-            .patronIdentifier(patronInformation.getPatronIdentifier())
-            .validPatron(TRUE)
-            .validPatronPassword(validPassword)
-            .currencyType(matchCurrency(sessionData.getCurrency()))
-            .build();
+          builder
+              // Get tenant language from config along with the timezone
+              .borrowerType(extendedUser.getPatronGroup().getGroup())
+              .borrowerTypeDescription(extendedUser.getPatronGroup().getDesc())
+              .language(patronInformation.getLanguage())
+              .transactionDate(OffsetDateTime.now(clock))
+              .unavailableHoldsCount(null)
+              .institutionId(patronInformation.getInstitutionId())
+              .patronIdentifier(patronInformation.getPatronIdentifier())
+              .validPatron(TRUE)
+              .currencyType(matchCurrency(sessionData.getCurrency()));
+          if (sessionData.isAlwaysCheckPatronPassword()
+              || sessionData.isPatronPasswordVerificationRequired()) {
+            builder.validPatronPassword(validPassword);
+          }
+          return builder.build();
           }
         );
   }
