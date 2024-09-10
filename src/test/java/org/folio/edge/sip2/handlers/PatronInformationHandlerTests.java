@@ -14,6 +14,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -21,6 +23,7 @@ import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
@@ -58,7 +61,10 @@ public class PatronInformationHandlerTests {
     final String printLine = "This is a print line";
     final String borrowerType = "patron";
     final String borrowerTypeDescription = "the library patrons";
-    final String totalRemaining = "55.30";
+    DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.getDefault());
+    DecimalFormat format = new DecimalFormat("###.00", symbols);
+    double totalRemaining = 55.30;
+    final String totalRemainingString = format.format(totalRemaining);
     final PatronInformation patronInformation = PatronInformation.builder()
         .language(ENGLISH)
         .transactionDate(OffsetDateTime.now(clock))
@@ -90,7 +96,7 @@ public class PatronInformationHandlerTests {
             .validPatron(TRUE)
             .validPatronPassword(null)
             .currencyType(CurrencyType.USD)
-            .feeAmount(totalRemaining)
+            .feeAmount(totalRemainingString)
             .feeLimit(null)
             .holdItems(holdItems)
             .overdueItems(Collections.emptyList())
@@ -121,7 +127,7 @@ public class PatronInformationHandlerTests {
                   fineItemsCount, recallItemsCount)
               + String.format("AO%s|AA%s|AE%s|BLY|", institutionId, patronIdentifier, personalName)
               + String.format("BH%s|", CurrencyType.USD.name())
-              + String.format("BV%s|", totalRemaining)
+              + String.format("BV%s|", totalRemainingString)
               + String.format("AS%s|AS%s|AS%s|", holdItems.toArray(new Object[holdItems.size()]))
               + String.format("BD%s|BE%s|BF%s|", homeAddress, emailAddress, homePhoneNumber)
               + String.format("AF%s|AG%s|", screenMessage, printLine)

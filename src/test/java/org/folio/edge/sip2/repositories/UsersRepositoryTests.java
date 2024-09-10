@@ -2,10 +2,12 @@ package org.folio.edge.sip2.repositories;
 
 import static org.folio.edge.sip2.api.support.TestUtils.getJsonFromFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -18,6 +20,7 @@ import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
 import org.junit.jupiter.api.Test;
@@ -249,6 +252,250 @@ public class UsersRepositoryTests {
   }
 
   @Test
+  public void cannotVerifyUserPin(Vertx vertx, VertxTestContext vertxTestContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final String userId = "4f0e711c-d583-41e0-9555-b62f1725023f";
+    final String pin = "1234";
+
+    doReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")))
+            .when(mockFolioProvider).createResource(any());
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
+
+    usersRepository.checkPatronPin(userId, pin, sessionData).onComplete(
+        vertxTestContext.succeeding(pinResult -> vertxTestContext.verify(() -> {
+          assertNotNull(pinResult);
+          assertFalse(pinResult);
+          vertxTestContext.completeNow();
+        })));
+  }
+
+
+  @Test
+  public void canVerifyUserPin(Vertx vertx, VertxTestContext vertxTestContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final String userId = "4f0e711c-d583-41e0-9555-b62f1725023f";
+    final String pin = "1234";
+
+    doReturn(Future.succeededFuture(
+        new FolioResource(null, MultiMap.caseInsensitiveMultiMap()
+            .add("x-okapi-token", "4321"))))
+            .when(mockFolioProvider).createResource(any());
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
+
+    usersRepository.checkPatronPin(userId, pin, sessionData).onComplete(
+        vertxTestContext.succeeding(pinResult -> vertxTestContext.verify(() -> {
+          assertNotNull(pinResult);
+          assertTrue(pinResult);
+          vertxTestContext.completeNow();
+        })));
+  }
+
+
+  @Test
+  public void canDoPatronPinVerification(Vertx vertx, VertxTestContext vertxTestContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final String userId = "4f0e711c-d583-41e0-9555-b62f1725023f";
+    final String pin = "1234";
+    final String barcode = "997383903573496";
+    final String userResponseJson = getJsonFromFile("json/users_response.json");
+    final JsonObject userResponse = new JsonObject(userResponseJson);
+    final String userBlResponseJson = getJsonFromFile("json/bl_user_response.json");
+    final JsonObject userBlResponse = new JsonObject(userBlResponseJson);
+
+    final String expectedUsersQueryPath = "/users?limit=1&query="
+        + Utils.encode("(barcode==" + barcode
+        + " or externalSystemId==" + barcode
+        + " or username==" + barcode + ')');
+
+    final String expectedUsersBlQueryPath = "/bl-users/by-id/" + userId;
+
+    doReturn(Future.succeededFuture(
+        Boolean.TRUE))
+            .when(mockFolioProvider).doPinCheck(any());
+
+    doReturn(Future.succeededFuture(new FolioResource(userBlResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
+        .when(mockFolioProvider).retrieveResource(
+            argThat((IRequestData data2) -> data2.getPath().equals(expectedUsersBlQueryPath)));
+
+    doReturn(Future.succeededFuture(new FolioResource(userResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
+          .when(mockFolioProvider).retrieveResource(
+            argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
+
+    usersRepository.doPatronPinVerification(barcode, pin, sessionData).onComplete(
+        vertxTestContext.succeeding(pinResult -> vertxTestContext.verify(() -> {
+          assertNotNull(pinResult);
+          assertTrue(pinResult.getPasswordVerified());
+          vertxTestContext.completeNow();
+        })));
+
+
+  }
+
+  @Test
+  public void cannotDoPatronPinVerification(Vertx vertx, VertxTestContext vertxTestContext,
+        @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final String userId = "4f0e711c-d583-41e0-9555-b62f1725023f";
+    final String pin = "1234";
+    final String barcode = "997383903573496";
+    final String userResponseJson = getJsonFromFile("json/users_response.json");
+    final JsonObject userResponse = new JsonObject(userResponseJson);
+    final String userBlResponseJson = getJsonFromFile("json/bl_user_response.json");
+    final JsonObject userBlResponse = new JsonObject(userBlResponseJson);
+
+    final String expectedUsersQueryPath = "/users?limit=1&query="
+        + Utils.encode("(barcode==" + barcode
+        + " or externalSystemId==" + barcode
+        + " or username==" + barcode + ')');
+
+    final String expectedUsersBlQueryPath = "/bl-users/by-id/" + userId;
+
+    //doReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")))
+    doReturn(Future.failedFuture("Failed"))
+            .when(mockFolioProvider).doPinCheck(any());
+
+    doReturn(Future.succeededFuture(new FolioResource(userBlResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
+        .when(mockFolioProvider).retrieveResource(
+            argThat((IRequestData data2) -> data2.getPath().equals(expectedUsersBlQueryPath)));
+
+    doReturn(Future.succeededFuture(new FolioResource(userResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
+        .when(mockFolioProvider).retrieveResource(
+            argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPatronPasswordVerificationRequired(true);
+    final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
+
+    usersRepository.doPatronPinVerification(barcode, pin, sessionData).onComplete(
+        vertxTestContext.succeeding(pinResult -> vertxTestContext.verify(() -> {
+          assertNotNull(pinResult);
+          assertFalse(pinResult.getPasswordVerified());
+          vertxTestContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void canVerifyPatronPin(Vertx vertx, VertxTestContext vertxTestContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final String userId = "4f0e711c-d583-41e0-9555-b62f1725023f";
+    final String pin = "1234";
+    final String barcode = "997383903573496";
+    final String userResponseJson = getJsonFromFile("json/users_response.json");
+    final JsonObject userResponse = new JsonObject(userResponseJson);
+    final String userBlResponseJson = getJsonFromFile("json/bl_user_response.json");
+    final JsonObject userBlResponse = new JsonObject(userBlResponseJson);
+
+    final String expectedUsersQueryPath = "/users?limit=1&query="
+        + Utils.encode("(barcode==" + barcode
+        + " or externalSystemId==" + barcode
+        + " or username==" + barcode + ')');
+
+    final String expectedUsersBlQueryPath = "/bl-users/by-id/" + userId;
+
+    doReturn(Future.succeededFuture(
+        Boolean.TRUE))
+            .when(mockFolioProvider).doPinCheck(any());
+
+    doReturn(Future.succeededFuture(new FolioResource(userBlResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
+        .when(mockFolioProvider).retrieveResource(
+            argThat((IRequestData data2) -> data2.getPath().equals(expectedUsersBlQueryPath)));
+
+    doReturn(Future.succeededFuture(new FolioResource(userResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
+          .when(mockFolioProvider).retrieveResource(
+            argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPatronPasswordVerificationRequired(true);
+    final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
+
+    usersRepository.verifyPatronPin(barcode, pin, sessionData).onComplete(
+        vertxTestContext.succeeding(pinResult -> vertxTestContext.verify(() -> {
+          assertNotNull(pinResult);
+          assertTrue(pinResult.getPasswordVerified());
+          vertxTestContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void canVerifyPatronPinNoVerifyRequired(Vertx vertx, VertxTestContext vertxTestContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+    final String userId = "4f0e711c-d583-41e0-9555-b62f1725023f";
+    final String pin = "1234";
+    final String barcode = "997383903573496";
+    final String userResponseJson = getJsonFromFile("json/users_response.json");
+    final JsonObject userResponse = new JsonObject(userResponseJson);
+    final String userBlResponseJson = getJsonFromFile("json/bl_user_response.json");
+    final JsonObject userBlResponse = new JsonObject(userBlResponseJson);
+
+    final String expectedUsersQueryPath = "/users?limit=1&query="
+        + Utils.encode("(barcode==" + barcode
+        + " or externalSystemId==" + barcode
+        + " or username==" + barcode + ')');
+
+    final String expectedUsersBlQueryPath = "/bl-users/by-id/" + userId;
+
+    doReturn(Future.succeededFuture(new FolioResource(userBlResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
+        .when(mockFolioProvider).retrieveResource(
+            argThat((IRequestData data2) -> data2.getPath().equals(expectedUsersBlQueryPath)));
+
+    doReturn(Future.succeededFuture(new FolioResource(userResponse,
+        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
+          .when(mockFolioProvider).retrieveResource(
+            argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    sessionData.setPatronPasswordVerificationRequired(false);
+    final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
+
+    usersRepository.verifyPatronPin(barcode, pin, sessionData).onComplete(
+        vertxTestContext.succeeding(pinResult -> vertxTestContext.verify(() -> {
+          assertNotNull(pinResult);
+          assertNull(pinResult.getPasswordVerified());
+          vertxTestContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void doPatronPinVerifyNullUser(Vertx vertx, VertxTestContext vertxTestContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
+
+    final String barcode = "997383903573496";
+
+    final String expectedUsersQueryPath = "/users?limit=1&query="
+        + Utils.encode("(barcode==" + barcode
+        + " or externalSystemId==" + barcode
+        + " or username==" + barcode + ')');
+
+    doReturn(Future.failedFuture(new NoStackTraceThrowable("Null User or Something")))
+        .when(mockFolioProvider).retrieveResource(
+        argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));
+
+    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+
+    final UsersRepository usersRepository = new UsersRepository(mockFolioProvider);
+
+    usersRepository.doPatronPinVerification(barcode, "1234", sessionData).onComplete(
+        vertxTestContext.succeeding(pinResult -> vertxTestContext.verify(() -> {
+          assertNotNull(pinResult);
+          assertFalse(pinResult.getPasswordVerified());
+          vertxTestContext.completeNow();
+        })));
+  }
+
+  @Test
   public void cannotGetUserWithFailedExtendLookup(Vertx vertx,
       VertxTestContext testContext,
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
@@ -285,5 +532,10 @@ public class UsersRepositoryTests {
 
           testContext.completeNow();
         })));
+  }
+
+  @Test
+  public void testPinRequestData() {
+
   }
 }

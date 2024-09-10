@@ -133,13 +133,15 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
 
 ### Tenant Properties
 
-|Property|Type|Description|
-|--------|----|-----------|
-|`statusUpdateOk`|`boolean`|Indicates to the kiosk that the SIP service allows patron status updates from the kiosk.|
-|`offlineOk`|`boolean`|Indicates to the kiosk that FOLIO supports off-line operations.|
-|`supportedMessages`|`object[]`|An array objects that indicate to the kiosk which messages are supported by the edge-sip2 module.|
-|`patronPasswordVerificationRequired`|`boolean`|Indicates whether or not SIP commands that supply a patron password will attempt to verify the password by attempting a FOLIO login with these supplied patron credentials. A failed patron login will fail the SIP request.|
- |`invalidCheckinStatuses`|`string`|A comma-separated list of item statuses that will block an attempt to checkin a given item via SIP2. |
+|Property|Type| Description                                                                                                                                                                                                                  |
+|--------|----|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|`statusUpdateOk`|`boolean`| Indicates to the kiosk that the SIP service allows patron status updates from the kiosk.                                                                                                                                     |
+|`offlineOk`|`boolean`| Indicates to the kiosk that FOLIO supports off-line operations.                                                                                                                                                              |
+|`supportedMessages`|`object[]`| An array objects that indicate to the kiosk which messages are supported by the edge-sip2 module.                                                                                                                            |
+|`patronPasswordVerificationRequired`|`boolean`| Indicates whether or not SIP commands that supply a patron password will attempt to verify the password by attempting a FOLIO login with these supplied patron credentials. A failed patron login will fail the SIP request. |
+ |`invalidCheckinStatuses`|`string`| A comma-separated list of item statuses that will block an attempt to checkin a given item via SIP2.                                                                                                                         |
+ |`usePinForPatronVerification`|`boolean`| Indicates whether or not to use patron PIN instead of password for verification.                                                                                                                                             |
+ |`alwaysCheckPatronPassword`|`boolean`| Indicates whether or not to check a provided patron password if patronPasswordVerificationRequired is disabled. Defaults to true.                                                                                            |
 
 #### `supportedMessages` object properties
 
@@ -298,6 +300,7 @@ All permission associated with edge-sip2
     inventory-storage.holdings.item.get
     inventory.instances.item.get
     feefines.collection.get
+    patron-pin.validate
 ```
 
 #### Security concerns for developers
@@ -372,6 +375,114 @@ $ docker run -v /my/metrics/libs:/metrics -p 6443:6443 --expose 8081 -p 8081:808
 ```
 
 This example shows how to launch with the Prometheus binding. Since Prometheus needs to scrape the metrics, we need to expose port for the HTTP server.
+
+## Setting Up SIP2 for Multiple Tenant-Specific Ports
+To configure sip2 for a port dedicated to a specific tenant, two modifications are necessary:
+1. Modify the existing port config property in the sip2.conf from an integer value to an array of integer values, as demonstrated below:
+```
+{ 
+  "port": [6443, 6444, 6445],
+  "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
+  "tenantConfigRetrieverOptions": {
+    "scanPeriod": 300000,
+    "stores": [{
+      "type": "file",
+      "format": "json",
+      "config": {
+        "path": "sip2-tenants.conf"
+      },
+      "optional": false
+    }]
+  }
+}
+```
+2. In the sip2-tenants.conf, include a new property named 'port' and assign it the dedicated port value as indexed in the array from the previous conf file, as shown below:
+```
+{
+"scTenants": [
+  {
+  "scSubnet": "11.11.00.00/16",
+  "port": "6443",
+  "tenant": "test_tenant1",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "fieldDelimiter": "\|",
+  "charset": "ISO-8859-1"
+  },
+  {
+  "scSubnet": "22.22.00.00/16",
+  "port": "6444",
+  "tenant": "test_tenant2",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "fieldDelimiter": "\|",
+  "charset": "ISO-8859-1"
+  },
+   {
+  "scSubnet": "33.33.00.00/16",
+  "port": "6445",
+  "tenant": "test_tenant3",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "fieldDelimiter": "\|",
+  "charset": "ISO-8859-1"
+  }
+]
+}
+```
+
+## Setting up SIP2 using a single port for all tenants
+To set up SIP2 using one port across all tenants, you need to make two changes:
+1. Specify the single port value in the sip2.conf file, as illustrated below:
+```
+{ 
+  "port": 6443,
+  "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
+  "tenantConfigRetrieverOptions": {
+    "scanPeriod": 300000,
+    "stores": [{
+      "type": "file",
+      "format": "json",
+      "config": {
+        "path": "sip2-tenants.conf"
+      },
+      "optional": false
+    }]
+  }
+}
+```
+2. In the sip2-tenants.conf file, list multiple tenant names along with their corresponding scSubnet range values. These entries will allow the setup of multiple tenants to the designated port, as depicted below:
+```
+{
+"scTenants": [
+  {
+  "scSubnet": "11.11.00.00/16",
+  "tenant": "test_tenant1",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "fieldDelimiter": "\|",
+  "charset": "ISO-8859-1"
+  },
+  {
+  "scSubnet": "22.22.00.00/16",
+  "tenant": "test_tenant2",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "fieldDelimiter": "\|",
+  "charset": "ISO-8859-1"
+  },
+   {
+  "scSubnet": "33.33.00.00/16",
+  "tenant": "test_tenant3",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "fieldDelimiter": "\|",
+  "charset": "ISO-8859-1"
+  }
+]
+}
+```
+
 
 ## Common Problems
 

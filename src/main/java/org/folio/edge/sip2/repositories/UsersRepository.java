@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.repositories.domain.ExtendedUser;
+import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
@@ -47,8 +48,7 @@ public class UsersRepository {
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
     log.debug("getUserById identifier:{}", identifier);
 
-    final Map<String, String> headers = new HashMap<>();
-    headers.put("accept", "application/json");
+    final Map<String, String> headers = getBaseHeaders();
 
     final GetUserByIdentifierRequestData getUserByBarcodeRequestData =
         new GetUserByIdentifierRequestData(identifier, headers, sessionData);
@@ -177,5 +177,157 @@ public class UsersRepository {
     public SessionData getSessionData() {
       return sessionData;
     }
+  }
+
+  private class PinVerifyRequestData implements IRequestData {
+    private final String userId;
+    private final String pin;
+    private final Map<String, String> headers;
+    private final SessionData sessionData;
+
+    private PinVerifyRequestData(
+        String userId,
+        String pin,
+        Map<String, String> headers,
+        SessionData sessionData) {
+      this.userId = userId;
+      this.pin = pin;
+      this.headers = headers;
+      this.sessionData = sessionData;
+    }
+
+    @Override
+    public String getPath() {
+      return "/patron-pin/verify";
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return headers;
+    }
+
+    @Override
+    public SessionData getSessionData() {
+      return sessionData;
+    }
+
+    @Override
+    public JsonObject getBody() {
+      JsonObject body = new JsonObject();
+      body.put("id", userId);
+      body.put("pin", pin);
+
+      return body;
+    }
+
+  }
+
+  private Map<String, String> getBaseHeaders() {
+    final Map<String, String> headers = new HashMap<>();
+    headers.put("accept", "application/json");
+    return headers;
+  }
+
+  private Map<String, String> getAcceptTextHeaders() {
+    final Map<String, String> headers = new HashMap<>();
+    headers.put("accept", "text/plain");
+    return headers;
+  }
+
+  /**
+   * Check to see if a given userId/pin combo is valid or not.
+   * @param userId The user id
+   * @param pin The pin
+   * @param sessionData Current sessiondata
+   * @return Boolean true or false
+   */
+  public Future<Boolean> checkPatronPin(String userId, String pin, SessionData sessionData) {
+    final Map<String, String> headers = getBaseHeaders();
+    PinVerifyRequestData pinVerifyRequestData
+        = new PinVerifyRequestData(userId, pin, headers, sessionData);
+    Future<IResource> pinResult = resourceProvider.createResource(pinVerifyRequestData);
+    return pinResult
+      .otherwise(() -> null)
+      .compose(pinCheckResult -> {
+        if (pinResult.failed()) {
+          return Future.succeededFuture(Boolean.FALSE);
+        } else {
+          return Future.succeededFuture(Boolean.TRUE);
+        }
+      }
+    );
+
+  }
+
+  /**
+   * Verify a patron against a provided pin (if verification is required) and return a
+   * PatronPasswordVerificationRecords future.
+   * @param identifier The user barcode
+   * @param pin The user pin
+   * @param sessionData Current sessiondata
+   * @return PatronPasswordVerificationRecords future indicating whether or not verification was
+   *         successful
+   */
+  public Future<PatronPasswordVerificationRecords> verifyPatronPin(
+      String identifier,
+      String pin,
+      SessionData sessionData
+  ) {
+    final Future<PatronPasswordVerificationRecords> verifyFuture;
+    if (sessionData.isPatronPasswordVerificationRequired()) {
+      verifyFuture = doPatronPinVerification(identifier, pin, sessionData);
+    } else {
+      verifyFuture = getUserById(identifier, sessionData).compose(extendedUser -> {
+        if (extendedUser != null) {
+          return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+              .extendedUser(extendedUser).build());
+        }
+        return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .build()); //null user
+      });
+    }
+    return verifyFuture;
+  }
+
+
+  /**
+   * Verify a patron against a provided pin and return a PatronPasswordVerificationRecords future.
+   * @param identifier The user barcode
+   * @param pin The user pin
+   * @param sessionData Current sessiondata
+   * @return PatronPasswordVerificationRecords future indicating whether or not verification was
+   *         successful
+   */
+  public Future<PatronPasswordVerificationRecords> doPatronPinVerification(
+      String identifier,
+      String pin,
+      SessionData sessionData) {
+    final Map<String, String> headers = getAcceptTextHeaders();
+
+    return getUserById(identifier, sessionData).compose(extendedUser -> {
+      if (extendedUser == null) {
+        return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+          .passwordVerified(Boolean.FALSE)
+          .build());
+      }
+      PinVerifyRequestData pinVerifyRequestData
+          = new PinVerifyRequestData(extendedUser.getUser().getId(), pin, headers, sessionData);
+      log.debug("Attempting to verify pin");
+      Future<Boolean> pinResult = resourceProvider.doPinCheck(pinVerifyRequestData);
+      return pinResult
+        .compose(pinCheckResult -> {
+          return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .extendedUser(extendedUser)
+            .passwordVerified(Boolean.TRUE)
+            .build());
+        }, throwable -> { //Return false on error
+            log.debug("Error on pin check");
+            return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+                .extendedUser(extendedUser)
+                .errorMessages(Collections.singletonList("Error verifying PIN"))
+                .passwordVerified(Boolean.FALSE)
+                .build());
+          });
+    });
   }
 }
