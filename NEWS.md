@@ -1,3 +1,24 @@
+## 3.2.6 2024-09-10
+* [SIP2-219](https://issues.folio.org/browse/SIP2-219): Add support for COP CurrencyType
+
+## 3.2.5 2024-07-03
+* [SIP2-214](https://issues.folio.org/browse/SIP2-214): Disable host veryfing in FIPS mode
+
+## 3.2.4 2024-05-30
+* [SIP2-208](https://issues.folio.org/browse/SIP2-208): \r missing from error response message
+* [SIP2-209](https://issues.folio.org/browse/SIP2-209): EdgeSip2IT for "mvn verify"
+
+## 3.2.3 2024-05-29
+* [SIP2-205](https://issues.folio.org/browse/SIP2-205): edge-sip2 release issue, main process exit with error in description
+
+## 3.2.2 2024-05-28
+* [SIP2-200](https://issues.folio.org/browse/SIP2-200): Enhance WebClient TLS Configuration for Secure Connections to OKAPI
+* [SIP2-201](https://issues.folio.org/browse/SIP2-201): Enhance SIP2 Endpoint Security with TLS and FIPS-140-2 Compliant Cryptography
+* [SIP2-202](https://issues.folio.org/browse/SIP2-202): Vert.x 4.5.7 fixing netty form POST OOM CVE-2024-29025
+
+## 3.2.1 2024-04-19
+* [SIP2-195](https://issues.folio.org/browse/SIP2-195): FolioResourceProvider is submitting expired access tokens to FOLIO
+
 ## 3.2.0 2024-03-22
 * [SIP2-155](https://issues.folio.org/browse/SIP2-155): SIP2: extend the Patron Information Response on fee fields
 * [SIP2-177](https://issues.folio.org/browse/SIP2-177): Patron Status Command always returns all statuses as 'Y'
