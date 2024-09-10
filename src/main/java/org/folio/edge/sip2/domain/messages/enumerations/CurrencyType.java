@@ -28,5 +28,7 @@ public enum CurrencyType {
   /** Danish Krone. */
   DKK,
   /** Australian Dollar. */
-  AUD
+  AUD,
+  /** Colombian Peso. */
+  COP
 }

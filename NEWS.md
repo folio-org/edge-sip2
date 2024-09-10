@@ -1,3 +1,6 @@
+## 3.2.6 2024-09-10
+* [SIP2-219](https://issues.folio.org/browse/SIP2-219): Add support for COP CurrencyType
+
 ## 3.2.5 2024-07-03
 * [SIP2-214](https://issues.folio.org/browse/SIP2-214): Disable host veryfing in FIPS mode
 
