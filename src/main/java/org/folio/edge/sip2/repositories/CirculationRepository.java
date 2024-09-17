@@ -173,6 +173,9 @@ public class CirculationRepository {
       } else {
         return Future.succeededFuture(CheckinResponse.builder()
             .ok(false)
+            .transactionDate(OffsetDateTime.now(clock))
+            .institutionId(institutionId)
+            .itemIdentifier(itemIdentifier)
             .screenMessage(
                 Collections.singletonList("Item status '" + status + "' is not valid for checkin"))
             .build());

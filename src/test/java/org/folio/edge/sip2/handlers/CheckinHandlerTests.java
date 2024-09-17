@@ -14,6 +14,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.UUID;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
@@ -127,6 +128,58 @@ public class CheckinHandlerTests {
           final String expectedString = "100YUN"
               + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
               + "AO" + institutionId + "|AB" + itemIdentifier + "|AQ|CS|CV|CT|";
+
+          assertEquals(expectedString, sipMessage);
+
+          testContext.completeNow();
+        })));
+  }
+
+  @Test
+  public void canExecuteInvalidCheckinUsingHandler(
+      @Mock CirculationRepository mockCirculationRepository,
+      Vertx vertx,
+      VertxTestContext testContext) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final OffsetDateTime returnDate = OffsetDateTime.now();
+    final String institutionId = "diku";
+    final String itemIdentifier = "1234567890";
+    final String currentLocation = UUID.randomUUID().toString();
+    final String itemStatus = "restricted";
+    final Checkin checkin = Checkin.builder()
+        .noBlock(FALSE)
+        .transactionDate(OffsetDateTime.now())
+        .returnDate(returnDate)
+        .currentLocation(currentLocation)
+        .institutionId(institutionId)
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .cancel(FALSE)
+        .build();
+
+    when(mockCirculationRepository.performCheckinCommand(any(), any()))
+        .thenReturn(Future.succeededFuture(CheckinResponse.builder()
+            .ok(FALSE)
+            .transactionDate(OffsetDateTime.now(clock))
+            .institutionId(institutionId)
+            .itemIdentifier(itemIdentifier)
+            .screenMessage(Collections.singletonList(
+                "Item status '" + itemStatus + "' is not valid for checkin"))
+            .build()));
+
+    final CheckinHandler handler = new CheckinHandler(mockCirculationRepository,
+        FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKIN_RESPONSE));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    handler.execute(checkin, sessionData).onComplete(
+        testContext.succeeding(sipMessage -> testContext.verify(() -> {
+          final String expectedString = "100NUN"
+              + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
+              + "AO" + institutionId + "|AB" + itemIdentifier + "|AQ"
+              + "|AFItem status 'restricted' is not valid for checkin"
+              + "|CS|CV|CT|";
 
           assertEquals(expectedString, sipMessage);
 
