@@ -3,11 +3,11 @@
 <#-- ok: 1-char, fixed-length required field: 0 or 1 -->
 <@lib.ok value=checkinResponse.ok/>
 <#-- resensitize: 1-char, fixed-length required field: Y or N -->
-<@lib.resensitize value=checkinResponse.resensitize/>
+<@lib.resensitize value=checkinResponse.resensitize!false/>
 <#-- magnetic media: 1-char, fixed-length required field: Y or N or U -->
 <@lib.magneticMedia value=checkinResponse.magneticMedia!""/>
 <#-- alert: 1-char, fixed-length required field: Y or N -->
-<@lib.alert value=checkinResponse.alert/>
+<@lib.alert value=checkinResponse.alert!false/>
 <#--
     transaction date: 18-char, fixed-length required field: YYYYMMDDZZZZHHMMSS
 -->
@@ -17,7 +17,7 @@
 <#-- item identifier: variable-length required field -->
 <@lib.itemIdentifier value=checkinResponse.itemIdentifier/>
 <#-- permanent location: variable-length required field -->
-<@lib.permanentLocation value=checkinResponse.permanentLocation/>
+<@lib.permanentLocation value=checkinResponse.permanentLocation!""/>
 <#-- title identifier: variable-length optional field -->
 <@lib.titleIdentifier value=checkinResponse.titleIdentifier!"" required=false/>
 <#-- sort bin: variable-length optional field -->
