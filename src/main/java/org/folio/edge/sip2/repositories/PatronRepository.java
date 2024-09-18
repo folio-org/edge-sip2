@@ -173,7 +173,14 @@ public class PatronRepository {
 
     final String patronIdentifier = patronStatus.getPatronIdentifier();
     final String patronPassword = patronStatus.getPatronPassword();
-    log.debug("IsPatronVerificationRequired: {}",
+
+    log.info("patronIdentifier: {}",
+      patronIdentifier);
+
+    log.info("patronPassword: {}",
+      patronPassword);
+
+    log.info("IsPatronVerificationRequired: {}",
         sessionData.isPatronPasswordVerificationRequired());
 
     return verifyPinOrPassword(patronIdentifier, patronPassword, sessionData)
@@ -849,6 +856,7 @@ public class PatronRepository {
       SessionData sessionData
   ) {
     if (sessionData.isUsePinForPatronVerification()) {
+      log.info("Inside userPin verfication case");
       return usersRepository.verifyPatronPin(patronIdentifier, patronPassword, sessionData);
     }
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData);

@@ -39,7 +39,7 @@ public class PatronStatusHandler implements ISip2RequestHandler {
   public Future<String> execute(Object message, SessionData sessionData) {
     final PatronStatusRequest patronStatus = (PatronStatusRequest) message;
 
-    log.debug("PatronStatusRequest: {}", () -> patronStatus);
+    log.info("PatronStatusRequest: {}", () -> patronStatus);
 
     final Future<PatronStatusResponse> patronStatusFuture =
         patronRepository.performPatronStatusCommand(patronStatus, sessionData);

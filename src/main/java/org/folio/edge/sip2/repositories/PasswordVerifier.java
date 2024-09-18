@@ -48,6 +48,7 @@ public class PasswordVerifier {
 
     final Future<PatronPasswordVerificationRecords> loginFuture;
 
+    log.info("The password Verification is --- ", sessionData.isPatronPasswordVerificationRequired());
     if (sessionData.isPatronPasswordVerificationRequired()) {
       loginFuture = doPatronPasswordVerification(patronIdentifier, patronPassword, sessionData);
     } else {
@@ -79,7 +80,7 @@ public class PasswordVerifier {
     Objects.requireNonNull(patronIdentifier, "patronIdentifier cannot be null");
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
 
-    log.debug("Calling doPatronPasswordVerification");
+    log.info("Calling doPatronPasswordVerification");
     Future<PatronPasswordVerificationRecords> loginFuture;
 
     loginFuture = usersRepository.getUserById(patronIdentifier, sessionData)
@@ -89,20 +90,20 @@ public class PasswordVerifier {
               .passwordVerified(FALSE)
               .build());
         }
-        log.debug("Got extendedUser {}", extendedUser);
-        log.debug("Calling patronLoginNoCache with username {}",
+        log.info("Got extendedUser {}", extendedUser);
+        log.info("Calling patronLoginNoCache with username {}",
             extendedUser.getUser().getUsername());
         return loginRepository.patronLoginNoCache(extendedUser.getUser().getUsername(),
             patronPassword, sessionData)
           .compose(token -> {
             if (token != null) {
-              log.debug("Valid token");
+              log.info("Valid token");
               return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
                   .extendedUser(extendedUser)
                   .passwordVerified(TRUE)
                   .build());
             } else {
-              log.debug("Null token");
+              log.info("Null token");
               return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
                   .extendedUser(extendedUser)
                   .errorMessages(Collections.singletonList(sessionData.getLoginErrorMessage()))
