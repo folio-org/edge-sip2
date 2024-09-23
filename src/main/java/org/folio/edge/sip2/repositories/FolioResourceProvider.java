@@ -119,7 +119,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
    * @return Boolean True if successful
    */
   public Future<Boolean> doPinCheck(IRequestData requestData) {
-    log.info("Doing pin verification at {}", requestData::getPath);
+    log.debug("Doing pin verification at {}", requestData::getPath);
 
     final HttpRequest<Buffer> request =
         client.postAbs(okapiUrl + requestData.getPath());

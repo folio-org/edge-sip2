@@ -46,7 +46,7 @@ public class UsersRepository {
       SessionData sessionData) {
     Objects.requireNonNull(identifier, "identifier cannot be null");
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
-    log.info("getUserById identifier:{}", identifier);
+    log.debug("getUserById identifier:{}", identifier);
 
     final Map<String, String> headers = getBaseHeaders();
 
@@ -54,7 +54,7 @@ public class UsersRepository {
         new GetUserByIdentifierRequestData(identifier, headers, sessionData);
     final Future<IResource> result = resourceProvider.retrieveResource(getUserByBarcodeRequestData);
 
-    log.info("Users lookup success is {}", result.succeeded());
+    log.debug("Users lookup success is {}", result.succeeded());
 
     return result
         .otherwise(() -> null)
@@ -63,10 +63,10 @@ public class UsersRepository {
         .compose(user -> {
           Future<IResource> blResult;
           if (user != null) {
-            log.info("Getting extended user info for id {}", user.getId());
+            log.debug("Getting extended user info for id {}", user.getId());
             final GetExtendedUserData getExtendedUserData =
                 new GetExtendedUserData(user.getId(), headers, sessionData);
-            log.info("Path for extended user lookup is {}", getExtendedUserData.getPath());
+            log.debug("Path for extended user lookup is {}", getExtendedUserData.getPath());
             blResult = resourceProvider.retrieveResource(getExtendedUserData);
           } else {
             blResult = Future.failedFuture("Invalid User");
@@ -78,7 +78,7 @@ public class UsersRepository {
                 return Future.succeededFuture(null);
               } else {
                 JsonObject extendedUserJson = extendedUserResult.getResource();
-                log.info("Got extended user JSON: {}", extendedUserJson.encode());
+                log.debug("Got extended user JSON: {}", extendedUserJson.encode());
                 JsonObject patronGroupJson = extendedUserJson.getJsonObject("patronGroup");
                 ExtendedUser extendedUser = new ExtendedUser();
                 extendedUser.setUser(user);
@@ -312,17 +312,16 @@ public class UsersRepository {
       }
       PinVerifyRequestData pinVerifyRequestData
           = new PinVerifyRequestData(extendedUser.getUser().getId(), pin, headers, sessionData);
-      log.info("Attempting to verify pin");
+      log.debug("Attempting to verify pin");
       Future<Boolean> pinResult = resourceProvider.doPinCheck(pinVerifyRequestData);
       return pinResult
         .compose(pinCheckResult -> {
-          log.info("Pin checked");
           return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
             .extendedUser(extendedUser)
             .passwordVerified(Boolean.TRUE)
             .build());
         }, throwable -> { //Return false on error
-            log.info("Error on pin check");
+            log.debug("Error on pin check");
             return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
                 .extendedUser(extendedUser)
                 .errorMessages(Collections.singletonList("Error verifying PIN"))

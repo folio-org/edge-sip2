@@ -43,7 +43,7 @@ public class LoginRepository {
     sessionData.setPassword(password);
 
     Future<String> authToken = null;
-    log.info("The password is {}", password);
+
     authToken = resourceProvider.loginWithSupplier(user,
         () -> Future.succeededFuture(password), sessionData, false);
 
