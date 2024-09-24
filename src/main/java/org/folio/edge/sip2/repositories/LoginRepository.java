@@ -43,8 +43,9 @@ public class LoginRepository {
     sessionData.setPassword(password);
 
     Future<String> authToken = null;
+
     authToken = resourceProvider.loginWithSupplier(user,
-        () -> Future.succeededFuture(password), sessionData, true);
+        () -> Future.succeededFuture(password), sessionData, false);
 
     if (authToken == null) {
       // Can't continue without an auth token
