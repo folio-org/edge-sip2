@@ -231,6 +231,7 @@ public class ItemRepository {
         new ItemInformationRequestData(itemIdentifier, getBaseHeaders(), sessionData);
 
     return getItemView(itemInformationRequestData)
+      .otherwiseEmpty()
       .compose(itemView -> {
         if (itemView != null) {
           JsonObject item = itemView.getJsonObject("item");
@@ -266,7 +267,14 @@ public class ItemRepository {
               }
             );
         }
-        return Future.failedFuture("Item does not exists.");
+        final ItemInformationResponseBuilder noItemBuilder = ItemInformationResponse.builder();
+        noItemBuilder
+            .circulationStatus(CirculationStatus.OTHER)
+            .transactionDate(OffsetDateTime.now(clock))
+            .itemIdentifier(itemIdentifier)
+            .titleIdentifier("Unknown")
+            .screenMessage(Collections.singletonList("Item does not exist"));
+        return Future.succeededFuture(noItemBuilder.build());
             }
 
       ); // end compose
@@ -314,7 +322,7 @@ public class ItemRepository {
 
                 });
           }
-          return Future.failedFuture("Item does not exists.");
+          return Future.failedFuture("Item does not exist.");
         })
           .compose(ar -> {
             JsonObject viewJson = new JsonObject();
