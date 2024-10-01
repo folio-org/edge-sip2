@@ -73,7 +73,7 @@ public class LoginHandler implements ISip2RequestHandler {
    * Construct Login Response message.
    * @param sessionData sessionData
    * @param loginResponse loginResponse
-   * @return
+   * @return response String
    */
   private String constructLoginResponse(
       SessionData sessionData,

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
@@ -17,6 +18,7 @@ import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import org.folio.edge.sip2.api.support.TestUtils;
+import org.folio.edge.sip2.domain.messages.enumerations.CirculationStatus;
 import org.folio.edge.sip2.domain.messages.requests.ItemInformation;
 import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.Test;
@@ -120,8 +122,11 @@ class ItemRepositoryTests {
     final ItemRepository ItemRepository = new ItemRepository(
         mockFolioProvider, clock);
     ItemRepository.performItemInformationCommand(itemInformation, sessionData).onComplete(
-        testContext.failing(throwable -> testContext.verify(() -> {
-          assertEquals("Item does not exists.", throwable.getMessage());
+        testContext.succeeding(itemInformationResponse -> testContext.verify(() -> {
+          assertNotNull(itemInformationResponse);
+          assertEquals("Unknown", itemInformationResponse.getTitleIdentifier());
+          assertTrue(itemInformationResponse.getScreenMessage().contains("Item does not exist"));
+          assertEquals(CirculationStatus.OTHER, itemInformationResponse.getCirculationStatus());
           testContext.completeNow();
         })));
   }

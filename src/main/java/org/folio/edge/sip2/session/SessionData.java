@@ -25,6 +25,8 @@ public class SessionData {
   private boolean patronPasswordVerificationRequired;
   private List<String> rejectedCheckinStatusList;
   private boolean configurationLoaded;
+  private boolean usePinForPatronVerification;
+  private boolean alwaysCheckPatronPassword;
 
   private static final Logger log = LogManager.getLogger();
   private static final String DEFAULT_CURRENCY = "USD";
@@ -39,6 +41,8 @@ public class SessionData {
     this.charset = charset;
     this.rejectedCheckinStatusList = new ArrayList<>();
     this.configurationLoaded = false;
+    this.usePinForPatronVerification = false;
+    this.alwaysCheckPatronPassword = true;
 
   }
 
@@ -145,8 +149,20 @@ public class SessionData {
     return patronPasswordVerificationRequired;
   }
 
+  /**
+   * Are we to use patron pin instead of the password for verification.
+   * @return boolean true or false
+   */
+  public boolean isUsePinForPatronVerification() {
+    return usePinForPatronVerification;
+  }
+
   public void setPatronPasswordVerificationRequired(boolean patronPasswordVerificationRequired) {
     this.patronPasswordVerificationRequired = patronPasswordVerificationRequired;
+  }
+
+  public void setUsePinForPatronVerification(boolean usePinForPatronVerification) {
+    this.usePinForPatronVerification = usePinForPatronVerification;
   }
 
   /**
@@ -197,6 +213,14 @@ public class SessionData {
     } else {
       this.currency = currency;
     }
+  }
+
+  public void setAlwaysCheckPatronPassword(boolean flag) {
+    this.alwaysCheckPatronPassword = flag;
+  }
+
+  public boolean isAlwaysCheckPatronPassword() {
+    return alwaysCheckPatronPassword;
   }
 
   public void setConfigurationLoaded(boolean loaded) {

@@ -33,6 +33,7 @@ import org.folio.edge.sip2.domain.messages.responses.CheckoutResponse;
 import org.folio.edge.sip2.domain.messages.responses.RenewAllResponse;
 import org.folio.edge.sip2.domain.messages.responses.RenewAllResponse.RenewAllResponseBuilder;
 import org.folio.edge.sip2.domain.messages.responses.RenewResponse;
+import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
@@ -57,18 +58,22 @@ public class CirculationRepository {
   private final IResourceProvider<IRequestData> resourceProvider;
   private final PasswordVerifier passwordVerifier;
   private final ItemRepository itemRepository;
+  private final UsersRepository usersRepository;
   private final Clock clock;
 
 
   @Inject
   CirculationRepository(IResourceProvider<IRequestData> resourceProvider,
-      PasswordVerifier passwordVerifier, ItemRepository itemRepository, Clock clock) {
+      PasswordVerifier passwordVerifier, ItemRepository itemRepository,
+      UsersRepository usersRepository, Clock clock) {
     this.resourceProvider = Objects.requireNonNull(resourceProvider,
         "Resource provider cannot be null");
     this.passwordVerifier = Objects.requireNonNull(passwordVerifier,
         "Password verifier cannot be null");
     this.itemRepository = Objects.requireNonNull(itemRepository,
         "Item Repository cannot be null");
+    this.usersRepository = Objects.requireNonNull(usersRepository,
+      "Users Repository cannot be null");
     this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
   }
 
@@ -144,6 +149,7 @@ public class CirculationRepository {
                           .itemIdentifier(itemIdentifier)
                           .callNumber(valuesJson.getString("callNumber"))
                           .mediaType(mediaType)
+                          .patronIdentifier(getPatronBarcodeFromCheckin(resourceJson))
                           .pickupServicePoint(valuesJson.getString("servicePoint"))
                           // if the title is not available, use the item identifier passed in to the
                           // checkin.
@@ -167,6 +173,9 @@ public class CirculationRepository {
       } else {
         return Future.succeededFuture(CheckinResponse.builder()
             .ok(false)
+            .transactionDate(OffsetDateTime.now(clock))
+            .institutionId(institutionId)
+            .itemIdentifier(itemIdentifier)
             .screenMessage(
                 Collections.singletonList("Item status '" + status + "' is not valid for checkin"))
             .build());
@@ -188,7 +197,7 @@ public class CirculationRepository {
     final String itemIdentifier = checkout.getItemIdentifier();
     final String patronPassword = checkout.getPatronPassword();
 
-    return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+    return verifyPinOrPassword(patronIdentifier, patronPassword, sessionData)
       .onFailure(throwable -> {
         if (throwable instanceof ClientException) {
           sessionData.setErrorResponseMessage(
@@ -630,7 +639,7 @@ public class CirculationRepository {
     final String patronPassword = renew.getPatronPassword();
     final String barcode = renew.getItemIdentifier();
 
-    return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+    return verifyPinOrPassword(patronIdentifier, patronPassword, sessionData)
       .onFailure(throwable -> {
         if (throwable instanceof ClientException) {
           sessionData.setErrorResponseMessage(
@@ -700,7 +709,7 @@ public class CirculationRepository {
    * Build Failed Renew Response.
    * @param institutionId institutionId
    * @param sessionData sessionData
-   * @return
+   * @return renewResponse
    */
   private RenewResponse buildFailedRenewResponse(
       String institutionId,
@@ -739,7 +748,7 @@ public class CirculationRepository {
 
     List<String> emptyItems = new ArrayList<String>();
 
-    return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData)
+    return verifyPinOrPassword(patronIdentifier, patronPassword, sessionData)
       .onFailure(throwable -> {
         if (throwable instanceof ClientException) {
           sessionData.setErrorResponseMessage(
@@ -956,4 +965,31 @@ public class CirculationRepository {
     }
     return request.getString("requestType");
   }
+
+  protected String getPatronBarcodeFromCheckin(JsonObject checkinResultJson) {
+    if (checkinResultJson == null || checkinResultJson.isEmpty()) {
+      return null;
+    }
+    JsonObject loanJson = checkinResultJson.getJsonObject("loan");
+    if (loanJson == null) {
+      return null;
+    }
+    JsonObject borrowerJson = loanJson.getJsonObject("borrower");
+    if (borrowerJson == null) {
+      return null;
+    }
+    return borrowerJson.getString("barcode");
+  }
+
+  private Future<PatronPasswordVerificationRecords> verifyPinOrPassword(
+      String patronIdentifier,
+      String patronPassword,
+      SessionData sessionData
+  ) {
+    if (sessionData.isUsePinForPatronVerification()) {
+      return usersRepository.verifyPatronPin(patronIdentifier, patronPassword, sessionData);
+    }
+    return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData);
+  }
+
 }

@@ -205,6 +205,10 @@ public class ConfigurationRepository {
           config.getJsonArray("supportedMessages")));
       sessionData.setPatronPasswordVerificationRequired(
           config.getBoolean("patronPasswordVerificationRequired", Boolean.FALSE));
+      sessionData.setUsePinForPatronVerification(
+          config.getBoolean("usePinForPatronVerification", Boolean.FALSE));
+      sessionData.setAlwaysCheckPatronPassword(
+          config.getBoolean("alwaysCheckPatronPassword", Boolean.FALSE));
       List<String> invalidStatusList = getListFromString(
           config.getString("invalidCheckinStatuses"));
       if (invalidStatusList != null) {

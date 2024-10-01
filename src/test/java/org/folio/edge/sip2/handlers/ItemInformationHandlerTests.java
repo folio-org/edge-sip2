@@ -11,6 +11,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.enumerations.CirculationStatus;
 import org.folio.edge.sip2.domain.messages.requests.ItemInformation;
@@ -81,7 +82,13 @@ class ItemInformationHandlerTests {
         .build();
 
     when(itemRepository.performItemInformationCommand(any(), any()))
-        .thenReturn(Future.failedFuture("Item does not exists."));
+        .thenReturn(Future.succeededFuture(ItemInformationResponse.builder()
+        .transactionDate(OffsetDateTime.now(clock))
+        .itemIdentifier(itemIdentifier)
+        .circulationStatus(CirculationStatus.OTHER)
+        .titleIdentifier("Unknown")
+        .screenMessage(Collections.singletonList("Item does not exist"))
+        .build()));
 
     final ItemInformationHandler handler = new ItemInformationHandler(itemRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(ITEM_INFORMATION_RESPONSE));
@@ -89,8 +96,13 @@ class ItemInformationHandlerTests {
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     handler.execute(itemInformation, sessionData).onComplete(
-        testContext.failing(throwable -> testContext.verify(() -> {
-          assertEquals("Item does not exists.", throwable.getMessage());
+        testContext.succeeding(sipMessage -> testContext.verify(() -> {
+          final String expectedString = "18010001"
+              + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
+              + "AB" + itemIdentifier + "|AJUnknown|AQ|AP|AFItem does not exist|";
+
+          assertEquals(expectedString, sipMessage);
+
           testContext.completeNow();
         })));
   }

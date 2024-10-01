@@ -21,4 +21,6 @@ public interface IResourceProvider<T> {
                                    Supplier<Future<String>> getPasswordSupplier,
                                    SessionData sessionData,
                                    boolean cache);
+
+  Future<Boolean> doPinCheck(T fromData);
 }
