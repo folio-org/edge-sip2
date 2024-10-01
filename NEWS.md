@@ -1,3 +1,6 @@
+## 3.2.7 2024-10-01
+* [SIP2-222](https://issues.folio.org/browse/SIP2-222): SIP2 login issue - active session with an invalid password
+
 ## 3.2.6 2024-09-10
 * [SIP2-219](https://issues.folio.org/browse/SIP2-219): Add support for COP CurrencyType
 
