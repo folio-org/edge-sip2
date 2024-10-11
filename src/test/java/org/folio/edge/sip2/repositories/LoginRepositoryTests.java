@@ -6,18 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
 import io.vertx.core.Future;
-import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.NoStackTraceThrowable;
-import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import java.util.Collections;
 import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
 import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
 import org.folio.edge.sip2.domain.messages.requests.Login;

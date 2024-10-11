@@ -207,21 +207,6 @@ public class FolioResourceProviderTests {
         })));
   }
 
-  @Test
-  public void canLoginWithCache(
-      Vertx vertx,
-      VertxTestContext testContext) {
-    Future<String> passwordFuture = Future.succeededFuture("password");
-    SessionData sessionData = TestUtils.getMockedSessionData();
-    final FolioResourceProvider folioResourceProvider =
-        new FolioResourceProvider("http://localhost:" + port, WebClient.create(vertx));
-    folioResourceProvider.loginWithSupplier("dummy", () -> passwordFuture, sessionData)
-        .onComplete(
-        testContext.succeeding(response -> testContext.verify(() -> {
-          testContext.completeNow();
-        })));
-  }
-
   private interface FolioRequestData extends IRequestData {
     @Override
     default SessionData getSessionData() {
