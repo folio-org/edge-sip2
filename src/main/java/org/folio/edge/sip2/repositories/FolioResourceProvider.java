@@ -182,7 +182,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     token.onFailure(throwable -> {
       log.info("Came here in failure");
       sessionData.setErrorResponseMessage("Access token missing.");
-      promise.complete();
+      promise.fail(throwable);
     })
         .onSuccess(accessToken -> {
           sessionData.setErrorResponseMessage(null);
