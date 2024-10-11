@@ -173,7 +173,7 @@ public class PatronRepository {
 
     final String patronIdentifier = patronStatus.getPatronIdentifier();
     final String patronPassword = patronStatus.getPatronPassword();
-    log.debug("IsPatronVerificationRequired: {}",
+    log.info("IsPatronVerificationRequired: {}",
         sessionData.isPatronPasswordVerificationRequired());
 
     return verifyPinOrPassword(patronIdentifier, patronPassword, sessionData)
