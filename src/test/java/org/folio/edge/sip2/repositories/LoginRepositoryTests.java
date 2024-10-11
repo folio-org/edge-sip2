@@ -60,7 +60,7 @@ public class LoginRepositoryTests {
         .locationCode("library")
         .build();
 
-    when(mockFolioProvider.loginWithSupplier(any(), any(), any(), anyBoolean()))
+    when(mockFolioProvider.loginWithSupplier(any(), any(), any()))
         .thenReturn(Future.succeededFuture("tok"));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
@@ -87,7 +87,7 @@ public class LoginRepositoryTests {
         .locationCode("library")
         .build();
 
-    when(mockFolioProvider.loginWithSupplier(any(), any(), any(), anyBoolean()))
+    when(mockFolioProvider.loginWithSupplier(any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
@@ -102,43 +102,6 @@ public class LoginRepositoryTests {
         })));
   }
 
-  @Test
-  public void canPatronLogin(Vertx vertx,
-      VertxTestContext testContext,
-      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
-    final String username = "test";
-    final String password = "xyzzy";
-
-    when(mockFolioProvider.loginWithSupplier(any(), any(), any(), anyBoolean()))
-        .thenReturn(Future.succeededFuture("tok"));
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
-
-    final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
-    loginRepository.patronLogin(username, password, sessionData).onComplete(
-        testContext.succeeding(loginResponse -> testContext.verify(() -> {
-          assertNotNull(loginResponse);
-          testContext.completeNow();
-        })));
-  }
-
-  @Test
-  public void cannotPatronLogin(Vertx vertx,
-      VertxTestContext testContext,
-      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
-    final String username = "test";
-    final String password = "xyzzy";
-
-    when(mockFolioProvider.loginWithSupplier(any(), any(), any(), anyBoolean()))
-        .thenReturn(Future.succeededFuture(null));
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
-
-    final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
-    loginRepository.patronLogin(username, password, sessionData).onComplete(
-        testContext.succeeding(loginResponse -> testContext.verify(() -> {
-          assertNull(loginResponse);
-          testContext.completeNow();
-        })));
-  }
 
   @Test
   public void canPatronLoginNoCache(Vertx vertx,
@@ -147,7 +110,7 @@ public class LoginRepositoryTests {
     final String username = "test";
     final String password = "xyzzy";
 
-    when(mockFolioProvider.loginWithSupplier(any(), any(), any(), anyBoolean()))
+    when(mockFolioProvider.loginWithSupplier(any(), any(), any()))
         .thenReturn(Future.succeededFuture("tok"));
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
@@ -166,7 +129,7 @@ public class LoginRepositoryTests {
     final String username = "test";
     final String password = "xyzzy";
 
-    when(mockFolioProvider.loginWithSupplier(any(), any(), any(), anyBoolean()))
+    when(mockFolioProvider.loginWithSupplier(any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 

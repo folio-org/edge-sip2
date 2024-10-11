@@ -200,7 +200,7 @@ public class FolioResourceProviderTests {
     SessionData sessionData = TestUtils.getMockedSessionData();
     final FolioResourceProvider folioResourceProvider =
         new FolioResourceProvider("http://localhost:" + port, WebClient.create(vertx));
-    folioResourceProvider.loginWithSupplier("dummy", () -> passwordFuture, sessionData, false)
+    folioResourceProvider.loginWithSupplier("dummy", () -> passwordFuture, sessionData)
         .onComplete(
         testContext.succeeding(response -> testContext.verify(() -> {
           testContext.completeNow();
@@ -215,7 +215,7 @@ public class FolioResourceProviderTests {
     SessionData sessionData = TestUtils.getMockedSessionData();
     final FolioResourceProvider folioResourceProvider =
         new FolioResourceProvider("http://localhost:" + port, WebClient.create(vertx));
-    folioResourceProvider.loginWithSupplier("dummy", () -> passwordFuture, sessionData, true)
+    folioResourceProvider.loginWithSupplier("dummy", () -> passwordFuture, sessionData)
         .onComplete(
         testContext.succeeding(response -> testContext.verify(() -> {
           testContext.completeNow();
@@ -303,7 +303,7 @@ public class FolioResourceProviderTests {
     doReturn(httpRequest).when(httpRequest).as(any());
 
     Future<String> result = provider.loginWithSupplier(username, ()
-        -> Future.succeededFuture("testPassword"), sessionData, true);
+        -> Future.succeededFuture("testPassword"), sessionData);
 
     assertTrue(result.succeeded());
     assertEquals("cookieValue", result.result());
@@ -326,7 +326,7 @@ public class FolioResourceProviderTests {
     cookies.add("folioAccessToken=cookieValue");
 
     Future<String> result = provider.loginWithSupplier(username, ()
-        -> Future.succeededFuture("testPassword"), sessionData, true);
+        -> Future.succeededFuture("testPassword"), sessionData);
 
     assertTrue(result.failed());
     assertNull(sessionData.getAuthenticationToken());

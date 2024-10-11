@@ -89,20 +89,16 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   public Future<String> loginWithSupplier(
       String username,
       Supplier<Future<String>> getPasswordSupplier,
-      SessionData sessionData, boolean useCache) {
-    log.info("loginWithSupplier username={} cache={} useCache={}",
-        username, TokenCacheFactory.get(), useCache);
+      SessionData sessionData) {
+    log.info("loginWithSupplier username={} cache={}",
+        username, TokenCacheFactory.get());
     ClientOptions clientOptions = new ClientOptions()
         .okapiUrl(okapiUrl)
         .webClient(client);
 
-    if (useCache) {
-      tokenClient = Client.createLoginClient(clientOptions, TokenCacheFactory.get(),
+    tokenClient = Client.createLoginClient(clientOptions, null,
         sessionData.getTenant(), username, getPasswordSupplier);
-    } else {
-      tokenClient = Client.createLoginClient(clientOptions, null,
-        sessionData.getTenant(), username, getPasswordSupplier);
-    }
+
     return tokenClient.getToken().compose(token -> {
       log.debug("The login token is {}", token);
       return Future.succeededFuture(token);
@@ -182,7 +178,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     }
 
     Future<String> token = loginWithSupplier(sessionData.getUsername(),
-        () -> Future.succeededFuture(sessionData.getPassword()), sessionData, true);
+        () -> Future.succeededFuture(sessionData.getPassword()), sessionData);
     token.onFailure(throwable ->
         sessionData.setErrorResponseMessage("Access token missing.")
     )

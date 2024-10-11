@@ -19,8 +19,7 @@ public interface IResourceProvider<T> {
 
   Future<String> loginWithSupplier(String username,
                                    Supplier<Future<String>> getPasswordSupplier,
-                                   SessionData sessionData,
-                                   boolean cache);
+                                   SessionData sessionData);
 
   Future<Boolean> doPinCheck(T fromData);
 }

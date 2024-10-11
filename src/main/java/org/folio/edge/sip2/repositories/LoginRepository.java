@@ -45,7 +45,7 @@ public class LoginRepository {
     Future<String> authToken = null;
 
     authToken = resourceProvider.loginWithSupplier(user,
-        () -> Future.succeededFuture(password), sessionData, false);
+        () -> Future.succeededFuture(password), sessionData);
 
     if (authToken == null) {
       // Can't continue without an auth token
@@ -65,25 +65,9 @@ public class LoginRepository {
      });
   }
 
-
-
-  /**
-   * Perform a login.
-   *
-   * @param patronUserName the patron's user name
-   * @param patronPassword the patron's password
-   * @param sessionData shared session data
-   * @return the login response domain object
-   */
-  public Future<String> patronLogin(String patronUserName, String patronPassword,
-      SessionData sessionData) {
-    return resourceProvider.loginWithSupplier(patronUserName,
-      () -> Future.succeededFuture(patronPassword), sessionData, true);
-  }
-
   public Future<String> patronLoginNoCache(String patronUserName, String patronPassword,
       SessionData sessionData) {
     return resourceProvider.loginWithSupplier(patronUserName,
-      () -> Future.succeededFuture(patronPassword), sessionData, false);
+      () -> Future.succeededFuture(patronPassword), sessionData);
   }
 }
