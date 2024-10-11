@@ -102,11 +102,10 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     return tokenClient.getToken().compose(token -> {
       log.debug("The login token is {}", token);
       return Future.succeededFuture(token);
-    }).recover(e -> {
+    }).onFailure(e -> {
       log.error("Unable to get the access token ", e);
       sessionData.setAuthenticationToken(null);
       sessionData.setLoginErrorMessage(e.getMessage());
-      return Future.failedFuture(e);
     });
   }
 
@@ -184,7 +183,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
       log.info("Came here in failure");
       sessionData.setErrorResponseMessage("Access token missing.");
       promise.complete();
-      })
+    })
         .onSuccess(accessToken -> {
           sessionData.setErrorResponseMessage(null);
           sessionData.setAuthenticationToken(accessToken);
