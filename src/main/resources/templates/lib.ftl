@@ -91,7 +91,7 @@
 <#macro variableLengthListField id value>
   <#if value?has_content>
     <#list value as i>
-      <@variableLengthField id=id value=i/>
+      <@variableLengthField id=id value=i!""/>
     </#list>
   </#if>
 </#macro>
@@ -307,7 +307,9 @@
 </#macro>
 
 <#macro holdItems value>
-  <@variableLengthListField id="AS" value=value/>
+  <#if value?has_content>
+    <@variableLengthListField id="AS" value=value/>
+  </#if>
 </#macro>
 
 <#macro holdItemsCount value>
