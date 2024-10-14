@@ -74,8 +74,11 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         .as(BodyCodec.jsonObject())
         .send()
         .map(FolioResourceProvider::toIResource)
-        .onFailure(e -> log.error("Request failed", e))
-    );
+      ).recover(
+        e -> {
+          log.error("Failed to set headers or send request", e);
+          return Future.failedFuture(e);
+        });
   }
 
   /**
