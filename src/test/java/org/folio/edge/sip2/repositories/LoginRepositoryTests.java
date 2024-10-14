@@ -6,18 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
 import io.vertx.core.Future;
-import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.NoStackTraceThrowable;
-import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import java.util.Collections;
 import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
 import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
 import org.folio.edge.sip2.domain.messages.requests.Login;
@@ -60,7 +55,7 @@ public class LoginRepositoryTests {
         .locationCode("library")
         .build();
 
-    when(mockFolioProvider.loginWithSupplier(any(), any(), any(), anyBoolean()))
+    when(mockFolioProvider.loginWithSupplier(any(), any(), any()))
         .thenReturn(Future.succeededFuture("tok"));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
@@ -87,7 +82,7 @@ public class LoginRepositoryTests {
         .locationCode("library")
         .build();
 
-    when(mockFolioProvider.loginWithSupplier(any(), any(), any(), anyBoolean()))
+    when(mockFolioProvider.loginWithSupplier(any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
@@ -102,43 +97,6 @@ public class LoginRepositoryTests {
         })));
   }
 
-  @Test
-  public void canPatronLogin(Vertx vertx,
-      VertxTestContext testContext,
-      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
-    final String username = "test";
-    final String password = "xyzzy";
-
-    when(mockFolioProvider.loginWithSupplier(any(), any(), any(), anyBoolean()))
-        .thenReturn(Future.succeededFuture("tok"));
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
-
-    final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
-    loginRepository.patronLogin(username, password, sessionData).onComplete(
-        testContext.succeeding(loginResponse -> testContext.verify(() -> {
-          assertNotNull(loginResponse);
-          testContext.completeNow();
-        })));
-  }
-
-  @Test
-  public void cannotPatronLogin(Vertx vertx,
-      VertxTestContext testContext,
-      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
-    final String username = "test";
-    final String password = "xyzzy";
-
-    when(mockFolioProvider.loginWithSupplier(any(), any(), any(), anyBoolean()))
-        .thenReturn(Future.succeededFuture(null));
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
-
-    final LoginRepository loginRepository = new LoginRepository(mockFolioProvider);
-    loginRepository.patronLogin(username, password, sessionData).onComplete(
-        testContext.succeeding(loginResponse -> testContext.verify(() -> {
-          assertNull(loginResponse);
-          testContext.completeNow();
-        })));
-  }
 
   @Test
   public void canPatronLoginNoCache(Vertx vertx,
@@ -147,7 +105,7 @@ public class LoginRepositoryTests {
     final String username = "test";
     final String password = "xyzzy";
 
-    when(mockFolioProvider.loginWithSupplier(any(), any(), any(), anyBoolean()))
+    when(mockFolioProvider.loginWithSupplier(any(), any(), any()))
         .thenReturn(Future.succeededFuture("tok"));
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
@@ -166,7 +124,7 @@ public class LoginRepositoryTests {
     final String username = "test";
     final String password = "xyzzy";
 
-    when(mockFolioProvider.loginWithSupplier(any(), any(), any(), anyBoolean()))
+    when(mockFolioProvider.loginWithSupplier(any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 

@@ -74,8 +74,11 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         .as(BodyCodec.jsonObject())
         .send()
         .map(FolioResourceProvider::toIResource)
-        .onFailure(e -> log.error("Request failed", e))
-    );
+      ).recover(
+        e -> {
+          log.error("Failed to set headers or send request", e);
+          return Future.failedFuture(e);
+        });
   }
 
   /**
@@ -89,20 +92,16 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   public Future<String> loginWithSupplier(
       String username,
       Supplier<Future<String>> getPasswordSupplier,
-      SessionData sessionData, boolean useCache) {
-    log.info("loginWithSupplier username={} cache={} useCache={}",
-        username, TokenCacheFactory.get(), useCache);
+      SessionData sessionData) {
+    log.info("loginWithSupplier username={} cache={}",
+        username, TokenCacheFactory.get());
     ClientOptions clientOptions = new ClientOptions()
         .okapiUrl(okapiUrl)
         .webClient(client);
 
-    if (useCache) {
-      tokenClient = Client.createLoginClient(clientOptions, TokenCacheFactory.get(),
+    tokenClient = Client.createLoginClient(clientOptions, null,
         sessionData.getTenant(), username, getPasswordSupplier);
-    } else {
-      tokenClient = Client.createLoginClient(clientOptions, null,
-        sessionData.getTenant(), username, getPasswordSupplier);
-    }
+
     return tokenClient.getToken().compose(token -> {
       log.debug("The login token is {}", token);
       return Future.succeededFuture(token);
@@ -182,10 +181,11 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     }
 
     Future<String> token = loginWithSupplier(sessionData.getUsername(),
-        () -> Future.succeededFuture(sessionData.getPassword()), sessionData, true);
-    token.onFailure(throwable ->
-        sessionData.setErrorResponseMessage("Access token missing.")
-    )
+        () -> Future.succeededFuture(sessionData.getPassword()), sessionData);
+    token.onFailure(throwable -> {
+      sessionData.setErrorResponseMessage("Access token missing.");
+      promise.fail(throwable);
+    })
         .onSuccess(accessToken -> {
           sessionData.setErrorResponseMessage(null);
           sessionData.setAuthenticationToken(accessToken);
