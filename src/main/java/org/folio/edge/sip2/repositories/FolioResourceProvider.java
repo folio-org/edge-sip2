@@ -183,7 +183,6 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     Future<String> token = loginWithSupplier(sessionData.getUsername(),
         () -> Future.succeededFuture(sessionData.getPassword()), sessionData);
     token.onFailure(throwable -> {
-      log.info("Came here in failure");
       sessionData.setErrorResponseMessage("Access token missing.");
       promise.fail(throwable);
     })

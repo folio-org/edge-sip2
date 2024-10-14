@@ -46,7 +46,7 @@ public class UsersRepository {
       SessionData sessionData) {
     Objects.requireNonNull(identifier, "identifier cannot be null");
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
-    log.info("getUserById identifier:{}", identifier);
+    log.debug("getUserById identifier:{}", identifier);
 
     final Map<String, String> headers = getBaseHeaders();
 
