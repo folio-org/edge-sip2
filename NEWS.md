@@ -1,4 +1,4 @@
-## 3.3.0 2024-10-01
+## 3.3.0 2024-10-31
 * [SIP2-195](https://issues.folio.org/browse/SIP2-195): FolioResourceProvider is submitting expired access tokens to FOLIO
 * [SIP2-173](https://issues.folio.org/browse/SIP2-173): SIP2: extend checkin response with Patron identifier (AA)
 * [SIP2-202](https://issues.folio.org/browse/SIP2-202): Vert.x 4.5.7 fixing netty form POST OOM CVE-2024-29025
