@@ -1,3 +1,25 @@
+## 3.3.0 2024-10-31
+* [SIP2-195](https://issues.folio.org/browse/SIP2-195): FolioResourceProvider is submitting expired access tokens to FOLIO
+* [SIP2-173](https://issues.folio.org/browse/SIP2-173): SIP2: extend checkin response with Patron identifier (AA)
+* [SIP2-202](https://issues.folio.org/browse/SIP2-202): Vert.x 4.5.7 fixing netty form POST OOM CVE-2024-29025
+* [SIP2-200](https://issues.folio.org/browse/SIP2-200): Enhance WebClient TLS Configuration for Secure Connections to OKAPI
+* [SIP2-205](https://issues.folio.org/browse/SIP2-205): Issue with edge-sip2
+* [SIP2-208](https://issues.folio.org/browse/SIP2-208): \r missing from error response message
+* [SIP2-209](https://issues.folio.org/browse/SIP2-209): EdgeSip2IT for "mvn verify"
+* [SIP2-89](https://issues.folio.org/browse/SIP2-89): Implement patron PIN field instead of patron password field
+* [SIP2-212](https://issues.folio.org/browse/SIP2-212): wrong patron information response (64)
+* [SIP2-214](https://issues.folio.org/browse/SIP2-214): Disable host veryfing in FIPS mode
+* [SIP2-216](https://issues.folio.org/browse/SIP2-216): FeePaidHandlerTests test ends with FAILURE. Issue with locale
+* [SIP2-150](https://issues.folio.org/browse/SIP2-150): Add port with IP address CIDR as option for tenant identification in configuration
+* [SIP2-219](https://issues.folio.org/browse/SIP2-219): Add support for COP currency type
+* [SIP2-221](https://issues.folio.org/browse/SIP2-221): edge-sip2 returns "valid patron password" field in 64 message even with password validation turned off
+* [SIP2-223](https://issues.folio.org/browse/SIP2-223): SIP2: Invalid checkin response message when using reject on item status feature (SIP2-186)
+* [SIP2-222](https://issues.folio.org/browse/SIP2-222): SIP2 login issue - active session with an invalid password
+* [SIP2-225](https://issues.folio.org/browse/SIP2-225): SIP2: Invalid item information response (18) when item identifier is not found.
+* [SIP2-224](https://issues.folio.org/browse/SIP2-224): Clean up the login with cache code
+* [SIP2-226](https://issues.folio.org/browse/SIP2-226): Invalid Response for Patron Information due to holdItems array with null entry
+* [SIP2-233](https://issues.folio.org/browse/SIP2-233): Release: Ramsons - edge-sip2
+
 ## 3.2.7 2024-10-01
 * [SIP2-222](https://issues.folio.org/browse/SIP2-222): SIP2 login issue - active session with an invalid password
 
