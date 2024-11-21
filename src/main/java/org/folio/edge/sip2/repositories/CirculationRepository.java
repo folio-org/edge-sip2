@@ -684,8 +684,8 @@ public class CirculationRepository {
                 .map(v -> v.getString("dueDate"))
                 .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
                 .orElse(OffsetDateTime.now(clock));
-            final String instanceId = response
-                .map(v -> v.getJsonObject("item").getString("instanceId"))
+            final String itemTitle = response
+                .map(v -> v.getJsonObject("item").getString("title"))
                 .orElse("");
 
             return RenewResponse.builder()
@@ -695,7 +695,7 @@ public class CirculationRepository {
               .institutionId(institutionId)
               .patronIdentifier(patronIdentifier)
               .itemIdentifier(barcode)
-              .titleIdentifier(instanceId)
+              .titleIdentifier(itemTitle)
               .dueDate(dueDate)
               .screenMessage(Optional.of(resource.getErrorMessages())
                 .filter(v -> !v.isEmpty())
