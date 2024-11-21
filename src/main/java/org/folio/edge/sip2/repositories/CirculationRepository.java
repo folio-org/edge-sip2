@@ -647,17 +647,18 @@ public class CirculationRepository {
               institutionId,
               sessionData,
               true,
-              null));
+              null,
+              barcode));
         }
       })
       .compose(verification -> {
         if (FALSE.equals(verification.getPasswordVerified())) {
-          return Future.succeededFuture(
             buildFailedRenewResponse(
               institutionId,
               sessionData,
               false,
-              verification.getErrorMessages()));
+              verification.getErrorMessages(),
+              barcode);
         }
 
         final JsonObject body = new JsonObject()
@@ -711,21 +712,40 @@ public class CirculationRepository {
    * @param sessionData sessionData
    * @return renewResponse
    */
-  private RenewResponse buildFailedRenewResponse(
-      String institutionId,
-      SessionData sessionData,
-      boolean fromClientException,
-      List<String> errorMessage) {
-    return RenewResponse.builder()
-      .ok(FALSE)
-      .renewalOk(FALSE)
-      .transactionDate(OffsetDateTime.now(clock))
-      .institutionId(institutionId)
-      .screenMessage(fromClientException
-        ? Collections.singletonList(
-          sessionData.getLoginErrorMessage())
-        : errorMessage)
-      .build();
+  private Future<RenewResponse> buildFailedRenewResponse(
+    String institutionId,
+    SessionData sessionData,
+    boolean fromClientException,
+    List<String> errorMessage,
+    String barcode) {
+
+    // Retrieve the item and loan details asynchronously
+    return itemRepository.getItemAndLoanById(barcode, sessionData).compose(itemView -> {
+      OffsetDateTime dueDate = null;
+
+      if (itemView != null) {
+        JsonObject loan = itemView.getJsonObject("loan");
+
+        if (loan != null && !loan.isEmpty()) {
+          dueDate = OffsetDateTime.from(
+            Utils.getFolioDateTimeFormatter().parse(loan.getString("dueDate"))
+          );
+        }
+      }
+
+      // Build and return the RenewResponse object
+      RenewResponse response = RenewResponse.builder()
+        .ok(false)
+        .renewalOk(false)
+        .transactionDate(dueDate != null ? dueDate : OffsetDateTime.now(clock))
+        .institutionId(institutionId)
+        .screenMessage(fromClientException
+          ? Collections.singletonList(sessionData.getLoginErrorMessage())
+          : errorMessage)
+        .build();
+
+      return Future.succeededFuture(response);
+    });
   }
 
   RenewAllResponseBuilder doRenewals(JsonObject jo, RenewAllResponseBuilder builder) {

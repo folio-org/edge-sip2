@@ -212,6 +212,12 @@ public class ItemRepository {
     return getItem(itemInformationRequestData);
   }
 
+  public Future<JsonObject> getItemAndLoanById(String itemId, SessionData sessionData) {
+    ItemInformationRequestData itemInformationRequestData
+      = new ItemInformationRequestData(itemId, getBaseHeaders(), sessionData);
+    return getItemView(itemInformationRequestData);
+  }
+
   /**
    * Perform itemInformation command.
    *
@@ -334,6 +340,8 @@ public class ItemRepository {
             return Future.succeededFuture(viewJson);
           });
   }
+
+
 
   private Future<JsonObject> getItem(ItemInformationRequestData itemInformationRequestData) {
     return resourceProvider
