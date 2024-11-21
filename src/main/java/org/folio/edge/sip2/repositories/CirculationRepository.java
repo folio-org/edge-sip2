@@ -685,7 +685,7 @@ public class CirculationRepository {
                 .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
                 .orElse(OffsetDateTime.now(clock));
             final String itemTitle = response
-                .map(v -> v.getJsonObject("item").getString("title"))
+                .map(v -> v.getJsonObject("item").getString(TITLE))
                 .orElse("");
 
             return RenewResponse.builder()
