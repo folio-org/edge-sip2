@@ -661,11 +661,11 @@ public class CirculationRepository {
             final Boolean renewalOk = response.map(v -> !v.getJsonObject("item")
                 .isEmpty()).orElse(FALSE);
             final String itemTitle = response.map(v -> v.getJsonObject("item")
-                .getString("title")).orElse("");
+                .getString(TITLE)).orElse("");
 
             // Check if `dueDate` is present in the response
             OffsetDateTime dueDate = response
-                .map(v -> v.getJsonObject("item").getString("dueDate"))
+                .map(v -> v.getString("dueDate"))
                 .map(dateString -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter()
                   .parse(dateString)))
                 .orElse(null);

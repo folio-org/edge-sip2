@@ -503,17 +503,33 @@ class CirculationRepositoryTests {
         })));
   }
 
-  @Test
-  void canRenew(Vertx vertx,
-      VertxTestContext testContext,
-      @Mock IResourceProvider<IRequestData> mockFolioProvider,
-      @Mock PasswordVerifier mockPasswordVerifier,
-      @Mock ItemRepository itemRepository,
-      @Mock UsersRepository mockUsersRepository) {
+  static Stream<JsonObject> provideDueDateResponses() {
+    String dateStr = "2024-12-22T14:52:13.157228400+05:30";
+    OffsetDateTime nbDueDate = OffsetDateTime.parse(dateStr,
+        DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+    return Stream.of(
+      new JsonObject()  // Case with dueDate set to null
+        .put("item", new JsonObject().put("title", "Some book"))
+        .putNull("dueDate"),
+      new JsonObject()  // Case with dueDate set to nbDueDate
+        .put("item", new JsonObject().put("title", "Some book"))
+        .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+    );
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideDueDateResponses")
+  void canRenew(JsonObject response, Vertx vertx,
+                VertxTestContext testContext,
+                @Mock IResourceProvider<IRequestData> mockFolioProvider,
+                @Mock PasswordVerifier mockPasswordVerifier,
+                @Mock ItemRepository itemRepository,
+                @Mock UsersRepository mockUsersRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
     String dateStr = "2024-12-22T14:52:13.157228400+05:30";
-    DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
-    OffsetDateTime nbDueDate = OffsetDateTime.parse(dateStr, formatter);
+    OffsetDateTime nbDueDate = OffsetDateTime.parse(dateStr,
+        DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     final String patronIdentifier = "1029384756";
     final String itemIdentifier = "230317";
     final String title = "Some book";
@@ -530,19 +546,16 @@ class CirculationRepositoryTests {
         .feeAcknowledged(FALSE)
         .build();
 
-    final JsonObject response = new JsonObject()
-        .put("item", new JsonObject()
-        .put("title", title))
-        .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-
     when(mockFolioProvider.createResource(any()))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
-    when(itemRepository.getItemAndLoanById(anyString(), any()))
-        .thenReturn(Future.succeededFuture(new JsonObject().put("loan",
-          new JsonObject().put("dueDate", "2024-12-22T14:52:13.157228400+05:30"))));
+    if (response.getString("dueDate") == null) {
+      when(itemRepository.getItemAndLoanById(anyString(), any()))
+          .thenReturn(Future.succeededFuture(new JsonObject().put("loan",
+            new JsonObject().put("dueDate", "2024-12-22T14:52:13.157228400+05:30"))));
+    }
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -625,7 +638,7 @@ class CirculationRepositoryTests {
           assertEquals("diku", renewResponse.getInstitutionId());
           assertEquals(patronIdentifier, renewResponse.getPatronIdentifier());
           assertEquals(title, renewResponse.getTitleIdentifier());
-          assertEquals(null, renewResponse.getDueDate());
+          assertEquals(nbDueDate, renewResponse.getDueDate());
           assertNull(renewResponse.getFeeType());
           assertNull(renewResponse.getSecurityInhibit());
           assertNull(renewResponse.getCurrencyType());
