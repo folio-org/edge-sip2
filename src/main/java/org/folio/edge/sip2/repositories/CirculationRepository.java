@@ -52,6 +52,7 @@ public class CirculationRepository {
   private static final String UNKNOWN = "";
   public static final String TITLE_NOT_FOUND = "TITLE NOT FOUND";
   public static final String TITLE = "title";
+  public static final String DUE_DATE = "dueDate";
   public static final String ITEM_BARCODE = "itemBarcode";
   public static final String SERVICE_POINT_ID = "servicePointId";
   public static final String ITEM_ID = "itemId";
@@ -236,7 +237,7 @@ public class CirculationRepository {
             final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
 
             final OffsetDateTime dueDate = response
-                .map(v -> v.getString("dueDate"))
+                .map(v -> v.getString(DUE_DATE))
                 .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
                 .orElse(OffsetDateTime.now(clock));
 
@@ -665,7 +666,7 @@ public class CirculationRepository {
 
             // Check if `dueDate` is present in the response
             OffsetDateTime dueDate = response
-                .map(v -> v.getString("dueDate"))
+                .map(v -> v.getString(DUE_DATE))
                 .map(dateString -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter()
                   .parse(dateString)))
                 .orElse(null);
@@ -676,14 +677,12 @@ public class CirculationRepository {
 
             if (dueDate != null) {
               return Future.succeededFuture(buildRenewResponse(
-                true, renewalOk, dueDate, institutionId,
-                patronIdentifier, barcode, itemTitle, errorMessage));
+                true, renewalOk, dueDate, renew, itemTitle, errorMessage));
             }
 
             if (barcode == null) {
               return Future.succeededFuture(buildRenewResponse(
-                true, renewalOk, null, institutionId,
-                patronIdentifier, null, itemTitle, errorMessage));
+                true, renewalOk, null, renew, itemTitle, errorMessage));
             }
             return itemRepository.getItemAndLoanById(barcode, sessionData)
                 .otherwiseEmpty()
@@ -691,49 +690,46 @@ public class CirculationRepository {
                   OffsetDateTime fallbackDueDate = null;
                   if (itemView != null) {
                     JsonObject loan = itemView.getJsonObject("loan");
-                    if (loan != null && loan.containsKey("dueDate")) {
+                    if (loan != null && loan.containsKey(DUE_DATE)) {
                       fallbackDueDate = OffsetDateTime.from(
-                        Utils.getFolioDateTimeFormatter().parse(loan.getString("dueDate")));
+                        Utils.getFolioDateTimeFormatter().parse(loan.getString(DUE_DATE)));
                     }
                   }
                   return buildRenewResponse(
-                    true, renewalOk, fallbackDueDate, institutionId,
-                    patronIdentifier, barcode, itemTitle, errorMessage);
+                    true, renewalOk, fallbackDueDate, renew,
+                        itemTitle, errorMessage);
                 });
           });
 
       })
-      .recover(throwable -> {
+      .recover(throwable ->
         // Handle failures and return a fallback response
-        return Future.succeededFuture(buildFailedRenewResponse(
-          institutionId, sessionData, true, Collections.singletonList(throwable.getMessage())));
-      });
+        Future.succeededFuture(buildFailedRenewResponse(
+          institutionId, sessionData, true, Collections.singletonList(throwable.getMessage())))
+      );
   }
 
   /**
    * Build Success Renew Response.
-   * @param ok ok
-   * @param renewalOk renewed successful
-   * @param dueDate Due Date after renew
-   * @param institutionId institutionId
-   * @param patronIdentifier patronIdentifier
-   * @param itemIdentifier itemIdentifier
-   * @param titleIdentifier titleIdentifier
-   * @param errorMessages errorMessages
+   *
+   * @param ok              ok
+   * @param renewalOk       renewed successful
+   * @param dueDate         Due Date after renew
+   * @param itemTitle       itemTitle
+   * @param errorMessages   errorMessages
    * @return renewResponse
    */
-  private RenewResponse buildRenewResponse(Boolean ok, Boolean renewalOk, OffsetDateTime dueDate,
-                                           String institutionId, String patronIdentifier,
-                                           String itemIdentifier, String titleIdentifier,
-                                           List<String> errorMessages) {
+  private RenewResponse buildRenewResponse(Boolean ok, Boolean renewalOk,
+                                           OffsetDateTime dueDate, Renew renew,
+                                           String itemTitle, List<String> errorMessages) {
     return RenewResponse.builder()
       .ok(ok)
       .renewalOk(renewalOk)
       .transactionDate(OffsetDateTime.now(clock))
-      .institutionId(institutionId)
-      .patronIdentifier(patronIdentifier)
-      .itemIdentifier(itemIdentifier)
-      .titleIdentifier(titleIdentifier)
+      .institutionId(renew.getInstitutionId())
+      .patronIdentifier(renew.getPatronIdentifier())
+      .itemIdentifier(renew.getItemIdentifier())
+      .titleIdentifier(itemTitle)
       .dueDate(dueDate != null ? dueDate : null)
       .screenMessage(errorMessages)
       .build();
