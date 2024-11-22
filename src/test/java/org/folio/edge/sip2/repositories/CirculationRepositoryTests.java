@@ -558,7 +558,7 @@ class CirculationRepositoryTests {
           assertEquals("diku", renewResponse.getInstitutionId());
           assertEquals(patronIdentifier, renewResponse.getPatronIdentifier());
           assertEquals(itemIdentifier, renewResponse.getItemIdentifier());
-          assertEquals("", renewResponse.getTitleIdentifier());
+          assertEquals(title, renewResponse.getTitleIdentifier());
           assertEquals(nbDueDate, renewResponse.getDueDate());
           assertNull(renewResponse.getFeeType());
           assertNull(renewResponse.getSecurityInhibit());
