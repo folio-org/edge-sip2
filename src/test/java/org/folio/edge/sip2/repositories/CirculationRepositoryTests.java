@@ -615,7 +615,7 @@ class CirculationRepositoryTests {
     final JsonObject response = new JsonObject()
         .put("item", new JsonObject()
         .put("title", title))
-        .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        .put("dueDate", null);
 
     when(mockFolioProvider.createResource(any()))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
@@ -638,7 +638,7 @@ class CirculationRepositoryTests {
           assertEquals("diku", renewResponse.getInstitutionId());
           assertEquals(patronIdentifier, renewResponse.getPatronIdentifier());
           assertEquals(title, renewResponse.getTitleIdentifier());
-          assertEquals(nbDueDate, renewResponse.getDueDate());
+          assertEquals(null, renewResponse.getDueDate());
           assertNull(renewResponse.getFeeType());
           assertNull(renewResponse.getSecurityInhibit());
           assertNull(renewResponse.getCurrencyType());
