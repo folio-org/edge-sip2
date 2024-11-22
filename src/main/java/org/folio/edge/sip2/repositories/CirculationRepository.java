@@ -660,8 +660,8 @@ public class CirculationRepository {
             final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
             final Boolean renewalOk = response.map(v -> !v.getJsonObject("item")
                 .isEmpty()).orElse(FALSE);
-            final String instanceId = response.map(v -> v.getJsonObject("item")
-                .getString("instanceId")).orElse("");
+            final String itemTitle = response.map(v -> v.getJsonObject("item")
+                .getString("title")).orElse("");
 
             // Check if `dueDate` is present in the response
             OffsetDateTime dueDate = response
@@ -677,10 +677,14 @@ public class CirculationRepository {
             if (dueDate != null) {
               return Future.succeededFuture(buildRenewResponse(
                 true, renewalOk, dueDate, institutionId,
-                patronIdentifier, barcode, instanceId, errorMessage));
+                patronIdentifier, barcode, itemTitle, errorMessage));
             }
 
-            if (barcode != null) {
+            if (barcode == null) {
+              return Future.succeededFuture(buildRenewResponse(
+                true, renewalOk, null, institutionId,
+                patronIdentifier, null, itemTitle, errorMessage));
+            }
               return itemRepository.getItemAndLoanById(barcode, sessionData)
                 .otherwiseEmpty()
                 .map(itemView -> {
@@ -694,12 +698,8 @@ public class CirculationRepository {
                   }
                   return buildRenewResponse(
                     true, renewalOk, fallbackDueDate, institutionId,
-                    patronIdentifier, barcode, instanceId, errorMessage);
+                    patronIdentifier, barcode, itemTitle, errorMessage);
                 });
-            }
-            return Future.succeededFuture(buildRenewResponse(
-              true, renewalOk, null, institutionId,
-              patronIdentifier, null, instanceId, errorMessage));
           });
 
       })

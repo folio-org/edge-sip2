@@ -534,6 +534,7 @@ class CirculationRepositoryTests {
         .put("item", new JsonObject()
         .put("title", title))
         .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+
     when(mockFolioProvider.createResource(any()))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
@@ -623,7 +624,7 @@ class CirculationRepositoryTests {
           assertEquals(OffsetDateTime.now(clock), renewResponse.getTransactionDate());
           assertEquals("diku", renewResponse.getInstitutionId());
           assertEquals(patronIdentifier, renewResponse.getPatronIdentifier());
-          assertEquals("", renewResponse.getTitleIdentifier());
+          assertEquals(title, renewResponse.getTitleIdentifier());
           assertEquals(null, renewResponse.getDueDate());
           assertNull(renewResponse.getFeeType());
           assertNull(renewResponse.getSecurityInhibit());
