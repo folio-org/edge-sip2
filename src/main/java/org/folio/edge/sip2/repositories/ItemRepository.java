@@ -212,9 +212,15 @@ public class ItemRepository {
     return getItem(itemInformationRequestData);
   }
 
+  /** Get the Item and Loan Json by id.
+   *
+   * @param itemId The ID of the FOLIO item
+   * @param sessionData Our current session
+   * @return The FOLIO Item JSON
+   */
   public Future<JsonObject> getItemAndLoanById(String itemId, SessionData sessionData) {
     ItemInformationRequestData itemInformationRequestData
-      = new ItemInformationRequestData(itemId, getBaseHeaders(), sessionData);
+        = new ItemInformationRequestData(itemId, getBaseHeaders(), sessionData);
     return getItemView(itemInformationRequestData);
   }
 
@@ -320,7 +326,7 @@ public class ItemRepository {
                         instanceJson.mergeIn(instanceResult);
                         return getLoan(loanRequestData)
                           .compose(loanResult -> {
-                            log.debug("LoanResult: {}", () -> loanResult);
+                            log.info("LoanResult: {}", () -> loanResult);
                             loanJson.mergeIn(loanResult);
                             return Future.succeededFuture(loanResult);
                           });
