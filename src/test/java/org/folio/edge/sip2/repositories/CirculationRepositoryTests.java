@@ -511,9 +511,11 @@ class CirculationRepositoryTests {
       @Mock ItemRepository itemRepository,
       @Mock UsersRepository mockUsersRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
-    final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
+    String dateStr = "2024-12-22T14:52:13.157228400+05:30";
+    DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+    OffsetDateTime nbDueDate = OffsetDateTime.parse(dateStr, formatter);
     final String patronIdentifier = "1029384756";
-    final String itemIdentifier = "1234567890";
+    final String itemIdentifier = "230317";
     final String title = "Some book";
     final Renew renew = Renew.builder()
         .noBlock(FALSE)
@@ -537,6 +539,9 @@ class CirculationRepositoryTests {
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
+    when(itemRepository.getItemAndLoanById(anyString(), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject().put("loan",
+          new JsonObject().put("dueDate", "2024-12-22T14:52:13.157228400+05:30"))));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -577,9 +582,10 @@ class CirculationRepositoryTests {
       @Mock ItemRepository itemRepository,
       @Mock UsersRepository mockUsersRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
-    final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
+    String dateStr = "2024-12-22T14:52:13.157228400+05:30";
+    DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+    OffsetDateTime nbDueDate = OffsetDateTime.parse(dateStr, formatter);
     final String patronIdentifier = "1029384756";
-    final String itemIdentifier = "1234567890";
     final String title = "Some book";
     final Renew renew = Renew.builder()
         .noBlock(FALSE)
@@ -598,17 +604,22 @@ class CirculationRepositoryTests {
         .put("item", new JsonObject()
         .put("title", title))
         .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+
     when(mockFolioProvider.createResource(any()))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
+    when(itemRepository.getItemAndLoanById(anyString(), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject().put("loan",
+          new JsonObject().put("dueDate", "2024-12-22T14:52:13.157228400+05:30"))));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, itemRepository,
         mockUsersRepository, clock);
+
     circulationRepository.performRenewCommand(renew, sessionData).onComplete(
         testContext.succeeding(renewResponse -> testContext.verify(() -> {
           assertNotNull(renewResponse);

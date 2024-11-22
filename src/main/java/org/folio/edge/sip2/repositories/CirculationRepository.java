@@ -636,7 +636,9 @@ public class CirculationRepository {
     final String institutionId = renew.getInstitutionId();
     final String patronIdentifier = renew.getPatronIdentifier();
     final String patronPassword = renew.getPatronPassword();
-    final String barcode = renew.getItemIdentifier();
+    final String barcode = renew.getItemIdentifier() != null
+        ? renew.getItemIdentifier() : renew.getTitleIdentifier();
+    // TODO - Renew by title is not supported as of yet.
 
     return verifyPinOrPassword(patronIdentifier, patronPassword, sessionData)
       .compose(verification -> {
@@ -671,8 +673,8 @@ public class CirculationRepository {
                 .orElse(null);
 
             var errorMessage = Optional.of(resource.getErrorMessages())
-              .filter(v -> !v.isEmpty())
-              .orElse(null);
+                .filter(v -> !v.isEmpty())
+                .orElse(null);
 
             if (dueDate != null) {
               return Future.succeededFuture(buildRenewResponse(

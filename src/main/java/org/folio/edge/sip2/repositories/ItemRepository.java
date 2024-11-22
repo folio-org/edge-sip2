@@ -326,7 +326,7 @@ public class ItemRepository {
                         instanceJson.mergeIn(instanceResult);
                         return getLoan(loanRequestData)
                           .compose(loanResult -> {
-                            log.info("LoanResult: {}", () -> loanResult);
+                            log.debug("LoanResult: {}", () -> loanResult);
                             loanJson.mergeIn(loanResult);
                             return Future.succeededFuture(loanResult);
                           });
