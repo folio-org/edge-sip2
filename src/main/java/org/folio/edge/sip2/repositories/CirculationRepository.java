@@ -724,7 +724,7 @@ public class CirculationRepository {
       .patronIdentifier(patronIdentifier)
       .itemIdentifier(itemIdentifier)
       .titleIdentifier(titleIdentifier)
-      .dueDate(dueDate)
+      .dueDate(dueDate != null ? dueDate : null)
       .screenMessage(errorMessages)
       .build();
   }
