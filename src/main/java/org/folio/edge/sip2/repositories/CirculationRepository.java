@@ -670,10 +670,14 @@ public class CirculationRepository {
                   .parse(dateString)))
                 .orElse(null);
 
+            var errorMessage = Optional.of(resource.getErrorMessages())
+              .filter(v -> !v.isEmpty())
+              .orElse(null);
+
             if (dueDate != null) {
               return Future.succeededFuture(buildRenewResponse(
                 true, renewalOk, dueDate, institutionId,
-                patronIdentifier, barcode, instanceId, null));
+                patronIdentifier, barcode, instanceId, errorMessage));
             }
 
             return itemRepository.getItemAndLoanById(barcode, sessionData)
@@ -689,7 +693,7 @@ public class CirculationRepository {
                 }
                 return buildRenewResponse(
                   true, renewalOk, fallbackDueDate, institutionId,
-                  patronIdentifier, barcode, instanceId, null);
+                  patronIdentifier, barcode, instanceId, errorMessage);
               });
           });
       })
