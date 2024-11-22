@@ -680,7 +680,7 @@ public class CirculationRepository {
                 patronIdentifier, barcode, instanceId, errorMessage));
             }
 
-            if(barcode != null) {
+            if (barcode != null) {
               return itemRepository.getItemAndLoanById(barcode, sessionData)
                 .otherwiseEmpty()
                 .map(itemView -> {
