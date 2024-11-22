@@ -616,7 +616,6 @@ class CirculationRepositoryTests {
         .put("item", new JsonObject()
         .put("title", title))
         .put("dueDate", null);
-
     when(mockFolioProvider.createResource(any()))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
@@ -627,7 +626,6 @@ class CirculationRepositoryTests {
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, itemRepository,
         mockUsersRepository, clock);
-
     circulationRepository.performRenewCommand(renew, sessionData).onComplete(
         testContext.succeeding(renewResponse -> testContext.verify(() -> {
           assertNotNull(renewResponse);

@@ -347,8 +347,6 @@ public class ItemRepository {
           });
   }
 
-
-
   private Future<JsonObject> getItem(ItemInformationRequestData itemInformationRequestData) {
     return resourceProvider
       .retrieveResource(itemInformationRequestData)
