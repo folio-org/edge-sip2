@@ -582,9 +582,7 @@ class CirculationRepositoryTests {
       @Mock ItemRepository itemRepository,
       @Mock UsersRepository mockUsersRepository) {
     final Clock clock = TestUtils.getUtcFixedClock();
-    String dateStr = "2024-12-22T14:52:13.157228400+05:30";
-    DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
-    OffsetDateTime nbDueDate = OffsetDateTime.parse(dateStr, formatter);
+    final OffsetDateTime nbDueDate = OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
     final String title = "Some book";
     final Renew renew = Renew.builder()
@@ -610,10 +608,6 @@ class CirculationRepositoryTests {
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
     when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
-    when(itemRepository.getItemAndLoanById(anyString(), any()))
-        .thenReturn(Future.succeededFuture(new JsonObject().put("loan",
-          new JsonObject().put("dueDate", "2024-12-22T14:52:13.157228400+05:30"))));
-
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final CirculationRepository circulationRepository = new CirculationRepository(
@@ -630,7 +624,7 @@ class CirculationRepositoryTests {
           assertEquals("diku", renewResponse.getInstitutionId());
           assertEquals(patronIdentifier, renewResponse.getPatronIdentifier());
           assertEquals("", renewResponse.getTitleIdentifier());
-          assertEquals(nbDueDate, renewResponse.getDueDate());
+          assertEquals(null, renewResponse.getDueDate());
           assertNull(renewResponse.getFeeType());
           assertNull(renewResponse.getSecurityInhibit());
           assertNull(renewResponse.getCurrencyType());

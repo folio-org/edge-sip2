@@ -636,9 +636,7 @@ public class CirculationRepository {
     final String institutionId = renew.getInstitutionId();
     final String patronIdentifier = renew.getPatronIdentifier();
     final String patronPassword = renew.getPatronPassword();
-    final String barcode = renew.getItemIdentifier() != null
-        ? renew.getItemIdentifier() : renew.getTitleIdentifier();
-    // TODO - Renew by title is not supported as of yet.
+    final String barcode = renew.getItemIdentifier();
 
     return verifyPinOrPassword(patronIdentifier, patronPassword, sessionData)
       .compose(verification -> {
@@ -682,22 +680,28 @@ public class CirculationRepository {
                 patronIdentifier, barcode, instanceId, errorMessage));
             }
 
-            return itemRepository.getItemAndLoanById(barcode, sessionData)
-              .otherwiseEmpty()
-              .map(itemView -> {
-                OffsetDateTime fallbackDueDate = null;
-                if (itemView != null) {
-                  JsonObject loan = itemView.getJsonObject("loan");
-                  if (loan != null && loan.containsKey("dueDate")) {
-                    fallbackDueDate = OffsetDateTime.from(
-                      Utils.getFolioDateTimeFormatter().parse(loan.getString("dueDate")));
+            if(barcode != null) {
+              return itemRepository.getItemAndLoanById(barcode, sessionData)
+                .otherwiseEmpty()
+                .map(itemView -> {
+                  OffsetDateTime fallbackDueDate = null;
+                  if (itemView != null) {
+                    JsonObject loan = itemView.getJsonObject("loan");
+                    if (loan != null && loan.containsKey("dueDate")) {
+                      fallbackDueDate = OffsetDateTime.from(
+                        Utils.getFolioDateTimeFormatter().parse(loan.getString("dueDate")));
+                    }
                   }
-                }
-                return buildRenewResponse(
-                  true, renewalOk, fallbackDueDate, institutionId,
-                  patronIdentifier, barcode, instanceId, errorMessage);
-              });
+                  return buildRenewResponse(
+                    true, renewalOk, fallbackDueDate, institutionId,
+                    patronIdentifier, barcode, instanceId, errorMessage);
+                });
+            }
+            return Future.succeededFuture(buildRenewResponse(
+              true, renewalOk, null, institutionId,
+              patronIdentifier, null, instanceId, errorMessage));
           });
+
       })
       .recover(throwable -> {
         // Handle failures and return a fallback response
