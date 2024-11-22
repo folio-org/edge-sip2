@@ -685,7 +685,7 @@ public class CirculationRepository {
                 true, renewalOk, null, institutionId,
                 patronIdentifier, null, itemTitle, errorMessage));
             }
-              return itemRepository.getItemAndLoanById(barcode, sessionData)
+            return itemRepository.getItemAndLoanById(barcode, sessionData)
                 .otherwiseEmpty()
                 .map(itemView -> {
                   OffsetDateTime fallbackDueDate = null;
