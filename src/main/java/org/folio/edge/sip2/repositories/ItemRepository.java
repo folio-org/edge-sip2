@@ -213,6 +213,18 @@ public class ItemRepository {
     return getItem(itemInformationRequestData);
   }
 
+  /** Get the Item and Loan Json by id.
+   *
+   * @param itemId The ID of the FOLIO item
+   * @param sessionData Our current session
+   * @return The FOLIO Item JSON
+   */
+  public Future<JsonObject> getItemAndLoanById(String itemId, SessionData sessionData) {
+    ItemInformationRequestData itemInformationRequestData
+        = new ItemInformationRequestData(itemId, getBaseHeaders(), sessionData);
+    return getItemView(itemInformationRequestData);
+  }
+
   /**
    * Perform itemInformation command.
    *
