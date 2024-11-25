@@ -30,5 +30,7 @@ public enum CurrencyType {
   /** Australian Dollar. */
   AUD,
   /** Colombian Peso. */
-  COP
+  COP,
+  /** South African rand. **/
+  ZAR
 }
