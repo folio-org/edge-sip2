@@ -508,13 +508,8 @@ public class MainVerticle extends AbstractVerticle {
 
       sb.append("AZ");
 
-      final byte [] bytes = sb.toString().getBytes(Charset.forName(sessionData.getCharset()));
-      int checksum = 0;
-      for (final byte b : bytes) {
-        checksum += b & 0xff;
-      }
+      int checksum = getChecksum(sb.toString(), Charset.forName(sessionData.getCharset()));
 
-      checksum = -checksum & 0xffff;
       sb.append(String.format("%04X", checksum)).append(messageDelimiter);
 
       result = sb.toString();
@@ -523,6 +518,17 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     return result;
+  }
+
+  protected int getChecksum(String message, Charset charset) {
+    log.debug("Calculating checksum for {} using charset {}", message, charset);
+    final byte[] bytes = message.getBytes(charset);
+    int checksum = 0;
+    for (final byte b : bytes) {
+      checksum += b & 0xff;
+    }
+    checksum = -checksum & 0xffff;
+    return checksum;
   }
 
   /**
