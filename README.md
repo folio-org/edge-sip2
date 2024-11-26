@@ -290,7 +290,7 @@ All permission associated with edge-sip2
     accounts.item.get
     users.collection.get
     users.item.get
-    automated-patron-blocks.collection.get
+    patron-blocks.automated-patron-blocks.collection.get
     inventory.items.collection.get
     circulation.renew-by-barcode.post
     usergroups.collection.get
