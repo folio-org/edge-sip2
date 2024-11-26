@@ -346,9 +346,6 @@ class CirculationRepositoryTests {
                 .put("name", "Annex"))
         );
 
-
-
-
     when(mockItemRepository.getItemById(anyString(), any()))
         .thenReturn(Future.succeededFuture(
           new JsonObject().put("status", new JsonObject().put("name", "Withdrawn"))));
@@ -372,6 +369,50 @@ class CirculationRepositoryTests {
         })));
   }
 
+  @Test
+  void cannotCheckinDueToNonexistingItem(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository mockItemRepository,
+      @Mock UsersRepository mockUsersRepository) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final OffsetDateTime returnDate = OffsetDateTime.now();
+    final String currentLocation = UUID.randomUUID().toString();
+    final String itemIdentifier = "1234567890";
+    final String titleIdentifier = "Some Cool Book";
+    final String callNumber = "9983235487258";
+    final Checkin checkin = Checkin.builder()
+        .noBlock(FALSE)
+        .transactionDate(OffsetDateTime.now())
+        .returnDate(returnDate)
+        .currentLocation(currentLocation)
+        .institutionId("diku")
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .itemProperties("Some property of this item")
+        .cancel(FALSE)
+        .build();
+
+    when(mockItemRepository.getItemById(anyString(), any()))
+        .thenReturn(Future.succeededFuture(null));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    final CirculationRepository circulationRepository = new CirculationRepository(
+        mockFolioProvider, mockPasswordVerifier, mockItemRepository,
+        mockUsersRepository, clock);
+    circulationRepository.performCheckinCommand(checkin, sessionData).onComplete(
+        testContext.succeeding(checkinResponse -> testContext.verify(() -> {
+          assertNotNull(checkinResponse);
+          assertFalse(checkinResponse.getOk());
+          assertEquals("Item with identifier '" + itemIdentifier + "' not found",
+              checkinResponse.getScreenMessage().get(0));
+
+          testContext.completeNow();
+        })));
+  }
+  
   @Test
   void canCheckout(Vertx vertx,
       VertxTestContext testContext,
