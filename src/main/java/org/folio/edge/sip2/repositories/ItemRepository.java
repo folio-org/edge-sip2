@@ -3,6 +3,9 @@ package org.folio.edge.sip2.repositories;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.Collections;
@@ -62,7 +65,8 @@ public class ItemRepository {
     }
 
     public String getPath() {
-      return "/inventory/items?limit=1&query=barcode==" + itemIdentifier;
+      String encodedBarcode = URLEncoder.encode(itemIdentifier, StandardCharsets.UTF_8);
+      return "/inventory/items?limit=1&query=barcode==" + encodedBarcode;
     }
 
     @Override
