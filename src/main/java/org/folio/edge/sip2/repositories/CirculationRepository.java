@@ -200,56 +200,70 @@ public class CirculationRepository {
    * @param checkout the checkout domain object
    * @return the checkout response domain object
    */
-  public Future<CheckoutResponse> performCheckoutCommand(Checkout checkout,
-                                                         SessionData sessionData) {
-    log.debug("performCheckoutCommand checkout:{} sessionData:{}",checkout,sessionData);
+  public Future<CheckoutResponse> performCheckoutCommand(Checkout checkout, SessionData sessionData) {
+    log.debug("performCheckoutCommand checkout:{} sessionData:{}", checkout, sessionData);
     final String institutionId = checkout.getInstitutionId();
     final String patronIdentifier = checkout.getPatronIdentifier();
     final String itemIdentifier = checkout.getItemIdentifier();
     final String patronPassword = checkout.getPatronPassword();
 
+    log.info("Starting checkout process for patron: {} with item: {} at institution: {}", patronIdentifier, itemIdentifier, institutionId);
+
     return verifyPinOrPassword(patronIdentifier, patronPassword, sessionData)
       .onFailure(throwable -> {
         if (throwable instanceof ClientException) {
+          log.error("Error verifying patron password for patron: {}", patronIdentifier, throwable);
           sessionData.setErrorResponseMessage(
-              buildFailedCheckoutResponse(institutionId,
+            buildFailedCheckoutResponse(institutionId,
               patronIdentifier, itemIdentifier, sessionData,
               true, null));
         }
       })
       .compose(verification -> {
-        log.info("performCheckoutCommand verification:{}",verification);
+        log.info("Verification result for patron: {}: {}", patronIdentifier, verification);
+
         if (FALSE.equals(verification.getPasswordVerified())) {
+          log.info("Password verification failed for patron: {}", patronIdentifier);
           return Future.succeededFuture(
             buildFailedCheckoutResponse(institutionId,
-            patronIdentifier, itemIdentifier, sessionData,
+              patronIdentifier, itemIdentifier, sessionData,
               false, verification.getErrorMessages()));
         }
 
         final User user = verification.getUser();
+        log.info("User verified: {}", user != null ? user.getBarcode() : patronIdentifier);
+
         final JsonObject body = new JsonObject()
-            .put(ITEM_BARCODE, itemIdentifier)
-            .put("userBarcode", user != null ? user.getBarcode() : patronIdentifier)
-            .put(SERVICE_POINT_ID, sessionData.getScLocation());
+          .put(ITEM_BARCODE, itemIdentifier)
+          .put("userBarcode", user != null ? user.getBarcode() : patronIdentifier)
+          .put(SERVICE_POINT_ID, sessionData.getScLocation());
+
+        log.info("Checkout request body created: {}", body.encodePrettily());
 
         final Map<String, String> headers = getBaseHeaders();
-
         final CheckoutRequestData checkoutRequestData =
-            new CheckoutRequestData(body, headers, sessionData);
+          new CheckoutRequestData(body, headers, sessionData);
+
+        log.info("Sending checkout request to resource provider with body: {}", checkoutRequestData);
 
         final Future<IResource> result = resourceProvider.createResource(checkoutRequestData);
 
         return result
           .otherwise(Utils::handleErrors)
-          .compose(res -> addTitleIfNotFound(sessionData, itemIdentifier, res))
+          .compose(res -> {
+            log.info("Resource created, processing result for item: {}", itemIdentifier);
+            return addTitleIfNotFound(sessionData, itemIdentifier, res);
+          })
           .map(resource -> {
-            log.debug("performCheckoutCommand resource:{}",resource.getResource());
+            log.debug("performCheckoutCommand resource:{}", resource.getResource());
             final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
 
             final OffsetDateTime dueDate = response
-                .map(v -> v.getString(DUE_DATE))
-                .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
-                .orElse(OffsetDateTime.now(clock));
+              .map(v -> v.getString(DUE_DATE))
+              .map(v -> OffsetDateTime.from(Utils.getFolioDateTimeFormatter().parse(v)))
+              .orElse(OffsetDateTime.now(clock));
+
+            log.info("Checkout due date for item {}: {}", itemIdentifier, dueDate);
 
             return CheckoutResponse.builder()
               .ok(Boolean.valueOf(response.isPresent()))
@@ -271,6 +285,7 @@ public class CirculationRepository {
           });
       });
   }
+
 
   private CheckoutResponse buildFailedCheckoutResponse(String institutionId,
                                                        String patronIdentifier,
