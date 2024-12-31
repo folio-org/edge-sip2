@@ -908,11 +908,11 @@ public class CirculationRepository {
 
     @Override
     public String getPath() {
-      String quotedBarcode = "\"" + itemBarcode + "\"";
-      return "/search/instances?limit=1&query=" +
-        "(items.barcode==" +
-        quotedBarcode + ")";
+      String encodedBarcode = URLEncoder.encode(itemBarcode, StandardCharsets.UTF_8);
+      String quotedBarcode = "%22" + encodedBarcode + "%22"; // Add URL-encoded double quotes
+      return "/search/instances?limit=1&query=(items.barcode==" + quotedBarcode + ")";
     }
+
 
   }
 
