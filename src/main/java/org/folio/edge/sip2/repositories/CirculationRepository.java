@@ -908,12 +908,12 @@ public class CirculationRepository {
 
     @Override
     public String getPath() {
-      String encodedItemBarcode = URLEncoder.encode(itemBarcode, StandardCharsets.UTF_8);
+      String quotedBarcode = "\"" + itemBarcode + "\"";
       return "/search/instances?limit=1&query=" +
-        "(item.barcode" +
-        "==" +
-        encodedItemBarcode + ")";
+        "(items.barcode==" +
+        quotedBarcode + ")";
     }
+
   }
 
   private abstract class SearchRequestData implements IRequestData {
