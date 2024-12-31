@@ -8,6 +8,10 @@ import static org.folio.edge.sip2.utils.JsonUtils.getSubChildString;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -904,13 +908,11 @@ public class CirculationRepository {
 
     @Override
     public String getPath() {
-
-      final StringBuilder qSb = new StringBuilder()
-          .append("/search/instances?limit=1&query=")
-          .append("(items.barcode")
-          .append("==")
-          .append(itemBarcode).append(")");
-      return qSb.toString();
+      String encodedItemBarcode = URLEncoder.encode(itemBarcode, StandardCharsets.UTF_8);
+      return "/search/instances?limit=1&query=" +
+        "(items.barcode" +
+        "==" +
+        encodedItemBarcode + ")";
     }
   }
 
