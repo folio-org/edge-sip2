@@ -910,7 +910,7 @@ public class CirculationRepository {
     public String getPath() {
       String encodedItemBarcode = URLEncoder.encode(itemBarcode, StandardCharsets.UTF_8);
       return "/search/instances?limit=1&query=" +
-        "(items.barcode" +
+        "(item.barcode" +
         "==" +
         encodedItemBarcode + ")";
     }
