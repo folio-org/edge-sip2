@@ -56,7 +56,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
   @Override
   public Future<IResource> retrieveResource(IRequestData requestData) {
-    log.info("retrieve resource {}", requestData::getPath);
+    log.debug("retrieve resource {}", requestData::getPath);
 
     final HttpRequest<Buffer> request =
         client.getAbs(okapiUrl + requestData.getPath());
@@ -137,7 +137,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
   @Override
   public Future<IResource> createResource(IRequestData requestData) {
-    log.info("Create resource {}, body: {}",
+    log.debug("Create resource {}, body: {}",
         requestData::getPath,
         () -> requestData.getBody().encodePrettily());
 
