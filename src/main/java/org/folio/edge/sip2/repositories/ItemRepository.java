@@ -66,7 +66,8 @@ public class ItemRepository {
 
     public String getPath() {
       String encodedBarcode = URLEncoder.encode(itemIdentifier, StandardCharsets.UTF_8);
-      return "/inventory/items?limit=1&query=barcode==" + encodedBarcode;
+      String quotedBarcode = "%22" + encodedBarcode + "%22";
+      return "/inventory/items?limit=1&query=barcode==" + quotedBarcode;
     }
 
     @Override
