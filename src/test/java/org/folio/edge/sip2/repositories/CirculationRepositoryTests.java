@@ -412,7 +412,7 @@ class CirculationRepositoryTests {
           testContext.completeNow();
         })));
   }
-  
+
   @Test
   void canCheckout(Vertx vertx,
       VertxTestContext testContext,
@@ -1171,13 +1171,17 @@ class CirculationRepositoryTests {
           .put("contributors", new JsonArray().add(new JsonObject().put("name","Fielding,Helen")))))
         .put("totalRecords", 1);
 
-    final String expectedPath = "/search/instances?limit=1&query=(items.barcode==453987605438)";
+    final String expectedPath = "/search/instances?limit=1&query=(items.barcode==%22453987605438%22)";
 
     when(mockFolioProvider.retrieveResource(
-        argThat((IRequestData data) -> data.getPath().equals(expectedPath)
-          && data.getHeaders().get("accept").equals("application/json"))))
-        .thenReturn(Future.succeededFuture(new FolioResource(response,
+      argThat((IRequestData data) -> {
+        System.out.println("Path: " + data.getPath());
+        return data.getPath().equals(expectedPath)
+          && data.getHeaders().get("accept").equals("application/json");
+      })))
+      .thenReturn(Future.succeededFuture(new FolioResource(response,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
 
     when(mockFolioProvider.createResource(any()))
         .thenReturn(Future.failedFuture(new FolioRequestThrowable(errorMessage)));
