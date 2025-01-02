@@ -253,14 +253,6 @@
     </repository>
   </repositories>
 
-  <pluginRepositories>
-    <pluginRepository>
-      <id>folio-nexus</id>
-      <name>FOLIO Maven repository</name>
-      <url>https://repository.folio.org/repository/maven-folio</url>
-    </pluginRepository>
-  </pluginRepositories>
-
   <profiles>
     <profile>
       <id>metrics-prometheus</id>
