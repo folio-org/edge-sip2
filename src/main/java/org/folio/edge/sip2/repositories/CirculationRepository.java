@@ -8,8 +8,6 @@ import static org.folio.edge.sip2.utils.JsonUtils.getSubChildString;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
