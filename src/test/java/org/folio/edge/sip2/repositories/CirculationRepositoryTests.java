@@ -1172,7 +1172,7 @@ class CirculationRepositoryTests {
         .put("totalRecords", 1);
 
     final String expectedPath = "/search/instances?limit=1&query="
-        + "(items.barcode==%22453987605438%2F93%22)";
+        + "items.barcode%3D%3D%22453987605438%2F93%22";
 
     when(mockFolioProvider.retrieveResource(
         argThat((IRequestData data) -> data.getPath().equals(expectedPath)

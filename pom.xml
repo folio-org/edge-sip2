@@ -47,6 +47,7 @@
     <micrometer.version>1.12.4</micrometer.version>
     <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
     <java.version>17</java.version>
+    <raml-module-builder-version>35.3.0</raml-module-builder-version>
   </properties>
 
   <dependencyManagement>
@@ -170,6 +171,11 @@
       <artifactId>okapi-common</artifactId>
       <version>6.0.3</version>
     </dependency>
+    <dependency>
+        <groupId>org.folio</groupId>
+        <artifactId>util</artifactId>
+        <version>${raml-module-builder-version}</version>
+    </dependency>
 
     <!-- Test dependencies -->
     <dependency>
@@ -246,6 +252,14 @@
       <url>https://repository.folio.org/repository/maven-folio</url>
     </repository>
   </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>folio-nexus</id>
+      <name>FOLIO Maven repository</name>
+      <url>https://repository.folio.org/repository/maven-folio</url>
+    </pluginRepository>
+  </pluginRepositories>
 
   <profiles>
     <profile>
