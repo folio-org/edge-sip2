@@ -47,6 +47,7 @@
     <micrometer.version>1.9.4</micrometer.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
     <java.version>17</java.version>
+    <raml-module-builder-version>35.3.0</raml-module-builder-version>
   </properties>
 
   <dependencyManagement>
@@ -169,6 +170,11 @@
       <groupId>org.folio.okapi</groupId>
       <artifactId>okapi-common</artifactId>
       <version>5.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>org.folio</groupId>
+        <artifactId>util</artifactId>
+        <version>${raml-module-builder-version}</version>
     </dependency>
 
     <!-- Test dependencies -->
