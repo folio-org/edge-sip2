@@ -38,6 +38,8 @@ import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
+import org.folio.util.PercentCodec;
+import org.folio.util.StringUtil;
 
 /**
  * Provides interaction with the circulation service.
@@ -879,14 +881,11 @@ public class CirculationRepository {
 
     @Override
     public String getPath() {
-
-      final StringBuilder qSb = new StringBuilder()
-          .append("/search/instances?limit=1&query=")
-          .append("(items.barcode")
-          .append("==")
-          .append(itemBarcode).append(")");
-      return qSb.toString();
+      StringBuilder query = new StringBuilder("items.barcode==");
+      StringUtil.appendCqlEncoded(query, itemBarcode);
+      return "/search/instances?limit=1&query=" + PercentCodec.encode(query.toString());
     }
+
   }
 
   private abstract class SearchRequestData implements IRequestData {
