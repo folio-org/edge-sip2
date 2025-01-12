@@ -98,6 +98,10 @@
   <dependencies>
     <!-- Application dependencies -->
     <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec-haproxy</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
     </dependency>
