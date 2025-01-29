@@ -1,8 +1,6 @@
 package org.folio.edge.sip2.utils;
 
 import io.vertx.core.json.JsonObject;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -11,9 +9,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.folio.edge.sip2.repositories.CirculationRepository;
 import org.folio.edge.sip2.repositories.IResource;
 import org.folio.edge.sip2.repositories.RequestThrowable;
+import org.folio.util.StringUtil;
 
 /**
  * Utils for the repository implementations.
@@ -22,6 +20,8 @@ import org.folio.edge.sip2.repositories.RequestThrowable;
  *
  */
 public final class Utils {
+  public static final String TITLE_NOT_FOUND = "TITLE NOT FOUND";
+
   private Utils() {
     super();
   }
@@ -86,7 +86,7 @@ public final class Utils {
    * @param queryStringParameters an ordered list of query string parameters to parse
    * @param delimiter e.g. "&"|" AND "; spaces included if that's how it's supposed to be formatted
    * @param operator e.g. "=" | "==" | "<" | ">""
-   * @return parsed query string: e.g, "module==edge-sip2 AND configName==acsTenantConfig"
+   * @return parsed query string: e.g, {@code module=="edge-sip2" AND configName=="acsTenantConfig"}
    */
   public static String buildQueryString(Map<String,String> queryStringParameters,
                                         String delimiter,
@@ -100,15 +100,11 @@ public final class Utils {
         stringBuilder.append(firstParamEmpty ? "" : delimiter)
                      .append(entry.getKey())
                      .append(operator)
-                     .append(entry.getValue());
+                     .append(StringUtil.cqlEncode(entry.getValue()));
         firstParamEmpty = false;
       }
     }
     return stringBuilder.toString();
-  }
-
-  public static String encode(String url) {
-    return URLEncoder.encode(url, StandardCharsets.UTF_8);
   }
 
   /**
@@ -126,7 +122,7 @@ public final class Utils {
 
       @Override
       public String getTitle() {
-        return CirculationRepository.TITLE_NOT_FOUND;
+        return TITLE_NOT_FOUND;
       }
 
       @Override
