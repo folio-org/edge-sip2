@@ -122,7 +122,7 @@ public class MainVerticle extends AbstractVerticle {
     for (int port : portList) {
       NetServerOptions options = new NetServerOptions(
             config().getJsonObject("netServerOptions", new JsonObject()))
-            .setPort(port);
+            .setPort(port).setUseProxyProtocol(true);
 
       NetServer server = vertx.createNetServer(options);
       servers.add(server);
