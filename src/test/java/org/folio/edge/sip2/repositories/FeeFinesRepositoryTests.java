@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.repositories;
 
 import static org.folio.edge.sip2.api.support.TestUtils.getJsonFromFile;
+import static org.folio.util.PercentCodec.encode;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -26,6 +27,7 @@ import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.folio.edge.sip2.api.support.TestUtils;
@@ -33,7 +35,7 @@ import org.folio.edge.sip2.domain.messages.requests.FeePaid;
 import org.folio.edge.sip2.repositories.domain.ExtendedUser;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
-import org.folio.edge.sip2.utils.Utils;
+import org.folio.util.PercentCodec;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -100,17 +102,17 @@ class FeeFinesRepositoryTests {
 
     assertEquals(sessionData, fpaRequestData.getSessionData());
     assertEquals(headers, fpaRequestData.getHeaders());
-    assertTrue(fpaRequestData.getPath().contains(Utils.encode("and id")));
+    assertTrue(fpaRequestData.getPath().contains(encode("and id")));
 
     FeeFinesRepository.FeePaymentAccountsRequestData fpaRequestData2 =
         new FeeFinesRepository.FeePaymentAccountsRequestData(
             userId, headers, "", sessionData);
-    assertFalse(fpaRequestData2.getPath().contains(Utils.encode("and id")));
+    assertFalse(fpaRequestData2.getPath().contains(encode("and id")));
 
     FeeFinesRepository.FeePaymentAccountsRequestData fpaRequestData3 =
         new FeeFinesRepository.FeePaymentAccountsRequestData(
             userId, headers, null, sessionData);
-    assertFalse(fpaRequestData3.getPath().contains(Utils.encode("and id")));
+    assertFalse(fpaRequestData3.getPath().contains(encode("and id")));
 
     FeeFinesRepository.FeePaymentRequestData fpRequestData =
         new FeeFinesRepository.FeePaymentRequestData(
@@ -129,10 +131,12 @@ class FeeFinesRepositoryTests {
 
     FeeFinesRepository.GetFeeFinesByIdsRequestData gffbiRequestData =
         new FeeFinesRepository.GetFeeFinesByIdsRequestData(
-            new ArrayList<>(), headers, sessionData);
+            List.of("foo", "bar", "baz"), headers, sessionData);
 
     assertEquals(sessionData, gffbiRequestData.getSessionData());
     assertEquals(headers, gffbiRequestData.getHeaders());
+    assertEquals("/feefines?query=" + PercentCodec.encode("id==(\"foo\" or \"bar\" or \"baz\")"),
+        gffbiRequestData.getPath());
   }
 
   @Test
@@ -202,7 +206,7 @@ class FeeFinesRepositoryTests {
     final String userId = "a23eac4b-955e-451c-b4ff-6ec2f5e63e23";
 
     when(mockFolioProvider.retrieveResource(
-        argThat(arg -> arg.getPath().endsWith(Utils.encode("userId==" + userId)))))
+        argThat(arg -> arg.getPath().endsWith(encode("userId==\"" + userId + "\"").toString()))))
         .thenReturn(Future.succeededFuture(new FolioResource(manualBlocksResponse,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
@@ -279,6 +283,8 @@ class FeeFinesRepositoryTests {
 
 
     final String userId = "2205005b-ca51-4a04-87fd-938eefa8f6de";
+    final var userIdCql = "userId==\"" + userId + "\"";
+    final var accountsPath = "/accounts?query=" + PercentCodec.encode(userIdCql) + "&limit=1000";
 
     IResourceProvider<IRequestData> mockFolioProvider
         = mock(FolioResourceProvider.class, withSettings().verboseLogging().lenient());
@@ -286,8 +292,7 @@ class FeeFinesRepositoryTests {
     doReturn(Future.succeededFuture(new FolioResource(accountResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
         .when(mockFolioProvider).retrieveResource(
-        argThat((IRequestData data) -> data.getPath().equals("/accounts?query=(userId==" + userId
-            + ")&limit=1000")));
+        argThat((IRequestData data) -> data.getPath().equals(accountsPath)));
 
     doReturn(Future.succeededFuture(new FolioResource(feeFineResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
@@ -328,6 +333,8 @@ class FeeFinesRepositoryTests {
     final JsonObject feeFineResponse = new JsonObject(feeFineResponseJson);
 
     final String userId = "2205005b-ca51-4a04-87fd-938eefa8f6de";
+    final var userIdCql = "userId==\"" + userId + "\"";
+    final var accountsPath = "/accounts?query=" + PercentCodec.encode(userIdCql) + "&limit=1000";
 
     IResourceProvider<IRequestData> mockFolioProvider
         = mock(FolioResourceProvider.class, withSettings().verboseLogging().lenient());
@@ -335,9 +342,7 @@ class FeeFinesRepositoryTests {
     doReturn(Future.succeededFuture(new FolioResource(accountResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
         .when(mockFolioProvider).retrieveResource(
-            argThat((IRequestData data) -> data.getPath().equals(
-                "/accounts?query=(userId==" + userId
-            + ")&limit=1000")));
+            argThat((IRequestData data) -> data.getPath().equals(accountsPath)));
 
     doReturn(Future.succeededFuture(new FolioResource(feeFineResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
@@ -412,7 +417,7 @@ class FeeFinesRepositoryTests {
 
     when(mockFolioProvider.retrieveResource(
         argThat(arg -> arg.getPath()
-          .contains(Utils.encode("(userId==" + userId + "  and status.name==Open)")))))
+          .contains(encode("userId==\"" + userId + "\" and status.name==\"Open\"")))))
         .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
@@ -484,9 +489,9 @@ class FeeFinesRepositoryTests {
 
     when(mockFolioProvider.retrieveResource(
         argThat(arg -> arg.getPath()
-        .contains(Utils.encode("userId==" + userId
-            + " and id==" + feeIdentifier
-            + " and status.name==Open)")))))
+        .contains(encode("userId==\"" + userId + "\""
+            + " and status.name==\"Open\""
+            + " and id==\"" + feeIdentifier + "\"")))))
         .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
@@ -553,9 +558,9 @@ class FeeFinesRepositoryTests {
 
     when(mockFolioProvider.retrieveResource(
         argThat(arg -> arg.getPath()
-            .contains(Utils.encode("userId==" + userId
-            + " and id==" + feeIdentifier
-            + " and status.name==Open)")))))
+            .contains(encode("userId==\"" + userId + "\""
+                + " and status.name==\"Open\""
+                + " and id==\"" + feeIdentifier + "\"")))))
         .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
@@ -645,9 +650,9 @@ class FeeFinesRepositoryTests {
 
     when(mockFolioProvider.retrieveResource(
         argThat(arg -> arg.getPath()
-          .contains(Utils.encode("userId==" + userId
-              + " and id==" + feeIdentifier
-              + " and status.name==Open)")))))
+          .contains(encode("userId==\"" + userId + "\""
+              + " and status.name==\"Open\""
+              + " and id==\"" + feeIdentifier + "\"")))))
         .thenReturn(Future.succeededFuture(new FolioResource(queryAccountResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 

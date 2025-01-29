@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +29,8 @@ import org.folio.edge.sip2.domain.messages.responses.FeePaidResponse;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
+import org.folio.util.PercentCodec;
+import org.folio.util.StringUtil;
 
 /**
  * Provides interaction with the feefines service.
@@ -193,7 +196,7 @@ public class FeeFinesRepository {
 
     @Override
     public String getPath() {
-      return "/manualblocks?query=" + Utils.encode("userId==" + userId);
+      return "/manualblocks?query=" + PercentCodec.encode(cqlUserId(userId));
     }
 
     @Override
@@ -227,16 +230,13 @@ public class FeeFinesRepository {
 
     @Override
     public String getPath() {
-      if (accountIdentifier == null || accountIdentifier.isEmpty()) {
-        return ACCOUNTS_QUERY_URL
-          + Utils.encode("(userId==" + this.userId + "  and status.name==Open)")
-          + LIMIT_PARAM;
-      } else {
-        return ACCOUNTS_QUERY_URL
-          + Utils.encode("(userId==" + this.userId + " and id==" + this.accountIdentifier
-          + " and status.name==Open)")
-          + LIMIT_PARAM;
+      var cql = cqlUserId(userId) + " and status.name==\"Open\"";
+      if (!Utils.isStringNullOrEmpty(accountIdentifier)) {
+        cql += " and id==" + StringUtil.cqlEncode(accountIdentifier);
       }
+      return ACCOUNTS_QUERY_URL
+          + PercentCodec.encode(cql)
+          + LIMIT_PARAM;
     }
 
     @Override
@@ -333,8 +333,8 @@ public class FeeFinesRepository {
     public String getPath() {
       final StringBuilder qSb = new StringBuilder()
           .append(ACCOUNTS_QUERY_URL)
-          .append("(userId==")
-          .append(userId).append(")").append(LIMIT_PARAM);
+          .append(PercentCodec.encode(cqlUserId(userId)))
+          .append(LIMIT_PARAM);
       return qSb.toString();
     }
 
@@ -374,15 +374,10 @@ public class FeeFinesRepository {
 
     @Override
     public String getPath() {
-      List<String> queryList = new ArrayList<>();
-      for (String id : this.idList) {
-        queryList.add("(id==" + id + ")");
-      }
-      final StringBuilder sb = new StringBuilder()
-          .append("/feefines?query=(")
-          .append(String.join("+OR+", queryList))
-          .append(")");
-      return sb.toString();
+      var cql = idList.stream()
+          .map(StringUtil::cqlEncode)
+          .collect(Collectors.joining(" or ", "id==(", ")"));
+      return "/feefines?query=" + PercentCodec.encodeAsString(cql);
     }
   }
 
@@ -586,5 +581,9 @@ public class FeeFinesRepository {
       }
     }
     return uuidMatch;
+  }
+
+  private static String cqlUserId(String userId) {
+    return "userId==" + StringUtil.cqlEncode(userId);
   }
 }

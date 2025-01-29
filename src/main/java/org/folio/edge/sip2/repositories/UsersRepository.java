@@ -14,7 +14,8 @@ import org.folio.edge.sip2.repositories.domain.ExtendedUser;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
-import org.folio.edge.sip2.utils.Utils;
+import org.folio.util.PercentCodec;
+import org.folio.util.StringUtil;
 
 /**
  * Provides interaction with the users service.
@@ -157,15 +158,15 @@ public class UsersRepository {
 
     @Override
     public String getPath() {
+      var identifierQuoted = StringUtil.cqlEncode(identifier);
       StringBuilder query = new StringBuilder()
-          .append("(barcode==")
-          .append(identifier)
+          .append("barcode==")
+          .append(identifierQuoted)
           .append(" or externalSystemId==")
-          .append(identifier)
+          .append(identifierQuoted)
           .append(" or username==")
-          .append(identifier)
-          .append(')');
-      return "/users?limit=1&query=" + Utils.encode(query.toString());
+          .append(identifierQuoted);
+      return "/users?limit=1&query=" + PercentCodec.encode(query.toString());
     }
 
     @Override

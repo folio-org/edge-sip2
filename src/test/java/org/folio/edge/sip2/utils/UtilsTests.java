@@ -3,8 +3,6 @@ package org.folio.edge.sip2.utils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -22,7 +20,7 @@ public class UtilsTests {
     final String delimeter = " AND ";
     final String equalDelimeter = "==";
 
-    String expectedString = "key1==value1 AND key3==value3";
+    String expectedString = "key1==\"value1\" AND key3==\"value3\"";
 
     String output = Utils.buildQueryString(queryStringParams, delimeter, equalDelimeter);
     assertEquals(expectedString, output);
@@ -36,13 +34,13 @@ public class UtilsTests {
     queryStringParams.put("key2", "");
     queryStringParams.put("key3", "value3");
     queryStringParams.put("key4", "");
-    queryStringParams.put("key5", "value5");
+    queryStringParams.put("key5", "value5?");
     queryStringParams.put("key6", "");
 
     final String delimeter = "&";
     final String equalDelimeter = "=";
 
-    String expectedString = "key3=value3&key5=value5";
+    String expectedString = "key3=\"value3\"&key5=\"value5\\?\"";
 
     String output = Utils.buildQueryString(queryStringParams, delimeter, equalDelimeter);
     assertEquals(expectedString, output);
@@ -51,11 +49,5 @@ public class UtilsTests {
   @Test
   public void testIsStringNullOrEmpty() {
     assertTrue(Utils.isStringNullOrEmpty(""));
-  }
-
-  @Test
-  void testEncode() {
-    String url = "item = ab39%3183-194&bp23909&item2 == 23ab3;";
-    assertEquals(URLEncoder.encode(url, StandardCharsets.UTF_8), Utils.encode(url));
   }
 }
