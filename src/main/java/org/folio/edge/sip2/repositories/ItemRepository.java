@@ -66,7 +66,7 @@ public class ItemRepository {
     public String getPath() {
       StringBuilder query = new StringBuilder("barcode==");
       StringUtil.appendCqlEncoded(query, itemIdentifier);
-      return "/inventory/items?limit=1&query=" + PercentCodec.encode(query.toString());
+      return "/inventory/items?limit=1&query=" + PercentCodec.encode(query);
     }
 
 
@@ -157,9 +157,9 @@ public class ItemRepository {
     }
 
     public String getPath() {
-      String query = Utils.encode("status==(Open - Awaiting pickup or Open - In Transit) and "
-          + "(itemId==" + itemUuid + ")");
-      return "/circulation/requests?limit=1&query=" + query;
+      var query = "status==(\"Open - Awaiting pickup\" or \"Open - In Transit\") and "
+          + "(itemId==" + StringUtil.cqlEncode(itemUuid) + ")";
+      return "/circulation/requests?limit=1&query=" + PercentCodec.encode(query);
     }
 
     @Override
@@ -189,8 +189,8 @@ public class ItemRepository {
     }
 
     public String getPath() {
-      String query = Utils.encode("(itemId==" + itemId + " and status.name=Open)");
-      return "/circulation/loans?query=" + query;
+      var query = "(itemId==" + StringUtil.cqlEncode(itemId) + " and status.name=Open)";
+      return "/circulation/loans?query=" + PercentCodec.encode(query);
     }
 
     @Override

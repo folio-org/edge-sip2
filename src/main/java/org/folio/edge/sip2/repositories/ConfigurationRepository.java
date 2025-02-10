@@ -24,6 +24,7 @@ import org.folio.edge.sip2.domain.messages.responses.ACSStatus;
 import org.folio.edge.sip2.domain.messages.responses.ACSStatus.ACSStatusBuilder;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
+import org.folio.util.PercentCodec;
 
 public class ConfigurationRepository {
 
@@ -291,7 +292,7 @@ public class ConfigurationRepository {
       }
       String partialPath = pathStringBuilder.toString();
       log.debug("Configuration path before encoding: {}", partialPath);
-      String path =  "/configurations/entries?query=" + Utils.encode(partialPath);
+      String path =  "/configurations/entries?query=" + PercentCodec.encode(partialPath);
 
       log.debug("Parsed mod-config path: {}", path);
 
