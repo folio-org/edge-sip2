@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.repositories;
 
 import static org.folio.edge.sip2.api.support.TestUtils.getJsonFromFile;
+import static org.folio.util.PercentCodec.encode;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -58,10 +59,6 @@ public class UsersRepositoryTests {
 
     final String barcode = "997383903573496";
     final String userId = "4f0e711c-d583-41e0-9555-b62f1725023f";
-    final String expectedUsersQueryPath = "/users?limit=1&query="
-        + Utils.encode("(barcode==" + barcode
-        + " or externalSystemId==" + barcode
-        + " or username==" + barcode + ')');
 
     final String expectedUsersBlQueryPath = "/bl-users/by-id/" + userId;
 
@@ -73,8 +70,7 @@ public class UsersRepositoryTests {
 
     doReturn(Future.succeededFuture(new FolioResource(userResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
-        .when(mockFolioProvider).retrieveResource(
-            argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));
+      .when(mockFolioProvider).retrieveResource(usersQueryPath(barcode));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
@@ -100,11 +96,6 @@ public class UsersRepositoryTests {
 
     final String username = "leslie";
     final String userId = "4f0e711c-d583-41e0-9555-b62f1725023f";
-    final String expectedUsersQueryPath = "/users?limit=1&query="
-        + Utils.encode("(barcode==" + username
-        + " or externalSystemId==" + username
-        + " or username==" + username + ')');
-
     final String expectedUsersBlQueryPath = "/bl-users/by-id/" + userId;
 
     doReturn(Future.succeededFuture(new FolioResource(userBlResponse,
@@ -114,8 +105,7 @@ public class UsersRepositoryTests {
 
     doReturn(Future.succeededFuture(new FolioResource(userResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
-        .when(mockFolioProvider).retrieveResource(
-            argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));
+      .when(mockFolioProvider).retrieveResource(usersQueryPath(username));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
@@ -141,10 +131,6 @@ public class UsersRepositoryTests {
 
     final String username = "leslie";
     final String userId = "4f0e711c-d583-41e0-9555-b62f1725023f";
-    final String expectedUsersQueryPath = "/users?limit=1&query="
-        + Utils.encode("(barcode==" + username
-        + " or externalSystemId==" + username
-        + " or username==" + username + ')');
 
     final String expectedUsersBlQueryPath = "/bl-users/by-id/" + userId;
 
@@ -155,8 +141,7 @@ public class UsersRepositoryTests {
 
     doReturn(Future.succeededFuture(new FolioResource(userResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
-        .when(mockFolioProvider).retrieveResource(
-        argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));
+      .when(mockFolioProvider).retrieveResource(usersQueryPath(username));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
@@ -190,10 +175,6 @@ public class UsersRepositoryTests {
 
     final String extSystemId = "4f0e711c-d583-41e0-9555-b62f1725023f";
     final String userId = "4f0e711c-d583-41e0-9555-b62f1725023f";
-    final String expectedUsersQueryPath = "/users?limit=1&query="
-        + Utils.encode("(barcode==" + extSystemId
-        + " or externalSystemId==" + extSystemId
-        + " or username==" + extSystemId + ')');
 
     final String expectedUsersBlQueryPath = "/bl-users/by-id/" + userId;
     IResourceProvider<IRequestData> mockFolioProvider
@@ -206,8 +187,7 @@ public class UsersRepositoryTests {
 
     doReturn(Future.succeededFuture(new FolioResource(userResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
-        .when(mockFolioProvider).retrieveResource(
-            argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));
+      .when(mockFolioProvider).retrieveResource(usersQueryPath(extSystemId));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
@@ -227,15 +207,9 @@ public class UsersRepositoryTests {
       @Mock IResourceProvider<IRequestData> mockFolioProvider) {
 
     final String barcode = "1234667";
-    final String userId = "4f0e711c-d583-41e0-9555-b62f1725023f";
-    final String expectedUsersQueryPath = "/users?limit=1&query="
-        + Utils.encode("(barcode==" + barcode
-        + " or externalSystemId==" + barcode
-        + " or username==" + barcode + ')');
 
     doReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")))
-        .when(mockFolioProvider).retrieveResource(
-            argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));
+      .when(mockFolioProvider).retrieveResource(usersQueryPath(barcode));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
@@ -260,10 +234,6 @@ public class UsersRepositoryTests {
 
     final String barcode = "997383903573496";
     final String userId = "4f0e711c-d583-41e0-9555-b62f1725023f";
-    final String expectedUsersQueryPath = "/users?limit=1&query="
-        + Utils.encode("(barcode==" + barcode
-        + " or externalSystemId==" + barcode
-        + " or username==" + barcode + ')');
 
     final String expectedUsersBlQueryPath = "/bl-users/by-id/" + userId;
 
@@ -273,8 +243,7 @@ public class UsersRepositoryTests {
 
     doReturn(Future.succeededFuture(new FolioResource(userResponse,
         MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))))
-        .when(mockFolioProvider).retrieveResource(
-        argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath)));
+      .when(mockFolioProvider).retrieveResource(usersQueryPath(barcode));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
 
@@ -285,5 +254,13 @@ public class UsersRepositoryTests {
 
           testContext.completeNow();
         })));
+  }
+
+  private IRequestData usersQueryPath(final String searchString) {
+    final String expectedUsersQueryPath = "/users?limit=1&query="
+        + encode("barcode==\"" + searchString + "\""
+        + " or externalSystemId==\"" + searchString + "\""
+        + " or username==\"" + searchString + "\"");
+    return argThat((IRequestData data) -> data.getPath().equals(expectedUsersQueryPath));
   }
 }
