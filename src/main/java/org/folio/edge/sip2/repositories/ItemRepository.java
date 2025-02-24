@@ -18,6 +18,8 @@ import org.folio.edge.sip2.domain.messages.responses.ItemInformationResponse;
 import org.folio.edge.sip2.domain.messages.responses.ItemInformationResponse.ItemInformationResponseBuilder;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
+import org.folio.util.PercentCodec;
+import org.folio.util.StringUtil;
 
 
 /**
@@ -61,8 +63,11 @@ public class ItemRepository {
     }
 
     public String getPath() {
-      return "/inventory/items?limit=1&query=barcode==" + itemIdentifier;
+      StringBuilder query = new StringBuilder("barcode==");
+      StringUtil.appendCqlEncoded(query, itemIdentifier);
+      return "/inventory/items?limit=1&query=" + PercentCodec.encode(query);
     }
+
 
     @Override
     public Map<String, String> getHeaders() {
@@ -151,9 +156,9 @@ public class ItemRepository {
     }
 
     public String getPath() {
-      String query = Utils.encode("status==(Open - Awaiting pickup or Open - In Transit) and "
-          + "(itemId==" + itemUuid + ")");
-      return "/circulation/requests?limit=1&query=" + query;
+      var query = "status==(\"Open - Awaiting pickup\" or \"Open - In Transit\") and "
+          + "(itemId==" + StringUtil.cqlEncode(itemUuid) + ")";
+      return "/circulation/requests?limit=1&query=" + PercentCodec.encode(query);
     }
 
     @Override
@@ -183,8 +188,8 @@ public class ItemRepository {
     }
 
     public String getPath() {
-      String query = Utils.encode("(itemId==" + itemId + " and status.name=Open)");
-      return "/circulation/loans?query=" + query;
+      var query = "(itemId==" + StringUtil.cqlEncode(itemId) + " and status.name=Open)";
+      return "/circulation/loans?query=" + PercentCodec.encode(query);
     }
 
     @Override

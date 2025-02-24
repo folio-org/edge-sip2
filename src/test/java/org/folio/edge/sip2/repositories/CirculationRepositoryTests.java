@@ -45,8 +45,8 @@ import org.folio.edge.sip2.repositories.domain.ExtendedUser;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
-import org.folio.edge.sip2.utils.Utils;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
+import org.folio.util.PercentCodec;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -1106,7 +1106,7 @@ class CirculationRepositoryTests {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate = OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
-    final String itemIdentifier = "453987605438";
+    final String itemIdentifier = "453987605438/93";
     final Checkout checkout = Checkout.builder()
         .scRenewalPolicy(FALSE)
         .noBlock(FALSE)
@@ -1130,13 +1130,14 @@ class CirculationRepositoryTests {
           .put("contributors", new JsonArray().add(new JsonObject().put("name","Fielding,Helen")))))
         .put("totalRecords", 1);
 
-    final String expectedPath = "/search/instances?limit=1&query=(items.barcode==453987605438)";
+    final String expectedPath = "/search/instances?limit=1&query="
+        + "items.barcode%3D%3D%22453987605438%2F93%22";
 
     when(mockFolioProvider.retrieveResource(
         argThat((IRequestData data) -> data.getPath().equals(expectedPath)
           && data.getHeaders().get("accept").equals("application/json"))))
         .thenReturn(Future.succeededFuture(new FolioResource(response,
-        MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+          MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
     when(mockFolioProvider.createResource(any()))
         .thenReturn(Future.failedFuture(new FolioRequestThrowable(errorMessage)));
@@ -1412,7 +1413,7 @@ class CirculationRepositoryTests {
         .put("totalRecords", 1);
 
     final String expectedPath = "/circulation/loans?query="
-        + Utils.encode("(userId==" + userId + " and status.name=Open)");
+        + PercentCodec.encode("(userId==\"" + userId + "\" and status.name=\"Open\")");
 
     when(mockFolioProvider.retrieveResource(
         argThat((IRequestData data) -> data.getPath().equals(expectedPath))))
@@ -1484,7 +1485,7 @@ class CirculationRepositoryTests {
         .put("totalRecords", 1);
 
     final String expectedPath = "/circulation/loans?query="
-        + Utils.encode("(userId==" + userId + " and status.name=Open and dueDate<"
+        + PercentCodec.encode("(userId==\"" + userId + "\" and status.name=\"Open\" and dueDate<"
         + dueDate + ")");
 
     when(mockFolioProvider.retrieveResource(
@@ -1557,8 +1558,8 @@ class CirculationRepositoryTests {
         .put("totalRecords", 1);
 
     final String expectedPath = "/circulation/requests?query="
-        + Utils.encode("(itemId==" + itemId
-        + " and status=Open and requestType==Recall)");
+        + PercentCodec.encode("itemId==\"" + itemId + "\""
+        + " and status=\"Open\" and requestType==\"Recall\"");
 
     when(mockFolioProvider.retrieveResource(
         argThat((IRequestData data) -> data.getPath().equals(expectedPath))))

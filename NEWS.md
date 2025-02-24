@@ -1,3 +1,7 @@
+## 3.3.2 2025-02-24
+* [SIP2-249](https://issues.folio.org/browse/SIP2-249): Checkout Request for Item with '/' in barcode fails with cql parse error - TITLE NOT FOUND
+* [SIP2-252](https://issues.folio.org/browse/SIP2-252): CQL injection, encode CQL strings, use percent encoding
+
 ## 3.3.1 2024-11-26
 * [SIP2-231](https://issues.folio.org/browse/SIP2-231): AJ Field (Title) Issue in Successful Renewals
 * [SIP2-232](https://issues.folio.org/browse/SIP2-232): AH Field (Due Date) Issue in Unsuccessful Renewals
