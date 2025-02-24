@@ -36,7 +36,7 @@ public class CheckinHandlerTests {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime returnDate = OffsetDateTime.now();
     final String institutionId = "diku";
-    final String itemIdentifier = "1234567890";
+    final String itemIdentifier = "1234567890/25";
     final String currentLocation = UUID.randomUUID().toString();
     final String servicePoint = "Circ Desk 1";
     final Checkin checkin = Checkin.builder()
@@ -91,7 +91,7 @@ public class CheckinHandlerTests {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime returnDate = OffsetDateTime.now();
     final String institutionId = "diku";
-    final String itemIdentifier = "1234567890";
+    final String itemIdentifier = "1234567890/40";
     final String currentLocation = UUID.randomUUID().toString();
     final Checkin checkin = Checkin.builder()
         .noBlock(FALSE)

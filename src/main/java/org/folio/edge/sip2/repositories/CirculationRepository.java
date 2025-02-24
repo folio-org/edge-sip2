@@ -4,6 +4,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.folio.edge.sip2.utils.JsonUtils.getChildString;
 import static org.folio.edge.sip2.utils.JsonUtils.getSubChildString;
+import static org.folio.edge.sip2.utils.Utils.TITLE_NOT_FOUND;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
@@ -37,6 +38,8 @@ import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Utils;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
+import org.folio.util.PercentCodec;
+import org.folio.util.StringUtil;
 
 /**
  * Provides interaction with the circulation service.
@@ -49,7 +52,6 @@ public class CirculationRepository {
   private static final Logger log = LogManager.getLogger();
 
   private static final String UNKNOWN = "";
-  public static final String TITLE_NOT_FOUND = "TITLE NOT FOUND";
   public static final String TITLE = "title";
   public static final String ITEM_BARCODE = "itemBarcode";
   public static final String SERVICE_POINT_ID = "servicePointId";
@@ -536,18 +538,17 @@ public class CirculationRepository {
     @Override
     public String getPath() {
       final StringBuilder qSb = new StringBuilder()
-          .append("(")
           .append(idField)
-          .append("==")
-          .append(idValue)
-          .append(" and status=Open");
+          .append("==");
+      StringUtil.appendCqlEncoded(qSb, idValue);
+      qSb.append(" and status=\"Open\"");
       if (requestType != null) {
-        qSb.append(" and requestType==").append(requestType);
+        qSb.append(" and requestType==");
+        StringUtil.appendCqlEncoded(qSb, requestType);
       }
-      qSb.append(')');
       final StringBuilder urlSb = new StringBuilder()
           .append("/circulation/requests?query=")
-          .append(Utils.encode(qSb.toString()));
+          .append(PercentCodec.encode(qSb.toString()));
 
       return appendLimits(urlSb).toString();
     }
@@ -568,8 +569,8 @@ public class CirculationRepository {
 
     @Override
     public String getPath() {
-      String query = Utils.encode("(userId==" + userId + " and status.name=Open)");
-      return "/circulation/loans?query=" + query;
+      var query = "(userId==" + StringUtil.cqlEncode(userId) + " and status.name=\"Open\")";
+      return "/circulation/loans?query=" + PercentCodec.encode(query);
     }
   }
 
@@ -592,14 +593,14 @@ public class CirculationRepository {
     @Override
     public String getPath() {
       final StringBuilder qSb = new StringBuilder()
-          .append("(userId==")
-          .append(userId)
-          .append(" and status.name=Open and dueDate<")
+          .append("(userId==");
+      StringUtil.appendCqlEncoded(qSb, userId);
+      qSb.append(" and status.name=\"Open\" and dueDate<")
           .append(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(dueDate))
           .append(')');
       final StringBuilder path = new StringBuilder()
           .append("/circulation/loans?query=")
-          .append(Utils.encode(qSb.toString()));
+          .append(PercentCodec.encode(qSb.toString()));
 
       return appendLimits(path).toString();
     }
@@ -840,14 +841,11 @@ public class CirculationRepository {
 
     @Override
     public String getPath() {
-
-      final StringBuilder qSb = new StringBuilder()
-          .append("/search/instances?limit=1&query=")
-          .append("(items.barcode")
-          .append("==")
-          .append(itemBarcode).append(")");
-      return qSb.toString();
+      StringBuilder query = new StringBuilder("items.barcode==");
+      StringUtil.appendCqlEncoded(query, itemBarcode);
+      return "/search/instances?limit=1&query=" + PercentCodec.encode(query);
     }
+
   }
 
   private abstract class SearchRequestData implements IRequestData {

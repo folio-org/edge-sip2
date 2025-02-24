@@ -1,3 +1,7 @@
+## 3.2.8 2025-02-24
+* [SIP2-249](https://issues.folio.org/browse/SIP2-249): Checkout Request for Item with '/' in barcode fails with cql parse error - TITLE NOT FOUND
+* [SIP2-252](https://issues.folio.org/browse/SIP2-252): CQL injection, encode CQL strings, use percent encoding
+
 ## 3.2.7 2024-10-01
 * [SIP2-222](https://issues.folio.org/browse/SIP2-222): SIP2 login issue - active session with an invalid password
 

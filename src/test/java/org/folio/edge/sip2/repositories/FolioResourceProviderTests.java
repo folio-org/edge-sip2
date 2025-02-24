@@ -207,7 +207,7 @@ public class FolioResourceProviderTests {
   }
 
   @Test
-  public void canLoginWithCache(
+  void canLoginWithCache(
       Vertx vertx,
       VertxTestContext testContext) {
     Future<String> passwordFuture = Future.succeededFuture("password");
