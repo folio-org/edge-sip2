@@ -47,7 +47,7 @@
     <micrometer.version>1.9.4</micrometer.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
     <java.version>17</java.version>
-    <raml-module-builder-version>35.3.0</raml-module-builder-version>
+    <raml-module-builder-version>35.2.2</raml-module-builder-version>
   </properties>
 
   <dependencyManagement>
