@@ -553,7 +553,6 @@ class CirculationRepositoryTests {
     final Clock clock = TestUtils.getUtcFixedClock();
     final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
     final String patronIdentifier = "1029384756";
-    final String itemIdentifier = "1234567890";
     final String title = "Some book";
     final Renew renew = Renew.builder()
         .noBlock(FALSE)

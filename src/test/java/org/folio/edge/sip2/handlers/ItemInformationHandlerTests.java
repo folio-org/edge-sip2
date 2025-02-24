@@ -70,7 +70,6 @@ class ItemInformationHandlerTests {
   void canExecuteASampleFailedItemInformationUsingHandler(
       @Mock ItemRepository itemRepository,
       VertxTestContext testContext) {
-    final Clock clock = TestUtils.getUtcFixedClock();
     final String institutionId = "diku";
     final String itemIdentifier = "1234567890";
     final ItemInformation itemInformation = ItemInformation.builder()
