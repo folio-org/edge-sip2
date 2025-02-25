@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.repositories;
 
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.time.Clock;
 import java.time.OffsetDateTime;
@@ -357,8 +358,13 @@ public class ItemRepository {
       .retrieveResource(itemInformationRequestData)
       .compose(itemResource -> {
         JsonObject item = itemResource.getResource();
-        return Future.succeededFuture(item
-          .getJsonArray("items").getJsonObject(0));
+        if (item != null) {
+          JsonArray items = item.getJsonArray("items");
+          if (items != null && !items.isEmpty()) {
+            return Future.succeededFuture(items.getJsonObject(0));
+          }
+        }
+        return Future.succeededFuture(null);
       });
 
   }
