@@ -9,11 +9,11 @@
     },
     {
       "id": "circulation",
-      "version": "14.4"
+      "version": "14.6"
     },
     {
       "id": "users",
-      "version": "16.3"
+      "version": "16.4"
     },
     {
       "id": "configuration",
@@ -21,7 +21,7 @@
     },
     {
       "id": "feesfines",
-      "version": "19.0"
+      "version": "19.1"
     },
     {
       "id": "search",

@@ -1,3 +1,8 @@
+## 3.4.0 2025-03-XX
+* [SIP2-244](https://issues.folio.org/browse/SIP2-244): Rename automated patron blocks permission
+* [FOLIO-4214](https://issues.folio.org/browse/FOLIO-4214): Java and RMB version upgrade for Sunflower.
+
+
 ## 3.3.2 2025-02-24
 * [SIP2-249](https://issues.folio.org/browse/SIP2-249): Checkout Request for Item with '/' in barcode fails with cql parse error - TITLE NOT FOUND
 * [SIP2-252](https://issues.folio.org/browse/SIP2-252): CQL injection, encode CQL strings, use percent encoding
