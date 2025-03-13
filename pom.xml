@@ -141,7 +141,7 @@
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
-      <version>7.0.0</version>
+      <version>5.1.0</version>
     </dependency>
     <dependency>
       <groupId>javax.inject</groupId>
@@ -169,7 +169,7 @@
     <dependency>
       <groupId>org.folio.okapi</groupId>
       <artifactId>okapi-common</artifactId>
-      <version>6.2.1</version>
+      <version>6.0.3</version>
     </dependency>
     <dependency>
         <groupId>org.folio</groupId>
