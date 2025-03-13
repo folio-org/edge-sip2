@@ -169,7 +169,7 @@
     <dependency>
       <groupId>org.folio.okapi</groupId>
       <artifactId>okapi-common</artifactId>
-      <version>6.0.3</version>
+      <version>6.2.1</version>
     </dependency>
     <dependency>
         <groupId>org.folio</groupId>
