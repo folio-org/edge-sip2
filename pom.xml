@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>edge-sip2</artifactId>
-  <version>3.3.3-SNAPSHOT</version>
+  <version>3.5.0-SNAPSHOT</version>
   <name>Standard Interchange Protocol v2 (SIP2)</name>
   <url>https://github.com/folio-org/edge-sip2</url>
   <description>Support for SIP2 in FOLIO. This allow self service circulation and patron services stations to perform supported operations in FOLIO.</description>
@@ -43,8 +43,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <exec.mainClass>org.folio.edge.sip2.MainVerticle</exec.mainClass>
     <vertx.version>4.5.13</vertx.version>
-    <log4j2.version>2.23.1</log4j2.version>
-    <micrometer.version>1.12.4</micrometer.version>
+    <log4j2.version>2.24.3</log4j2.version>
+    <micrometer.version>1.14.5</micrometer.version>
     <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
     <java.version>21</java.version>
     <raml-module-builder-version>35.4.0</raml-module-builder-version>
@@ -76,21 +76,21 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.11.2</version>
+        <version>5.12.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-bom</artifactId>
-        <version>5.14.1</version>
+        <version>5.16.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-bom</artifactId>
-        <version>1.20.2</version>
+        <version>1.20.6</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -136,7 +136,7 @@
     <dependency>
       <groupId>org.freemarker</groupId>
       <artifactId>freemarker</artifactId>
-      <version>2.3.33</version>
+      <version>2.3.34</version>
     </dependency>
     <dependency>
       <groupId>com.google.inject</groupId>
@@ -206,7 +206,7 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcpkix-jdk15to18</artifactId>
-      <version>1.78</version>
+      <version>1.80</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -223,7 +223,7 @@
     <dependency>
       <groupId>org.wiremock</groupId>
       <artifactId>wiremock</artifactId>
-      <version>3.9.1</version>
+      <version>3.12.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -308,13 +308,13 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven-compiler-plugin.version}</version>
         <configuration>
-          <release>17</release>
+          <release>21</release>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.8</version>
+        <version>0.8.12</version>
         <executions>
           <execution>
             <id>pre-unit-test</id>
@@ -340,7 +340,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.1</version>
+        <version>3.5.2</version>
         <configuration>
           <argLine>${surefireArgLine}</argLine>
         </configuration>
@@ -389,7 +389,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.5.1</version>
+        <version>3.5.2</version>
           <executions>
             <execution>
               <goals>
@@ -501,7 +501,7 @@
       <plugins>
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.6.0</version>
+          <version>3.8.1</version>
         </plugin>
         <plugin>
           <artifactId>maven-release-plugin</artifactId>
