@@ -115,7 +115,7 @@ public class MainVerticle extends AbstractVerticle {
     int port = config().getInteger("port"); // move port to netServerOptions
     NetServerOptions options = new NetServerOptions(
         config().getJsonObject("netServerOptions", new JsonObject()))
-        .setPort(port);
+        .setPort(port).setUseProxyProtocol(true);
 
     server = vertx.createNetServer(options);
 
