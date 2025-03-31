@@ -133,6 +133,7 @@ public class MainVerticle extends AbstractVerticle {
       server.connectHandler(socket -> {
 
         String clientAddress = socket.remoteAddress().host();
+        log.debug("Processing connection from " + clientAddress);
 
         ThreadContext.put(IPADDRESS, clientAddress);
 
@@ -189,6 +190,7 @@ public class MainVerticle extends AbstractVerticle {
 
     final String messageString = buffer.getString(0, buffer.length(),
         sessionData.getCharset());
+    log.debug("Handle buffer: " + messageString);
 
     Command command = UNKNOWN;
 
