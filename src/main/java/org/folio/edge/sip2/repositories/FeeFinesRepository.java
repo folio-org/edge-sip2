@@ -468,8 +468,8 @@ public class FeeFinesRepository {
                   acctIdList,
                   headers,
                   sessionData);
-
-              feePaymentRequestData.setUserName(user.getUsername());
+              
+              feePaymentRequestData.setUserName(sessionData.getUsername());
 
               log.debug("Json for payment request is {}", feePaymentRequestData.getBody().encode());
 
