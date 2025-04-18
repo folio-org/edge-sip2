@@ -20,7 +20,8 @@ class ItemInformationMessageParserTests {
     var transactionDate = TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     var formatter = DateTimeFormatter.ofPattern("yyyyMMdd    HHmmss");
     var transactionDateString = formatter.format(transactionDate);
-    var itemInformation = parser.parse(transactionDateString + "AB" + itemIdentifier + "|AOuniversity_id|");
+    var message = transactionDateString + "AB" + itemIdentifier + "|AOuniversity_id|";
+    var itemInformation = parser.parse(message);
 
     assertEquals(transactionDate, itemInformation.getTransactionDate());
     assertEquals("university_id", itemInformation.getInstitutionId());
