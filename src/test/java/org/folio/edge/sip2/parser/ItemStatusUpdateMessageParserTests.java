@@ -9,11 +9,16 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.ItemStatusUpdate;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ItemStatusUpdateMessageParserTests {
-  @Test
-  void testParse() {
+
+  @DisplayName("testParse")
+  @ParameterizedTest(name = "[{index}] itemIdentifier=''{0}''")
+  @ValueSource(strings = { "SomeBook", "  SomeBook", "SomeBook ", "  SomeBook  " })
+  void testParse(String itemIdentifier) {
     ItemStatusUpdateMessageParser parser =
         new ItemStatusUpdateMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
@@ -23,7 +28,7 @@ class ItemStatusUpdateMessageParserTests {
     final String transactionDateString = formatter.format(transactionDate);
     final ItemStatusUpdate itemStatusUpdate = parser.parse(
         transactionDateString
-        + "ABSomeBook|AOuniversity_id|CHSpilled coffee on the book|");
+        + "AB" + itemIdentifier + "|AOuniversity_id|CHSpilled coffee on the book|");
 
     assertEquals(transactionDate, itemStatusUpdate.getTransactionDate());
     assertEquals("university_id", itemStatusUpdate.getInstitutionId());
