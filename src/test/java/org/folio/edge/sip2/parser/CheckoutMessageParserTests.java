@@ -10,11 +10,17 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class CheckoutMessageParserTests {
-  @Test
-  void testParse() {
+
+  @DisplayName("testParse")
+  @ParameterizedTest(name = "[{index}] itemIdentifier=''{0}''")
+  @ValueSource(strings = { "SomeBook", "  SomeBook", "SomeBook ", "  SomeBook  " })
+  void testParse(String itemIdentifier) {
     CheckoutMessageParser parser =
         new CheckoutMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate = TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
@@ -25,7 +31,7 @@ class CheckoutMessageParserTests {
     final String nbDueDateString = formatter.format(nbDueDate);
     final Checkout checkout = parser.parse(
         "YY" + transactionDateString + nbDueDateString
-        + "AApatron_id|ABSomeBook|AC|CHAutographed"
+        + "AApatron_id|AB" + itemIdentifier + "|AC|CHAutographed"
         + "|AD1234|AOuniversity_id|BON|BIN|");
 
     assertEquals(TRUE, checkout.getScRenewalPolicy());

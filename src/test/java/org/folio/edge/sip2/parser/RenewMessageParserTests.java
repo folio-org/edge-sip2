@@ -10,11 +10,17 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Renew;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class RenewMessageParserTests {
-  @Test
-  void testParse() {
+
+  @DisplayName("testParse")
+  @ParameterizedTest(name = "[{index}] itemIdentifier=''{0}''")
+  @ValueSource(strings = { "Some Book", "  Some Book", "Some Book ", "  Some Book  " })
+  void testParse(String itemIdentifier) {
     RenewMessageParser parser =
         new RenewMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
@@ -26,7 +32,7 @@ class RenewMessageParserTests {
     final String nbDueDateString = formatter.format(nbDueDate);
     final Renew renew = parser.parse(
         "YY" + transactionDateString + nbDueDateString
-        + "AApatron_id|AC|AD1234|AOuniversity_id|ABSome Book|"
+        + "AApatron_id|AC|AD1234|AOuniversity_id|AB" + itemIdentifier + "|"
         + "AJSome Title|CHAutographed|BON|");
 
     assertEquals(TRUE, renew.getThirdPartyAllowed());

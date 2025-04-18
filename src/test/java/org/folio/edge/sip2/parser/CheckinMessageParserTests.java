@@ -10,11 +10,16 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class CheckinMessageParserTests {
-  @Test
-  void testParse() {
+
+  @DisplayName("testParse")
+  @ParameterizedTest(name = "[{index}] itemIdentifier=''{0}''")
+  @ValueSource(strings = { "SomeBook", "  SomeBook", "SomeBook ", "  SomeBook  " })
+  void testParse(String itemIdentifier) {
     CheckinMessageParser parser =
         new CheckinMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
@@ -26,7 +31,7 @@ class CheckinMessageParserTests {
     final String returnDateString = formatter.format(returnDate);
     final Checkin checkin = parser.parse(
         "Y" + transactionDateString + returnDateString
-        + "APcirc_desk|ABSomeBook|AC|CHAutographed|"
+        + "APcirc_desk|AB" + itemIdentifier + "|AC|CHAutographed|"
         + "AOuniversity_id|BIN|");
 
     assertEquals(TRUE, checkin.getNoBlock());

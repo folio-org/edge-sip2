@@ -11,11 +11,16 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Hold;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class HoldMessageParserTests {
-  @Test
-  void testParse() {
+
+  @DisplayName("testParse")
+  @ParameterizedTest(name = "[{index}] itemIdentifier=''{0}''")
+  @ValueSource(strings = { "Some Book", "  Some Book", "Some Book ", "  Some Book  " })
+  void testParse(String itemIdentifier) {
     HoldMessageParser parser =
         new HoldMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
@@ -28,7 +33,7 @@ class HoldMessageParserTests {
     final Hold hold = parser.parse(
         "+" + transactionDateString + "BW" + expirationDateString
         + "|BScirc_desk|BY3|AApatron_id|AC|"
-        + "AD1234|AOuniversity_id|ABSome Book|AJSome Title|BON|");
+        + "AD1234|AOuniversity_id|AB" + itemIdentifier + "|AJSome Title|BON|");
 
     assertEquals(ADD, hold.getHoldMode());
     assertEquals(transactionDate, hold.getTransactionDate());
