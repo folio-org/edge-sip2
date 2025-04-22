@@ -2,6 +2,7 @@ package org.folio.edge.sip2.parser;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static org.folio.edge.sip2.parser.Field.AB;
 import static org.folio.edge.sip2.parser.Field.UNKNOWN;
 
 import java.time.OffsetDateTime;
@@ -60,13 +61,14 @@ public abstract class MessageParser {
           "Field does not contain a valid delimiter: " + field);
     }
 
-    return new String(messageChars, startPosition, position - startPosition);
+    var value = new String(messageChars, startPosition, position - startPosition);
+    return shouldBeTrimmed(field) ? value.trim() : value;
   }
 
   protected OffsetDateTime parseDateTimeNB(char [] messageChars) {
     final String dateTimeString = new String(messageChars, position, 18);
     position += 18;
-    
+
     if (MISSING_NB_DUE_DATE.equals(dateTimeString)) {  // return null for 18 space nb due date
       return null;
     } else {
@@ -112,5 +114,9 @@ public abstract class MessageParser {
       log.error("Field {} not an number: {}, ignoring", field, value);
       return null;
     }
+  }
+
+  private static boolean shouldBeTrimmed(Field field) {
+    return field == AB;
   }
 }
