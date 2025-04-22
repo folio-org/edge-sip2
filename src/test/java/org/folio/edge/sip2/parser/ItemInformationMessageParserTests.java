@@ -20,14 +20,14 @@ class ItemInformationMessageParserTests {
   @ValueSource(strings = { "SomeBook", "  SomeBook", "SomeBook ", "  SomeBook  " })
   void testParse(String itemIdentifier) {
     ItemInformationMessageParser parser =
-      new ItemInformationMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
+        new ItemInformationMessageParser(valueOf('|'), TestUtils.UTCTimeZone);
     final OffsetDateTime transactionDate =
-      TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
+        TestUtils.getOffsetDateTimeUtc().truncatedTo(SECONDS);
     final DateTimeFormatter formatter = DateTimeFormatter
-      .ofPattern("yyyyMMdd    HHmmss");
+        .ofPattern("yyyyMMdd    HHmmss");
     final String transactionDateString = formatter.format(transactionDate);
     final ItemInformation itemInformation = parser.parse(
-      transactionDateString + "AB" + itemIdentifier + "|AOuniversity_id|");
+        transactionDateString + "AB" + itemIdentifier + "|AOuniversity_id|");
 
     assertEquals(transactionDate, itemInformation.getTransactionDate());
     assertEquals("university_id", itemInformation.getInstitutionId());
