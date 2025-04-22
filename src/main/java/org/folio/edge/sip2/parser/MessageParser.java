@@ -12,7 +12,6 @@ import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.parser.exceptions.MissingDelimiterException;
-import org.folio.util.StringUtil;
 
 /**
  * Base class for message parsing. Contains some common parsing methods.
