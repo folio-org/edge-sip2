@@ -1454,7 +1454,8 @@ class CirculationRepositoryTests {
         .put("totalRecords", 1);
 
     final String expectedPath = "/circulation/loans?query="
-        + PercentCodec.encode("(userId==\"" + userId + "\" and status.name=\"Open\")");
+        + PercentCodec.encode("(userId==\"" + userId + "\" and status.name=\"Open\")")
+        + "&limit=100";
 
     when(mockFolioProvider.retrieveResource(
         argThat((IRequestData data) -> data.getPath().equals(expectedPath))))
@@ -1465,7 +1466,7 @@ class CirculationRepositoryTests {
 
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, itemRepository, usersRepository, clock);
-    circulationRepository.getLoansByUserId(userId, null, null, sessionData).onComplete(
+    circulationRepository.getLoansByUserId(userId, null, 100, sessionData).onComplete(
         testContext.succeeding(loansResponse -> testContext.verify(() -> {
           assertNotNull(loansResponse);
           assertEquals(1, loansResponse.getInteger("totalRecords"));

@@ -20,6 +20,8 @@ import org.folio.util.StringUtil;
  *
  */
 public final class Utils {
+
+  public static final Integer DEFAULT_USER_LOANS_LIMIT = 500;
   public static final String TITLE_NOT_FOUND = "TITLE NOT FOUND";
 
   private Utils() {
@@ -134,5 +136,30 @@ public final class Utils {
           return temp;
         }
     };
+  }
+
+  /**
+   * Adds offset and limit to the query string.
+   *
+   * @param sb - StringBuilder to append to
+   * @param start - the starting item number
+   * @param end - the ending item number
+   * @return StringBuilder with offset and limit appended
+   */
+  public static StringBuilder appendQueryLimits(StringBuilder sb, Integer start, Integer end) {
+    final int offset;
+    if (start != null) {
+      offset = start - 1; // expects a 1-based count, FOLIO is 0
+      sb.append("&offset=").append(offset);
+    } else {
+      offset = 0;
+    }
+
+    if (end != null) {
+      final int limit = end - offset;
+      sb.append("&limit=").append(limit);
+    }
+
+    return sb;
   }
 }

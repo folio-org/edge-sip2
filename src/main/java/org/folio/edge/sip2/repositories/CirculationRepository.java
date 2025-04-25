@@ -4,7 +4,9 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.folio.edge.sip2.utils.JsonUtils.getChildString;
 import static org.folio.edge.sip2.utils.JsonUtils.getSubChildString;
+import static org.folio.edge.sip2.utils.Utils.DEFAULT_USER_LOANS_LIMIT;
 import static org.folio.edge.sip2.utils.Utils.TITLE_NOT_FOUND;
+import static org.folio.edge.sip2.utils.Utils.appendQueryLimits;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
@@ -493,23 +495,6 @@ public class CirculationRepository {
     public SessionData getSessionData() {
       return sessionData;
     }
-
-    protected StringBuilder appendLimits(StringBuilder sb) {
-      final int offset;
-      if (startItem != null) {
-        offset = startItem.intValue() - 1; // expects a 1-based count, FOLIO is 0
-        sb.append("&offset=").append(offset);
-      } else {
-        offset = 0;
-      }
-
-      if (endItem != null) {
-        final int limit = endItem.intValue() - offset;
-        sb.append("&limit=").append(limit);
-      }
-
-      return sb;
-    }
   }
 
   private class CheckinRequestData extends CirculationRequestData {
@@ -570,7 +555,7 @@ public class CirculationRepository {
           .append("/circulation/requests?query=")
           .append(PercentCodec.encode(qSb.toString()));
 
-      return appendLimits(urlSb).toString();
+      return appendQueryLimits(urlSb, super.startItem, super.endItem).toString();
     }
   }
 
@@ -590,7 +575,10 @@ public class CirculationRepository {
     @Override
     public String getPath() {
       var query = "(userId==" + StringUtil.cqlEncode(userId) + " and status.name=\"Open\")";
-      return "/circulation/loans?query=" + PercentCodec.encode(query);
+      var urlSb = new StringBuilder()
+          .append("/circulation/loans?query=")
+          .append(PercentCodec.encode(query));
+      return appendQueryLimits(urlSb, super.startItem, super.endItem).toString();
     }
   }
 
@@ -622,7 +610,7 @@ public class CirculationRepository {
           .append("/circulation/loans?query=")
           .append(PercentCodec.encode(qSb.toString()));
 
-      return appendLimits(path).toString();
+      return appendQueryLimits(path, null, null).toString();
     }
   }
 
@@ -815,7 +803,7 @@ public class CirculationRepository {
           final Map<String, String> headers = getBaseHeaders();
           // Assume a sensible limit, or rewrite this method
           final Future<JsonObject> loansFuture =
-              getLoansByUserId(user.getId(), null, null, sessionData);
+              getLoansByUserId(user.getId(), null, DEFAULT_USER_LOANS_LIMIT, sessionData);
 
           final RenewAllResponseBuilder builder = RenewAllResponse.builder();
 
