@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class UtilsTests {
 
@@ -49,5 +51,19 @@ public class UtilsTests {
   @Test
   public void testIsStringNullOrEmpty() {
     assertTrue(Utils.isStringNullOrEmpty(""));
+  }
+
+  @CsvSource({
+    ",,/api?query=cql.allRecords=1",
+    "1,10,/api?query=cql.allRecords=1&offset=0&limit=10",
+    "5,15,/api?query=cql.allRecords=1&offset=4&limit=11",
+    ",10,/api?query=cql.allRecords=1&limit=10",
+    "5,,/api?query=cql.allRecords=1&offset=4",
+  })
+  @ParameterizedTest
+  void appendQueryLimits_parameterized(Integer start, Integer end, String expected) {
+    var sb = new StringBuilder("/api?query=cql.allRecords=1");
+    var result = Utils.appendQueryLimits(sb, start, end);
+    assertEquals(expected, result.toString());
   }
 }
