@@ -152,6 +152,7 @@ public class CirculationRepository {
                           .itemIdentifier(itemIdentifier)
                           .callNumber(valuesJson.getString("callNumber"))
                           .mediaType(mediaType)
+                          .itemProperties(getMtype(valuesJson.getJsonObject("itemMaterialTypeJson")))
                           .patronIdentifier(getPatronBarcodeFromCheckin(resourceJson))
                           .pickupServicePoint(valuesJson.getString("servicePoint"))
                           // if the title is not available, use the item identifier passed in to the
@@ -943,6 +944,17 @@ public class CirculationRepository {
       mediaType = MediaType.OTHER;
     }
     return mediaType;
+  }
+
+  private String getMtype(JsonObject materialTypeJson) {
+    if (materialTypeJson == null) {
+      return "";
+    }
+    String materialType = materialTypeJson.getString("name");
+    if (materialType == null) {
+      return "";
+    }
+    return materialType;
   }
 
   protected static String getAlertType(boolean inTransit, boolean holdItem, boolean recallItem) {
