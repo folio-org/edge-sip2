@@ -129,8 +129,8 @@ public class CirculationRepository {
                 .compose(requestsJson -> {
                   log.debug("JSON from getRequestsByItemId is {}",
                       () -> requestsJson != null ? requestsJson.encode() : "null");
-                  JsonObject mJo = valuesJson.getJsonObject("itemMaterialTypeJson");
-                  MediaType mediaType = getMediaType(mJo);
+                  JsonObject mtJo = valuesJson.getJsonObject("itemMaterialTypeJson");
+                  MediaType mediaType = getMediaType(mtJo);
                   JsonArray requestArray =
                       requestsJson != null ? requestsJson.getJsonArray("requests") : null;
                   final String requestState = getRequestState(requestArray);
@@ -152,7 +152,7 @@ public class CirculationRepository {
                           .itemIdentifier(itemIdentifier)
                           .callNumber(valuesJson.getString("callNumber"))
                           .mediaType(mediaType)
-                          .itemProperties(getMtype(mJo))
+                          .itemProperties(getMtype(mtJo))
                           .patronIdentifier(getPatronBarcodeFromCheckin(resourceJson))
                           .pickupServicePoint(valuesJson.getString("servicePoint"))
                           // if the title is not available, use the item identifier passed in to the
