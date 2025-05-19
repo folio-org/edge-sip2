@@ -26,7 +26,7 @@ Here is a sample sip2.conf file:
 { 
   "port": 6443,
   "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
-  "haProxy": true,
+  "haProxy": false,
   "tenantConfigRetrieverOptions": {
     "scanPeriod": 300000,
     "stores": [{
