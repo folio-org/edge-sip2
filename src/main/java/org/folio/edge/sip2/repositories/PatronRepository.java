@@ -14,6 +14,7 @@ import static org.folio.edge.sip2.domain.messages.enumerations.Summary.OVERDUE_I
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.RECALL_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.UNAVAILABLE_HOLDS;
 import static org.folio.edge.sip2.utils.JsonUtils.getChildString;
+import static org.folio.edge.sip2.utils.Utils.DEFAULT_USER_LOANS_LIMIT;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -279,7 +280,7 @@ public class PatronRepository {
 
     // Add charged count
     final Future<PatronInformationResponseBuilder> loansFuture = circulationRepository
-        .getLoansByUserId(userId, null, null, sessionData)
+        .getLoansByUserId(userId, null, DEFAULT_USER_LOANS_LIMIT, sessionData)
         .map(loans -> {
           populateChargedCount(loans, builder);
           return addCharged(loans, patronInformation.getSummary() == CHARGED_ITEMS, builder);
@@ -821,7 +822,7 @@ public class PatronRepository {
 
   private Future<List<Future<JsonObject>>> getRecalls(String userId, SessionData sessionData) {
     final Future<JsonObject> loansFuture =
-        circulationRepository.getLoansByUserId(userId, null, null, sessionData);
+        circulationRepository.getLoansByUserId(userId, null, DEFAULT_USER_LOANS_LIMIT, sessionData);
 
     return loansFuture.map(jo -> {
       final JsonArray loans = jo == null ? new JsonArray()

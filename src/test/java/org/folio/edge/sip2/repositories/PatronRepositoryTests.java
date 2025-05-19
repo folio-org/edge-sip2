@@ -48,7 +48,6 @@ import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.folio.edge.sip2.domain.messages.requests.PatronStatusRequest;
 import org.folio.edge.sip2.domain.messages.responses.EndSessionResponse;
-import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
 import org.folio.edge.sip2.repositories.domain.ExtendedUser;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.repositories.domain.Personal;
@@ -65,6 +64,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class PatronRepositoryTests {
+
+  private static final Integer TEST_USER_LOANS_LIMIT = 500;
+
   @Test
   public void canCreatePatronRepository(
       @Mock UsersRepository mockUsersRepository,
@@ -180,7 +182,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByUserId(
         any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(holdsResponse));
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(openLoansResponse));
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
@@ -295,7 +297,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByUserId(
         any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(holdsResponse));
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(openLoansResponse));
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
@@ -371,7 +373,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByUserId(
         any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(holdsResponse));
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(openLoansResponse));
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
@@ -486,7 +488,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByUserId(
         any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(holdsResponse));
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(openLoansResponse));
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
@@ -602,7 +604,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByUserId(
         any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(holdsResponse));
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(openLoansResponse));
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
@@ -720,7 +722,7 @@ public class PatronRepositoryTests {
         any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(holdsResponse));
 
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(openLoansResponse));
 
     doReturn(Future.succeededFuture(extendedUser))
@@ -816,7 +818,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByUserId(
       any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(holdsResponse));
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(openLoansResponse));
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
@@ -928,7 +930,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByUserId(
       any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(holdsResponse));
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(openLoansResponse));
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
@@ -1038,7 +1040,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByUserId(
         any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(holdsResponse));
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(openLoansResponse));
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
@@ -1379,7 +1381,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByUserId(
         any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(holdsResponse));
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(openLoansResponse));
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
@@ -1494,7 +1496,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByUserId(
         any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(holdsResponse));
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(openLoansResponse));
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
@@ -1580,7 +1582,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByUserId(
         any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(holdsResponse));
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(openLoansResponse));
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
@@ -1658,7 +1660,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByUserId(
         any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(holdsResponse));
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(openLoansResponse));
     when(mockCirculationRepository.getRequestsByItemId(
         eq("4593bdb8-f056-4a75-9c75-7b04c3a1dd64"), eq("Recall"), any(), any(), any()))
@@ -2030,7 +2032,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByUserId(
         any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(null));
     when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
@@ -2124,7 +2126,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByUserId(
         any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(new JsonObject().put("loans",
             new JsonArray().add(new JsonObject().put("itemId", "1234")))));
     when(mockCirculationRepository.getRequestsByItemId(
@@ -2226,7 +2228,7 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByUserId(
       any(), eq("Hold"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
-    when(mockCirculationRepository.getLoansByUserId(any(), any(), any(), any()))
+    when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(null));
     when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
