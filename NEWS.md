@@ -1,4 +1,7 @@
-## 3.4.0 2025-03-XX
+## 3.4.1 2025-05-20
+* [SIP2-267](https://folio-org.atlassian.net/browse/SIP2-267): Payment failed, due to incorrect username being transmitted ([#PR209](https://github.com/folio-org/edge-sip2/pull/209))
+
+## 3.4.0 2025-03-14
 * [SIP2-244](https://issues.folio.org/browse/SIP2-244): Rename automated patron blocks permission
 * [FOLIO-4214](https://issues.folio.org/browse/FOLIO-4214): Java and RMB version upgrade for Sunflower.
 
