@@ -78,7 +78,8 @@ class EdgeSip2IT {
 
   @Test
   void loginFailure() {
-    stubFor(post("/authn/login-with-expiry").willReturn(status(422)));
+    stubFor(post("/authn/login-with-expiry")
+        .willReturn(status(422).withBody("Unprocessable Content")));
     assertThat(send("9300CNMartin|COpassword|\r"), is("940\r"));
   }
 
