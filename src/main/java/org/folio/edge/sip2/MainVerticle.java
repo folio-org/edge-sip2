@@ -135,6 +135,15 @@ public class MainVerticle extends AbstractVerticle {
 
         String clientAddress = socket.remoteAddress().host();
 
+        vertx.createDnsClient().reverseLookup(clientAddress, result -> {
+          if (result.succeeded()) {
+            String hostName = result.result();
+            log.info("Resolved host name: {}", hostName);
+          } else {
+            log.info("Failed to resolve host name: {}", result.cause().getMessage());
+          }
+        });
+
         ThreadContext.put(IPADDRESS, clientAddress);
 
         JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIpAddress(multiTenantConfig,
