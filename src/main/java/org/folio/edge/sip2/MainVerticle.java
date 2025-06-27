@@ -556,9 +556,9 @@ public class MainVerticle extends AbstractVerticle {
     }
   }
 
-  public static int getHealthCheckPort() {
-     return Integer.parseInt(
-       System.getenv().getOrDefault(HEALTH_CHECK_PORT_ENV_VAR, HEALTH_CHECK_DEFAULT_PORT)
-     );
+  private static int getHealthCheckPort() {
+    return Integer.parseInt(
+      System.getenv().getOrDefault(HEALTH_CHECK_PORT_ENV_VAR, HEALTH_CHECK_DEFAULT_PORT)
+    );
   }
 }
