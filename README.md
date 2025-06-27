@@ -93,15 +93,15 @@ Here is a sample sip2-tenants.conf file:
 }
 ```
 
-|Config option|Type|Description|
-|-------------|----|-----------|
-|`scTenants`|JSON array|Array of sip2 tenant configurations.|
-|`scSubnet`|string|IPv4 CIDR of a tenant's self service kiosk. This is used to identify the tenant configuration for an incoming kiosk connection. |
-|`tenant`|string|The FOLIO assigned tenant ID. |
-|`errorDetectionEnabled`|boolean|Indicates whether or not the self service kiosk will be using SIP error detection in messages sent to and from this module. Defaults to "false".|
-|`messageDelimiter`|string|The character sequence that indicates the end of a single SIP message. This is available in case the self check kiosk is not compliant with the SIP specification. The default is "\\r"|
-|`fieldDelimiter`|string|The character that the self service kiosk will use when encoding SIP messages. Defaults to "\|".|
-|`charset`|string|The character set SIP messages must be encoded with when sent and received by the self service kiosk. The charset must be defined as a "Canonical Name for java.nio API". See: [Supported Encodings](https://docs.oracle.com/en/java/javase/11/intl/supported-encodings.html). Default is "IBM850".|
+| Config option           | Type       | Description                                                                                                                                                                                                                                                                                         |
+|-------------------------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `scTenants`             | JSON array | Array of sip2 tenant configurations.                                                                                                                                                                                                                                                                |
+| `scSubnet`              | string     | IPv4 CIDR of a tenant's self service kiosk. This is used to identify the tenant configuration for an incoming kiosk connection.                                                                                                                                                                     |
+| `tenant`                | string     | The FOLIO assigned tenant ID.                                                                                                                                                                                                                                                                       |
+| `errorDetectionEnabled` | boolean    | Indicates whether or not the self service kiosk will be using SIP error detection in messages sent to and from this module. Defaults to "false".                                                                                                                                                    |
+| `messageDelimiter`      | string     | The character sequence that indicates the end of a single SIP message. This is available in case the self check kiosk is not compliant with the SIP specification. The default is "\\r"                                                                                                             |
+| `fieldDelimiter`        | string     | The character that the self service kiosk will use when encoding SIP messages. Defaults to "\|".                                                                                                                                                                                                    |
+| `charset`               | string     | The character set SIP messages must be encoded with when sent and received by the self service kiosk. The charset must be defined as a "Canonical Name for java.nio API". See: [Supported Encodings](https://docs.oracle.com/en/java/javase/11/intl/supported-encodings.html). Default is "IBM850". |
 
 ### Tenant configuration located in AWS S3
 Edge-sip2 supports [various locations](https://vertx.io/docs/vertx-config/java/#_available_configuration_stores) for sip2-tenants.conf  tenant configuration. Additionally, it supports [S3 config](https://github.com/mikelee2082/vertx-config-s3). To include vertx-config-s3 libraries when building edge-sip2, include the maven profile command:
@@ -135,22 +135,22 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
 
 ### Tenant Properties
 
-|Property|Type| Description                                                                                                                                                                                                                  |
-|--------|----|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|`statusUpdateOk`|`boolean`| Indicates to the kiosk that the SIP service allows patron status updates from the kiosk.                                                                                                                                     |
-|`offlineOk`|`boolean`| Indicates to the kiosk that FOLIO supports off-line operations.                                                                                                                                                              |
-|`supportedMessages`|`object[]`| An array objects that indicate to the kiosk which messages are supported by the edge-sip2 module.                                                                                                                            |
-|`patronPasswordVerificationRequired`|`boolean`| Indicates whether or not SIP commands that supply a patron password will attempt to verify the password by attempting a FOLIO login with these supplied patron credentials. A failed patron login will fail the SIP request. Defaults to false. |
- |`invalidCheckinStatuses`|`string`| A comma-separated list of item statuses that will block an attempt to checkin a given item via SIP2.                                                                                                                         |
- |`usePinForPatronVerification`|`boolean`| Indicates whether or not to use patron PIN instead of password for verification. Defaults to false. |
- |`alwaysCheckPatronPassword`|`boolean`| Indicates whether or not to check a provided patron password if patronPasswordVerificationRequired is disabled. Defaults to true.                                                                                            |
+| Property                             | Type       | Description                                                                                                                                                                                                                                     |
+|--------------------------------------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `statusUpdateOk`                     | `boolean`  | Indicates to the kiosk that the SIP service allows patron status updates from the kiosk.                                                                                                                                                        |
+| `offlineOk`                          | `boolean`  | Indicates to the kiosk that FOLIO supports off-line operations.                                                                                                                                                                                 |
+| `supportedMessages`                  | `object[]` | An array objects that indicate to the kiosk which messages are supported by the edge-sip2 module.                                                                                                                                               |
+| `patronPasswordVerificationRequired` | `boolean`  | Indicates whether or not SIP commands that supply a patron password will attempt to verify the password by attempting a FOLIO login with these supplied patron credentials. A failed patron login will fail the SIP request. Defaults to false. |
+| `invalidCheckinStatuses`             | `string`   | A comma-separated list of item statuses that will block an attempt to checkin a given item via SIP2.                                                                                                                                            |
+| `usePinForPatronVerification`        | `boolean`  | Indicates whether or not to use patron PIN instead of password for verification. Defaults to false.                                                                                                                                             |
+| `alwaysCheckPatronPassword`          | `boolean`  | Indicates whether or not to check a provided patron password if patronPasswordVerificationRequired is disabled. Defaults to true.                                                                                                               |
 
 #### `supportedMessages` object properties
 
-|Property|Type|Description|
-|--------|----|-----------|
-|`messageName`|`string`|The name of the message. See: [Messages](src/main/java/org/folio/edge/sip2/domain/messages/enumerations/Messages.java)|
-|`isSupported`|`string`|`Y` or `N` to indicate to the kiosk whether or not the message is supported|
+| Property      | Type     | Description                                                                                                            |
+|---------------|----------|------------------------------------------------------------------------------------------------------------------------|
+| `messageName` | `string` | The name of the message. See: [Messages](src/main/java/org/folio/edge/sip2/domain/messages/enumerations/Messages.java) |
+| `isSupported` | `string` | `Y` or `N` to indicate to the kiosk whether or not the message is supported                                            |
 
 #### Example `configuration` object
 
@@ -165,15 +165,15 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
 
 ### Kiosk (service point) Properties
 
-|Property|Type|Description|
-|--------|----|-----------|
-|`retriesAllowed`|`number`|Indicates to the kiosk the number of retries allowed by FOLIO. This should be a number between 0 and 999, where 999 means that the retry number is unknown.|
-|`timeoutPeriod`|`number`|Indicates to the kiosk the period of time before a transaction is aborted by the kiosk. The number should be between 0 and 999, where 0 means that FOLIO is not online and 999 means the time out is unknown. The number is expressed in tenths of a second.|
-|`checkinOk`|`boolean`|Indicates whether or not the kiosk is allowed to check in items.|
-|`acsRenewalPolicy`|`boolean`|Indicates that the kiosk is allowed by FOLIO to process patron renewal requests.|
-|`checkoutOk`|`boolean`|Indicates whether or not the kiosk is allowed to check out items.|
-|`libraryName`|`string`|The name of the library where the kiosk is located or whatever makes sense for the tenant.|
-|`terminalLocation`|`string`|This could be the location of the kiosk within the library or the UUID of the service point.|
+| Property           | Type      | Description                                                                                                                                                                                                                                                  |
+|--------------------|-----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `retriesAllowed`   | `number`  | Indicates to the kiosk the number of retries allowed by FOLIO. This should be a number between 0 and 999, where 999 means that the retry number is unknown.                                                                                                  |
+| `timeoutPeriod`    | `number`  | Indicates to the kiosk the period of time before a transaction is aborted by the kiosk. The number should be between 0 and 999, where 0 means that FOLIO is not online and 999 means the time out is unknown. The number is expressed in tenths of a second. |
+| `checkinOk`        | `boolean` | Indicates whether or not the kiosk is allowed to check in items.                                                                                                                                                                                             |
+| `acsRenewalPolicy` | `boolean` | Indicates that the kiosk is allowed by FOLIO to process patron renewal requests.                                                                                                                                                                             |
+| `checkoutOk`       | `boolean` | Indicates whether or not the kiosk is allowed to check out items.                                                                                                                                                                                            |
+| `libraryName`      | `string`  | The name of the library where the kiosk is located or whatever makes sense for the tenant.                                                                                                                                                                   |
+| `terminalLocation` | `string`  | This could be the location of the kiosk within the library or the UUID of the service point.                                                                                                                                                                 |
 
 #### Example `configuration` object
 
@@ -188,9 +188,9 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
 
 ### FOLIO Provided Properties
 
-|Property|Type|Description|
-|--------|----|-----------|
-|`timezone`|`string`|The tenant's time zone as set in FOLIO.| 
+| Property   | Type     | Description                             |
+|------------|----------|-----------------------------------------|
+| `timezone` | `string` | The tenant's time zone as set in FOLIO. | 
 
 #### Example `configuration` object
 
@@ -207,23 +207,23 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
 
 Currently, edge-sip2 implements select SIP messages. Below, is the list of all implemented messages.
 
-|SIP Request|Implemented|Notes|
-|-----------|-----------|-----|
-|Patron Status Request|Yes||
-|Checkout|Yes|Response SIP fields hardcoded: "renewal ok" is set to "N", "magnetic media" is set to "U". SIP field "desensitize" is set to "Y" is the FOLIO check out succeeded and "N" when there is failure. Fee/fines related fields are not implemented. The "due date" format is the same as other SIP date/time format strings: "YYYYMMDDZZZZHHMMSS".|
-|Checkin|Yes|Response SIP fields hardcoded: "alert" is set to "N", "magnetic media" is set to "U". Most optional SIP fields are not implemented. The "resensitize" field will be set to "Y" if the FOLIO check in succeeded and "N" if there was a failure.|
-|Block Patron|No||
-|SC Status|Yes||
-|Request ACS Resend|Yes||
-|Login|Yes|The request "location code" should contain the UUID of the service point for the kiosk.|
-|Patron Information|Yes|Response SIP field "hold items count" currently only refers to FOLIO "Hold" requests and not "Page" requests. Only "Hold" request data is returned in the summary results as well. The "charged items count", "fine items count" and "unavailable holds count" are not supported. However, "unavailable holds count" is not implemented due to an oversight as "hold items count" includes all "Hold" requests in any "Open" state, instead of limited to "Open - Awaiting pickup". Likewise, "unavailable holds count" could contain "Hold" requests that are not "Closed" and not "Open - Awaiting pickup". This will likely need to be corrected. The response "patron status" field is partially supported via FOLIO manual blocks where a "borrowing" block will set all privilege codes to "N", a "renewals" block will set the SIP "renewal privileges defined" code to "N", and a "requests" block will set "hold privileges denied" and "recall privileges denied" to "N".|
-|End Patron Session|Yes||
-|Fee Paid|Yes||
-|Item Information|Yes||
-|Patron Enable|No||
-|Hold|No||
-|Renew|Yes||
-|Renew All|Yes||
+| SIP Request           | Implemented | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+|-----------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Patron Status Request | Yes         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Checkout              | Yes         | Response SIP fields hardcoded: "renewal ok" is set to "N", "magnetic media" is set to "U". SIP field "desensitize" is set to "Y" is the FOLIO check out succeeded and "N" when there is failure. Fee/fines related fields are not implemented. The "due date" format is the same as other SIP date/time format strings: "YYYYMMDDZZZZHHMMSS".                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Checkin               | Yes         | Response SIP fields hardcoded: "alert" is set to "N", "magnetic media" is set to "U". Most optional SIP fields are not implemented. The "resensitize" field will be set to "Y" if the FOLIO check in succeeded and "N" if there was a failure.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Block Patron          | No          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| SC Status             | Yes         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Request ACS Resend    | Yes         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Login                 | Yes         | The request "location code" should contain the UUID of the service point for the kiosk.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Patron Information    | Yes         | Response SIP field "hold items count" currently only refers to FOLIO "Hold" requests and not "Page" requests. Only "Hold" request data is returned in the summary results as well. The "charged items count", "fine items count" and "unavailable holds count" are not supported. However, "unavailable holds count" is not implemented due to an oversight as "hold items count" includes all "Hold" requests in any "Open" state, instead of limited to "Open - Awaiting pickup". Likewise, "unavailable holds count" could contain "Hold" requests that are not "Closed" and not "Open - Awaiting pickup". This will likely need to be corrected. The response "patron status" field is partially supported via FOLIO manual blocks where a "borrowing" block will set all privilege codes to "N", a "renewals" block will set the SIP "renewal privileges defined" code to "N", and a "requests" block will set "hold privileges denied" and "recall privileges denied" to "N". |
+| End Patron Session    | Yes         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Fee Paid              | Yes         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Item Information      | Yes         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Patron Enable         | No          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Hold                  | No          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Renew                 | Yes         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Renew All             | Yes         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 ## Security
 
@@ -251,29 +251,29 @@ Example edge-sip2 configuration:
 $ java -jar edge-sip2-fat.jar -conf '{"port":1234,"okapiUrl":"https://folio-snapshot-okapi.dev.folio.org","tenant":"diku","netServerOptions":{"ssl":true,"pemKeyCertOptions":{"certPaths":["cert.crt"],"keyPaths":["cert.key"]}}}'
 ```
 
-|Config option|Type|Description|
-|-------------|----|-----------|
-|`ssl`|boolean|Indicates whether or not to enable SSL (TLS) support for the server|
-|`pemKeyCertOptions`|JSON object|Used when the certificate is in PEM format|
-|`pfxKeyCertOptions`|JSON object|Used when the certificate is in PFX format|
-|`keyStoreOptions`|JSON object|Used when the certificate is in JKS (Java Keystore) format|
+| Config option       | Type        | Description                                                         |
+|---------------------|-------------|---------------------------------------------------------------------|
+| `ssl`               | boolean     | Indicates whether or not to enable SSL (TLS) support for the server |
+| `pemKeyCertOptions` | JSON object | Used when the certificate is in PEM format                          |
+| `pfxKeyCertOptions` | JSON object | Used when the certificate is in PFX format                          |
+| `keyStoreOptions`   | JSON object | Used when the certificate is in JKS (Java Keystore) format          |
 
-|`pemKeyCertOptions`|type|Description|
-|-------------------|----|-----------|
-|`certPath`|string|File system path to a PEM formatted certificate|
-|`certPaths`|JSON array of strings|File system paths to PEM formatted certificates|
-|`keyPath`|string|File system path to PEM formatted key|
-|`keyPaths`|JSON array of strings|File system paths to PEM formatted keys|
+| `pemKeyCertOptions` | type                  | Description                                     |
+|---------------------|-----------------------|-------------------------------------------------|
+| `certPath`          | string                | File system path to a PEM formatted certificate |
+| `certPaths`         | JSON array of strings | File system paths to PEM formatted certificates |
+| `keyPath`           | string                | File system path to PEM formatted key           |
+| `keyPaths`          | JSON array of strings | File system paths to PEM formatted keys         |
 
-|`pfxKeyCertOptions`|type|Description|
-|-------------------|----|-----------|
-|`path`|string|File system path to PFX (PKCS #12) store|
-|`password`|string|The password for the PFX (PKCS #12) store|
+| `pfxKeyCertOptions` | type   | Description                               |
+|---------------------|--------|-------------------------------------------|
+| `path`              | string | File system path to PFX (PKCS #12) store  |
+| `password`          | string | The password for the PFX (PKCS #12) store |
 
-|`keyStoreOptions`|type|Description|
-|-----------------|----|-----------|
-|`path`|string|File system path to JKS key store|
-|`password`|string|The password for the JKS key store|
+| `keyStoreOptions` | type   | Description                        |
+|-------------------|--------|------------------------------------|
+| `path`            | string | File system path to JKS key store  |
+| `password`        | string | The password for the JKS key store |
 
 ## Permissions
 All permission associated with edge-sip2
@@ -311,7 +311,8 @@ For local development, there is no requirement to encrypt communications from a 
 
 ## Health check
 
-A GET /admin/health request sent to port 8081 gets a response with 200 HTTP status code.
+A `GET /admin/health` request sent to health check port gets a response with 200 HTTP status code.
+The value of the health check port is defined by the environment variable `HEALTH_CHECK_PORT` or defaults to 8081 if not set.
 
 ## Metrics
 
@@ -341,14 +342,14 @@ For a list of Vert.x metrics (HTTP Client and Net Server are the primary sources
 
 The following metrics are supplied by this module:
 
-|Metric name|Labels|Type|Description|
-|-----------|------|----|-----------|
-|`org_folio_edge_sip2_command_timer`|`command`|Timer|SIP2 command execution time|
-|`org_folio_edge_sip2_invalidMessage_errors`|`port`|Counter|A count of invalid message errors|
-|`org_folio_edge_sip2_request_errors`|`port`|Counter|A count of request errors|
-|`org_folio_edge_sip2_response_errors`|`port`|Counter|A count of response errors|
-|`org_folio_edge_sip2_scResend_errors`|`port`|Counter|A count of SC resend errors, which occurs when the module fails to send the SC a resend message when the prior received message was not understood|
-|`org_folio_edge_sip2_socket_errors`|`port`|Counter|A count of socket errors|
+| Metric name                                 | Labels    | Type    | Description                                                                                                                                        |
+|---------------------------------------------|-----------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `org_folio_edge_sip2_command_timer`         | `command` | Timer   | SIP2 command execution time                                                                                                                        |
+| `org_folio_edge_sip2_invalidMessage_errors` | `port`    | Counter | A count of invalid message errors                                                                                                                  |
+| `org_folio_edge_sip2_request_errors`        | `port`    | Counter | A count of request errors                                                                                                                          |
+| `org_folio_edge_sip2_response_errors`       | `port`    | Counter | A count of response errors                                                                                                                         |
+| `org_folio_edge_sip2_scResend_errors`       | `port`    | Counter | A count of SC resend errors, which occurs when the module fails to send the SC a resend message when the prior received message was not understood |
+| `org_folio_edge_sip2_socket_errors`         | `port`    | Counter | A count of socket errors                                                                                                                           |
 
 JVM metrics (memory, GC, threads, etc.) are supplied as well.
 
