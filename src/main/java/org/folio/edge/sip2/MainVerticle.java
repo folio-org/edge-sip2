@@ -73,7 +73,8 @@ import org.folio.edge.sip2.utils.WebClientUtils;
 
 public class MainVerticle extends AbstractVerticle {
 
-  private static final int HEALTH_CHECK_PORT = 8081;
+  private static final String HEALTH_CHECK_PORT_ENV_VAR = "HEALTH_CHECK_PORT";
+  private static final String HEALTH_CHECK_DEFAULT_PORT = "8081";
   private static final String  HEALTH_CHECK_PATH = "/admin/health";
 
   private final Sip2LogAdapter log = Sip2LogAdapter.getLogger(MainVerticle.class);
@@ -432,8 +433,9 @@ public class MainVerticle extends AbstractVerticle {
       }
     });
 
-    var msg = "Listening for /admin/health requests at port " + HEALTH_CHECK_PORT;
-    httpServer.listen(HEALTH_CHECK_PORT)
+    var healthCheckPort = getHealthCheckPort();
+    var msg = "Listening for /admin/health requests at port " + healthCheckPort;
+    httpServer.listen(healthCheckPort)
         .onSuccess(x -> log.info("{} now", msg))
         .onFailure(e -> log.error("{} failed: {}", msg, e.getMessage(), e));
   }
@@ -549,5 +551,11 @@ public class MainVerticle extends AbstractVerticle {
       return currentMessage.getChecksumsString().equals(prevMessage.getPreviousRequestChecksum())
         && currentMessage.getSequenceNumber() == prevMessage.getPreviousRequestSequenceNo();
     }
+  }
+
+  private static int getHealthCheckPort() {
+    return Integer.parseInt(
+      System.getenv().getOrDefault(HEALTH_CHECK_PORT_ENV_VAR, HEALTH_CHECK_DEFAULT_PORT)
+    );
   }
 }
