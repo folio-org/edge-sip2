@@ -282,7 +282,6 @@ All permission associated with edge-sip2
     circulation.check-out-by-barcode.post
     circulation.requests.collection.get
     search.instances.collection.get
-    search.instances.ids.collection.get
     circulation.loans.collection.get
     configuration.entries.collection.get
     configuration.entries.item.get
