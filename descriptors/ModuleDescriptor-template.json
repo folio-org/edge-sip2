@@ -24,8 +24,8 @@
       "version": "19.1"
     },
     {
-      "id": "search",
-      "version": "1.3"
+      "id": "search-inventory",
+      "version": "1.0"
     }
   ],
   "permissionSets": [
@@ -38,7 +38,6 @@
         "circulation.check-out-by-barcode.post",
         "circulation.requests.collection.get",
         "search.instances.collection.get",
-        "search.instances.ids.collection.get",
         "circulation.loans.collection.get",
         "configuration.entries.collection.get",
         "configuration.entries.item.get",
