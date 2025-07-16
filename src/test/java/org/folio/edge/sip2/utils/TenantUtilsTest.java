@@ -10,7 +10,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 class TenantUtilsTest {
 
-  private static final String multiTenantConfig = """
+  private static final String MULTI_TENANT_CONFIG = """
       {
         "port": 6443,
         "okapiUrl": "http://okapi:9130",
@@ -50,7 +50,7 @@ class TenantUtilsTest {
         "charset": "ISO-8859-1"
       }""";
 
-  private static final String multiTenantConfigWithPort = """
+  private static final String MULTI_TENANT_CONFIG_WITH_PORT = """
       {
         "ports": [6443, 6444, 6445],
         "okapiUrl": "http://okapi:9130",
@@ -93,7 +93,7 @@ class TenantUtilsTest {
         "charset": "ISO-8859-1"
       }""";
 
-  private static final String multiTenantConfigIPv6 = """
+  private static final String MULTI_TENANT_CONFIG_IPV6 = """
       {
         "port": 6443,
         "okapiUrl": "http://okapi:9130",
@@ -133,7 +133,7 @@ class TenantUtilsTest {
         "charset": "ISO-8859-1"
       }""";
 
-  private static final String nonMultiTenantConfig = """
+  private static final String NON_MULTI_TENANT_CONFIG = """
       {
         "ports": [6443],
         "okapiUrl": "http://okapi:9130",
@@ -143,11 +143,11 @@ class TenantUtilsTest {
         "charset": "ISO-8859-1"
       }""";
 
-  private static final int defaultPort = 0;
+  private static final int DEFAULT_PORT = 0;
 
   @Test
   void testNonMultiTenantConfig() {
-    assertEquals("default", getTenantFromPort(nonMultiTenantConfig, "1.2.3.4", defaultPort));
+    assertEquals("default", getTenantFromPort(NON_MULTI_TENANT_CONFIG, "1.2.3.4", DEFAULT_PORT));
   }
 
   @ParameterizedTest(name = "[{index}][{0}] {1}:{2} -> {3}")
@@ -179,7 +179,7 @@ class TenantUtilsTest {
   void testMultiTenantConfig_parameterized(@SuppressWarnings("unused") String name,
       String ip, int port, String expectedTenant) {
 
-    assertEquals(expectedTenant, getTenantFromPort(multiTenantConfig, ip, port));
+    assertEquals(expectedTenant, getTenantFromPort(MULTI_TENANT_CONFIG, ip, port));
   }
 
   @ParameterizedTest(name = "[{index}][{0}] {1}:{2} -> {3}")
@@ -215,7 +215,7 @@ class TenantUtilsTest {
   void testMultiTenantConfigIPv6_parameterized(@SuppressWarnings("unused") String name,
       String ip, int port, String expectedTenant) {
 
-    assertEquals(expectedTenant, getTenantFromPort(multiTenantConfigIPv6, ip, port));
+    assertEquals(expectedTenant, getTenantFromPort(MULTI_TENANT_CONFIG_IPV6, ip, port));
   }
 
   @ParameterizedTest(name = "[{index}][{0}] {1}:{2} -> {3}")
@@ -231,7 +231,7 @@ class TenantUtilsTest {
   void testMultiTenantPortConfig_parameterized(@SuppressWarnings("unused") String name,
       String ip, int port, String expectedTenant) {
 
-    assertEquals(expectedTenant, getTenantFromPort(multiTenantConfigWithPort, ip, port));
+    assertEquals(expectedTenant, getTenantFromPort(MULTI_TENANT_CONFIG_WITH_PORT, ip, port));
   }
 
   @Test
@@ -254,7 +254,7 @@ class TenantUtilsTest {
             }
           ]
         }""";
-    assertEquals("defaultTenant", getTenantFromPort(config, "1.2.3.4", defaultPort));
+    assertEquals("defaultTenant", getTenantFromPort(config, "1.2.3.4", DEFAULT_PORT));
   }
 
   @Test
@@ -277,7 +277,7 @@ class TenantUtilsTest {
             }
           ]
         }""";
-    assertEquals("defaultTenant", getTenantFromPort(config, "2001:db8:ffff::1", defaultPort));
+    assertEquals("defaultTenant", getTenantFromPort(config, "2001:db8:ffff::1", DEFAULT_PORT));
   }
 
   private String getTenantFromPort(String config, String ip, int port) {
