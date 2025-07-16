@@ -215,7 +215,7 @@ public abstract class BaseTest {
 
       myVerticle = new MainVerticle(requestHandlerMap);
 
-    } else if (methodName.startsWith("canMakeARequest")) {
+    } else if (methodName.startsWith("canMakeARequest(")) {
       when(mockLoginHandler.execute(any(), any())).thenReturn(Future.succeededFuture("941"));
 
       EnumMap<Command, ISip2RequestHandler> requestHandlerMap =

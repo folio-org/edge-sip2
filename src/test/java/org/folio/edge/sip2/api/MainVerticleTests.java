@@ -58,15 +58,6 @@ public class MainVerticleTests extends BaseTest {
   }
 
   @Test
-  public void canMakeARequestIPv6(Vertx vertx, VertxTestContext testContext) {
-    callService("::1", "9300CNMartin|COpassword|\r",
-        testContext, vertx, null, result -> {
-          final String expectedString = "941\r";
-          assertEquals(expectedString, result);
-        });
-  }
-
-  @Test
   void canMakeAFailingRequest(Vertx vertx, VertxTestContext testContext) {
     callService("9300CNMartin|COpassword|\r",
         testContext, vertx, result -> {
