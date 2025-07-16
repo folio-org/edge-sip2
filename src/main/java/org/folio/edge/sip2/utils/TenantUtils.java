@@ -1,8 +1,8 @@
 package org.folio.edge.sip2.utils;
 
+import inet.ipaddr.IPAddressString;
 import io.vertx.core.json.JsonObject;
 import java.util.Optional;
-import org.apache.commons.net.util.SubnetUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -75,16 +75,26 @@ public class TenantUtils {
       return tenantConfigOptional.get();
     }
 
+    var clientIpString = new IPAddressString(clientIP);
+    if (!clientIpString.isValid()) {
+      log.warn("Invalid client IP address, returning default tenant: {}", clientIP);
+      return sip2config;
+    }
     // If no port match, check if the client IP is in range
-    tenantConfigOptional = sip2config.getJsonArray(SC_TENANTS).stream()
+    return sip2config.getJsonArray(SC_TENANTS).stream()
       .map(o -> (JsonObject) o)
-      .filter(jo -> {
-        SubnetUtils sn = new SubnetUtils(jo.getString(SC_SUBNET));
-        sn.setInclusiveHostCount(true);
-        return sn.getInfo().isInRange(clientIP);
-      })
-      .findFirst();
+      .filter(jo -> isInRange(jo, clientIpString))
+      .findFirst()
+      .orElse(sip2config);
+  }
 
-    return tenantConfigOptional.orElse(sip2config);
+  private static boolean isInRange(JsonObject jo, IPAddressString clientIpAddress) {
+    var subnet =  new IPAddressString(jo.getString(SC_SUBNET));
+    if (!subnet.isValid()) {
+      log.warn("Invalid subnet value in tenant config: {}", jo);
+      return false;
+    }
+
+    return subnet.contains(clientIpAddress);
   }
 }
