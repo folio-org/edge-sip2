@@ -1,3 +1,6 @@
+## 3.5.0 In Progress
+
+
 ## 3.4.0 2025-03-14
 * [SIP2-244](https://issues.folio.org/browse/SIP2-244): Rename automated patron blocks permission
 * [FOLIO-4214](https://issues.folio.org/browse/FOLIO-4214): Java and RMB version upgrade for Sunflower.

@@ -1,0 +1,31 @@
+# =====================================================================================
+# Default owners for the entire repo
+# This section MUST be first
+# =====================================================================================
+
+* @folio-org/volaris-backend
+
+#######################################################################################
+#
+# Entries below this section, if matched, will take precedence over the default owners.
+#
+# Pattern matching reference:
+# https://help.github.com/en/articles/about-code-owners#example-of-a-codeowners-file
+# https://git-scm.com/docs/gitignore#_pattern_format
+#
+#######################################################################################
+
+# =====================================================================================
+#
+# Contracts:
+#
+# Additional Contracts should be added in a new
+# section with a comment block listing the dependant
+# service.
+#
+# Add owners to patterns with the following syntax:
+#   "@owningTeam @folio-org/team"
+#
+# The default team for this repo MUST be listed in your owners entry.
+#
+# =====================================================================================
