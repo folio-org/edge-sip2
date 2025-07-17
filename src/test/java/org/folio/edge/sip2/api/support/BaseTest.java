@@ -155,6 +155,21 @@ public abstract class BaseTest {
   public void callService(String sipMessage, VertxTestContext testContext,
                           Vertx vertx, TestInfo testInfo, Handler<String> testHandler) {
 
+    callService("localhost", sipMessage, testContext, vertx, testInfo, testHandler);
+  }
+
+  /**
+   * Calls the service.
+   * @param serverAddress the sip message to send.
+   * @param sipMessage the sip message to send.
+   * @param testContext the vertx test context.
+   * @param vertx the vertx instance.
+   * @param testInfo info about the test.
+   * @param testHandler the handler for this test.
+   */
+  public void callService(String serverAddress, String sipMessage, VertxTestContext testContext,
+      Vertx vertx, TestInfo testInfo, Handler<String> testHandler) {
+
     NetClientOptions options = new NetClientOptions();
     options.setConnectTimeout(2);
     options.setIdleTimeout(2);
@@ -168,7 +183,7 @@ public abstract class BaseTest {
 
     NetClient tcpClient = vertx.createNetClient(options);
 
-    tcpClient.connect(port, "localhost", res -> {
+    tcpClient.connect(port, serverAddress, res -> {
       if (res.succeeded()) {
         log.debug("Shaking hands...");
         NetSocket socket = res.result();

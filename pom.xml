@@ -48,6 +48,9 @@
     <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
     <java.version>21</java.version>
     <raml-module-builder-version>35.4.0</raml-module-builder-version>
+
+    <!-- 3rd party library versions  -->
+    <ipaddress.version>5.5.1</ipaddress.version>
   </properties>
 
   <dependencyManagement>
@@ -179,6 +182,11 @@
         <groupId>org.folio</groupId>
         <artifactId>util</artifactId>
         <version>${raml-module-builder-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.seancfoley</groupId>
+      <artifactId>ipaddress</artifactId>
+      <version>${ipaddress.version}</version>
     </dependency>
 
     <!-- Test dependencies -->
