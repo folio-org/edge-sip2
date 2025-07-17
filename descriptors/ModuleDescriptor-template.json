@@ -26,6 +26,10 @@
     {
       "id": "search-inventory",
       "version": "1.0"
+    },
+    {
+      "id": "users-bl",
+      "version": "6.1"
     }
   ],
   "permissionSets": [
@@ -34,22 +38,24 @@
       "displayName" : "All permission associated with edge-sip2",
       "description" : "All permissions edge-sip scope",
       "subPermissions" : [
+        "accounts.collection.get",
         "circulation.check-in-by-barcode.post",
         "circulation.check-out-by-barcode.post",
-        "circulation.requests.collection.get",
-        "search.instances.collection.get",
         "circulation.loans.collection.get",
+        "circulation.renew-by-barcode.post",
+        "circulation.requests.collection.get",
         "configuration.entries.collection.get",
-        "configuration.entries.item.get",
-        "manualblocks.collection.get",
-        "manualblocks.item.get",
-        "accounts.collection.get",
-        "accounts.item.get",
-        "users.collection.get",
-        "users.item.get",
-        "patron-blocks.automated-patron-blocks.collection.get",
+        "feefines.collection.get",
+        "feesfines.accounts-bulk.pay.post",
+        "feesfines.accounts.pay.post",
         "inventory-storage.holdings.item.get",
-        "inventory.instances.item.get"
+        "inventory.instances.item.get",
+        "inventory.items.collection.get",
+        "manualblocks.collection.get",
+        "patron-pin.validate",
+        "search.instances.collection.get",
+        "users-bl.item.get",
+        "users.collection.get"
       ]
     }
   ],

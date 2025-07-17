@@ -171,7 +171,7 @@ public abstract class BaseTest {
       Vertx vertx, TestInfo testInfo, Handler<String> testHandler) {
 
     NetClientOptions options = new NetClientOptions();
-    options.setConnectTimeout(2);
+    options.setConnectTimeout(500);
     options.setIdleTimeout(2);
     options.setIdleTimeoutUnit(TimeUnit.SECONDS);
     options.setHostnameVerificationAlgorithm("HTTPS");

@@ -277,31 +277,38 @@ $ java -jar edge-sip2-fat.jar -conf '{"port":1234,"okapiUrl":"https://folio-snap
 
 ## Permissions
 All permission associated with edge-sip2
-```
-    circulation.check-in-by-barcode.post
-    circulation.check-out-by-barcode.post
-    circulation.requests.collection.get
-    search.instances.collection.get
-    circulation.loans.collection.get
-    configuration.entries.collection.get
-    configuration.entries.item.get
-    manualblocks.collection.get
-    manualblocks.item.get
-    accounts.collection.get
-    accounts.item.get
-    users.collection.get
-    users.item.get
-    patron-blocks.automated-patron-blocks.collection.get
-    inventory.items.collection.get
-    circulation.renew-by-barcode.post
-    usergroups.collection.get
-    users-bl.item.get
-    usergroups.item.get
-    usergroups.collection.get
-    inventory-storage.holdings.item.get
-    inventory.instances.item.get
-    feefines.collection.get
-    patron-pin.validate
+```text
+mod-circulation:
+- circulation.check-in-by-barcode.post
+- circulation.check-out-by-barcode.post
+- circulation.loans.collection.get
+- circulation.renew-by-barcode.post
+- circulation.requests.collection.get
+
+mod-configuration
+- configuration.entries.collection.get
+
+mod-feefines:
+- accounts.collection.get
+- feefines.collection.get
+- feesfines.accounts-bulk.pay.post
+- feesfines.accounts.pay.post
+- manualblocks.collection.get
+
+mod-inventory-storage:
+- inventory-storage.holdings.item.get
+- inventory.instances.item.get
+- inventory.items.collection.get
+
+mod-search:
+- search.instances.collection.get
+
+mod-users
+- patron-pin.validate
+- users.collection.get
+
+mod-users-bl:
+- users-bl.item.get
 ```
 
 #### Security concerns for developers
