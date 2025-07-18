@@ -34,6 +34,7 @@ import org.folio.okapi.common.refreshtoken.client.ClientOptions;
 public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   private static final String HEADER_X_OKAPI_TOKEN = "x-okapi-token";
   private static final String HEADER_X_OKAPI_TENANT = "x-okapi-tenant";
+  private static final String HEADER_X_OKAPI_REQUEST_ID = "x-okapi-request-id";
   private static final Logger log = LogManager.getLogger();
 
   private final String okapiUrl;
@@ -103,7 +104,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         sessionData.getTenant(), username, getPasswordSupplier);
 
     return tokenClient.getToken().compose(token -> {
-      log.debug("The login token is {}", token);
+      log.debug("The login token is issued");
       return Future.succeededFuture(token);
     }).onFailure(e -> {
       log.error("Unable to get the access token ", e);
@@ -191,6 +192,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
           sessionData.setAuthenticationToken(accessToken);
           request.putHeader(HEADER_X_OKAPI_TOKEN, accessToken);
           request.putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant());
+          request.putHeader(HEADER_X_OKAPI_REQUEST_ID, sessionData.getRequestId());
           promise.complete();
         });
   }

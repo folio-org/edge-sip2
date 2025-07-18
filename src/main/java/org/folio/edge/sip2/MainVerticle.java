@@ -15,6 +15,9 @@ import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 import static org.folio.edge.sip2.parser.Command.UNKNOWN;
+import static org.folio.okapi.common.logging.FolioLoggingContext.MODULE_ID_LOGGING_VAR_NAME;
+import static org.folio.okapi.common.logging.FolioLoggingContext.REQUEST_ID_LOGGING_VAR_NAME;
+import static org.folio.okapi.common.logging.FolioLoggingContext.TENANT_ID_LOGGING_VAR_NAME;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -45,7 +48,6 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
 import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.handlers.CheckinHandler;
@@ -69,13 +71,14 @@ import org.folio.edge.sip2.parser.Parser;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.TenantUtils;
 import org.folio.edge.sip2.utils.WebClientUtils;
+import org.folio.okapi.common.logging.FolioLoggingContext;
 
 public class MainVerticle extends AbstractVerticle {
 
   private static final String HEALTH_CHECK_PORT_ENV_VAR = "HEALTH_CHECK_PORT";
   private static final String HEALTH_CHECK_DEFAULT_PORT = "8081";
   private static final String  HEALTH_CHECK_PATH = "/admin/health";
-  private static final String IPADDRESS = "ipAddress";
+
   private Map<Command, ISip2RequestHandler> handlers;
   private List<NetServer> servers = new ArrayList<>();
   private final Logger log = LogManager.getLogger();
@@ -136,13 +139,15 @@ public class MainVerticle extends AbstractVerticle {
 
         String clientAddress = socket.remoteAddress().host();
 
-        ThreadContext.put(IPADDRESS, clientAddress);
-
         JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIpAddress(multiTenantConfig,
               clientAddress, port);
 
         final SessionData sessionData = getSessionData(tenantConfig);
         final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
+
+        FolioLoggingContext.put(TENANT_ID_LOGGING_VAR_NAME, sessionData.getTenant());
+        FolioLoggingContext.put(REQUEST_ID_LOGGING_VAR_NAME, sessionData.getRequestId());
+        FolioLoggingContext.put(MODULE_ID_LOGGING_VAR_NAME, "edge-sip2");
 
         socket.handler(RecordParser.newDelimited(messageDelimiter, buffer ->
             handleBuffer(buffer, socket, sessionData, messageDelimiter, metrics)));
