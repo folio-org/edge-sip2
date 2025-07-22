@@ -1,5 +1,7 @@
 package org.folio.edge.sip2.handlers;
 
+import static org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils.executeFreemarkerTemplate;
+
 import freemarker.template.Template;
 import io.vertx.core.Future;
 import java.util.HashMap;
@@ -7,18 +9,17 @@ import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.PatronInformation;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
-import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 public class PatronInformationHandler implements ISip2RequestHandler {
-  private static final Logger log = LogManager.getLogger();
+  private static final Sip2LogAdapter log =
+      Sip2LogAdapter.getLogger(PatronInformationHandler.class);
 
   private final PatronRepository patronRepository;
   private final Template commandTemplate;
@@ -36,7 +37,7 @@ public class PatronInformationHandler implements ISip2RequestHandler {
   public Future<String> execute(Object message, SessionData sessionData) {
     final PatronInformation patronInformation = (PatronInformation) message;
 
-    log.info("Patron Information: {}", patronInformation::getPatronLogInfo);
+    log.info(sessionData, "Patron Information: {}", patronInformation::getPatronLogInfo);
 
     // We need to collect data from the following places:
     // - mod-users
@@ -67,7 +68,7 @@ public class PatronInformationHandler implements ISip2RequestHandler {
   private String createPatronInformationResponse(
       SessionData sessionData,
       PatronInformationResponse patronInformationResponse) {
-    log.debug("PatronInformationResponse: {}", () -> patronInformationResponse);
+    log.debug(sessionData, "PatronInformationResponse: {}", () -> patronInformationResponse);
 
     final Map<String, Object> root = new HashMap<>();
     root.put("formatDateTime", new FormatDateTimeMethodModel());
@@ -76,8 +77,8 @@ public class PatronInformationHandler implements ISip2RequestHandler {
     root.put("maxLength", sessionData.getMaxPrintWidth());
     root.put("timezone", sessionData.getTimeZone());
 
-    final String response = FreemarkerUtils.executeFreemarkerTemplate(root, commandTemplate);
-    log.debug("SIP patron information response: {}", response);
+    final String response = executeFreemarkerTemplate(sessionData, root, commandTemplate);
+    log.debug(sessionData, "SIP patron information response: {}", response);
     return response;
   }
 }

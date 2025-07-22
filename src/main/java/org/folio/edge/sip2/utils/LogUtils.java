@@ -1,0 +1,58 @@
+package org.folio.edge.sip2.utils;
+
+import static org.folio.okapi.common.logging.FolioLoggingContext.REQUEST_ID_LOGGING_VAR_NAME;
+import static org.folio.okapi.common.logging.FolioLoggingContext.TENANT_ID_LOGGING_VAR_NAME;
+
+import java.util.concurrent.Callable;
+import org.apache.logging.log4j.CloseableThreadContext;
+import org.folio.edge.sip2.session.SessionData;
+
+public class LogUtils {
+
+  /**
+   * Executes the given {@link Callable} with the logging context set from the provided
+   * {@link SessionData}. If {@code sessionData} is {@code null}, the callable is executed
+   * without additional context.
+   *
+   * @param sessionData the session data containing logging context information, may be {@code null}
+   * @param callable    the callable to execute
+   * @param <R>         the result type of method call
+   * @return the result of the callable
+   * @throws Exception if the callable throws an exception
+   */
+  public static <R> R callWithContext(SessionData sessionData, Callable<R> callable)
+      throws Exception {
+    if (sessionData == null) {
+      return callable.call();
+    }
+
+    try (var ignored = prepareThreadContext(sessionData)) {
+      return callable.call();
+    }
+  }
+
+  /**
+   * Executes given {@link Runnable} with the logging context set from the provided data.
+   * If {@code sessionData} is {@code null}, the runnable is executed without additional context.
+   *
+   * @param sessionData the session data containing logging context information, may be {@code null}
+   * @param runnable    the runnable to execute
+   */
+  public static void runWithContext(SessionData sessionData, Runnable runnable) {
+    if (sessionData == null) {
+      runnable.run();
+      return;
+    }
+
+    try (var ignored = prepareThreadContext(sessionData)) {
+      runnable.run();
+    }
+  }
+
+  @SuppressWarnings("resource")
+  private static CloseableThreadContext.Instance prepareThreadContext(SessionData sessionData) {
+    return CloseableThreadContext
+        .put(TENANT_ID_LOGGING_VAR_NAME, sessionData.getTenant())
+        .put(REQUEST_ID_LOGGING_VAR_NAME, sessionData.getRequestId());
+  }
+}
