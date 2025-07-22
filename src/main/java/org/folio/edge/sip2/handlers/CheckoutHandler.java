@@ -34,7 +34,8 @@ public class CheckoutHandler implements ISip2RequestHandler {
 
   @Override
   public Future<String> execute(Object message, SessionData sessionData) {
-    log.debug(sessionData, "CheckoutHandler :: execute message:{} sessionData:{}",message,sessionData);
+    log.debug(sessionData, "CheckoutHandler :: execute message:{} sessionData:{}",
+        message, sessionData);
     final Checkout checkout = (Checkout) message;
 
     log.info(sessionData, "CheckoutHandler :: execute Checkout: {}", checkout::getCheckOutLogInfo);
@@ -66,7 +67,8 @@ public class CheckoutHandler implements ISip2RequestHandler {
   private String constructCheckoutResponse(
       SessionData sessionData,
       CheckoutResponse checkoutResponse) {
-    log.info(sessionData, "CheckoutHandler :: execute CheckoutResponse: {}", () -> checkoutResponse);
+    log.info(sessionData, "CheckoutHandler :: execute CheckoutResponse: {}",
+        () -> checkoutResponse);
 
     final Map<String, Object> root = new HashMap<>();
     root.put("formatDateTime", new FormatDateTimeMethodModel());

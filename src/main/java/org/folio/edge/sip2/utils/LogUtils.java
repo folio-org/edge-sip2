@@ -1,13 +1,13 @@
 package org.folio.edge.sip2.utils;
 
-import static org.folio.okapi.common.logging.FolioLoggingContext.REQUEST_ID_LOGGING_VAR_NAME;
-import static org.folio.okapi.common.logging.FolioLoggingContext.TENANT_ID_LOGGING_VAR_NAME;
-
 import java.util.concurrent.Callable;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.folio.edge.sip2.session.SessionData;
 
 public class LogUtils {
+
+  private static final String REQUEST_ID_LOGGING_VAR_NAME = "requestid";
+  private static final String TENANT_ID_LOGGING_VAR_NAME = "tenantid";
 
   /**
    * Executes the given {@link Callable} with the logging context set from the provided
