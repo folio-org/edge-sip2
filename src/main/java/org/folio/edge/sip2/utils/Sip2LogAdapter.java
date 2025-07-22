@@ -9,7 +9,6 @@ import org.folio.edge.sip2.session.SessionData;
 
 public class Sip2LogAdapter {
 
-  private static final String MODULE_NAME = "edge-sip2";
   private final Logger logger;
 
   /**

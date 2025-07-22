@@ -9,6 +9,10 @@ public class LogUtils {
   private static final String REQUEST_ID_LOGGING_VAR_NAME = "requestid";
   private static final String TENANT_ID_LOGGING_VAR_NAME = "tenantid";
 
+  private LogUtils() {
+    // Utility class, no instantiation allowed
+  }
+
   /**
    * Executes the given {@link Callable} with the logging context set from the provided
    * {@link SessionData}. If {@code sessionData} is {@code null}, the callable is executed
