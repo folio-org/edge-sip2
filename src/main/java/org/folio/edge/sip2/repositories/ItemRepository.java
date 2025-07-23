@@ -239,7 +239,7 @@ public class ItemRepository {
       ItemInformation itemInformation, SessionData sessionData) {
     Objects.requireNonNull(itemInformation, "itemInformation cannot be null");
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
-    log.debug(sessionData, "performItemInformationCommand itemIdentifier:{}",
+    log.debug(sessionData, "performItemInformationCommand itemIdentifier: {}",
         itemInformation.getItemIdentifier());
 
     final String itemIdentifier = itemInformation.getItemIdentifier();

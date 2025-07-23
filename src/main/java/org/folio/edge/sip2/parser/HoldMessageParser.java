@@ -10,11 +10,12 @@ import static org.folio.edge.sip2.domain.messages.enumerations.HoldType.SPECIFIC
 import static org.folio.edge.sip2.domain.messages.requests.Hold.builder;
 
 import java.time.OffsetDateTime;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.HoldMode;
 import org.folio.edge.sip2.domain.messages.enumerations.HoldType;
 import org.folio.edge.sip2.domain.messages.requests.Hold;
 import org.folio.edge.sip2.domain.messages.requests.Hold.HoldBuilder;
-import org.folio.edge.sip2.utils.Sip2LogAdapter;
 
 /**
  * Parser for the Hold message.
@@ -23,7 +24,7 @@ import org.folio.edge.sip2.utils.Sip2LogAdapter;
  *
  */
 public class HoldMessageParser extends MessageParser {
-  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(HoldMessageParser.class);
+  private static final Logger log = LogManager.getLogger();
 
   public HoldMessageParser(Character delimiter, String timezone) {
     super(delimiter, timezone);

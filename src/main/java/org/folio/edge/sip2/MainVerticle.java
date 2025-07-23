@@ -141,9 +141,6 @@ public class MainVerticle extends AbstractVerticle {
         final SessionData sessionData = getSessionData(tenantConfig);
         final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
 
-        log.error(sessionData, "Request ID: {}", sessionData.getRequestId());
-        log.error(sessionData, "New connection initialized...");
-
         socket.handler(RecordParser.newDelimited(messageDelimiter, buffer ->
             handleBuffer(buffer, socket, sessionData, messageDelimiter, metrics)));
 
@@ -304,7 +301,7 @@ public class MainVerticle extends AbstractVerticle {
             log.info("Server is now listening!");
             promise.complete();
           } else {
-            log.error(null, "Failed to start server", result.cause());
+            log.error("Failed to start server", result.cause());
             promise.fail(result.cause());
           }
         });

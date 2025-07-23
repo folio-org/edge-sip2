@@ -97,7 +97,7 @@ public class UsersRepository {
   }
 
   private User getUserFromList(JsonObject userList, SessionData sessionData) {
-    log.info(sessionData, "getUserFromList userList:{}",userList);
+    log.info(sessionData, "getUserFromList userList: {}",userList);
     final User user;
 
     if (userList == null
