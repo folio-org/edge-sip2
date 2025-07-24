@@ -307,7 +307,7 @@ public class MainVerticle extends AbstractVerticle {
         });
 
       } else {
-        log.error(null, "Failed to load tenant config", ar.cause());
+        log.error("Failed to load tenant config", ar.cause());
         promise.fail(ar.cause());
       }
     });
