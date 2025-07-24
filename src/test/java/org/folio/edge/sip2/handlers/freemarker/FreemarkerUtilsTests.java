@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import freemarker.template.Template;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import org.folio.edge.sip2.parser.Command;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +13,7 @@ class FreemarkerUtilsTests {
   void cannotExecuteFreemarkerTemplateGivenNullData() {
     Template acsStatusTemplate = FreemarkerRepository.getInstance()
                                     .getFreemarkerTemplate(Command.ACS_STATUS);
-    String result = FreemarkerUtils.executeFreemarkerTemplate(null, acsStatusTemplate);
+    String result = FreemarkerUtils.executeFreemarkerTemplate(null, null, acsStatusTemplate);
     assertEquals("", result);
   }
 
@@ -24,7 +22,7 @@ class FreemarkerUtilsTests {
     Object data = new Date(); //give it some bogus class
     Template acsStatusTemplate = FreemarkerRepository.getInstance()
                                     .getFreemarkerTemplate(Command.ACS_STATUS);
-    String result = FreemarkerUtils.executeFreemarkerTemplate(data, acsStatusTemplate);
+    String result = FreemarkerUtils.executeFreemarkerTemplate(null, data, acsStatusTemplate);
     assertEquals("", result);
   }
 

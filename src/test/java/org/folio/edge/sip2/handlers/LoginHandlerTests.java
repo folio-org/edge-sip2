@@ -188,7 +188,7 @@ public class LoginHandlerTests {
     root.put("loginResponse", loginResponse);
 
     final String response = FreemarkerUtils
-        .executeFreemarkerTemplate(root,
+        .executeFreemarkerTemplate(null, root,
         FreemarkerRepository
           .getInstance()
           .getFreemarkerTemplate(LOGIN_RESPONSE));

@@ -1,26 +1,25 @@
 package org.folio.edge.sip2.handlers;
 
 import io.vertx.core.Future;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.session.SessionData;
-
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 
 public class ACSResendHandler implements ISip2RequestHandler {
 
-  private static final Logger log = LogManager.getLogger();
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(ACSResendHandler.class);
 
   @Override
   public Future<String> execute(Object message, SessionData sessionData) {
-    log.debug("ACSResendHandler :: execute message:{} sessionData:{}",message,sessionData);
+    log.debug(sessionData, "ACSResendHandler :: execute message:{} sessionData:{}",
+        message, sessionData);
     PreviousMessage prevMessage = sessionData.getPreviousMessage();
 
     if (prevMessage == null) {
       return Future.failedFuture("PreviousMessage is NULL");
     }
-    log.info("ACSResendHandler :: execute prevMessage:{}",prevMessage);
+    log.info(sessionData, "ACSResendHandler :: execute prevMessage:{}", prevMessage);
     return Future.succeededFuture(prevMessage.getPreviousMessageResponse());
   }
 

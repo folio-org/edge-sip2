@@ -1,5 +1,7 @@
 package org.folio.edge.sip2.handlers;
 
+import static org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils.executeFreemarkerTemplate;
+
 import com.google.inject.Inject;
 import freemarker.template.Template;
 import io.vertx.core.Future;
@@ -7,20 +9,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import javax.inject.Named;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.EndPatronSession;
 import org.folio.edge.sip2.domain.messages.responses.EndSessionResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
-import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 public class EndPatronSessionHandler implements ISip2RequestHandler {
 
-  private static final Logger log = LogManager.getLogger();
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(EndPatronSessionHandler.class);
 
   private PatronRepository patronRepository;
   private Template commandTemplate;
@@ -36,10 +36,11 @@ public class EndPatronSessionHandler implements ISip2RequestHandler {
 
   @Override
   public Future<String> execute(Object message, SessionData sessionData) {
-    log.debug("EndPatronSessionHandler :: execute message:{} sessionData:{}", message,sessionData);
+    log.debug(sessionData, "EndPatronSessionHandler :: execute message:{} sessionData:{}",
+        message, sessionData);
 
     final EndPatronSession endPatronSession = (EndPatronSession) message;
-    log.info("EndPatronSessionHandler :: execute EndPatronSession: {}",
+    log.info(sessionData, "EndPatronSessionHandler :: execute EndPatronSession: {}",
         endPatronSession::getPatronSessionLogInfo);
 
     final Future<EndSessionResponse> endPatronSessionFuture =
@@ -70,7 +71,7 @@ public class EndPatronSessionHandler implements ISip2RequestHandler {
       SessionData sessionData,
       EndSessionResponse endSessionResponse) {
 
-    log.info("EndPatronSessionHandler :: execute EndSessionResponse: {}",
+    log.info(sessionData, "EndPatronSessionHandler :: execute EndSessionResponse: {}",
         () -> endSessionResponse);
 
     final Map<String, Object> root = new HashMap<>();
@@ -79,10 +80,10 @@ public class EndPatronSessionHandler implements ISip2RequestHandler {
     root.put("endSessionResponse", endSessionResponse);
     root.put("timezone", sessionData.getTimeZone());
 
-    final String response = FreemarkerUtils
-        .executeFreemarkerTemplate(root, commandTemplate);
+    final String response = executeFreemarkerTemplate(sessionData, root, commandTemplate);
 
-    log.info("EndPatronSessionHandler :: execute SIP end session response: {}", response);
+    log.info(sessionData, "EndPatronSessionHandler :: execute SIP end session response: {}",
+        response);
     return response;
   }
 

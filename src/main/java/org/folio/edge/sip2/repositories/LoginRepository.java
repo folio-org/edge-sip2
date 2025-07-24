@@ -6,11 +6,10 @@ import static java.lang.Boolean.TRUE;
 import io.vertx.core.Future;
 import java.util.Objects;
 import javax.inject.Inject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.Login;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 
 /**
  * Provides interaction with the login service.
@@ -19,7 +18,7 @@ import org.folio.edge.sip2.session.SessionData;
  *
  */
 public class LoginRepository {
-  private static final Logger log = LogManager.getLogger();
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(LoginRepository.class);
   private final IResourceProvider<IRequestData> resourceProvider;
 
   @Inject
@@ -49,7 +48,7 @@ public class LoginRepository {
 
     if (authToken == null) {
       // Can't continue without an auth token
-      log.error("Login does not have a valid authentication token");
+      log.error(sessionData, "Login does not have a valid authentication token");
       sessionData.setAuthenticationToken(null);
       return Future.succeededFuture(LoginResponse.builder().ok(FALSE).build());
     }

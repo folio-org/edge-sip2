@@ -10,14 +10,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.CirculationStatus;
 import org.folio.edge.sip2.domain.messages.enumerations.ItemStatus;
 import org.folio.edge.sip2.domain.messages.requests.ItemInformation;
 import org.folio.edge.sip2.domain.messages.responses.ItemInformationResponse;
 import org.folio.edge.sip2.domain.messages.responses.ItemInformationResponse.ItemInformationResponseBuilder;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.edge.sip2.utils.Utils;
 import org.folio.util.PercentCodec;
 import org.folio.util.StringUtil;
@@ -30,7 +29,7 @@ import org.folio.util.StringUtil;
  *
  */
 public class ItemRepository {
-  private static final Logger log = LogManager.getLogger();
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(ItemRepository.class);
   private final IResourceProvider<IRequestData> resourceProvider;
   private final Clock clock;
 
@@ -240,7 +239,7 @@ public class ItemRepository {
       ItemInformation itemInformation, SessionData sessionData) {
     Objects.requireNonNull(itemInformation, "itemInformation cannot be null");
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
-    log.debug("performItemInformationCommand itemIdentifier:{}",
+    log.debug(sessionData, "performItemInformationCommand itemIdentifier: {}",
         itemInformation.getItemIdentifier());
 
     final String itemIdentifier = itemInformation.getItemIdentifier();
@@ -254,7 +253,7 @@ public class ItemRepository {
         if (itemView != null) {
           JsonObject item = itemView.getJsonObject("item");
           JsonObject loan = itemView.getJsonObject("loan");
-          log.debug("itemView1: {}", () -> itemView);
+          log.debug(sessionData, "itemView1: {}", () -> itemView);
           NextHoldRequestData nextHoldRequestData =
               new NextHoldRequestData(item.getString("id"), getBaseHeaders(), sessionData);
 
@@ -304,6 +303,7 @@ public class ItemRepository {
     JsonObject holdingJson = new JsonObject();
     JsonObject instanceJson = new JsonObject();
     JsonObject loanJson = new JsonObject();
+    var sessionData = itemInformationRequestData.getSessionData();
 
     return getItem(itemInformationRequestData)
       .otherwiseEmpty()
@@ -332,7 +332,7 @@ public class ItemRepository {
                         instanceJson.mergeIn(instanceResult);
                         return getLoan(loanRequestData)
                           .compose(loanResult -> {
-                            log.debug("LoanResult: {}", () -> loanResult);
+                            log.debug(sessionData, "LoanResult: {}", () -> loanResult);
                             loanJson.mergeIn(loanResult);
                             return Future.succeededFuture(loanResult);
                           });

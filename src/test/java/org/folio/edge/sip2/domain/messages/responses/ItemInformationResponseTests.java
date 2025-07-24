@@ -24,7 +24,6 @@ import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.FeeType;
 import org.folio.edge.sip2.domain.messages.enumerations.MediaType;
 import org.folio.edge.sip2.domain.messages.enumerations.SecurityMarker;
-import org.junit.jupiter.api.AssertionsKt;
 import org.junit.jupiter.api.Test;
 
 class ItemInformationResponseTests {
