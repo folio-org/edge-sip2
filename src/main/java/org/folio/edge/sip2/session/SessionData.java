@@ -241,7 +241,7 @@ public class SessionData {
   }
 
   private static String generateRequestId() {
-    var random = ThreadLocalRandom.current(); //NOSONAR - random is used for requestId generation
+    var random = ThreadLocalRandom.current();
     return format("%06d%s", random.nextInt(1000000), "/sip2");
   }
 }
