@@ -2,6 +2,7 @@ package org.folio.edge.sip2.session;
 
 import static java.lang.String.format;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -241,7 +242,7 @@ public class SessionData {
   }
 
   private static String generateRequestId() {
-    var random = ThreadLocalRandom.current();
+    var random = new SecureRandom();
     return format("%06d%s", random.nextInt(1000000), "/sip2");
   }
 }
