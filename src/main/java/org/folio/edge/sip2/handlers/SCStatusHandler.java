@@ -1,5 +1,6 @@
 package org.folio.edge.sip2.handlers;
 
+import static org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils.executeFreemarkerTemplate;
 import static org.folio.edge.sip2.parser.Command.ACS_STATUS;
 
 import freemarker.template.Template;
@@ -8,21 +9,19 @@ import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
 import org.folio.edge.sip2.domain.messages.enumerations.StatusCode;
 import org.folio.edge.sip2.domain.messages.requests.SCStatus;
 import org.folio.edge.sip2.domain.messages.responses.ACSStatus;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
-import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 
 public class SCStatusHandler implements ISip2RequestHandler {
 
   private final ConfigurationRepository configurationRepository;
-  private final Logger log;
+  private final Sip2LogAdapter log;
   private final Template template;
 
   /**
@@ -34,13 +33,14 @@ public class SCStatusHandler implements ISip2RequestHandler {
    */
   public SCStatusHandler(ConfigurationRepository configurationRepository, Template template) {
     this.configurationRepository = configurationRepository;
-    log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+    log = Sip2LogAdapter.getLogger(MethodHandles.lookup().lookupClass());
     this.template = template;
   }
 
   @Override
   public Future<String> execute(Object message, SessionData sessionData)  {
-    log.debug("SCStatusHandler :: execute message:{} sessionData:{}",message,sessionData);
+    log.debug(sessionData, "SCStatusHandler :: execute message:{} sessionData:{}",
+        message, sessionData);
 
     SCStatus scStatus = (SCStatus)message;
     sessionData.setMaxPrintWidth(scStatus.getMaxPrintWidth());
@@ -61,17 +61,19 @@ public class SCStatusHandler implements ISip2RequestHandler {
         root.put("timezone", sessionData.getTimeZone());
 
         if (template == null) {
-          log.warn("Unable to locate Freemarker template for the command:{}", ACS_STATUS.name());
+          log.warn(sessionData,
+              "Unable to locate Freemarker template for the command:{}", ACS_STATUS.name());
           return Future.failedFuture("");
         }
 
-        String acsSipStatusMessage = FreemarkerUtils.executeFreemarkerTemplate(root, template);
-        log.info("SCStatusHandler :: execute Sip2 ACSStatus message:{}", acsSipStatusMessage);
+        String acsSipStatusMessage = executeFreemarkerTemplate(sessionData, root, template);
+        log.info(sessionData,
+            "SCStatusHandler :: execute Sip2 ACSStatus message:{}", acsSipStatusMessage);
 
         return Future.succeededFuture(acsSipStatusMessage);
       });
     } else {
-      log.warn("SCStatusHandler :: execute SC at location: {} status is :{}",
+      log.warn(sessionData, "SCStatusHandler :: execute SC at location: {} status is :{}",
           sessionData.getScLocation(), scStatusCode);
       return Future.failedFuture("Cannot service this request because SC is " + scStatusCode);
     }

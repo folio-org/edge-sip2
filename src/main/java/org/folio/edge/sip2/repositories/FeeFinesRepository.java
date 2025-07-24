@@ -21,13 +21,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.PatronAccountInfo;
 import org.folio.edge.sip2.domain.messages.requests.FeePaid;
 import org.folio.edge.sip2.domain.messages.responses.FeePaidResponse;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.edge.sip2.utils.Utils;
 import org.folio.util.PercentCodec;
 import org.folio.util.StringUtil;
@@ -39,7 +38,7 @@ import org.folio.util.StringUtil;
  *
  */
 public class FeeFinesRepository {
-  private static final Logger log = LogManager.getLogger();
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(FeeFinesRepository.class);
   private static final String HEADER_ACCEPT = "accept";
   private static final String MIMETYPE_JSON = "application/json";
   private static final String ACCOUNTS_KEY = "accounts";
@@ -403,7 +402,7 @@ public class FeeFinesRepository {
     String feeIdentifierMatch = matchUuid(feePaid.getFeeIdentifier());
 
     final String feeIdentifier = feeIdentifierMatch;
-    log.debug("feeIdentifier = {}", feeIdentifier);
+    log.debug(sessionData, "feeIdentifier = {}", feeIdentifier);
 
     // This may need to be changed to passwordVerifier - GDG
     return usersRepository.getUserById(patronIdentifier, sessionData)
@@ -426,9 +425,9 @@ public class FeeFinesRepository {
               JsonObject accts = resource.getResource();
               final JsonArray acctList = accts.getJsonArray(ACCOUNTS_KEY);
               final BigDecimal amountTotal = totalAmount(acctList).round(moneyFormat);
-              log.debug("bdAmountPaid = {}", amountPaid);
-              log.debug("bdAmountTotal = {}", amountTotal);
-              log.debug("Amount difference = {}", amountPaid.compareTo(amountTotal));
+              log.debug(sessionData, "bdAmountPaid = {}", amountPaid);
+              log.debug(sessionData, "bdAmountTotal = {}", amountTotal);
+              log.debug(sessionData, "Amount difference = {}", amountPaid.compareTo(amountTotal));
               // On overpayment return a FALSE Payment Accepted
               if (amountPaid.compareTo(amountTotal) > 0) {
                 List<String> scrnMsg = List.of("Paid amount ($"
@@ -471,7 +470,8 @@ public class FeeFinesRepository {
               
               feePaymentRequestData.setUserName(sessionData.getUsername());
 
-              log.debug("Json for payment request is {}", feePaymentRequestData.getBody().encode());
+              log.debug(sessionData, "Json for payment request is {}",
+                  feePaymentRequestData.getBody().encode());
 
               Future<IResource> payresult;
               payresult = resourceProvider
@@ -482,7 +482,7 @@ public class FeeFinesRepository {
                 .compose(payresource -> {
                   JsonObject paidResponse = payresource.getResource();
                   updatePatronAccountInfoList(patronAccountInfoList, paidResponse);
-                  log.debug("paidResponse = {}",
+                  log.debug(sessionData, "paidResponse = {}",
                       paidResponse != null ? paidResponse.encode() : "null");
                   return Future.succeededFuture(FeePaidResponse.builder()
                     .paymentAccepted(paidResponse == null ? FALSE : TRUE)

@@ -22,7 +22,7 @@ $ java -jar edge-sip2-fat.jar -conf sip2.conf
 ```
 The -conf option can either specify the filename of the configuration or inline JSON. 
 Here is a sample sip2.conf file:
-```
+```json
 { 
   "port": 6443,
   "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
@@ -107,7 +107,7 @@ Edge-sip2 supports [various locations](https://vertx.io/docs/vertx-config/java/#
     mvn -P vertx-config-s3
 
 Here is a sample sip2.conf for storing tenant config in S3:
-
+```json
     {
     "port": 6443,
     "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
@@ -125,7 +125,7 @@ Here is a sample sip2.conf for storing tenant config in S3:
       }]
     }
   }
-
+```
 
 ## FOLIO Configuration
 
@@ -175,7 +175,7 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
 
 #### Example `configuration` object
 
-```javascript
+```json
 {
   "module": "edge-sip2",
   "configName": "selfCheckoutConfig.e0ab8c91-2a4a-433d-a3cf-1837053c89a8",
@@ -192,7 +192,7 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
 
 #### Example `configuration` object
 
-```javascript
+```json
 {
   "module": "ORG",
   "configName": "localeSettings",
@@ -379,7 +379,7 @@ This example shows how to launch with the Prometheus binding. Since Prometheus n
 ## Setting Up SIP2 for Multiple Tenant-Specific Ports
 To configure sip2 for a port dedicated to a specific tenant, two modifications are necessary:
 1. Modify the existing port config property in the sip2.conf from an integer value to an array of integer values, as demonstrated below:
-```
+```json
 { 
   "port": [6443, 6444, 6445],
   "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
@@ -397,7 +397,7 @@ To configure sip2 for a port dedicated to a specific tenant, two modifications a
 }
 ```
 2. In the sip2-tenants.conf, include a new property named 'port' and assign it the dedicated port value as indexed in the array from the previous conf file, as shown below:
-```
+```json
 {
 "scTenants": [
   {
@@ -434,7 +434,7 @@ To configure sip2 for a port dedicated to a specific tenant, two modifications a
 ## Setting up SIP2 using a single port for all tenants
 To set up SIP2 using one port across all tenants, you need to make two changes:
 1. Specify the single port value in the sip2.conf file, as illustrated below:
-```
+```json
 { 
   "port": 6443,
   "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
@@ -452,7 +452,7 @@ To set up SIP2 using one port across all tenants, you need to make two changes:
 }
 ```
 2. In the sip2-tenants.conf file, list multiple tenant names along with their corresponding scSubnet range values. These entries will allow the setup of multiple tenants to the designated port, as depicted below:
-```
+```json
 {
 "scTenants": [
   {

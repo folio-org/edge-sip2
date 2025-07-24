@@ -7,10 +7,9 @@ import io.vertx.core.Future;
 import java.util.Collections;
 import java.util.Objects;
 import javax.inject.Inject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 
 /**
  * Verifies passwords sent via SIP2.
@@ -19,7 +18,7 @@ import org.folio.edge.sip2.session.SessionData;
  */
 public class PasswordVerifier {
 
-  private static final Logger log = LogManager.getLogger();
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(PasswordVerifier.class);
   private final UsersRepository usersRepository;
   private final LoginRepository loginRepository;
 
@@ -79,7 +78,7 @@ public class PasswordVerifier {
     Objects.requireNonNull(patronIdentifier, "patronIdentifier cannot be null");
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
 
-    log.debug("Calling doPatronPasswordVerification");
+    log.debug(sessionData, "Calling doPatronPasswordVerification");
     Future<PatronPasswordVerificationRecords> loginFuture;
 
     loginFuture = usersRepository.getUserById(patronIdentifier, sessionData)
@@ -89,20 +88,20 @@ public class PasswordVerifier {
               .passwordVerified(FALSE)
               .build());
         }
-        log.debug("Got extendedUser {}", extendedUser);
-        log.debug("Calling patronLoginNoCache with username {}",
+        log.debug(sessionData, "Got extendedUser {}", extendedUser);
+        log.debug(sessionData, "Calling patronLoginNoCache with username {}",
             extendedUser.getUser().getUsername());
         return loginRepository.patronLoginNoCache(extendedUser.getUser().getUsername(),
             patronPassword, sessionData)
           .compose(token -> {
             if (token != null) {
-              log.debug("Valid token");
+              log.debug(sessionData, "Valid token");
               return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
                   .extendedUser(extendedUser)
                   .passwordVerified(TRUE)
                   .build());
             } else {
-              log.debug("Null token");
+              log.debug(sessionData, "Null token");
               return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
                   .extendedUser(extendedUser)
                   .errorMessages(Collections.singletonList(sessionData.getLoginErrorMessage()))

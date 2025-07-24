@@ -34,8 +34,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.PatronAccountInfo;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
@@ -53,6 +51,7 @@ import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords
 import org.folio.edge.sip2.repositories.domain.Personal;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 /**
@@ -72,7 +71,7 @@ public class PatronRepository {
   private static final String FIELD_ITEM = "item";
   private static final String FIELD_LOANS = "loans";
   private static final String FIELD_BARCODE = "barcode";
-  private static final Logger log = LogManager.getLogger();
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(PatronRepository.class);
   // These really should come from FOLIO
   static final String MESSAGE_INVALID_PATRON =
       "Your library card number cannot be located. Please see a staff member for assistance.";
@@ -115,7 +114,7 @@ public class PatronRepository {
       SessionData sessionData) {
     Objects.requireNonNull(patronInformation, NULL_PATRON_INFO_MSG);
     Objects.requireNonNull(sessionData, NULL_SESSION_DATA_MSG);
-    log.debug("performPatronInformationCommand patronIdentifier:{}",
+    log.debug(sessionData, "performPatronInformationCommand patronIdentifier:{}",
         patronInformation.getPatronIdentifier());
 
     final String patronIdentifier = patronInformation.getPatronIdentifier();
@@ -123,7 +122,7 @@ public class PatronRepository {
 
     Future<PatronPasswordVerificationRecords> passwordVerificationFuture
         = forceVerifyPinOrPassword(patronIdentifier, patronPassword, sessionData);
-    log.debug("Verification return value is {}", passwordVerificationFuture);
+    log.debug(sessionData, "Verification return value is {}", passwordVerificationFuture);
     return passwordVerificationFuture
         .onFailure(throwable -> {
           if (throwable instanceof ClientException) {
@@ -131,8 +130,9 @@ public class PatronRepository {
           }
         })
         .compose(verification -> {
-          log.debug("Password verification result is {}", verification.getPasswordVerified());
-          log.debug("isPatronPasswordVerificationRequest == {}",
+          log.debug(sessionData, "Password verification result is {}",
+              verification.getPasswordVerified());
+          log.debug(sessionData, "isPatronPasswordVerificationRequest == {}",
               sessionData.isPatronPasswordVerificationRequired());
 
           final Future<ExtendedUser> extendedUserFuture
@@ -140,17 +140,17 @@ public class PatronRepository {
           return extendedUserFuture.compose(extendedUser -> {
             User user = extendedUser != null ? extendedUser.getUser() : null;
             if (user == null || FALSE.equals(user.getActive())) {
-              log.debug("User is null or inactive");
+              log.debug(sessionData, "User is null or inactive");
               return invalidPatron(patronInformation, null);
             } else {
               final String userId = user.getId();
               if (userId == null) {
                 // Something is really messed up if the id is missing
-                log.error("User with patron identifier {} is missing the \"id\" field",
+                log.error(sessionData, "User with patron identifier {} is missing the \"id\" field",
                     patronIdentifier);
                 return invalidPatron(patronInformation, verification.getPasswordVerified());
               }
-              log.debug("Patron information valid");
+              log.debug(sessionData, "Patron information valid");
 
               return validPatron(extendedUser, patronInformation, sessionData,
                   verification.getPasswordVerified());
@@ -173,7 +173,7 @@ public class PatronRepository {
 
     final String patronIdentifier = patronStatus.getPatronIdentifier();
     final String patronPassword = patronStatus.getPatronPassword();
-    log.debug("IsPatronVerificationRequired: {}",
+    log.debug(sessionData, "IsPatronVerificationRequired: {}",
         sessionData.isPatronPasswordVerificationRequired());
 
     return verifyPinOrPassword(patronIdentifier, patronPassword, sessionData)
@@ -198,7 +198,7 @@ public class PatronRepository {
               final String userId = user.getId();
               if (userId == null) {
                 // Something is really messed up if the id is missing
-                log.error("User with patron identifier {} is missing the \"id\" field",
+                log.error(sessionData, "User with patron identifier {} is missing the \"id\" field",
                     patronIdentifier);
                 return invalidPatron(patronStatus, verification.getPasswordVerified());
               }
@@ -249,11 +249,11 @@ public class PatronRepository {
 
   private Future<PatronInformationResponse> validPatron(ExtendedUser extendedUser,
       PatronInformation patronInformation, SessionData sessionData, final Boolean validPassword) {
-    log.debug("validPatron called for extended user {}", extendedUser);
+    log.debug(sessionData, "validPatron called for extended user {}", extendedUser);
     final String userId = extendedUser.getUser().getId();
     final Personal personal = extendedUser.getUser().getPersonal();
     if (personal != null) {
-      log.debug("validPatron userId:{} firstName:{} lastName:{}",
+      log.debug(sessionData, "validPatron userId:{} firstName:{} lastName:{}",
           userId,personal.getFirstName(),personal.getLastName());
     }
     // Now that we have a valid patron, we can retrieve data from circulation
@@ -270,7 +270,7 @@ public class PatronRepository {
     final Future<PatronInformationResponseBuilder> accountFuture = feeFinesRepository
         .getAccountDataByUserId(userId, sessionData)
         .map(accounts -> {
-          totalAmount(accounts, builder);
+          totalAmount(sessionData, accounts, builder);
           populateFinesCount(accounts, builder);
           addFineItems(accounts, patronInformation.getSummary() == FINE_ITEMS, builder);
           return addExtendedAccountInfo(accounts,
@@ -308,7 +308,7 @@ public class PatronRepository {
     return CompositeFuture.all(manualBlocksFuture, accountFuture, holdsFuture,
         overdueFuture, recallsFuture, loansFuture)
         .map(result -> {
-          log.info("validPatron language:{} institutionId:{}",
+          log.info(sessionData, "validPatron language:{} institutionId:{}",
               patronInformation.getLanguage(),patronInformation.getInstitutionId());
           builder
               // Get tenant language from config along with the timezone
@@ -339,14 +339,14 @@ public class PatronRepository {
     // Store patron data in the builder
     final String personalName = getPatronPersonalName(personal, patronStatus.getPatronIdentifier());
     builder.personalName(personalName);
-    log.debug("Populating borrower info with patron group {}",
+    log.debug(sessionData, "Populating borrower info with patron group {}",
         extendedUser.getPatronGroup() != null ? extendedUser.getPatronGroup().getId()
         : null);
     // When all operations complete, build and return the final PatronInformationResponse
 
     final Future<PatronStatusResponseBuilder> getFeeAmountFuture = feeFinesRepository
         .getFeeAmountByUserId(userId, sessionData)
-        .map(accounts -> totalAmount(accounts, builder));
+        .map(accounts -> totalAmount(sessionData, accounts, builder));
 
     return getFeeAmountFuture.map(result -> builder
             .patronStatus(EnumSet.noneOf(PatronStatus.class))
@@ -391,25 +391,25 @@ public class PatronRepository {
 
 
   private PatronInformationResponseBuilder totalAmount(
-      JsonObject jo,
+      SessionData sessionData, JsonObject jo,
       PatronInformationResponseBuilder builder) {
     Float total;
     if (jo != null) {
       final JsonArray arr = jo.getJsonArray(FIELD_ACCOUNTS);
       total = getTotalRemaining(arr);
-      log.debug("Total is {}", total);
+      log.debug(sessionData, "Total is {}", total);
       return builder.feeAmount(total.toString());
     }
     return null;
   }
 
   private PatronStatusResponseBuilder totalAmount(
-      JsonObject jo,
+      SessionData sessionData, JsonObject jo,
       PatronStatusResponseBuilder builder) {
 
     final JsonArray arr = jo.getJsonArray(FIELD_ACCOUNTS);
     Float total = getTotalRemaining(arr);
-    log.debug("Total is {}", total);
+    log.debug(sessionData, "Total is {}", total);
     return builder.feeAmount(total.toString());
   }
 

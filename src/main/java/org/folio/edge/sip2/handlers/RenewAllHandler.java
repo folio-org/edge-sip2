@@ -1,5 +1,7 @@
 package org.folio.edge.sip2.handlers;
 
+import static org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils.executeFreemarkerTemplate;
+
 import freemarker.template.Template;
 import io.vertx.core.Future;
 import java.util.HashMap;
@@ -7,18 +9,16 @@ import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.RenewAll;
 import org.folio.edge.sip2.domain.messages.responses.RenewAllResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
-import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.CirculationRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 public class RenewAllHandler implements ISip2RequestHandler {
-  private static final Logger log = LogManager.getLogger();
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(RenewAllHandler.class);
 
   private final CirculationRepository circulationRepository;
   private final Template commandTemplate;
@@ -36,7 +36,7 @@ public class RenewAllHandler implements ISip2RequestHandler {
   public Future<String> execute(Object message, SessionData sessionData) {
     final RenewAll renewAll = (RenewAll) message;
 
-    log.debug("RenewAll: {}", () -> renewAll);
+    log.debug(sessionData, "RenewAll: {}", () -> renewAll);
 
     final Future<RenewAllResponse> renewAllFuture =
         circulationRepository.performRenewAllCommand(renewAll, sessionData);
@@ -65,7 +65,7 @@ public class RenewAllHandler implements ISip2RequestHandler {
   private String constructRenewAllResponse(
       SessionData sessionData,
       RenewAllResponse renewAllResponse) {
-    log.info("RenewAllResponse: {}", () -> renewAllResponse);
+    log.info(sessionData, "RenewAllResponse: {}", () -> renewAllResponse);
 
     final Map<String, Object> root = new HashMap<>();
     root.put("formatDateTime", new FormatDateTimeMethodModel());
@@ -73,10 +73,9 @@ public class RenewAllHandler implements ISip2RequestHandler {
     root.put("renewAllResponse", renewAllResponse);
     root.put("timezone", sessionData.getTimeZone());
 
-    final String response = FreemarkerUtils
-        .executeFreemarkerTemplate(root, commandTemplate);
+    final String response = executeFreemarkerTemplate(sessionData, root, commandTemplate);
 
-    log.debug("SIP renewAll response: {}", response);
+    log.debug(sessionData, "SIP renewAll response: {}", response);
     return response;
   }
 }

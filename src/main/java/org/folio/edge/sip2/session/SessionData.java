@@ -1,7 +1,11 @@
 package org.folio.edge.sip2.session;
 
+import static java.lang.String.format;
+
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.PreviousMessage;
@@ -12,6 +16,7 @@ public class SessionData {
   private final String tenant;
   private final boolean errorDetectionEnabled;
   private final String charset;
+  private final String requestId;
   private String loginErrorMessage;
   private Object errorResponseMessage;
   private String scLocation;
@@ -36,6 +41,7 @@ public class SessionData {
   private SessionData(String tenant, char fieldDelimiter,
                       boolean errorDetectionEnabled, String charset) {
     this.tenant = tenant;
+    this.requestId = generateRequestId();
     this.fieldDelimiter = fieldDelimiter;
     this.errorDetectionEnabled = errorDetectionEnabled;
     this.charset = charset;
@@ -229,5 +235,14 @@ public class SessionData {
 
   public boolean isConfigurationLoaded() {
     return this.configurationLoaded;
+  }
+
+  public String getRequestId()  {
+    return this.requestId;
+  }
+
+  private static String generateRequestId() {
+    var random = new SecureRandom();
+    return format("%06d%s", random.nextInt(1000000), "/sip2");
   }
 }

@@ -1,5 +1,7 @@
 package org.folio.edge.sip2.repositories;
 
+import static io.vertx.ext.web.client.predicate.ResponsePredicate.SC_SUCCESS;
+
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
@@ -18,10 +20,9 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.okapi.common.refreshtoken.client.Client;
 import org.folio.okapi.common.refreshtoken.client.ClientOptions;
 
@@ -34,7 +35,8 @@ import org.folio.okapi.common.refreshtoken.client.ClientOptions;
 public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   private static final String HEADER_X_OKAPI_TOKEN = "x-okapi-token";
   private static final String HEADER_X_OKAPI_TENANT = "x-okapi-tenant";
-  private static final Logger log = LogManager.getLogger();
+  private static final String HEADER_X_OKAPI_REQUEST_ID = "x-okapi-request-id";
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(FolioResourceProvider.class);
 
   private final String okapiUrl;
   private final WebClient client;
@@ -56,7 +58,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
   @Override
   public Future<IResource> retrieveResource(IRequestData requestData) {
-    log.debug("retrieve resource {}", requestData::getPath);
+    var sessionData = requestData.getSessionData();
+    log.debug(sessionData, "retrieve resource {}", requestData::getPath);
 
     final HttpRequest<Buffer> request =
         client.getAbs(okapiUrl + requestData.getPath());
@@ -64,7 +67,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     return Future.<Void>future(promise -> setHeaders(requestData.getHeaders(), request,
       Objects.requireNonNull(requestData.getSessionData(),
         "SessionData cannot be null"), promise)).compose(v -> request
-        .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, getErrorConverter()))
+        .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, getErrorConverter(sessionData)))
         // Some APIs return application/json, some return with the charset
         // parameter (e.g. circulation). So we can't use the built-in JSON
         // predicate here.
@@ -73,10 +76,10 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
           "application/json; charset=utf-8")))
         .as(BodyCodec.jsonObject())
         .send()
-        .map(FolioResourceProvider::toIResource)
+        .map(response -> toIResource(sessionData, response))
       ).recover(
         e -> {
-          log.error("Failed to set headers or send request", e);
+          log.error(sessionData, "Failed to set headers or send request", e);
           return Future.failedFuture(e);
         });
   }
@@ -93,7 +96,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
       String username,
       Supplier<Future<String>> getPasswordSupplier,
       SessionData sessionData) {
-    log.info("loginWithSupplier username={} cache={}",
+    log.info(sessionData, "loginWithSupplier username={} cache={}",
         username, TokenCacheFactory.get());
     ClientOptions clientOptions = new ClientOptions()
         .okapiUrl(okapiUrl)
@@ -103,10 +106,10 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         sessionData.getTenant(), username, getPasswordSupplier);
 
     return tokenClient.getToken().compose(token -> {
-      log.debug("The login token is {}", token);
+      log.debug(sessionData, "The login token is issued");
       return Future.succeededFuture(token);
     }).onFailure(e -> {
-      log.error("Unable to get the access token ", e);
+      log.error(sessionData, "Unable to get the access token ", e);
       sessionData.setAuthenticationToken(null);
       sessionData.setLoginErrorMessage(e.getMessage());
     });
@@ -118,7 +121,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
    * @return Boolean True if successful
    */
   public Future<Boolean> doPinCheck(IRequestData requestData) {
-    log.debug("Doing pin verification at {}", requestData::getPath);
+    var sessionData = requestData.getSessionData();
+    log.debug(sessionData, "Doing pin verification at {}", requestData::getPath);
 
     final HttpRequest<Buffer> request =
         client.postAbs(okapiUrl + requestData.getPath());
@@ -127,17 +131,18 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         requestData.getHeaders(), request, requestData.getSessionData(),
         promise))
       .compose(v -> request
-        .expect(ResponsePredicate.create(ResponsePredicate.SC_SUCCESS, getErrorConverter()))
+        .expect(ResponsePredicate.create(SC_SUCCESS, getErrorConverter(sessionData)))
         .as(BodyCodec.jsonObject())
         .sendJsonObject(requestData.getBody())
         .map(Boolean.TRUE)
-        .onFailure(e -> log.error("Pin check failed", e)));
+        .onFailure(e -> log.error(sessionData, "Pin check failed", e)));
   }
 
 
   @Override
   public Future<IResource> createResource(IRequestData requestData) {
-    log.debug("Create resource {}, body: {}",
+    var sessionData = requestData.getSessionData();
+    log.debug(sessionData, "Create resource {}, body: {}",
         requestData::getPath,
         () -> requestData.getBody().encodePrettily());
 
@@ -147,7 +152,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     return Future.<Void>future(promise -> setHeaders(requestData.getHeaders(),
         request, requestData.getSessionData(), promise))
       .compose(v -> request
-        .expect(ResponsePredicate.create(ResponsePredicate.SC_SUCCESS, getErrorConverter()))
+        .expect(ResponsePredicate.create(SC_SUCCESS, getErrorConverter(sessionData)))
         // Some APIs return application/json, some return with the charset
         // parameter (e.g. circulation). So we can't use the built-in JSON
         // predicate here.
@@ -156,8 +161,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
             "application/json; charset=utf-8")))
         .as(BodyCodec.jsonObject())
         .sendJsonObject(requestData.getBody())
-        .map(FolioResourceProvider::toIResource)
-        .onFailure(e -> log.error("Request failed", e)));
+        .map(response -> toIResource(sessionData, response))
+        .onFailure(e -> log.error(sessionData, "Request failed", e)));
   }
 
   @Override
@@ -191,18 +196,20 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
           sessionData.setAuthenticationToken(accessToken);
           request.putHeader(HEADER_X_OKAPI_TOKEN, accessToken);
           request.putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant());
+          request.putHeader(HEADER_X_OKAPI_REQUEST_ID, sessionData.getRequestId());
           promise.complete();
         });
   }
 
-  private static IResource toIResource(HttpResponse<JsonObject> httpResponse) {
-    log.info("FOLIO response body: {}", () -> httpResponse.body().encodePrettily());
-    return new FolioResource(httpResponse.body(), httpResponse.headers());
+  private static IResource toIResource(SessionData sessionData, HttpResponse<JsonObject> response) {
+    log.info(sessionData, "FOLIO response body: {}", () -> response.body().encodePrettily());
+    return new FolioResource(response.body(), response.headers());
   }
 
-  private ErrorConverter getErrorConverter() {
+  private ErrorConverter getErrorConverter(SessionData sessionData) {
     return ErrorConverter.createFullBody(result -> {
-      log.error("Error communicating with FOLIO: {}", result.response().bodyAsString());
+      log.error(sessionData, "Error communicating with FOLIO: {}",
+          result.response().bodyAsString());
       return new FolioRequestThrowable(result.response().bodyAsString());
     });
   }
