@@ -216,7 +216,8 @@ public class ConfigurationRepositoryTests {
     return Stream.of(
       Arguments.of("json/DefaultACSConfigurationNonDefaultedCurrency.json", "EUR"),
       Arguments.of("json/DefaultACSConfigurationCopCurrency.json", "COP"),
-      Arguments.of("json/DefaultACSConfigurationZARCurrency.json", "ZAR")
+      Arguments.of("json/DefaultACSConfigurationZARCurrency.json", "ZAR"),
+      Arguments.of("json/DefaultACSConfigurationMYRCurrency.json", "MYR")
     );
   }
 }

@@ -32,5 +32,7 @@ public enum CurrencyType {
   /** Colombian Peso. */
   COP,
   /** South African rand. **/
-  ZAR
+  ZAR,
+  /** Malaysian Malaysian ringgit. */
+  MYR
 }
