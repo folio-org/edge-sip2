@@ -212,6 +212,28 @@ public class ConfigurationRepositoryTests {
         })));
   }
 
+  @ParameterizedTest
+  @MethodSource("provideJsonFilesAndExpectedCurrencies")
+  public void testGetACSStatusAndValidateSessionDataCurrency(
+    String jsonFilePath,
+    String expectedCurrency,
+    VertxTestContext testContext,
+    @Mock Clock clock) {
+
+    IResourceProvider<IRequestData> resourceProvider =
+      new DefaultResourceProvider(jsonFilePath);
+    ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider, clock);
+
+    SessionData sessionData = TestUtils.getMockedSessionData();
+    configRepo.getACSStatus(sessionData).onComplete(h -> {
+      testContext.verify(() -> {
+        assertNotNull(sessionData);
+        assertEquals(expectedCurrency, sessionData.getCurrency());
+        testContext.completeNow();
+      });
+    });
+  }
+
   private static Stream<Arguments> provideJsonFilesAndExpectedCurrencies() {
     return Stream.of(
       Arguments.of("json/DefaultACSConfigurationNonDefaultedCurrency.json", "EUR"),
