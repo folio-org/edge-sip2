@@ -1,5 +1,6 @@
 ## 3.3.3 2025-09-12
 * [SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276): Add support for MYR currency type
+* [SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276): Add support for MYR currency type in FeePaidMessageParser
 
 ## 3.3.2 2025-02-24
 * [SIP2-249](https://issues.folio.org/browse/SIP2-249): Checkout Request for Item with '/' in barcode fails with cql parse error - TITLE NOT FOUND
