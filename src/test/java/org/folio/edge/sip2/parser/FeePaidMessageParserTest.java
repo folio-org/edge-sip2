@@ -5,10 +5,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.folio.edge.sip2.domain.messages.enumerations.CurrencyType.MYR;
 import static org.folio.edge.sip2.domain.messages.enumerations.CurrencyType.USD;
 import static org.folio.edge.sip2.domain.messages.enumerations.FeeType.DAMAGE;
-import static org.folio.edge.sip2.domain.messages.enumerations.FeeType.OTHER_UNKNOWN;
-import static org.folio.edge.sip2.domain.messages.enumerations.PaymentType.CASH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.time.format.DateTimeFormatter;
@@ -19,12 +16,11 @@ import org.folio.edge.sip2.domain.messages.enumerations.FeeType;
 import org.folio.edge.sip2.domain.messages.enumerations.PaymentType;
 import org.folio.edge.sip2.domain.messages.requests.FeePaid;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class FeePaidMessageParserTests {
+class FeePaidMessageParserTest {
 
   private static final DateTimeFormatter DATE_TIME_FORMATTER = ofPattern("yyyyMMdd    HHmmss");
 
@@ -39,7 +35,7 @@ class FeePaidMessageParserTests {
 
     var result = parser.parse(transactionDateStr + sipMessage);
 
-    var expectedValue = feePaid(CASH, expected, DAMAGE);
+    var expectedValue = feePaid(PaymentType.CASH, expected, DAMAGE);
     assertEquals(transactionDate, result.getTransactionDate());
     verifyParsedValue(expectedValue, result);
   }
@@ -55,7 +51,7 @@ class FeePaidMessageParserTests {
 
     var result = parser.parse(transactionDateStr + sipMessage);
 
-    var expectedValue = feePaid(CASH, USD, feeType);
+    var expectedValue = feePaid(PaymentType.CASH, USD, feeType);
     assertEquals(transactionDate, result.getTransactionDate());
     verifyParsedValue(expectedValue, result);
   }
@@ -101,7 +97,7 @@ class FeePaidMessageParserTests {
 
   private static Stream<Arguments> feePaymentTypeDataProvider() {
     return Stream.of(
-        arguments("CASH", sipMsgPaymentType("01"), CASH),
+        arguments("CASH", sipMsgPaymentType("01"), PaymentType.CASH),
         arguments("VIS", sipMsgPaymentType("02"), PaymentType.VISA),
         arguments("CREDIT_CARD", sipMsgPaymentType("03"), PaymentType.CREDIT_CARD),
         arguments("Unknown Value", sipMsgPaymentType("99"), null)
