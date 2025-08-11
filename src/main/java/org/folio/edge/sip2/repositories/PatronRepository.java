@@ -321,7 +321,7 @@ public class PatronRepository {
               .institutionId(patronInformation.getInstitutionId())
               .patronIdentifier(patronInformation.getPatronIdentifier())
               .validPatron(TRUE)
-              .currencyType(matchCurrency(sessionData.getCurrency()));
+              .currencyType(CurrencyType.fromStringSafe(sessionData.getCurrency()));
           if (sessionData.isAlwaysCheckPatronPassword()
               || sessionData.isPatronPasswordVerificationRequired()) {
             builder.validPatronPassword(validPassword);
@@ -833,15 +833,6 @@ public class PatronRepository {
               "Recall", null, null, sessionData))
           .collect(Collectors.toList());
     });
-  }
-
-  private CurrencyType matchCurrency(String currencyString) {
-    for (CurrencyType c : CurrencyType.values()) {
-      if (c.name().equals(currencyString)) {
-        return c;
-      }
-    }
-    return null;
   }
 
   private Future<PatronPasswordVerificationRecords> verifyPinOrPassword(

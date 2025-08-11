@@ -1,13 +1,5 @@
 package org.folio.edge.sip2.parser;
 
-import static org.folio.edge.sip2.domain.messages.enumerations.CurrencyType.CAD;
-import static org.folio.edge.sip2.domain.messages.enumerations.CurrencyType.DEM;
-import static org.folio.edge.sip2.domain.messages.enumerations.CurrencyType.ESP;
-import static org.folio.edge.sip2.domain.messages.enumerations.CurrencyType.FRF;
-import static org.folio.edge.sip2.domain.messages.enumerations.CurrencyType.GBP;
-import static org.folio.edge.sip2.domain.messages.enumerations.CurrencyType.ITL;
-import static org.folio.edge.sip2.domain.messages.enumerations.CurrencyType.JPY;
-import static org.folio.edge.sip2.domain.messages.enumerations.CurrencyType.USD;
 import static org.folio.edge.sip2.domain.messages.enumerations.FeeType.ADMINISTRATIVE;
 import static org.folio.edge.sip2.domain.messages.enumerations.FeeType.COMPUTER_ACCESS_CHARGE;
 import static org.folio.edge.sip2.domain.messages.enumerations.FeeType.DAMAGE;
@@ -183,41 +175,12 @@ public class FeePaidMessageParser extends MessageParser {
 
   private CurrencyType parseCurrencyType(char [] messageChars) {
     final String currencyTypeString = new String(messageChars, position, 3);
-    final CurrencyType result;
-
-    // Should add full mapping someday: https://en.wikipedia.org/wiki/ISO_4217
-    switch (currencyTypeString) {
-      case "USD":
-        result = USD;
-        break;
-      case "CAD":
-        result = CAD;
-        break;
-      case "GPB":
-        result = GBP;
-        break;
-      case "FRF":
-        result = FRF;
-        break;
-      case "DEM":
-        result = DEM;
-        break;
-      case "ITL":
-        result = ITL;
-        break;
-      case "ESP":
-        result = ESP;
-        break;
-      case "JPY":
-        result = JPY;
-        break;
-      default:
-        log.error("Unknown currency type {}, defaulting to null",
-            currencyTypeString);
-        result = null;
+    var resulvedCurrencyType = CurrencyType.fromStringSafe(currencyTypeString);
+    if (resulvedCurrencyType == null) {
+      log.error("Unknown currency type {}, defaulting to null", currencyTypeString);
     }
 
     position += 3;
-    return result;
+    return resulvedCurrencyType;
   }
 }
