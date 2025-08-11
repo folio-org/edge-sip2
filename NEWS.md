@@ -1,6 +1,6 @@
 ## 3.5.0 In Progress
 * [SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276): Add support for MYR currency type
-* * [SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276): Add support for MYR currency type in FeePaidMessageParser
+* [SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276): Add support for MYR currency type in FeePaidMessageParser
 
 
 ## 3.4.0 2025-03-14
