@@ -162,6 +162,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
           promise.fail(throwable);
         })
         .onSuccess(accessToken -> {
+          sessionData.setAuthenticationToken(accessToken);
           request.putHeader(HEADER_X_OKAPI_TOKEN, accessToken);
           request.putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant());
           request.putHeader(HEADER_X_OKAPI_REQUEST_ID, sessionData.getRequestId());

@@ -39,6 +39,13 @@ import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.domain.ConnectionDetails;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
+import org.folio.edge.sip2.handlers.ItemInformationHandler;
+import org.folio.edge.sip2.handlers.LoginHandler;
+import org.folio.edge.sip2.handlers.PatronInformationHandler;
+import org.folio.edge.sip2.handlers.PatronStatusHandler;
+import org.folio.edge.sip2.handlers.RenewAllHandler;
+import org.folio.edge.sip2.handlers.RenewHandler;
+import org.folio.edge.sip2.handlers.SCStatusHandler;
 import org.folio.edge.sip2.metrics.Metrics;
 import org.folio.edge.sip2.modules.ApplicationModule;
 import org.folio.edge.sip2.modules.FolioResourceProviderModule;
@@ -46,6 +53,7 @@ import org.folio.edge.sip2.modules.RequestHandlerModule;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
+import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.service.config.TenantConfigurationService;
 import org.folio.edge.sip2.service.tenant.Sip2TenantService;
 import org.folio.edge.sip2.session.SessionData;
@@ -396,13 +404,21 @@ public class MainVerticle extends AbstractVerticle {
       var webClient = WebClientUtils.create(vertx, config());
       var injector = Guice.createInjector(
           new FolioResourceProviderModule(okapiUrl, webClient),
-          new ApplicationModule(),
-          new RequestHandlerModule()
-      );
-
-      handlers = injector.getInstance(new Key<>() {});
-      tenantResolver = injector.getInstance(Sip2TenantService.class);
-      tenantConfigurationService = injector.getInstance(TenantConfigurationService.class);
+          new ApplicationModule());
+      handlers = new EnumMap<>(Command.class);
+      handlers.put(CHECKOUT, injector.getInstance(CheckoutHandler.class));
+      handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
+      handlers.put(SC_STATUS, injector.getInstance(SCStatusHandler.class));
+      handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
+      handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
+      handlers.put(PATRON_INFORMATION, injector.getInstance(PatronInformationHandler.class));
+      handlers.put(PATRON_STATUS_REQUEST, injector.getInstance(PatronStatusHandler.class));
+      handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
+      handlers.put(END_PATRON_SESSION, injector.getInstance(EndPatronSessionHandler.class));
+      handlers.put(FEE_PAID, injector.getInstance(FeePaidHandler.class));
+      handlers.put(ITEM_INFORMATION, injector.getInstance(ItemInformationHandler.class));
+      handlers.put(RENEW,  injector.getInstance(RenewHandler.class));
+      handlers.put(RENEW_ALL,  injector.getInstance(RenewAllHandler.class));
     }
   }
 
