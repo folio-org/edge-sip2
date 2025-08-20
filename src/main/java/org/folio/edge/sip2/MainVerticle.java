@@ -58,12 +58,14 @@ import org.folio.edge.sip2.handlers.PatronInformationHandler;
 import org.folio.edge.sip2.handlers.PatronStatusHandler;
 import org.folio.edge.sip2.handlers.RenewAllHandler;
 import org.folio.edge.sip2.handlers.RenewHandler;
+import org.folio.edge.sip2.handlers.SCStatusHandler;
 import org.folio.edge.sip2.metrics.Metrics;
 import org.folio.edge.sip2.modules.ApplicationModule;
 import org.folio.edge.sip2.modules.FolioResourceProviderModule;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
+import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.edge.sip2.utils.TenantUtils;
@@ -402,8 +404,7 @@ public class MainVerticle extends AbstractVerticle {
       handlers = new EnumMap<>(Command.class);
       handlers.put(CHECKOUT, injector.getInstance(CheckoutHandler.class));
       handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
-      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null,
-          null, null, okapiUrl, webClient));
+      handlers.put(SC_STATUS, injector.getInstance(SCStatusHandler.class));
       handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
       handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
       handlers.put(PATRON_INFORMATION, injector.getInstance(PatronInformationHandler.class));

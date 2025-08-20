@@ -10,6 +10,7 @@ import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.FolioResourceProvider;
 import org.folio.edge.sip2.repositories.IRequestData;
 import org.folio.edge.sip2.repositories.IResourceProvider;
+import org.folio.edge.sip2.repositories.LoginRepository;
 
 /**
  * Factory class that holds instantiation logic for all ISip2RequestHandlers.
@@ -58,9 +59,10 @@ public class HandlersFactory {
 
   @SuppressWarnings("unchecked")
   private static <T> IResourceProvider<T> getResourceProvider(
-      IResourceProvider<T> resourceProvider, String okapiUrl, WebClient webClient) {
+      IResourceProvider<T> resourceProvider,
+      String okapiUrl, WebClient webClient) {
     if (resourceProvider == null) {
-      return (IResourceProvider<T>) new FolioResourceProvider(okapiUrl, webClient);
+      return (IResourceProvider<T>) new FolioResourceProvider(null, okapiUrl, webClient);
     }
 
     return resourceProvider;

@@ -12,19 +12,15 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.predicate.ErrorConverter;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.ext.web.codec.BodyCodec;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Supplier;
-import javax.inject.Inject;
-import javax.inject.Named;
-import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Sip2LogAdapter;
-import org.folio.okapi.common.refreshtoken.client.Client;
-import org.folio.okapi.common.refreshtoken.client.ClientOptions;
 
 /**
  * Resource provider for communicating with FOLIO.
@@ -40,18 +36,19 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
   private final String okapiUrl;
   private final WebClient client;
+  private final LoginRepository loginRepository;
 
-  Client tokenClient;
   /**
    * Construct a FOLIO resource provider with the specified parameters.
    * @param okapiUrl the URL for okapi
    * @param webClient the WebClient instance
    */
-
   @Inject
   public FolioResourceProvider(
+      LoginRepository loginRepository,
       @Named("okapiUrl") String okapiUrl,
       @Named("webClient") WebClient webClient) {
+    this.loginRepository = loginRepository;
     this.okapiUrl = okapiUrl;
     this.client = webClient;
   }
@@ -79,44 +76,19 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         .map(response -> toIResource(sessionData, response))
       ).recover(
         e -> {
-          log.error(sessionData, "Failed to set headers or send request", e);
+          if (e instanceof IllegalStateException) {
+            // This is a common error when the headers are not set correctly
+            sessionData.setErrorResponseMessage("Headers not set correctly: " + e.getMessage());
+          } else {
+            sessionData.setErrorResponseMessage("Failed to retrieve resource: " + e.getMessage());
+          }
           return Future.failedFuture(e);
         });
   }
 
   /**
-   * Login and set the access token in session data object.
-   * @param username UserName
-   * @param getPasswordSupplier PasswordSupplier
-   * @param sessionData session data
-   * @return response
-   */
-
-  public Future<String> loginWithSupplier(
-      String username,
-      Supplier<Future<String>> getPasswordSupplier,
-      SessionData sessionData) {
-    log.info(sessionData, "loginWithSupplier username={} cache={}",
-        username, TokenCacheFactory.get());
-    ClientOptions clientOptions = new ClientOptions()
-        .okapiUrl(okapiUrl)
-        .webClient(client);
-
-    tokenClient = Client.createLoginClient(clientOptions, null,
-        sessionData.getTenant(), username, getPasswordSupplier);
-
-    return tokenClient.getToken().compose(token -> {
-      log.debug(sessionData, "The login token is issued");
-      return Future.succeededFuture(token);
-    }).onFailure(e -> {
-      log.error(sessionData, "Unable to get the access token ", e);
-      sessionData.setAuthenticationToken(null);
-      sessionData.setLoginErrorMessage(e.getMessage());
-    });
-  }
-
-  /**
    * Verify a pin.
+   *
    * @param requestData The request data with the path and payload
    * @return Boolean True if successful
    */
@@ -137,7 +109,6 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         .map(Boolean.TRUE)
         .onFailure(e -> log.error(sessionData, "Pin check failed", e)));
   }
-
 
   @Override
   public Future<IResource> createResource(IRequestData requestData) {
@@ -167,12 +138,12 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
   @Override
   public Future<IResource> editResource(IRequestData fromData) {
-    return null;
+    return Future.failedFuture(new UnsupportedOperationException("Not implemented"));
   }
 
   @Override
   public Future<IResource> deleteResource(IRequestData resource) {
-    return null;
+    return Future.failedFuture(new UnsupportedOperationException("Not implemented"));
   }
 
   private void setHeaders(
@@ -185,14 +156,12 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
       request.putHeader(entry.getKey(), entry.getValue());
     }
 
-    Future<String> token = loginWithSupplier(sessionData.getUsername(),
-        () -> Future.succeededFuture(sessionData.getPassword()), sessionData);
-    token.onFailure(throwable -> {
-      sessionData.setErrorResponseMessage("Access token missing.");
-      promise.fail(throwable);
-    })
+    loginRepository.getSessionAccessToken(sessionData)
+        .onFailure(throwable -> {
+          sessionData.setErrorResponseMessage("Access token missing.");
+          promise.fail(throwable);
+        })
         .onSuccess(accessToken -> {
-          sessionData.setErrorResponseMessage(null);
           sessionData.setAuthenticationToken(accessToken);
           request.putHeader(HEADER_X_OKAPI_TOKEN, accessToken);
           request.putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant());

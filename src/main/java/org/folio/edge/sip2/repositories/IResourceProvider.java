@@ -17,9 +17,5 @@ public interface IResourceProvider<T> {
 
   Future<IResource> deleteResource(T resource);
 
-  Future<String> loginWithSupplier(String username,
-                                   Supplier<Future<String>> getPasswordSupplier,
-                                   SessionData sessionData);
-
   Future<Boolean> doPinCheck(T fromData);
 }
