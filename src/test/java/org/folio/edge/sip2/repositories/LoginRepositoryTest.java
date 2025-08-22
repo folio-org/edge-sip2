@@ -33,7 +33,7 @@ import org.folio.edge.sip2.domain.messages.enumerations.PWDAlgorithm;
 import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
 import org.folio.edge.sip2.domain.messages.requests.Login;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
-import org.folio.edge.sip2.exception.MissingAccessTokenException;
+import org.folio.edge.sip2.exception.MissingAccessTokenThrowable;
 import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,8 +66,8 @@ class LoginRepositoryTest {
 
   @Test
   void canCreateLoginRepository() {
-    var loginRepository = new LoginRepository(OKAPI_URL, webClient);
-    assertNotNull(loginRepository);
+    var newLoginRepository = new LoginRepository(OKAPI_URL, webClient);
+    assertNotNull(newLoginRepository);
   }
 
   @Test
@@ -243,7 +243,7 @@ class LoginRepositoryTest {
 
     resultFuture.onComplete(testContext.failing(error -> {
       testContext.completeNow();
-      assertInstanceOf(MissingAccessTokenException.class, error);
+      assertInstanceOf(MissingAccessTokenThrowable.class, error);
       var expectedErrorMessage = "Access token is missing. "
           + "Please login to Folio to obtain a valid access token.";
       assertEquals(expectedErrorMessage, error.getMessage());

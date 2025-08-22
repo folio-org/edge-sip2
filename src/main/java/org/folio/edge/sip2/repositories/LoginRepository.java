@@ -27,7 +27,7 @@ import java.util.Optional;
 import org.folio.edge.sip2.domain.integration.login.FolioLoginResponse;
 import org.folio.edge.sip2.domain.messages.requests.Login;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
-import org.folio.edge.sip2.exception.MissingAccessTokenException;
+import org.folio.edge.sip2.exception.MissingAccessTokenThrowable;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Sip2LogAdapter;
 
@@ -88,7 +88,7 @@ public class LoginRepository {
   public Future<String> getSessionAccessToken(SessionData sd) {
     var lr = sd.getLoginResponse();
     if (lr == null) {
-      return failedFuture(new MissingAccessTokenException());
+      return failedFuture(new MissingAccessTokenThrowable());
     }
 
     var now = OffsetDateTime.now(UTC);

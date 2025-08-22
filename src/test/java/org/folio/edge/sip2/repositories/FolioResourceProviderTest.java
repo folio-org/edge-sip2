@@ -25,7 +25,7 @@ import io.vertx.ext.web.codec.BodyCodec;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.Map;
-import org.folio.edge.sip2.exception.MissingAccessTokenException;
+import org.folio.edge.sip2.exception.MissingAccessTokenThrowable;
 import org.folio.edge.sip2.session.SessionData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,7 +85,7 @@ class FolioResourceProviderTest {
     var requestData = testRequestData();
 
     when(loginRepository.getSessionAccessToken(any(SessionData.class)))
-        .thenReturn(Future.failedFuture(new MissingAccessTokenException()));
+        .thenReturn(Future.failedFuture(new MissingAccessTokenThrowable()));
     when(webClient.getAbs(OKAPI_URL + requestData.getPath())).thenReturn(httpRequest);
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
 
@@ -96,7 +96,7 @@ class FolioResourceProviderTest {
           + "Please login to Folio to obtain a valid access token.";
       var actualErrorMessage = requestData.getSessionData().getErrorResponseMessage();
 
-      assertInstanceOf(MissingAccessTokenException.class, error);
+      assertInstanceOf(MissingAccessTokenThrowable.class, error);
       assertEquals(expectedMessage, error.getMessage());
       assertEquals("Failed to retrieve resource: " + expectedMessage, actualErrorMessage);
       testContext.completeNow();
