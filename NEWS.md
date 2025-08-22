@@ -29,7 +29,7 @@
 ## 3.3.1 2024-11-26
 * [SIP2-231](https://issues.folio.org/browse/SIP2-231): AJ Field (Title) Issue in Successful Renewals
 * [SIP2-232](https://issues.folio.org/browse/SIP2-232): AH Field (Due Date) Issue in Unsuccessful Renewals
-* [SIP2-240](https://issues.folio.org/browse/SIP2-240): SIP2 providing values in USD rather than ZAR
+* [SIP2-240](https://issues.folio.org/browse/SIP2-240): SIP2 providing values in USD rather**** than ZAR
 
 
 ## 3.3.0 2024-10-31
