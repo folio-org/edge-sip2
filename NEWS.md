@@ -1,6 +1,14 @@
 ## 3.5.0 In Progress
+* [SIP2-98](https://folio-org.atlassian.net/browse/SIP2-98): Remove leading/trailing whitespaces for item barcodes
+* [SIP2-135](https://folio-org.atlassian.net/browse/SIP2-135): Add IPv6 matching
+* [SIP2-247](https://folio-org.atlassian.net/browse/SIP2-247): Add environment variable for health check port
+* [SIP2-250](https://folio-org.atlassian.net/browse/SIP2-250): Add the ability to use HA proxy
+* [SIP2-257](https://folio-org.atlassian.net/browse/SIP2-257): Increase default fetch size for circulation loans
 * [SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276): Add support for MYR currency type
 * [SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276): Add support for MYR currency type in FeePaidMessageParser
+* [SIP2-284](https://folio-org.atlassian.net/browse/SIP2-284): Update for Split Search & Browse APIs
+* [SIP2-286](https://folio-org.atlassian.net/browse/SIP2-286): Improve logging
+* [SIP2-291](https://folio-org.atlassian.net/browse/SIP2-291): Implement a single login operation per session
 
 
 ## 3.4.0 2025-03-14
