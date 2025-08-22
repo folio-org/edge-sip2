@@ -5,12 +5,17 @@ import static java.lang.String.format;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.PreviousMessage;
+import org.folio.edge.sip2.domain.integration.login.FolioLoginResponse;
 
-
+@Data
+@EqualsAndHashCode
+@RequiredArgsConstructor
 public class SessionData {
   private final char fieldDelimiter;
   private final String tenant;
@@ -32,11 +37,11 @@ public class SessionData {
   private boolean configurationLoaded;
   private boolean usePinForPatronVerification;
   private boolean alwaysCheckPatronPassword;
+  private FolioLoginResponse loginResponse;
 
   private static final Logger log = LogManager.getLogger();
   private static final String DEFAULT_CURRENCY = "USD";
   private static final String DEFAULT_TIMEZONE = "Etc/UTC";
-
 
   private SessionData(String tenant, char fieldDelimiter,
                       boolean errorDetectionEnabled, String charset) {
@@ -49,35 +54,6 @@ public class SessionData {
     this.configurationLoaded = false;
     this.usePinForPatronVerification = false;
     this.alwaysCheckPatronPassword = true;
-
-  }
-
-  public String getScLocation() {
-    return scLocation;
-  }
-
-  public void setScLocation(String scLocation) {
-    this.scLocation = scLocation;
-  }
-
-  public String getAuthenticationToken() {
-    return authenticationToken;
-  }
-
-  public void setAuthenticationToken(String authenticationToken) {
-    this.authenticationToken = authenticationToken;
-  }
-
-  public int getMaxPrintWidth() {
-    return maxPrintWidth;
-  }
-
-  public void setMaxPrintWidth(int maxPrintWidth) {
-    this.maxPrintWidth = maxPrintWidth;
-  }
-
-  public String getUsername() {
-    return username;
   }
 
   /**
@@ -99,42 +75,6 @@ public class SessionData {
     this.rejectedCheckinStatusList = list;
   }
 
-  public void setUsername(String username) {
-    this.username = username;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  public char getFieldDelimiter() {
-    return fieldDelimiter;
-  }
-
-  public String getTenant() {
-    return tenant;
-  }
-
-  public boolean isErrorDetectionEnabled() {
-    return errorDetectionEnabled;
-  }
-
-  public String getCharset() {
-    return charset;
-  }
-
-  public PreviousMessage getPreviousMessage() {
-    return previousMessage;
-  }
-
-  public void setPreviousMessage(PreviousMessage message) {
-    this.previousMessage = message;
-  }
-
   public String getTimeZone() {
     return timeZone != null ? timeZone : DEFAULT_TIMEZONE;
   }
@@ -149,26 +89,6 @@ public class SessionData {
           + "default value {} will be used.", DEFAULT_TIMEZONE);
     }
     this.timeZone = timeZone;
-  }
-
-  public boolean isPatronPasswordVerificationRequired() {
-    return patronPasswordVerificationRequired;
-  }
-
-  /**
-   * Are we to use patron pin instead of the password for verification.
-   * @return boolean true or false
-   */
-  public boolean isUsePinForPatronVerification() {
-    return usePinForPatronVerification;
-  }
-
-  public void setPatronPasswordVerificationRequired(boolean patronPasswordVerificationRequired) {
-    this.patronPasswordVerificationRequired = patronPasswordVerificationRequired;
-  }
-
-  public void setUsePinForPatronVerification(boolean usePinForPatronVerification) {
-    this.usePinForPatronVerification = usePinForPatronVerification;
   }
 
   /**
@@ -187,22 +107,6 @@ public class SessionData {
       charset);
   }
 
-  public String getLoginErrorMessage() {
-    return loginErrorMessage;
-  }
-
-  public void setLoginErrorMessage(String loginErrorMessage) {
-    this.loginErrorMessage = loginErrorMessage;
-  }
-
-  public void setErrorResponseMessage(Object errorResponseMessage) {
-    this.errorResponseMessage = errorResponseMessage;
-  }
-
-  public Object getErrorResponseMessage() {
-    return this.errorResponseMessage;
-  }
-
   public String getCurrency() {
     return currency != null ? currency : DEFAULT_CURRENCY;
   }
@@ -214,31 +118,11 @@ public class SessionData {
    */
   public void setCurrency(String currency) {
     if (currency == null) {
-      log.warn("Null currency value, therefore default value {} will be used",
-          DEFAULT_CURRENCY);
-    } else {
-      this.currency = currency;
+      log.warn("Null currency value, therefore default value {} will be used", DEFAULT_CURRENCY);
+      return;
     }
-  }
 
-  public void setAlwaysCheckPatronPassword(boolean flag) {
-    this.alwaysCheckPatronPassword = flag;
-  }
-
-  public boolean isAlwaysCheckPatronPassword() {
-    return alwaysCheckPatronPassword;
-  }
-
-  public void setConfigurationLoaded(boolean loaded) {
-    this.configurationLoaded = loaded;
-  }
-
-  public boolean isConfigurationLoaded() {
-    return this.configurationLoaded;
-  }
-
-  public String getRequestId()  {
-    return this.requestId;
+    this.currency = currency;
   }
 
   private static String generateRequestId() {

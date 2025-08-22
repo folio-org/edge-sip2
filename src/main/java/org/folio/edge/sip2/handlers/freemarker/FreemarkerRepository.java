@@ -12,6 +12,7 @@ import static org.folio.edge.sip2.parser.Command.PATRON_STATUS_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.RENEW_ALL_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.RENEW_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
+import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -76,6 +77,7 @@ public class FreemarkerRepository {
     addTemplate(RENEW_RESPONSE, "RenewResponse.ftl", configuration);
     addTemplate(RENEW_ALL_RESPONSE, "RenewAllResponse.ftl", configuration);
     addTemplate(FEE_PAID_RESPONSE, "FeePaidResponse.ftl", configuration);
+    addTemplate(SC_STATUS, "acs-status.ftl", configuration);
 
   }
 

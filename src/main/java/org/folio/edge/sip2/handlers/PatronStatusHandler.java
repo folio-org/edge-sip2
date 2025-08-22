@@ -4,11 +4,11 @@ import static org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils.executeFre
 
 import freemarker.template.Template;
 import io.vertx.core.Future;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.inject.Inject;
-import javax.inject.Named;
 import org.folio.edge.sip2.domain.messages.requests.PatronStatusRequest;
 import org.folio.edge.sip2.domain.messages.responses.PatronStatusResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
@@ -16,7 +16,6 @@ import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
-
 
 public class PatronStatusHandler implements ISip2RequestHandler {
   private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(PatronStatusHandler.class);

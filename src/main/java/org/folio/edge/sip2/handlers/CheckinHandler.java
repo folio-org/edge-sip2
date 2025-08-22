@@ -4,11 +4,11 @@ import static org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils.executeFre
 
 import freemarker.template.Template;
 import io.vertx.core.Future;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.inject.Inject;
-import javax.inject.Named;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.responses.CheckinResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
