@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxException;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
@@ -275,7 +276,7 @@ class CirculationRepositoryTests {
         .build();
 
     when(mockFolioProvider.createResource(any()))
-        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")));
+        .thenReturn(Future.failedFuture(new VertxException("Test failure", false)));
 
     when(mockItemRepository.getItemById(anyString(), any()))
         .thenReturn(Future.succeededFuture(
@@ -1492,7 +1493,7 @@ class CirculationRepositoryTests {
     final String userId = UUID.randomUUID().toString();
 
     when(mockFolioProvider.retrieveResource(any()))
-        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("cannotGetLoansByUserId")));
+        .thenReturn(Future.failedFuture(new VertxException("cannotGetLoansByUserId", false)));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -1565,7 +1566,7 @@ class CirculationRepositoryTests {
 
     when(mockFolioProvider.retrieveResource(any()))
         .thenReturn(Future.failedFuture(
-            new NoStackTraceThrowable("cannotGetOverdueLoansByUserId")));
+            new VertxException("cannotGetOverdueLoansByUserId", false)));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -1637,7 +1638,7 @@ class CirculationRepositoryTests {
     final String itemId = UUID.randomUUID().toString();
 
     when(mockFolioProvider.retrieveResource(any()))
-        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("cannotGetRequestsByItemId")));
+        .thenReturn(Future.failedFuture(new VertxException("cannotGetRequestsByItemId", false)));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -1706,7 +1707,7 @@ class CirculationRepositoryTests {
     final String userId = UUID.randomUUID().toString();
 
     when(mockFolioProvider.retrieveResource(any()))
-        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("cannotGetRequestsByUserId")));
+        .thenReturn(Future.failedFuture(new VertxException("cannotGetRequestsByUserId", false)));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 

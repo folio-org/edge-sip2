@@ -40,30 +40,30 @@
   </ciManagement>
 
   <properties>
+    <java.version>21</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <exec.mainClass>org.folio.edge.sip2.MainVerticle</exec.mainClass>
-    <vertx.version>4.5.13</vertx.version>
-    <log4j2.version>2.24.3</log4j2.version>
-    <micrometer.version>1.14.5</micrometer.version>
     <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
-    <java.version>21</java.version>
-    <okapi-common.version>6.2.3</okapi-common.version>
+
+    <!-- Folio library versions  -->
     <raml-module-builder-version>35.4.0</raml-module-builder-version>
-    <folio-s3-client.version>2.3.0</folio-s3-client.version>
+    <okapi-common.version>7.0.0</okapi-common.version>
 
     <!-- 3rd party library versions  -->
+    <vertx.version>	5.0.3</vertx.version>
+    <log4j2.version>2.25.1</log4j2.version>
     <ipaddress.version>5.5.1</ipaddress.version>
     <lombok.version>1.18.38</lombok.version>
+    <micrometer.version>1.15.3</micrometer.version>
+    <commons-net.version>3.12.0</commons-net.version>
 
-    <!-- Testing library versions-->
-    <folio-backed-testing.version>3.0.3</folio-backed-testing.version>
-    <wiremock.version>3.13.1</wiremock.version>
+    <!-- 3rd party test library versions  -->
     <rest-assured.version>5.5.6</rest-assured.version>
-    <testcontainers-bom.version>1.21.3</testcontainers-bom.version>
     <junit-bom.version>5.13.4</junit-bom.version>
-    <mockito-bom.version>5.16.0</mockito-bom.version>
-    <assertj-core.version>3.27.6</assertj-core.version>
-    <lombok.version>1.18.38</lombok.version>
+    <mockito-bom.version>5.19.0</mockito-bom.version>
+    <testcontainers-bom.version>1.21.3</testcontainers-bom.version>
+    <wiremock.version>3.13.1</wiremock.version>
+    <bcpkix-jdk15to18.version>1.81</bcpkix-jdk15to18.version>
   </properties>
 
   <dependencyManagement>
@@ -112,6 +112,7 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
   <dependencies>
     <!-- Application dependencies -->
     <dependency>
@@ -179,7 +180,7 @@
     <dependency>
       <groupId>commons-net</groupId>
       <artifactId>commons-net</artifactId>
-      <version>3.11.1</version>
+      <version>${commons-net.version}</version>
     </dependency>
     <dependency>
       <groupId>org.folio.okapi</groupId>
@@ -243,7 +244,7 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcpkix-jdk15to18</artifactId>
-      <version>1.80</version>
+      <version>${bcpkix-jdk15to18.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -525,6 +526,13 @@
           <localCheckout>true</localCheckout>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>2.18.0</version>
+      </plugin>
+
 
     </plugins>
     <pluginManagement>

@@ -1,24 +1,26 @@
 package org.folio.edge.sip2.repositories;
 
-import static io.vertx.ext.web.client.predicate.ResponsePredicate.SC_SUCCESS;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpResponseExpectation.SC_CREATED;
+import static io.vertx.core.http.HttpResponseExpectation.SC_OK;
+import static io.vertx.core.http.HttpResponseExpectation.contentType;
+import static io.vertx.ext.web.codec.BodyCodec.jsonObject;
 
+import io.vertx.core.Expectation;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpResponseExpectation;
+import io.vertx.core.http.HttpResponseHead;
+import io.vertx.core.http.impl.headers.HeadersMultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.predicate.ErrorConverter;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
-import io.vertx.ext.web.codec.BodyCodec;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Sip2LogAdapter;
 
@@ -33,6 +35,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   private static final String HEADER_X_OKAPI_TENANT = "x-okapi-tenant";
   private static final String HEADER_X_OKAPI_REQUEST_ID = "x-okapi-request-id";
   private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(FolioResourceProvider.class);
+  public static final List<String> EXPECTED_CONTENT_TYPES =
+      List.of("application/json", "application/json; charset=utf-8");
 
   private final String okapiUrl;
   private final WebClient client;
@@ -40,7 +44,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
 
   /**
    * Construct a FOLIO resource provider with the specified parameters.
-   * @param okapiUrl the URL for okapi
+   *
+   * @param okapiUrl  the URL for okapi
    * @param webClient the WebClient instance
    */
   @Inject
@@ -56,34 +61,14 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   @Override
   public Future<IResource> retrieveResource(IRequestData requestData) {
     var sessionData = requestData.getSessionData();
-    log.debug(sessionData, "retrieve resource {}", requestData::getPath);
+    Objects.requireNonNull(sessionData, "SessionData cannot be null");
+    log.debug(sessionData, "Retrieving resource {}", requestData::getPath);
 
-    final HttpRequest<Buffer> request =
-        client.getAbs(okapiUrl + requestData.getPath());
-
-    return Future.<Void>future(promise -> setHeaders(requestData.getHeaders(), request,
-      Objects.requireNonNull(requestData.getSessionData(),
-        "SessionData cannot be null"), promise)).compose(v -> request
-        .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, getErrorConverter(sessionData)))
-        // Some APIs return application/json, some return with the charset
-        // parameter (e.g. circulation). So we can't use the built-in JSON
-        // predicate here.
-        .expect(ResponsePredicate.contentType(Arrays.asList(
-          "application/json",
-          "application/json; charset=utf-8")))
-        .as(BodyCodec.jsonObject())
-        .send()
+    return initHttpRequest(GET, requestData)
+        .flatMap(HttpRequest::send)
+        .expecting(getHttpRequestExpectations(sessionData, SC_OK))
         .map(response -> toIResource(sessionData, response))
-      ).recover(
-        e -> {
-          if (e instanceof IllegalStateException) {
-            // This is a common error when the headers are not set correctly
-            sessionData.setErrorResponseMessage("Headers not set correctly: " + e.getMessage());
-          } else {
-            sessionData.setErrorResponseMessage("Failed to retrieve resource: " + e.getMessage());
-          }
-          return Future.failedFuture(e);
-        });
+        .recover(error -> handleErrorResponse(sessionData, error));
   }
 
   /**
@@ -95,19 +80,11 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   public Future<Boolean> doPinCheck(IRequestData requestData) {
     var sessionData = requestData.getSessionData();
     log.debug(sessionData, "Doing pin verification at {}", requestData::getPath);
-
-    final HttpRequest<Buffer> request =
-        client.postAbs(okapiUrl + requestData.getPath());
-
-    return Future.<Void>future(promise -> setHeaders(
-        requestData.getHeaders(), request, requestData.getSessionData(),
-        promise))
-      .compose(v -> request
-        .expect(ResponsePredicate.create(SC_SUCCESS, getErrorConverter(sessionData)))
-        .as(BodyCodec.jsonObject())
-        .sendJsonObject(requestData.getBody())
+    return initHttpRequest(POST, requestData)
+        .flatMap(request -> request.sendJsonObject(requestData.getBody()))
+        .expecting(getHttpRequestExpectations(sessionData, SC_OK))
         .map(Boolean.TRUE)
-        .onFailure(e -> log.error(sessionData, "Pin check failed", e)));
+        .onFailure(e -> log.error(sessionData, "Pin check failed", e));
   }
 
   @Override
@@ -117,23 +94,11 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         requestData::getPath,
         () -> requestData.getBody().encode());
 
-    final HttpRequest<Buffer> request =
-        client.postAbs(okapiUrl + requestData.getPath());
-
-    return Future.<Void>future(promise -> setHeaders(requestData.getHeaders(),
-        request, requestData.getSessionData(), promise))
-      .compose(v -> request
-        .expect(ResponsePredicate.create(SC_SUCCESS, getErrorConverter(sessionData)))
-        // Some APIs return application/json, some return with the charset
-        // parameter (e.g. circulation). So we can't use the built-in JSON
-        // predicate here.
-        .expect(ResponsePredicate.contentType(Arrays.asList(
-            "application/json",
-            "application/json; charset=utf-8")))
-        .as(BodyCodec.jsonObject())
-        .sendJsonObject(requestData.getBody())
+    return initHttpRequest(POST, requestData)
+        .flatMap(request -> request.sendJsonObject(requestData.getBody()))
+        .expecting(getHttpRequestExpectations(sessionData, SC_CREATED))
         .map(response -> toIResource(sessionData, response))
-        .onFailure(e -> log.error(sessionData, "Request failed", e)));
+        .onFailure(error -> log.error(sessionData, "Request failed", error));
   }
 
   @Override
@@ -146,28 +111,19 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     return Future.failedFuture(new UnsupportedOperationException("Not implemented"));
   }
 
-  private void setHeaders(
-      Map<String, String> headers,
-      HttpRequest<Buffer> request,
-      SessionData sessionData,
-      Promise<Void> promise) {
-    for (Map.Entry<String,String> entry : Optional.ofNullable(headers)
-        .orElse(Collections.emptyMap()).entrySet()) {
-      request.putHeader(entry.getKey(), entry.getValue());
+  private Future<HttpRequest<JsonObject>> initHttpRequest(HttpMethod method, IRequestData data) {
+    var sessionData = data.getSessionData();
+    if (sessionData == null) {
+      return Future.failedFuture(new IllegalArgumentException("SessionData cannot be null"));
     }
 
-    loginRepository.getSessionAccessToken(sessionData)
-        .onFailure(throwable -> {
-          sessionData.setErrorResponseMessage("Access token missing.");
-          promise.fail(throwable);
-        })
-        .onSuccess(accessToken -> {
-          sessionData.setAuthenticationToken(accessToken);
-          request.putHeader(HEADER_X_OKAPI_TOKEN, accessToken);
-          request.putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant());
-          request.putHeader(HEADER_X_OKAPI_REQUEST_ID, sessionData.getRequestId());
-          promise.complete();
-        });
+    return loginRepository.getSessionAccessToken(sessionData)
+        .map(accessToken -> client.requestAbs(method, okapiUrl + data.getPath())
+            .as(jsonObject())
+            .putHeaders(getDataHeaders(data))
+            .putHeader(HEADER_X_OKAPI_TOKEN, accessToken)
+            .putHeader(HEADER_X_OKAPI_TENANT, sessionData.getTenant())
+            .putHeader(HEADER_X_OKAPI_REQUEST_ID, sessionData.getRequestId()));
   }
 
   private static IResource toIResource(SessionData sessionData, HttpResponse<JsonObject> response) {
@@ -175,11 +131,34 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     return new FolioResource(response.body(), response.headers());
   }
 
-  private ErrorConverter getErrorConverter(SessionData sessionData) {
-    return ErrorConverter.createFullBody(result -> {
-      log.error(sessionData, "Error communicating with FOLIO: {}",
-          result.response().bodyAsString());
-      return new FolioRequestThrowable(result.response().bodyAsString());
-    });
+  private static Expectation<HttpResponseHead> getHttpRequestExpectations(
+      SessionData sd, HttpResponseExpectation expectedStatus) {
+
+    return expectedStatus
+        .and(contentType(EXPECTED_CONTENT_TYPES))
+        .wrappingFailure((head, err) -> getHttpRequestError(sd, head, err));
+  }
+
+  private static FolioRequestThrowable getHttpRequestError(SessionData sessionData,
+      HttpResponseHead responseHead, Throwable e) {
+    var status = responseHead.statusCode() + " " + responseHead.statusMessage();
+    log.error(sessionData, "login:: Invalid response from FOLIO '{}': {}", status, e.getMessage());
+    return new FolioRequestThrowable("Failed to perform request: " + status);
+  }
+
+  private static Future<IResource> handleErrorResponse(SessionData sessionData, Throwable error) {
+    if (error instanceof IllegalStateException) {
+      // This is a common error when the headers are not set correctly
+      sessionData.setErrorResponseMessage("Headers not set correctly: " + error.getMessage());
+    } else {
+      sessionData.setErrorResponseMessage("Failed to retrieve resource: " + error.getMessage());
+    }
+    return Future.failedFuture(error);
+  }
+
+  private static HeadersMultiMap getDataHeaders(IRequestData data) {
+    var headers = HeadersMultiMap.httpHeaders();
+    data.getHeaders().forEach(headers::add);
+    return headers;
   }
 }

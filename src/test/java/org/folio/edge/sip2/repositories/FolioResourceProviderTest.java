@@ -224,18 +224,15 @@ class FolioResourceProviderTest {
   private void prepareGetRequestMocks(IRequestData requestData) {
     when(webClient.getAbs(OKAPI_URL + requestData.getPath())).thenReturn(httpRequest);
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
-    when(httpRequest.expect(any())).thenReturn(httpRequest);
     when(httpRequest.as(BodyCodec.jsonObject())).thenReturn(jsonRequest);
   }
 
   private void preparePostRequestMocks(
-      IRequestData requestData, HttpResponse<JsonObject> httpResponse) {
+      IRequestData requestData, HttpResponse<JsonObject> response) {
     when(webClient.postAbs(OKAPI_URL + requestData.getPath())).thenReturn(httpRequest);
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
-    when(httpRequest.expect(any())).thenReturn(httpRequest);
     when(httpRequest.as(BodyCodec.jsonObject())).thenReturn(jsonRequest);
-    when(jsonRequest.sendJsonObject(any(JsonObject.class)))
-        .thenReturn(succeededFuture(httpResponse));
+    when(jsonRequest.sendJsonObject(any(JsonObject.class))).thenReturn(succeededFuture(response));
   }
 
   private static IRequestData testRequestData() {
