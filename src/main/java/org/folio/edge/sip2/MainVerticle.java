@@ -148,9 +148,9 @@ public class MainVerticle extends AbstractVerticle {
         });
       });
 
-      JsonObject crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
-      ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
-      configRetriever = ConfigRetriever.create(vertx, crOptions);
+      var crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
+      var crOptions = new ConfigRetrieverOptions(crOptionsJson);
+      this.configRetriever = ConfigRetriever.create(vertx, crOptions);
 
       // After tenant config is loaded, start listening for messages
       listenToMessages(Promise.promise(), server).onComplete(ar -> {
@@ -295,11 +295,10 @@ public class MainVerticle extends AbstractVerticle {
   }
 
   private Future<Void> listenToMessages(Promise<Void> promise, NetServer server) {
-    configRetriever.getConfig(ar -> {
-      if (ar.succeeded()) {
-        var multiTenantConfig = ar.result();
-        tenantConfigurationService.updateConfiguration(multiTenantConfig);
-        log.info("Tenant config loaded: {}", multiTenantConfig::encode);
+    configRetriever.getConfig()
+        .onSuccess(config -> {
+          this.multiTenantConfig = config;
+          log.info("Tenant config loaded: {}", config::encodePrettily);
 
           server.listen()
               .onSuccess(result -> {

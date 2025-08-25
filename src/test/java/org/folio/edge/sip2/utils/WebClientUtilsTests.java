@@ -140,7 +140,8 @@ public class WebClientUtilsTests {
         .requestHandler(req -> req.response()
             .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
             .end(RESPONSE_MESSAGE))
-        .listen(serverPort, http -> {
+        .listen(serverPort)
+        .onComplete(http -> {
           if (http.succeeded()) {
             log.info("Server started on port: {}", serverPort);
           } else {
