@@ -58,9 +58,10 @@ public class HandlersFactory {
 
   @SuppressWarnings("unchecked")
   private static <T> IResourceProvider<T> getResourceProvider(
-      IResourceProvider<T> resourceProvider, String okapiUrl, WebClient webClient) {
+      IResourceProvider<T> resourceProvider,
+      String okapiUrl, WebClient webClient) {
     if (resourceProvider == null) {
-      return (IResourceProvider<T>) new FolioResourceProvider(okapiUrl, webClient);
+      return (IResourceProvider<T>) new FolioResourceProvider(null, okapiUrl, webClient);
     }
 
     return resourceProvider;
