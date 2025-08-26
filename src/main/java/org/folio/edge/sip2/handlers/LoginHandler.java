@@ -4,11 +4,11 @@ import static java.lang.Boolean.FALSE;
 
 import freemarker.template.Template;
 import io.vertx.core.Future;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.inject.Inject;
-import javax.inject.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.Login;
@@ -75,17 +75,14 @@ public class LoginHandler implements ISip2RequestHandler {
    * @param loginResponse loginResponse
    * @return response String
    */
-  private String constructLoginResponse(
-      SessionData sessionData,
-      LoginResponse loginResponse) {
+  private String constructLoginResponse(SessionData sessionData, LoginResponse loginResponse) {
     log.debug("LoginResponse: {}", () -> loginResponse);
     final Map<String, Object> root = new HashMap<>();
     root.put("formatDateTime", new FormatDateTimeMethodModel());
     root.put("delimiter", sessionData.getFieldDelimiter());
     root.put("loginResponse", loginResponse);
 
-    final String response = FreemarkerUtils
-        .executeFreemarkerTemplate(root, commandTemplate);
+    final String response = FreemarkerUtils.executeFreemarkerTemplate(root, commandTemplate);
     log.info("LoginHandler :: execute SIP login response: {}", response);
     return response;
   }

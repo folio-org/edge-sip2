@@ -2,11 +2,11 @@ package org.folio.edge.sip2.handlers;
 
 import freemarker.template.Template;
 import io.vertx.core.Future;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.inject.Inject;
-import javax.inject.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.PatronStatusRequest;
@@ -16,7 +16,6 @@ import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
-
 
 public class PatronStatusHandler implements ISip2RequestHandler {
   private static final Logger log = LogManager.getLogger();

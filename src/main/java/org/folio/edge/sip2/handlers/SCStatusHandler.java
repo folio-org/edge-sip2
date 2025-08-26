@@ -4,6 +4,8 @@ import static org.folio.edge.sip2.parser.Command.ACS_STATUS;
 
 import freemarker.template.Template;
 import io.vertx.core.Future;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +34,10 @@ public class SCStatusHandler implements ISip2RequestHandler {
    * @param template the template to apply to the data.
    *
    */
-  public SCStatusHandler(ConfigurationRepository configurationRepository, Template template) {
+  @Inject
+  public SCStatusHandler(
+      ConfigurationRepository configurationRepository,
+      @Named("scStatusResponse") Template template) {
     this.configurationRepository = configurationRepository;
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
     this.template = template;
