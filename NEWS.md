@@ -1,7 +1,8 @@
 ## 3.4.2 2025-09-15
+* [SIP2-247](https://folio-org.atlassian.net/browse/SIP2-247): Add environment variable for health check port
 * [SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276): Add support for MYR currency type
-* [SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276): Add support for MYR currency type in FeePaidMessageParser
-
+* [SIP2-286](https://folio-org.atlassian.net/browse/SIP2-286): Improve logging
+* [SIP2-291](https://folio-org.atlassian.net/browse/SIP2-291): Implement a single login operation per session
 
 ## 3.4.0 2025-03-14
 * [SIP2-244](https://issues.folio.org/browse/SIP2-244): Rename automated patron blocks permission

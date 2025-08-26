@@ -7,7 +7,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.status;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.common.ContentTypes.APPLICATION_JSON;
 import static io.restassured.RestAssured.when;
+import static java.time.OffsetDateTime.now;
+import static org.apache.hc.core5.http.HttpHeaders.CONTENT_TYPE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -62,16 +65,23 @@ class EdgeSip2IT {
   @Test
   void health() {
     var uri = "http://" + EDGE_SIP2.getHost() + ":" + EDGE_SIP2.getMappedPort(8081) + "/admin/health";
-    when()
-        .get(uri)
-    .then()
-        .statusCode(200);
+    when().get(uri)
+    .then().statusCode(200);
   }
 
   @Test
   void loginSuccess() {
+    var loginResponseBody = """
+        {"accessTokenExpiration":"%s","refreshTokenExpiration":"%s"}
+        """.formatted(now().plusMinutes(5), now().plusMinutes(5));
+
     stubFor(post("/authn/login-with-expiry")
-        .willReturn(created().withHeader("Set-Cookie", "folioAccessToken=abc.def.ghi")));
+        .willReturn(created()
+            .withBody(loginResponseBody)
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .withHeader("Set-Cookie", "folioAccessToken=abc.def.ghi"))
+    );
+
     stubFor(get(urlPathEqualTo("/configurations/entries")).willReturn(ok()));
     assertThat(send("9300CNMartin|COpassword|\r"), is("941\r"));
   }
@@ -99,7 +109,7 @@ class EdgeSip2IT {
       } while (c != '\r');
       return response.toString();
     } catch (SocketTimeoutException e) {
-      throw new UncheckedIOException("Got '" + response.toString() + "' but no \\r", e);
+      throw new UncheckedIOException("Got '" + response + "' but no \\r", e);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
