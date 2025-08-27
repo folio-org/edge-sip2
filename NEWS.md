@@ -3,6 +3,7 @@
 * [SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276): Add support for MYR currency type
 * [SIP2-286](https://folio-org.atlassian.net/browse/SIP2-286): Improve logging
 * [SIP2-291](https://folio-org.atlassian.net/browse/SIP2-291): Implement a single login operation per session
+* [SIP2-296](https://folio-org.atlassian.net/browse/SIP2-296): Update hard-coded currency list
 
 ## 3.4.0 2025-03-14
 * [SIP2-244](https://issues.folio.org/browse/SIP2-244): Rename automated patron blocks permission
