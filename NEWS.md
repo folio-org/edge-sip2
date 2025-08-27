@@ -9,6 +9,7 @@
 * [SIP2-284](https://folio-org.atlassian.net/browse/SIP2-284): Update for Split Search & Browse APIs
 * [SIP2-286](https://folio-org.atlassian.net/browse/SIP2-286): Improve logging
 * [SIP2-291](https://folio-org.atlassian.net/browse/SIP2-291): Implement a single login operation per session
+* [SIP2-296](https://folio-org.atlassian.net/browse/SIP2-296): Update hard-coded currency list
 
 
 ## 3.4.0 2025-03-14
