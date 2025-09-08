@@ -1,0 +1,29 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/circulation/requests",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "itemId==\"56ee9409-ec46-5e37-b77d-5e3c8a0405ee\" and status=\"Open\" and requestType==\"Recall\""
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "requests": [],
+      "totalRecords": 0
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/feefines",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "id==()"
+      }
+    }
+  },
+  "response": {
+    "status": 500,
+    "body": "org.folio.cql2pgjson.exception.QueryValidationException: org.z3950.zing.cql.CQLParseException: expected index or term, got ')'",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

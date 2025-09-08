@@ -1,0 +1,75 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/configurations/entries",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "(module==\"edge-sip2\" AND configName==\"acsTenantConfig\") OR (module==\"edge-sip2\" AND configName==\"selfCheckoutConfig.1a62fa88-e887-4454-a345-24b4a01095fa\") OR (module==\"ORG\" AND configName==\"localeSettings\")"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "configs": [
+        {
+          "id": "43896d94-41ea-44ff-8095-49241edb58ff",
+          "module": "ORG",
+          "configName": "localeSettings",
+          "enabled": true,
+          "value": "{\"locale\":\"fr-FR-u-nu-latn\",\"timezone\":\"Europe/Paris\",\"currency\":\"EUR\"}",
+          "metadata": {
+            "createdDate": "2024-05-30T18:38:40.895+00:00",
+            "createdByUserId": "337828f8-1e9c-4ce8-8413-0b929207955a",
+            "updatedDate": "2025-03-05T15:32:43.880+00:00",
+            "updatedByUserId": "c00de295-9afe-42b7-b535-27178ed83cda"
+          }
+        },
+        {
+          "id": "32a774b3-af01-4b2a-b518-ba9cf009ed0a",
+          "module": "edge-sip2",
+          "configName": "acsTenantConfig",
+          "enabled": true,
+          "value": "{\"supportedMessages\":[{\"messageName\":\"PATRON_STATUS_REQUEST\",\"isSupported\":\"Y\"},{\"messageName\":\"CHECKOUT\",\"isSupported\":\"Y\"},{\"messageName\":\"CHECKIN\",\"isSupported\":\"Y\"},{\"messageName\":\"BLOCK_PATRON\",\"isSupported\":\"N\"},{\"messageName\":\"SC_ACS_STATUS\",\"isSupported\":\"Y\"},{\"messageName\":\"LOGIN\",\"isSupported\":\"Y\"},{\"messageName\":\"PATRON_INFORMATION\",\"isSupported\":\"Y\"},{\"messageName\":\"END_PATRON_SESSION\",\"isSupported\":\"Y\"},{\"messageName\":\"FEE_PAID\",\"isSupported\":\"Y\"},{\"messageName\":\"ITEM_INFORMATION\",\"isSupported\":\"Y\"},{\"messageName\":\"ITEM_STATUS_UPDATE\",\"isSupported\":\"N\"},{\"messageName\":\"PATRON_ENABLE\",\"isSupported\":\"N\"},{\"messageName\":\"HOLD\",\"isSupported\":\"N\"},{\"messageName\":\"RENEW\",\"isSupported\":\"Y\"},{\"messageName\":\"RENEW_ALL\",\"isSupported\":\"Y\"}],\"statusUpdateOk\":false,\"offlineOk\":false,\"currencyType\":\"USD\",\"language\":\"en\",\"patronPasswordVerificationRequired\":true,\"usePinForPatronVerification\":true}",
+          "metadata": {
+            "createdDate": "2024-12-06T13:25:47.916+00:00",
+            "createdByUserId": "337828f8-1e9c-4ce8-8413-0b929207955a",
+            "updatedDate": "2025-03-06T06:13:12.309+00:00",
+            "updatedByUserId": "337828f8-1e9c-4ce8-8413-0b929207955a"
+          }
+        },
+        {
+          "id": "636820ad-05b6-40e6-b3a3-8ba01953dbfd",
+          "module": "edge-sip2",
+          "configName": "selfCheckoutConfig.1a62fa88-e887-4454-a345-24b4a01095fa",
+          "enabled": true,
+          "value": "{\"timeoutPeriod\":5,\"retriesAllowed\":3,\"checkinOk\":true,\"checkoutOk\":true,\"acsRenewalPolicy\":false,\"libraryName\":\"TestLibrary\",\"terminalLocation\":\"1a62fa88-e887-4454-a345-24b4a01095fa\"}",
+          "metadata": {
+            "createdDate": "2024-12-06T13:25:05.089+00:00",
+            "createdByUserId": "337828f8-1e9c-4ce8-8413-0b929207955a",
+            "updatedDate": "2024-12-06T13:25:05.089+00:00",
+            "updatedByUserId": "337828f8-1e9c-4ce8-8413-0b929207955a"
+          }
+        }
+      ],
+      "totalRecords": 3,
+      "resultInfo": {
+        "totalRecords": 3,
+        "facets": [],
+        "diagnostics": []
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

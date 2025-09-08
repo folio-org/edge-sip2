@@ -1,0 +1,30 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/manualblocks",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "userId==\"bec20636-fb68-41fd-84ea-2cf910673599\""
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "manualblocks": [],
+      "totalRecords": 0
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

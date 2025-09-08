@@ -1,0 +1,63 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/users",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "barcode==\"testBarcode\" or externalSystemId==\"testBarcode\" or username==\"testBarcode\""
+      },
+      "limit": {
+        "equalTo": "1"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "users": [
+        {
+          "username": "morty",
+          "id": "bec20636-fb68-41fd-84ea-2cf910673599",
+          "barcode": "testBarcode",
+          "active": true,
+          "patronGroup": "3684a786-6671-4268-8ed0-9db82ebca60b",
+          "departments": [],
+          "proxyFor": [],
+          "personal": {
+            "lastName": "morty",
+            "firstName": "panic",
+            "email": "morty@example.com",
+            "addresses": [],
+            "preferredContactTypeId": "002"
+          },
+          "enrollmentDate": "2020-10-07T04:00:00.000+00:00",
+          "createdDate": "2025-09-09T01:37:00.099+00:00",
+          "updatedDate": "2025-09-09T01:37:00.099+00:00",
+          "metadata": {
+            "createdDate": "2025-09-09T01:37:00.092+00:00",
+            "updatedDate": "2025-09-09T01:37:00.092+00:00"
+          },
+          "preferredEmailCommunication": []
+        }
+      ],
+      "totalRecords": 1,
+      "resultInfo": {
+        "totalRecords": 1,
+        "facets": [],
+        "diagnostics": []
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

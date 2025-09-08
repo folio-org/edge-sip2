@@ -1,0 +1,99 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/circulation/requests",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "requesterId==\"bec20636-fb68-41fd-84ea-2cf910673599\" and status=\"Open\" and requestType==\"Hold\""
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "requests": [
+        {
+          "id": "4301fd04-af9a-42d1-aeef-acd16992aee3",
+          "requestLevel": "Item",
+          "requestType": "Hold",
+          "requestDate": "2025-09-09T13:18:19.768+00:00",
+          "requesterId": "bec20636-fb68-41fd-84ea-2cf910673599",
+          "instanceId": "28d36163-0425-4452-b1f8-1dc4467c52b1",
+          "holdingsRecordId": "7a2443bc-fe66-40d5-9400-9a800fdf013e",
+          "itemId": "56780446-1735-4514-a933-06abe668610b",
+          "status": "Open - Not yet filled",
+          "position": 1,
+          "instance": {
+            "title": "Shārokku Hōmuzu no gaisen / Morimi Tomihiko = The triumphant return of Sherlock Holmes / Tomihiko Morimi.",
+            "identifiers": [
+              {
+                "identifierTypeId": "2e8b3b6c-0e7d-4e48-bca2-b0b23b376af5",
+                "value": "bw"
+              }
+            ]
+          },
+          "item": {
+            "barcode": "testItemBarcode1",
+            "location": {
+              "name": "Test Library",
+              "libraryName": "Test Library Name",
+              "code": "001"
+            },
+            "loanTypeId": "2b94c631-fca9-4892-a730-03ee529ffe27",
+            "loanTypeName": "Can circulate",
+            "status": "Paged",
+            "callNumber": "Holdings magazine Q1",
+            "callNumberComponents": {
+              "callNumber": "Holdings magazine Q1"
+            },
+            "copyNumber": "The bind of third copies of Q1,2,and 3",
+            "itemEffectiveLocationId": "fcd64ce1-6995-48f0-840e-89ffa2288371",
+            "itemEffectiveLocationName": "Main Library",
+            "retrievalServicePointId": "3a40852d-49fd-4df2-a1f9-6e2641a6e91f",
+            "retrievalServicePointName": "Circ Desk 1"
+          },
+          "requester": {
+            "lastName": "morty",
+            "firstName": "panic",
+            "barcode": "testBarcode",
+            "patronGroup": {
+              "group": "Student",
+              "desc": "University Student",
+              "id": "3684a786-6671-4268-8ed0-9db82ebca60b"
+            },
+            "patronGroupId": "3684a786-6671-4268-8ed0-9db82ebca60b"
+          },
+          "fulfillmentPreference": "Hold Shelf",
+          "requestExpirationDate": "2025-09-10T23:59:59.000+00:00",
+          "pickupServicePointId": "3a40852d-49fd-4df2-a1f9-6e2641a6e91f",
+          "metadata": {
+            "createdDate": "2025-09-09T13:18:21.397+00:00",
+            "createdByUserId": "94c8673f-1873-4c6c-a177-7b5858fd0641",
+            "updatedDate": "2025-09-09T13:18:21.423+00:00",
+            "updatedByUserId": "94c8673f-1873-4c6c-a177-7b5858fd0641"
+          },
+          "pickupServicePoint": {
+            "name": "Test SP",
+            "code": "SP",
+            "discoveryDisplayName": "Main Test Service Point",
+            "description": null,
+            "shelvingLagTime": null,
+            "pickupLocation": true
+          }
+        }
+      ],
+      "totalRecords": 1
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
