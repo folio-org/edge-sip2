@@ -4,12 +4,12 @@ import static org.folio.edge.sip2.parser.Command.ACS_STATUS;
 
 import freemarker.template.Template;
 import io.vertx.core.Future;
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;

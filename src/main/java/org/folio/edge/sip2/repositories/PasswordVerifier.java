@@ -4,9 +4,9 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
 import io.vertx.core.Future;
-import jakarta.inject.Inject;
 import java.util.Collections;
 import java.util.Objects;
+import javax.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;

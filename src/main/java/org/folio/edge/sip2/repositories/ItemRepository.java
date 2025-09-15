@@ -2,13 +2,13 @@ package org.folio.edge.sip2.repositories;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
-import jakarta.inject.Inject;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import javax.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.CirculationStatus;

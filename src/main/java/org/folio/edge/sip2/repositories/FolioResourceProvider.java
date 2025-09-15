@@ -10,13 +10,13 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.predicate.ErrorConverter;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.ext.web.codec.BodyCodec;
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.session.SessionData;
@@ -159,15 +159,14 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
         });
   }
 
-  private static IResource toIResource(HttpResponse<JsonObject> response) {
-    log.info("FOLIO response body: {}", () -> response.body().encodePrettily());
-    return new FolioResource(response.body(), response.headers());
+  private static IResource toIResource(HttpResponse<JsonObject> httpResponse) {
+    log.info("FOLIO response body: {}", () -> httpResponse.body().encodePrettily());
+    return new FolioResource(httpResponse.body(), httpResponse.headers());
   }
 
   private ErrorConverter getErrorConverter() {
     return ErrorConverter.createFullBody(result -> {
-      log.error("Error communicating with FOLIO: {}",
-          result.response().bodyAsString());
+      log.error("Error communicating with FOLIO: {}", result.response().bodyAsString());
       return new FolioRequestThrowable(result.response().bodyAsString());
     });
   }
