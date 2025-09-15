@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class UtilsTests {
 
@@ -49,5 +51,25 @@ public class UtilsTests {
   @Test
   public void testIsStringNullOrEmpty() {
     assertTrue(Utils.isStringNullOrEmpty(""));
+  }
+
+  @CsvSource(nullValues = "null", value = { "30,30", "unknown,10" })
+  @ParameterizedTest
+  void getEnvOrDefault_positive_integerValue(String systemProperty, int expected) {
+    var defaultValue = 10;
+    var propertyName = "test";
+
+    if (systemProperty != null) {
+      System.setProperty(propertyName, systemProperty);
+    }
+
+    var result = Utils.getEnvOrDefault(propertyName, "TEST", defaultValue, Integer::parseInt);
+    assertEquals(expected, result);
+  }
+
+  @Test
+  void getEnvOrDefault_positive_propertyNotFound() {
+    var result = Utils.getEnvOrDefault("test", "TEST", 10, Integer::parseInt);
+    assertEquals(10, result);
   }
 }

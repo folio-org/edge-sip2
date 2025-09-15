@@ -9,18 +9,19 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.common.ContentTypes.APPLICATION_JSON;
 import static io.restassured.RestAssured.when;
+import static java.time.Duration.ofSeconds;
 import static java.time.OffsetDateTime.now;
 import static org.apache.hc.core5.http.HttpHeaders.CONTENT_TYPE;
+import static org.folio.edge.sip2.api.support.TestUtils.executeInSession;
+import static org.folio.edge.sip2.support.Sip2TestCommand.sip2Exchange;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UncheckedIOException;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
+import io.vertx.core.json.JsonObject;
 import java.nio.file.Path;
+import org.folio.edge.sip2.support.Sip2Commands;
+import org.folio.edge.sip2.support.Sip2SessionConfiguration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -48,13 +49,13 @@ class EdgeSip2IT {
   private static final GenericContainer<?> EDGE_SIP2 =
       new GenericContainer<>(
           new ImageFromDockerfile("edge-sip2").withDockerfile(Path.of("./Dockerfile")))
-      .withCopyFileToContainer(MountableFile.forHostPath(
-          "src/test/resources/sip2.conf"), "/usr/verticles/sip2.conf")
-      .withCopyFileToContainer(MountableFile.forHostPath(
-          "src/test/resources/sip2-tenants.conf"), "/usr/verticles/sip2-tenants.conf")
-      .withCommand("./run-java.sh -conf sip2.conf")
-      .withExposedPorts(6443, 8081)
-      .withAccessToHost(true);
+          .withCopyFileToContainer(MountableFile.forHostPath(
+              "src/test/resources/sip2.conf"), "/usr/verticles/sip2.conf")
+          .withCopyFileToContainer(MountableFile.forHostPath(
+              "src/test/resources/sip2-tenants.conf"), "/usr/verticles/sip2-tenants.conf")
+          .withCommand("./run-java.sh -conf sip2.conf")
+          .withExposedPorts(6443, 8081)
+          .withAccessToHost(true);
 
   @BeforeAll
   static void beforeAll() {
@@ -64,54 +65,48 @@ class EdgeSip2IT {
 
   @Test
   void health() {
-    var uri = "http://" + EDGE_SIP2.getHost() + ":" + EDGE_SIP2.getMappedPort(8081) + "/admin/health";
-    when().get(uri)
-    .then().statusCode(200);
+    var baseUrl = "http://" + EDGE_SIP2.getHost() + ":" + EDGE_SIP2.getMappedPort(8081);
+    when().get(baseUrl + "/admin/health").then().statusCode(200);
   }
 
   @Test
-  void loginSuccess() {
-    var loginResponseBody = """
-        {"accessTokenExpiration":"%s","refreshTokenExpiration":"%s"}
-        """.formatted(now().plusMinutes(5), now().plusMinutes(5));
+  void loginSuccess() throws Throwable {
+    var loginResponseBody = new JsonObject()
+        .put("accessTokenExpiration", now().plusMinutes(5).toString())
+        .put("refreshTokenExpiration", now().plusMinutes(15).toString());
 
     stubFor(post("/authn/login-with-expiry")
         .willReturn(created()
-            .withBody(loginResponseBody)
+            .withBody(loginResponseBody.encode())
             .withHeader(CONTENT_TYPE, APPLICATION_JSON)
             .withHeader("Set-Cookie", "folioAccessToken=abc.def.ghi"))
     );
 
     stubFor(get(urlPathEqualTo("/configurations/entries")).willReturn(ok()));
-    assertThat(send("9300CNMartin|COpassword|\r"), is("941\r"));
+    executeInSession(getSip2SessionConfiguration(),
+        sip2Exchange(
+            Sip2Commands.login("Matrin", "password"),
+            sip2Result -> assertThat(sip2Result.getResponseMessage(), startsWith("941")))
+    );
   }
 
   @Test
-  void loginFailure() {
-    stubFor(post("/authn/login-with-expiry").willReturn(status(422)));
-    assertThat(send("9300CNMartin|COpassword|\r"), is("940\r"));
+  void loginFailure() throws Throwable {
+    stubFor(post("/authn/login-with-expiry")
+        .willReturn(status(422).withBody("Unprocessable Content")));
+    executeInSession(getSip2SessionConfiguration(),
+        sip2Exchange(
+            Sip2Commands.login("Matrin", "password"),
+            sip2Result -> assertThat(sip2Result.getResponseMessage(), startsWith("940")))
+    );
   }
 
-  String send(String request) {
-    var response = new StringBuilder();
-    try (var socket = new Socket(EDGE_SIP2.getHost(), EDGE_SIP2.getMappedPort(6443));
-        var out = new PrintWriter(socket.getOutputStream());
-        var in = socket.getInputStream()) {
-      out.append(request).flush();
-      socket.setSoTimeout(2000);
-      int c;
-      do {
-        c = in.read();
-        if (c == -1) {
-          break;
-        }
-        response.append((char) c);
-      } while (c != '\r');
-      return response.toString();
-    } catch (SocketTimeoutException e) {
-      throw new UncheckedIOException("Got '" + response + "' but no \\r", e);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
+  private Sip2SessionConfiguration getSip2SessionConfiguration() {
+    return Sip2SessionConfiguration.builder()
+        .hostname(EDGE_SIP2.getHost())
+        .port(EDGE_SIP2.getMappedPort(6443))
+        .useSsl(false)
+        .socketTimeout(ofSeconds(5))
+        .build();
   }
 }

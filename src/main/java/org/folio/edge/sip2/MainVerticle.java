@@ -15,6 +15,7 @@ import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 import static org.folio.edge.sip2.parser.Command.UNKNOWN;
+import static org.folio.edge.sip2.utils.Utils.getEnvOrDefault;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -73,8 +74,11 @@ import org.folio.edge.sip2.utils.WebClientUtils;
 
 public class MainVerticle extends AbstractVerticle {
 
-  private static final int HEALTH_CHECK_PORT = 8081;
+  private static final String HEALTH_CHECK_PORT_ENV_VAR = "HEALTH_CHECK_PORT";
+  private static final String HEALTH_CHECK_PORT_PROPERTY = "healthCheckPort";
   private static final String  HEALTH_CHECK_PATH = "/admin/health";
+  private static final int HEALTH_CHECK_DEFAULT_PORT = 8081;
+
   private static final String IPADDRESS = "ipAddress";
   private Map<Command, ISip2RequestHandler> handlers;
   private List<NetServer> servers = new ArrayList<>();
@@ -434,8 +438,10 @@ public class MainVerticle extends AbstractVerticle {
       }
     });
 
-    var msg = "Listening for /admin/health requests at port " + HEALTH_CHECK_PORT;
-    httpServer.listen(HEALTH_CHECK_PORT)
+    var healthCheckPort = getEnvOrDefault(HEALTH_CHECK_PORT_PROPERTY,
+        HEALTH_CHECK_PORT_ENV_VAR, HEALTH_CHECK_DEFAULT_PORT, Integer::parseInt);
+    var msg = "Listening for /admin/health requests at port " + healthCheckPort;
+    httpServer.listen(healthCheckPort)
         .onSuccess(x -> log.info("{} now", msg))
         .onFailure(e -> log.error("{} failed: {}", msg, e.getMessage(), e));
   }

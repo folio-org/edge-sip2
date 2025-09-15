@@ -1,0 +1,35 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/feefines",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "id==(\"cee0de04-533b-4e64-91c4-bbde19064709\")"
+      }
+    }
+  },
+  "response": {
+    "status": 500,
+    "jsonBody": {
+      "feefines": [],
+      "totalRecords": 0,
+      "resultInfo": {
+        "totalRecords": 0,
+        "facets": [],
+        "diagnostics": []
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

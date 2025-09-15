@@ -1,0 +1,127 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/circulation/loans",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "(userId==\"bec20636-fb68-41fd-84ea-2cf910673599\" and status.name=\"Open\")"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "loans": [
+        {
+          "id": "d217d4d5-8b2b-496b-8aa5-7e60d530e124",
+          "userId": "bec20636-fb68-41fd-84ea-2cf910673599",
+          "itemId": "56ee9409-ec46-5e37-b77d-5e3c8a0405ee",
+          "itemEffectiveLocationIdAtCheckOut": "c6f80a64-8932-406f-a60f-d04775106758",
+          "status": {
+            "name": "Open"
+          },
+          "loanDate": "2025-04-10T13:07:39.510Z",
+          "dueDate": "2025-06-09T23:59:59.000+00:00",
+          "action": "checkedout",
+          "loanPolicyId": "d9cd0bed-1b49-4b5e-a7bd-064b8d177231",
+          "checkoutServicePointId": "3a40852d-49fd-4df2-a1f9-6e2641a6e91f",
+          "isDcb": false,
+          "overdueFinePolicyId": "cd3f6cac-fa17-4079-9fae-2fb28e521412",
+          "lostItemPolicyId": "ed892c0e-52e0-4cd9-8133-c0ef07b4a709",
+          "metadata": {
+            "createdDate": "2025-04-10T13:07:44.021+00:00",
+            "createdByUserId": "da2809d0-7767-45b9-83c1-c5ea6ca0c74d",
+            "updatedDate": "2025-04-10T13:07:44.021+00:00",
+            "updatedByUserId": "da2809d0-7767-45b9-83c1-c5ea6ca0c74d"
+          },
+          "patronGroupAtCheckout": {
+            "id": "503a81cd-6c26-400f-b620-14c08943697c",
+            "name": "faculty"
+          },
+          "item": {
+            "id": "56ee9409-ec46-5e37-b77d-5e3c8a0405ee",
+            "holdingsRecordId": "9d436faa-5e0c-59e7-99e8-887ec8d9b89b",
+            "instanceId": "91e49aed-4041-5683-ba09-5da5b5fb8255",
+            "instanceHrid": "cenin00000464714",
+            "title": "\"Laclede's Landing\" area ; Third Street highway to wharf, Eads Bridge to Veterans Bridge / Drawings, editing and design by W. Philip Cotton, Jr.",
+            "barcode": "3002854148",
+            "contributors": [
+              {
+                "name": "Landmarks Association of St. Louis"
+              },
+              {
+                "name": "Cotton, W. Philip"
+              },
+              {
+                "name": "Landmarks Association of St. Louis"
+              }
+            ],
+            "primaryContributor": "Landmarks Association of St. Louis",
+            "callNumber": "917.786",
+            "datesOfPublication": [
+              "c1968",
+              "1968"
+            ],
+            "physicalDescriptions": [
+              "26 p. : ill. ; 23 cm.",
+              "26 pages : illustrations ; 23 cm"
+            ],
+            "callNumberComponents": {
+              "callNumber": "917.786"
+            },
+            "status": {
+              "name": "Checked out",
+              "date": "2025-04-10T13:07:43.989+00:00"
+            },
+            "location": {
+              "name": "North Stacks"
+            },
+            "materialType": {
+              "name": "unspecified"
+            }
+          },
+          "checkoutServicePoint": {
+            "name": "Circ Desk 1",
+            "code": "cd1",
+            "discoveryDisplayName": "Circulation Desk -- Hallway",
+            "description": null,
+            "shelvingLagTime": null,
+            "pickupLocation": true
+          },
+          "borrower": {
+            "firstName": "Maximo",
+            "lastName": "Koelpin",
+            "middleName": "Jacquelyn",
+            "barcode": "184798638159936",
+            "preferredFirstName": null,
+            "patronGroup": "503a81cd-6c26-400f-b620-14c08943697c"
+          },
+          "loanPolicy": {
+            "name": "Example Loan Policy"
+          },
+          "overdueFinePolicy": {
+            "name": "Overdue fine policy"
+          },
+          "lostItemPolicy": {
+            "name": "Lost item fee policy"
+          },
+          "feesAndFines": {
+            "amountRemainingToPay": 0.0
+          }
+        }
+      ],
+      "totalRecords": 1
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
