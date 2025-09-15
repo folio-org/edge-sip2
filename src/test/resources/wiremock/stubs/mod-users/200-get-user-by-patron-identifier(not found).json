@@ -1,0 +1,38 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/users",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "barcode==\"testBarcode\" or externalSystemId==\"testBarcode\" or username==\"testBarcode\""
+      },
+      "limit": {
+        "equalTo": "1"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "users": [],
+      "totalRecords": 0,
+      "resultInfo": {
+        "totalRecords": 0,
+        "facets": [],
+        "diagnostics": []
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

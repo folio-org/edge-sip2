@@ -10,6 +10,7 @@
 * [SIP2-286](https://folio-org.atlassian.net/browse/SIP2-286): Improve logging
 * [SIP2-291](https://folio-org.atlassian.net/browse/SIP2-291): Implement a single login operation per session
 * [SIP2-296](https://folio-org.atlassian.net/browse/SIP2-296): Update hard-coded currency list
+* [SIP2-242](https://folio-org.atlassian.net/browse/SIP2-242): Skip null barcodes in PatronInformation response
 
 
 ## 3.4.0 2025-03-14

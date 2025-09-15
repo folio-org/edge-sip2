@@ -1,0 +1,30 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/authn/login-with-expiry",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "other_tenant"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "username": "other_username",
+          "password": "other_password"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "Set-Cookie": "folioAccessToken=other-test-jwt; Max-Age=3600; Expires=Mon, 31 Dec 2050 23:59:59 GMT; Path=/; Secure; HTTPOnly; SameSite=Lax"
+    },
+    "jsonBody": {
+      "accessTokenExpiration": "2050-12-31T23:59:59Z",
+      "refreshTokenExpiration": "2050-12-31T23:59:59Z"
+    }
+  }
+}

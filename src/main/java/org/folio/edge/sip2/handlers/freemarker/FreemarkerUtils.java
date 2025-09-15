@@ -41,7 +41,7 @@ public class FreemarkerUtils {
       log.error(sd, "Error applying template to data: {} ", ex.getMessage());
     }
 
-    log.debug("Data = {} Template = {}",
+    log.debug(sd, "Data = {} Template = {}",
         () -> data == null ? "" : data.toString(),
         template::getName);
 

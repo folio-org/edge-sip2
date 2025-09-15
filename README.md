@@ -154,7 +154,7 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
 
 #### Example `configuration` object
 
-```javascript
+```json
 {
   "module": "edge-sip2",
   "configName": "acsTenantConfig",
@@ -408,7 +408,7 @@ To configure sip2 for a port dedicated to a specific tenant, two modifications a
   "tenant": "test_tenant1",
   "errorDetectionEnabled": true,
   "messageDelimiter": "\r",
-  "fieldDelimiter": "\|",
+  "fieldDelimiter": "|",
   "charset": "ISO-8859-1"
   },
   {
@@ -417,7 +417,7 @@ To configure sip2 for a port dedicated to a specific tenant, two modifications a
   "tenant": "test_tenant2",
   "errorDetectionEnabled": true,
   "messageDelimiter": "\r",
-  "fieldDelimiter": "\|",
+  "fieldDelimiter": "|",
   "charset": "ISO-8859-1"
   },
    {
@@ -426,7 +426,7 @@ To configure sip2 for a port dedicated to a specific tenant, two modifications a
   "tenant": "test_tenant3",
   "errorDetectionEnabled": true,
   "messageDelimiter": "\r",
-  "fieldDelimiter": "\|",
+  "fieldDelimiter": "|",
   "charset": "ISO-8859-1"
   }
 ]

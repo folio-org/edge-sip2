@@ -599,14 +599,14 @@ public class PatronRepository {
       overdueItems = null;
     }
 
-    return builder.overdueItemsCount(Integer.valueOf(overdueItemsCount)).overdueItems(overdueItems);
+    return builder.overdueItemsCount(overdueItemsCount).overdueItems(overdueItems);
   }
 
   @SuppressWarnings("rawtypes")
   private Future<PatronInformationResponseBuilder> addRecalls(List<Future<JsonObject>> recalls,
       Integer startItem, Integer endItem, boolean details,
       PatronInformationResponseBuilder builder) {
-    return CompositeFuture.all(new ArrayList<Future>(recalls)).map(result -> {
+    return CompositeFuture.all(new ArrayList<>(recalls)).map(result -> {
       final int recallItemsCount = Math.min(countRecallItems(recalls), 9999);
       final List<String> recallItems;
 
@@ -616,7 +616,7 @@ public class PatronRepository {
         recallItems = null;
       }
 
-      return builder.recallItemsCount(Integer.valueOf(recallItemsCount)).recallItems(recallItems);
+      return builder.recallItemsCount(recallItemsCount).recallItems(recallItems);
     });
   }
 
@@ -695,9 +695,10 @@ public class PatronRepository {
 
   private List<String> getBarcodes(JsonArray items, String childField) {
     return items.stream()
-      .map(o -> (JsonObject) o)
-      .map(jo -> getChildString(jo, childField, FIELD_BARCODE))
-      .collect(Collectors.toList());
+        .map(o -> (JsonObject) o)
+        .map(jo -> getChildString(jo, childField, FIELD_BARCODE))
+        .filter(Objects::nonNull)
+        .toList();
   }
 
   private List<PatronAccountInfo> getPatronAccountList(

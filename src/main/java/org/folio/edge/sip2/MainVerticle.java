@@ -1,6 +1,7 @@
 package org.folio.edge.sip2;
 
 import static java.lang.Boolean.FALSE;
+import static java.lang.System.getenv;
 import static org.folio.edge.sip2.parser.Command.CHECKIN;
 import static org.folio.edge.sip2.parser.Command.CHECKOUT;
 import static org.folio.edge.sip2.parser.Command.END_PATRON_SESSION;
@@ -16,9 +17,11 @@ import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 import static org.folio.edge.sip2.parser.Command.UNKNOWN;
 import static org.folio.edge.sip2.utils.LogUtils.callWithContext;
+import static org.folio.edge.sip2.utils.Utils.getEnvOrDefault;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import io.micrometer.common.util.StringUtils;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -65,7 +68,6 @@ import org.folio.edge.sip2.modules.FolioResourceProviderModule;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
-import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.edge.sip2.utils.TenantUtils;
@@ -74,8 +76,9 @@ import org.folio.edge.sip2.utils.WebClientUtils;
 public class MainVerticle extends AbstractVerticle {
 
   private static final String HEALTH_CHECK_PORT_ENV_VAR = "HEALTH_CHECK_PORT";
-  private static final String HEALTH_CHECK_DEFAULT_PORT = "8081";
+  private static final String HEALTH_CHECK_PORT_PROPERTY = "healthCheckPort";
   private static final String  HEALTH_CHECK_PATH = "/admin/health";
+  private static final int HEALTH_CHECK_DEFAULT_PORT = 8081;
 
   private final Sip2LogAdapter log = Sip2LogAdapter.getLogger(MainVerticle.class);
   private final Map<Integer, Metrics> metricsMap = new HashMap<>();
@@ -434,7 +437,8 @@ public class MainVerticle extends AbstractVerticle {
       }
     });
 
-    var healthCheckPort = getHealthCheckPort();
+    var healthCheckPort = getEnvOrDefault(HEALTH_CHECK_PORT_PROPERTY,
+        HEALTH_CHECK_PORT_ENV_VAR, HEALTH_CHECK_DEFAULT_PORT, Integer::parseInt);
     var msg = "Listening for /admin/health requests at port " + healthCheckPort;
     httpServer.listen(healthCheckPort)
         .onSuccess(x -> log.info("{} now", msg))
@@ -552,11 +556,5 @@ public class MainVerticle extends AbstractVerticle {
       return currentMessage.getChecksumsString().equals(prevMessage.getPreviousRequestChecksum())
         && currentMessage.getSequenceNumber() == prevMessage.getPreviousRequestSequenceNo();
     }
-  }
-
-  private static int getHealthCheckPort() {
-    return Integer.parseInt(
-      System.getenv().getOrDefault(HEALTH_CHECK_PORT_ENV_VAR, HEALTH_CHECK_DEFAULT_PORT)
-    );
   }
 }
