@@ -8,6 +8,8 @@ public class LogUtils {
 
   private static final String REQUEST_ID_LOGGING_VAR_NAME = "requestid";
   private static final String TENANT_ID_LOGGING_VAR_NAME = "tenantid";
+  private static final String MODULE_ID_LOGGING_VAR_NAME = "moduleid";
+  private static final String EDGE_SIP2_MODULE_NAME = "edge-sip2";
 
   private LogUtils() {
     // Utility class, no instantiation allowed
@@ -57,6 +59,7 @@ public class LogUtils {
   private static CloseableThreadContext.Instance prepareThreadContext(SessionData sessionData) {
     return CloseableThreadContext
         .put(TENANT_ID_LOGGING_VAR_NAME, sessionData.getTenant())
-        .put(REQUEST_ID_LOGGING_VAR_NAME, sessionData.getRequestId());
+        .put(REQUEST_ID_LOGGING_VAR_NAME, sessionData.getRequestId())
+        .put(MODULE_ID_LOGGING_VAR_NAME, EDGE_SIP2_MODULE_NAME);
   }
 }

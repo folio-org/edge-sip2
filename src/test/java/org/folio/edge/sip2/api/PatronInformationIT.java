@@ -3,10 +3,8 @@ package org.folio.edge.sip2.api;
 import static org.folio.edge.sip2.support.Sip2TestCommand.sip2Exchange;
 import static org.folio.edge.sip2.support.model.PatronInformationCommand.PatronInfoSummaryType.HOLD_ITEMS;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.matchesRegex;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 
 import org.folio.edge.sip2.api.support.AbstractErrorDetectionEnabledTest;
