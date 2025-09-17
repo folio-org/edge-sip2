@@ -1,0 +1,48 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/feefines",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "id==(\"3344e74e-8cb7-484b-ae33-f2644ed2b268\")"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "feefines": [
+        {
+          "automatic": false,
+          "feeFineType": "type",
+          "ownerId": "591d9d91-30d5-4781-bab1-06f081c04102",
+          "metadata": {
+            "createdDate": "2025-09-09T06:51:25.561+00:00",
+            "createdByUserId": "94c8673f-1873-4c6c-a177-7b5858fd0641",
+            "updatedDate": "2025-09-09T06:51:25.561+00:00",
+            "updatedByUserId": "94c8673f-1873-4c6c-a177-7b5858fd0641"
+          },
+          "id": "3344e74e-8cb7-484b-ae33-f2644ed2b268"
+        }
+      ],
+      "totalRecords": 1,
+      "resultInfo": {
+        "totalRecords": 1,
+        "facets": [],
+        "diagnostics": []
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

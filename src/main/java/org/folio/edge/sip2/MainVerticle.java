@@ -15,6 +15,8 @@ import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 import static org.folio.edge.sip2.parser.Command.UNKNOWN;
+import static org.folio.edge.sip2.utils.LogUtils.callWithContext;
+import static org.folio.edge.sip2.utils.Utils.getEnvOrDefault;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -43,9 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
 import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.handlers.CheckinHandler;
@@ -60,6 +59,7 @@ import org.folio.edge.sip2.handlers.PatronInformationHandler;
 import org.folio.edge.sip2.handlers.PatronStatusHandler;
 import org.folio.edge.sip2.handlers.RenewAllHandler;
 import org.folio.edge.sip2.handlers.RenewHandler;
+import org.folio.edge.sip2.handlers.SCStatusHandler;
 import org.folio.edge.sip2.metrics.Metrics;
 import org.folio.edge.sip2.modules.ApplicationModule;
 import org.folio.edge.sip2.modules.FolioResourceProviderModule;
@@ -67,18 +67,22 @@ import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.edge.sip2.utils.TenantUtils;
 import org.folio.edge.sip2.utils.WebClientUtils;
 
 public class MainVerticle extends AbstractVerticle {
 
-  private static final int HEALTH_CHECK_PORT = 8081;
+  private static final String HEALTH_CHECK_PORT_ENV_VAR = "HEALTH_CHECK_PORT";
+  private static final String HEALTH_CHECK_PORT_PROPERTY = "healthCheckPort";
   private static final String  HEALTH_CHECK_PATH = "/admin/health";
-  private static final String IPADDRESS = "ipAddress";
-  private Map<Command, ISip2RequestHandler> handlers;
-  private List<NetServer> servers = new ArrayList<>();
-  private final Logger log = LogManager.getLogger();
+  private static final int HEALTH_CHECK_DEFAULT_PORT = 8081;
+
+  private final Sip2LogAdapter log = Sip2LogAdapter.getLogger(MainVerticle.class);
   private final Map<Integer, Metrics> metricsMap = new HashMap<>();
+
+  private List<NetServer> servers = new ArrayList<>();
+  private Map<Command, ISip2RequestHandler> handlers;
   private JsonObject multiTenantConfig = new JsonObject();
   private ConfigRetriever configRetriever;
 
@@ -113,7 +117,7 @@ public class MainVerticle extends AbstractVerticle {
     TokenCacheFactory.initialize(config()
         .getInteger(SYS_TOKEN_CACHE_CAPACITY, DEFAULT_TOKEN_CACHE_CAPACITY));
 
-    setupHanlders();
+    setupHandlers();
 
     var portList = determinePorts();
 
@@ -131,10 +135,7 @@ public class MainVerticle extends AbstractVerticle {
       metricsMap.putIfAbsent(port, metrics);
 
       server.connectHandler(socket -> {
-
         String clientAddress = socket.remoteAddress().host();
-
-        ThreadContext.put(IPADDRESS, clientAddress);
 
         JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIpAddress(multiTenantConfig,
               clientAddress, port);
@@ -146,7 +147,7 @@ public class MainVerticle extends AbstractVerticle {
             handleBuffer(buffer, socket, sessionData, messageDelimiter, metrics)));
 
         socket.exceptionHandler(t -> {
-          log.error("Socket exception", t);
+          log.error(sessionData, "Socket exception", t);
           metrics.socketError();
         });
       });
@@ -156,7 +157,7 @@ public class MainVerticle extends AbstractVerticle {
       configRetriever = ConfigRetriever.create(vertx, crOptions);
 
       // After tenant config is loaded, start listening for messages
-      lsitenToMessages(Promise.promise(), server).onComplete(ar -> {
+      listenToMessages(Promise.promise(), server).onComplete(ar -> {
         if (ar.failed()) {
           startFuture.fail(ar.cause());
         } else if (remainingServers.decrementAndGet() == 0) {
@@ -164,7 +165,6 @@ public class MainVerticle extends AbstractVerticle {
         }
       });
     }
-
   }
 
   /**
@@ -182,7 +182,7 @@ public class MainVerticle extends AbstractVerticle {
 
     if (Objects.isNull(sessionData.getTenant())) {
       String clientAddress = socket.remoteAddress().host();
-      log.error("No tenant configured for address: {}  message ignored.",
+      log.error(sessionData, "No tenant configured for address: {}  message ignored.",
           clientAddress);
       return;
     }
@@ -196,13 +196,14 @@ public class MainVerticle extends AbstractVerticle {
       final Parser parser = getParser(sessionData);
 
       // parsing
-      final Message<Object> message = parser.parseMessage(messageString);
+      final Message<Object> message = callWithContext(
+          sessionData, () -> parser.parseMessage(messageString));
 
       command = message.getCommand();
 
       // process validation results
       if (!message.isValid()) {
-        log.error("Message is invalid: {}", messageString);
+        log.error(sessionData, "Message is invalid: {}", messageString);
         handleInvalidMessage(message, socket, sessionData, messageDelimiter, sample, metrics);
         return;
       }
@@ -217,7 +218,7 @@ public class MainVerticle extends AbstractVerticle {
 
       if (handler == null) {
         String commandName = command.name();
-        log.error("Error locating handler for command {}", commandName);
+        log.error(sessionData, "Error locating handler for command {}", commandName);
         sample.stop(metrics.commandTimer(command));
         return;
       }
@@ -225,7 +226,7 @@ public class MainVerticle extends AbstractVerticle {
       executeHandler(message, sessionData, messageDelimiter, handler, sample, socket, metrics);
     } catch (Exception ex) {
       String errorMessage = "Problems handling the request: " + ex.getMessage();
-      log.error(errorMessage, ex);
+      log.error(sessionData, errorMessage, ex);
       sample.stop(metrics.commandTimer(command));
       socket.write(errorMessage + messageDelimiter, sessionData.getCharset());
       metrics.requestError();
@@ -291,7 +292,7 @@ public class MainVerticle extends AbstractVerticle {
 
   }
 
-  private Future<Void> lsitenToMessages(Promise<Void> promise, NetServer server) {
+  private Future<Void> listenToMessages(Promise<Void> promise, NetServer server) {
     configRetriever.getConfig(ar -> {
       if (ar.succeeded()) {
         multiTenantConfig = ar.result();
@@ -350,12 +351,12 @@ public class MainVerticle extends AbstractVerticle {
             messageDelimiter);
           }
           handler.writeHistory(sessionData, message, responseMsg);
-          log.info("Sip response {}", responseMsg);
+          log.info(sessionData, "Sip response {}", responseMsg);
           sample.stop(metrics.commandTimer(message.getCommand()));
           socket.write(responseMsg, sessionData.getCharset());
         }).onFailure(e -> {
           String errorMsg = "Failed to respond to request";
-          log.error(errorMsg, e);
+          log.error(sessionData, errorMsg, e);
           String responseMessage = (String) sessionData.getErrorResponseMessage();
           if (responseMessage != null) {
             handler.writeHistory(sessionData, message, responseMessage);
@@ -385,7 +386,7 @@ public class MainVerticle extends AbstractVerticle {
     String prvMessage = sessionData
         .getPreviousMessage()
         .getPreviousMessageResponse();
-    log.info("Sending previous Sip response {}", prvMessage);
+    log.info(sessionData, "Sending previous Sip response {}", prvMessage);
     sample.stop(metrics.commandTimer(command));
     socket.write(prvMessage, sessionData.getCharset());
   }
@@ -393,7 +394,7 @@ public class MainVerticle extends AbstractVerticle {
   /**
    * Initialize the handlers.
    */
-  private void setupHanlders() {
+  private void setupHandlers() {
     if (handlers == null) {
       String okapiUrl = config().getString("okapiUrl");
       final WebClient webClient = WebClientUtils.create(vertx, config());
@@ -403,8 +404,7 @@ public class MainVerticle extends AbstractVerticle {
       handlers = new EnumMap<>(Command.class);
       handlers.put(CHECKOUT, injector.getInstance(CheckoutHandler.class));
       handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
-      handlers.put(SC_STATUS, HandlersFactory.getScStatusHandlerInstance(null, null,
-          null, null, okapiUrl, webClient));
+      handlers.put(SC_STATUS, injector.getInstance(SCStatusHandler.class));
       handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
       handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
       handlers.put(PATRON_INFORMATION, injector.getInstance(PatronInformationHandler.class));
@@ -434,8 +434,10 @@ public class MainVerticle extends AbstractVerticle {
       }
     });
 
-    var msg = "Listening for /admin/health requests at port " + HEALTH_CHECK_PORT;
-    httpServer.listen(HEALTH_CHECK_PORT)
+    var healthCheckPort = getEnvOrDefault(HEALTH_CHECK_PORT_PROPERTY,
+        HEALTH_CHECK_PORT_ENV_VAR, HEALTH_CHECK_DEFAULT_PORT, Integer::parseInt);
+    var msg = "Listening for /admin/health requests at port " + healthCheckPort;
+    httpServer.listen(healthCheckPort)
         .onSuccess(x -> log.info("{} now", msg))
         .onFailure(e -> log.error("{} failed: {}", msg, e.getMessage(), e));
   }
@@ -544,10 +546,10 @@ public class MainVerticle extends AbstractVerticle {
     PreviousMessage prevMessage = sessionData.getPreviousMessage();
 
     if (prevMessage == null || !sessionData.isErrorDetectionEnabled()) {
-      log.debug("requiredResending is FALSE");
+      log.debug(sessionData, "requiredResending is FALSE");
       return false;
     } else {
-      log.debug("requiredResending is TRUE");
+      log.debug(sessionData, "requiredResending is TRUE");
       return currentMessage.getChecksumsString().equals(prevMessage.getPreviousRequestChecksum())
         && currentMessage.getSequenceNumber() == prevMessage.getPreviousRequestSequenceNo();
     }

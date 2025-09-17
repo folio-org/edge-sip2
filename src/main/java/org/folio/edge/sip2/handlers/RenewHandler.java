@@ -1,24 +1,24 @@
 package org.folio.edge.sip2.handlers;
 
+import static org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils.executeFreemarkerTemplate;
+
 import freemarker.template.Template;
 import io.vertx.core.Future;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.inject.Inject;
-import javax.inject.Named;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.Renew;
 import org.folio.edge.sip2.domain.messages.responses.RenewResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
-import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.CirculationRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
 
 public class RenewHandler implements ISip2RequestHandler {
-  private static final Logger log = LogManager.getLogger();
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(RenewHandler.class);
 
   private final CirculationRepository circulationRepository;
   private final Template commandTemplate;
@@ -36,7 +36,7 @@ public class RenewHandler implements ISip2RequestHandler {
   public Future<String> execute(Object message, SessionData sessionData) {
     final Renew renew = (Renew) message;
 
-    log.debug("Renew: {}", () -> renew);
+    log.debug(sessionData, "Renew: {}", () -> renew);
 
     final Future<RenewResponse> renewFuture =
         circulationRepository.performRenewCommand(renew, sessionData);
@@ -63,7 +63,7 @@ public class RenewHandler implements ISip2RequestHandler {
    * @return response String
    */
   private String constructRenewResponse(SessionData sessionData, RenewResponse renewResponse) {
-    log.info("RenewResponse: {}", () -> renewResponse);
+    log.info(sessionData, "RenewResponse: {}", () -> renewResponse);
 
     final Map<String, Object> root = new HashMap<>();
     root.put("formatDateTime", new FormatDateTimeMethodModel());
@@ -71,10 +71,9 @@ public class RenewHandler implements ISip2RequestHandler {
     root.put("renewResponse", renewResponse);
     root.put("timezone", sessionData.getTimeZone());
 
-    final String response = FreemarkerUtils
-        .executeFreemarkerTemplate(root, commandTemplate);
+    final String response = executeFreemarkerTemplate(sessionData, root, commandTemplate);
 
-    log.debug("SIP renew response: {}", response);
+    log.debug(sessionData, "SIP renew response: {}", response);
     return response;
   }
 }

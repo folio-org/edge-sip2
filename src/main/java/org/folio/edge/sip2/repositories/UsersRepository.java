@@ -3,17 +3,16 @@ package org.folio.edge.sip2.repositories;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import jakarta.inject.Inject;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.inject.Inject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.repositories.domain.ExtendedUser;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.util.PercentCodec;
 import org.folio.util.StringUtil;
 
@@ -25,7 +24,7 @@ import org.folio.util.StringUtil;
  */
 public class UsersRepository {
 
-  private static final Logger log = LogManager.getLogger();
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(UsersRepository.class);
 
   private final IResourceProvider<IRequestData> resourceProvider;
 
@@ -47,7 +46,7 @@ public class UsersRepository {
       SessionData sessionData) {
     Objects.requireNonNull(identifier, "identifier cannot be null");
     Objects.requireNonNull(sessionData, "sessionData cannot be null");
-    log.debug("getUserById identifier:{}", identifier);
+    log.debug(sessionData, "getUserById identifier:{}", identifier);
 
     final Map<String, String> headers = getBaseHeaders();
 
@@ -55,19 +54,20 @@ public class UsersRepository {
         new GetUserByIdentifierRequestData(identifier, headers, sessionData);
     final Future<IResource> result = resourceProvider.retrieveResource(getUserByBarcodeRequestData);
 
-    log.debug("Users lookup success is {}", result.succeeded());
+    log.debug(sessionData, "Users lookup success is {}", result.succeeded());
 
     return result
         .otherwise(() -> null)
         .map(IResource::getResource)
-        .map(this::getUserFromList)
+        .map(jsonObj -> getUserFromList(jsonObj, sessionData))
         .compose(user -> {
           Future<IResource> blResult;
           if (user != null) {
-            log.debug("Getting extended user info for id {}", user.getId());
+            log.debug(sessionData, "Getting extended user info for id {}", user.getId());
             final GetExtendedUserData getExtendedUserData =
                 new GetExtendedUserData(user.getId(), headers, sessionData);
-            log.debug("Path for extended user lookup is {}", getExtendedUserData.getPath());
+            log.debug(sessionData, "Path for extended user lookup is {}",
+                getExtendedUserData.getPath());
             blResult = resourceProvider.retrieveResource(getExtendedUserData);
           } else {
             blResult = Future.failedFuture("Invalid User");
@@ -79,7 +79,7 @@ public class UsersRepository {
                 return Future.succeededFuture(null);
               } else {
                 JsonObject extendedUserJson = extendedUserResult.getResource();
-                log.debug("Got extended user JSON: {}", extendedUserJson.encode());
+                log.debug(sessionData, "Got extended user JSON: {}", extendedUserJson.encode());
                 JsonObject patronGroupJson = extendedUserJson.getJsonObject("patronGroup");
                 ExtendedUser extendedUser = new ExtendedUser();
                 extendedUser.setUser(user);
@@ -96,8 +96,8 @@ public class UsersRepository {
         });
   }
 
-  private User getUserFromList(JsonObject userList) {
-    log.info("getUserFromList userList:{}",userList);
+  private User getUserFromList(JsonObject userList, SessionData sessionData) {
+    log.info(sessionData, "getUserFromList userList: {}",userList);
     final User user;
 
     if (userList == null
@@ -313,7 +313,7 @@ public class UsersRepository {
       }
       PinVerifyRequestData pinVerifyRequestData
           = new PinVerifyRequestData(extendedUser.getUser().getId(), pin, headers, sessionData);
-      log.debug("Attempting to verify pin");
+      log.debug(sessionData, "Attempting to verify pin");
       Future<Boolean> pinResult = resourceProvider.doPinCheck(pinVerifyRequestData);
       return pinResult
         .compose(pinCheckResult -> {
@@ -322,7 +322,7 @@ public class UsersRepository {
             .passwordVerified(Boolean.TRUE)
             .build());
         }, throwable -> { //Return false on error
-            log.debug("Error on pin check");
+            log.debug(sessionData, "Error on pin check");
             return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
                 .extendedUser(extendedUser)
                 .errorMessages(Collections.singletonList("Error verifying PIN"))

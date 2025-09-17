@@ -9,6 +9,7 @@ import static org.folio.edge.sip2.utils.Utils.TITLE_NOT_FOUND;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import jakarta.inject.Inject;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -21,9 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import javax.inject.Inject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.MediaType;
 import org.folio.edge.sip2.domain.messages.requests.Checkin;
 import org.folio.edge.sip2.domain.messages.requests.Checkout;
@@ -37,6 +35,7 @@ import org.folio.edge.sip2.domain.messages.responses.RenewResponse;
 import org.folio.edge.sip2.repositories.domain.PatronPasswordVerificationRecords;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.edge.sip2.utils.Utils;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.folio.util.PercentCodec;
@@ -50,7 +49,7 @@ import org.folio.util.StringUtil;
  */
 public class CirculationRepository {
   // Should consider letting the template take care of required fields with missing values
-  private static final Logger log = LogManager.getLogger();
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(CirculationRepository.class);
 
   private static final String UNKNOWN = "";
   public static final String TITLE = "title";
@@ -87,7 +86,7 @@ public class CirculationRepository {
    * @return the checkin response domain object
    */
   public Future<CheckinResponse> performCheckinCommand(Checkin checkin, SessionData sessionData) {
-    log.debug("performCheckinCommand checkin:{}",checkin);
+    log.debug(sessionData, "performCheckinCommand checkin:{}",checkin);
     // We'll need to convert this date properly. It is likely that it will not include timezone
     // information, so we'll need to use the tenant/SC timezone as the basis and convert to UTC.
     final OffsetDateTime returnDate = checkin.getReturnDate();
@@ -117,17 +116,17 @@ public class CirculationRepository {
           return checkinResult
             .otherwise(() -> null)
             .compose(resource -> {
-              log.info("performCheckinCommand resource:{}", resource);
+              log.info(sessionData, "performCheckinCommand resource:{}", resource);
               JsonObject resourceJson = resource.getResource();
-              log.debug("performCheckinCommand resource json is {}",
+              log.debug(sessionData, "performCheckinCommand resource json is {}",
                   () -> resourceJson != null ? resourceJson.encode() : "null");
               JsonObject valuesJson = extractCheckinValues(resourceJson);
-              log.debug("valuesJson is {}", valuesJson.encode());
+              log.debug(sessionData, "valuesJson is {}", valuesJson.encode());
               final Future<JsonObject> getRequestsResult = resourceJson != null
                   ? getRequestsByItemId(valuesJson.getString(ITEM_ID), null, null,
                   null, sessionData) : Future.succeededFuture(null);
               return getRequestsResult.compose(requestsJson -> {
-                log.debug("JSON from getRequestsByItemId is {}",
+                log.debug(sessionData, "JSON from getRequestsByItemId is {}",
                     () -> requestsJson != null ? requestsJson.encode() : "null");
                 MediaType mediaType
                     = getMediaType(valuesJson.getJsonObject("itemMaterialTypeJson"));
@@ -204,7 +203,8 @@ public class CirculationRepository {
    */
   public Future<CheckoutResponse> performCheckoutCommand(Checkout checkout,
                                                          SessionData sessionData) {
-    log.debug("performCheckoutCommand checkout:{} sessionData:{}",checkout,sessionData);
+    log.debug(sessionData,
+        "performCheckoutCommand checkout:{} sessionData:{}", checkout, sessionData);
     final String institutionId = checkout.getInstitutionId();
     final String patronIdentifier = checkout.getPatronIdentifier();
     final String itemIdentifier = checkout.getItemIdentifier();
@@ -220,7 +220,7 @@ public class CirculationRepository {
         }
       })
       .compose(verification -> {
-        log.info("performCheckoutCommand verification:{}",verification);
+        log.info(sessionData, "performCheckoutCommand verification:{}", verification);
         if (FALSE.equals(verification.getPasswordVerified())) {
           return Future.succeededFuture(
             buildFailedCheckoutResponse(institutionId,
@@ -245,7 +245,7 @@ public class CirculationRepository {
           .otherwise(Utils::handleErrors)
           .compose(res -> addTitleIfNotFound(sessionData, itemIdentifier, res))
           .map(resource -> {
-            log.debug("performCheckoutCommand resource:{}",resource.getResource());
+            log.debug(sessionData, "performCheckoutCommand resource:{}", resource.getResource());
             final Optional<JsonObject> response = Optional.ofNullable(resource.getResource());
 
             final OffsetDateTime dueDate = response
@@ -769,8 +769,9 @@ public class CirculationRepository {
       .build();
   }
 
-  RenewAllResponseBuilder doRenewals(JsonObject jo, RenewAllResponseBuilder builder) {
-    log.debug("doRenewals: {} ", jo != null ? jo.encode() : null);
+  RenewAllResponseBuilder doRenewals(SessionData sessionData,
+      JsonObject jo, RenewAllResponseBuilder builder) {
+    log.debug(sessionData, "doRenewals: {} ", jo != null ? jo.encode() : null);
     return builder;
   }
 
@@ -821,7 +822,7 @@ public class CirculationRepository {
 
 
           loansFuture
-             .map(loans -> doRenewals(loans, builder));
+             .map(loans -> doRenewals(sessionData, loans, builder));
 
           final RenewalRequestData renewalRequestData =
               new RenewalRequestData(body, headers, sessionData);

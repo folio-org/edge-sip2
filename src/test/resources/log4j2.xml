@@ -2,13 +2,15 @@
 <Configuration>
   <Appenders>
     <Console name="STDOUT" target="SYSTEM_OUT">
-      <PatternLayout pattern="%d{HH:mm:ss} %-5p %-20.20C{1} %m%n"/>
+      <PatternLayout pattern="%d{HH:mm:ss} [%X{requestid}] [%X{tenantid}] [%X{userid}] [%X{moduleid}] %-5p %-20.20c{1} %m%n"/>
     </Console>
   </Appenders>
   <Loggers>
-    <Logger name="org.folio.edge.sip2" level="debug"/>
-    <Root level="info">
+    <Root level="INFO">
       <AppenderRef ref="STDOUT"/>
     </Root>
+    <Logger name="org.folio" level="DEBUG" additivity="false">
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
   </Loggers>
 </Configuration>

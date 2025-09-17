@@ -2,22 +2,21 @@ package org.folio.edge.sip2.handlers;
 
 import freemarker.template.Template;
 import io.vertx.core.Future;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.inject.Inject;
-import javax.inject.Named;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.ItemInformation;
 import org.folio.edge.sip2.domain.messages.responses.ItemInformationResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.ItemRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 
 public class ItemInformationHandler implements ISip2RequestHandler {
-  private static final Logger log = LogManager.getLogger();
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(ItemInformationHandler.class);
 
   private final ItemRepository itemRepository;
   private final Template commandTemplate;
@@ -35,7 +34,7 @@ public class ItemInformationHandler implements ISip2RequestHandler {
   public Future<String> execute(Object message, SessionData sessionData) {
     final ItemInformation itemInformation = (ItemInformation) message;
 
-    log.debug("ItemInformation: {}", () -> itemInformation);
+    log.debug(sessionData, "ItemInformation: {}", () -> itemInformation);
 
     final Future<ItemInformationResponse> itemInformationFuture =
         itemRepository.performItemInformationCommand(itemInformation, sessionData);
@@ -45,7 +44,7 @@ public class ItemInformationHandler implements ISip2RequestHandler {
     }
 
     return itemInformationFuture.compose(itemInformationResponse -> {
-      log.debug("ItemInformationResponse: {}", () -> itemInformationResponse);
+      log.debug(sessionData, "ItemInformationResponse: {}", () -> itemInformationResponse);
 
       final Map<String, Object> root = new HashMap<>();
       root.put("formatDateTime", new FormatDateTimeMethodModel());
@@ -54,9 +53,9 @@ public class ItemInformationHandler implements ISip2RequestHandler {
       root.put("timezone", sessionData.getTimeZone());
 
       final String response = FreemarkerUtils
-          .executeFreemarkerTemplate(root, commandTemplate);
+          .executeFreemarkerTemplate(sessionData, root, commandTemplate);
 
-      log.info("SIP itemInformation response: {}", response);
+      log.info(sessionData, "SIP itemInformation response: {}", response);
 
       return Future.succeededFuture(response);
     });

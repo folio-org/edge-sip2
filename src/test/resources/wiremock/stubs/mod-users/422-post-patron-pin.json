@@ -1,0 +1,30 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/patron-pin/verify",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "id": "bec20636-fb68-41fd-84ea-2cf910673599",
+          "pin": "132456"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 422,
+    "body": "",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

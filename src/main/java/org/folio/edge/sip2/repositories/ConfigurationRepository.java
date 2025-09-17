@@ -3,6 +3,7 @@ package org.folio.edge.sip2.repositories;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import jakarta.inject.Inject;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -15,21 +16,19 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
 import org.folio.edge.sip2.domain.messages.responses.ACSStatus;
 import org.folio.edge.sip2.domain.messages.responses.ACSStatus.ACSStatusBuilder;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.edge.sip2.utils.Utils;
 import org.folio.util.PercentCodec;
 
 public class ConfigurationRepository {
 
   private IResourceProvider<IRequestData> resourceProvider;
-  private final Logger log;
+  private final Sip2LogAdapter log;
   private Clock clock;
 
   static final String TENANT_CONFIG_NAME = "acsTenantConfig";
@@ -52,7 +51,7 @@ public class ConfigurationRepository {
     this.resourceProvider = Objects.requireNonNull(resourceProvider,
         "ConfigGateway cannot be null");
     this.clock = Objects.requireNonNull(clock, "Clock cannot be null");
-    log = LogManager.getLogger();
+    log = Sip2LogAdapter.getLogger(ConfigurationRepository.class);
   }
 
   /**
@@ -61,7 +60,7 @@ public class ConfigurationRepository {
    * @return ACSStatus object
    */
   public Future<ACSStatus> getACSStatus(SessionData sessionData) {
-    log.debug("getACSStatus sessionData:{}",sessionData);
+    log.debug(sessionData, "getACSStatus sessionData:{}", sessionData);
 
     LinkedHashMap<String, String> tenantLevelQueryParams = new LinkedHashMap<>();
     tenantLevelQueryParams.put(KEY_CONFIG_MODULE, CONFIG_MODULE);
@@ -97,7 +96,7 @@ public class ConfigurationRepository {
                                      sessionData));
 
     return acsStatusBuilderFuture.map(result -> {
-      log.info("getACSStatus ACSStatusBuilder:{}",result);
+      log.info(sessionData, "getACSStatus ACSStatusBuilder:{}", result);
       return builder.build();
     });
   }
@@ -127,31 +126,31 @@ public class ConfigurationRepository {
         specified in the queries. Changing it to be more forgiving but to issue a warning
        */
       if (totalConfigs < configParameters.size()) {
-        log.warn("Found fewer configurations than expected. Expected {} but found {}",
+        log.warn(sessionData, "Found fewer configurations than expected. Expected {} but found {}",
             configParameters.size(), totalConfigs);
       }
 
       if (Utils.isStringNullOrEmpty(sessionData.getScLocation())) {
-        log.warn("Configuration: No value found for Location Code.");
+        log.warn(sessionData, "Configuration: No value found for Location Code.");
       }
 
       LinkedHashMap<String, JsonObject> resultJsonConfigs = new LinkedHashMap<>();
 
       for (int i = 0; i < totalConfigs; i++) {
         JsonObject config = configs.getJsonObject(i);
-        log.debug("Configuration is {}", config.encode());
+        log.debug(sessionData, "Configuration is {}", config.encode());
         String module = config.getString(KEY_CONFIG_MODULE);
         String configName = config.getString(KEY_CONFIG_NAME);
         String code = config.getString(KEY_CONFIG_CODE);
 
         String configKey = String.format(CONFIGURATION_TEMPLATE, module, configName, code);
-        log.debug("Getting configuration with key {}", configKey);
+        log.debug(sessionData, "Getting configuration with key {}", configKey);
         String configurationString = config.getString("value");
         if (!Utils.isStringNullOrEmpty(configurationString)) {
           JsonObject jsonConfiguration = new JsonObject(configurationString);
           resultJsonConfigs.put(configKey, jsonConfiguration);
         } else {
-          log.warn("Getting no value from config store for configuration string: {}",
+          log.warn(sessionData, "Getting no value from config store for configuration string: {}",
               configurationString);
         }
       }
@@ -173,25 +172,22 @@ public class ConfigurationRepository {
   }
 
   private void addLocaleConfig(JsonObject config, SessionData sessionData) {
-    log.debug("Adding locale config with config {}",
+    log.debug(sessionData, "Adding locale config with config {}",
         () -> config != null ? config.encode() : "(null)");
     if (config != null) {
       sessionData.setTimeZone(config.getString("timezone"));
       String currencyConfig = config.getString("currency") != null
           ? config.getString("currency") : "";
       currencyConfig = currencyConfig.toUpperCase();
-      log.debug("currencyConfig is {}", currencyConfig);
-      String currencyValue = null;
-      for (CurrencyType c : CurrencyType.values()) {
-        if (c.name().equals(currencyConfig)) {
-          currencyValue = c.name();
-          break;
-        }
-      }
+      log.debug(sessionData, "currencyConfig is {}", currencyConfig);
+      var currencyValue = CurrencyType.fromStringSafe(currencyConfig);
       if (currencyValue == null) {
-        log.warn("No currency type found for currency code '{}'", currencyConfig);
+        log.warn(sessionData, "No currency type found for currency code '{}'", currencyConfig);
+        sessionData.setCurrency(null);
+        return;
       }
-      sessionData.setCurrency(currencyValue);
+
+      sessionData.setCurrency(currencyValue.name());
     }
   }
 
@@ -291,10 +287,10 @@ public class ConfigurationRepository {
         pathStringBuilder.append(")");
       }
       String partialPath = pathStringBuilder.toString();
-      log.debug("Configuration path before encoding: {}", partialPath);
+      log.debug(sessionData, "Configuration path before encoding: {}", partialPath);
       String path =  "/configurations/entries?query=" + PercentCodec.encode(partialPath);
 
-      log.debug("Parsed mod-config path: {}", path);
+      log.debug(sessionData, "Parsed mod-config path: {}", path);
 
       return path;
     }

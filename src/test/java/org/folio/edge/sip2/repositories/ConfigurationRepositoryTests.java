@@ -212,11 +212,43 @@ public class ConfigurationRepositoryTests {
         })));
   }
 
+  /**
+   * Tests the retrieval of ACS status and validates the session data currency.
+   * This method uses a parameterized test to check different JSON files and their expected
+   * currency values.
+   *
+   * @param jsonFilePath     the path to the JSON file containing the ACS configuration
+   * @param expectedCurrency the expected currency code that should be set in the session data
+   * @param testContext      the test context for managing asynchronous test execution
+   * @param clock            a mock clock used to control time-sensitive operations
+   */
+  @ParameterizedTest
+  @MethodSource("provideJsonFilesAndExpectedCurrencies")
+  public void testGetACSStatusAndValidateSessionDataCurrency(
+        String jsonFilePath,
+        String expectedCurrency,
+        VertxTestContext testContext,
+        @Mock Clock clock) {
+
+    IResourceProvider<IRequestData> resourceProvider = new DefaultResourceProvider(jsonFilePath);
+    ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider, clock);
+
+    SessionData sessionData = TestUtils.getMockedSessionData();
+    configRepo.getACSStatus(sessionData).onComplete(h -> {
+      testContext.verify(() -> {
+        assertNotNull(sessionData);
+        assertEquals(expectedCurrency, sessionData.getCurrency());
+        testContext.completeNow();
+      });
+    });
+  }
+
   private static Stream<Arguments> provideJsonFilesAndExpectedCurrencies() {
     return Stream.of(
       Arguments.of("json/DefaultACSConfigurationNonDefaultedCurrency.json", "EUR"),
       Arguments.of("json/DefaultACSConfigurationCopCurrency.json", "COP"),
-      Arguments.of("json/DefaultACSConfigurationZARCurrency.json", "ZAR")
+      Arguments.of("json/DefaultACSConfigurationZARCurrency.json", "ZAR"),
+      Arguments.of("json/DefaultACSConfigurationMYRCurrency.json", "MYR")
     );
   }
 }

@@ -5,18 +5,17 @@ import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 
 public class FreemarkerUtils {
 
   private FreemarkerUtils() {}
 
-  private static final Logger log;
+  private static final Sip2LogAdapter log;
 
   static {
-    log = LogManager.getLogger();
+    log = Sip2LogAdapter.getLogger(FreemarkerUtils.class);
   }
 
   /**
@@ -26,7 +25,7 @@ public class FreemarkerUtils {
    * @param template the template to apply to the data.
    * @return String output of running the template on the data
    */
-  public static String executeFreemarkerTemplate(Object data, Template template) {
+  public static String executeFreemarkerTemplate(SessionData sd, Object data, Template template) {
 
     Writer out = new StringWriter();
     String outputString = "";
@@ -35,11 +34,11 @@ public class FreemarkerUtils {
       template.process(data, out);
       outputString = out.toString();
     } catch (TemplateException e) {
-      log.error("Having problems finding and loading template: {} ", e.getMessage());
+      log.error(sd, "Having problems finding and loading template: {} ", e.getMessage());
     } catch (IOException ioEx) {
-      log.error("Having problems applying template to data: {} ", ioEx.getMessage());
+      log.error(sd, "Having problems applying template to data: {} ", ioEx.getMessage());
     } catch (Exception ex) {
-      log.error("Error applying template to data: {} ", ex.getMessage());
+      log.error(sd, "Error applying template to data: {} ", ex.getMessage());
     }
 
     log.debug("Data = {} Template = {}",

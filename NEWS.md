@@ -1,10 +1,16 @@
+## 3.4.2 2025-09-15
+* [SIP2-247](https://folio-org.atlassian.net/browse/SIP2-247): Add environment variable for health check port
+* [SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276): Add support for MYR currency type
+* [SIP2-286](https://folio-org.atlassian.net/browse/SIP2-286): Improve logging
+* [SIP2-291](https://folio-org.atlassian.net/browse/SIP2-291): Implement a single login operation per session
+* [SIP2-296](https://folio-org.atlassian.net/browse/SIP2-296): Update hard-coded currency list
+
 ## 3.4.1 2025-05-20
 * [SIP2-267](https://folio-org.atlassian.net/browse/SIP2-267): Payment failed, due to incorrect username being transmitted ([#PR209](https://github.com/folio-org/edge-sip2/pull/209))
-
+ 
 ## 3.4.0 2025-03-14
 * [SIP2-244](https://issues.folio.org/browse/SIP2-244): Rename automated patron blocks permission
 * [FOLIO-4214](https://issues.folio.org/browse/FOLIO-4214): Java and RMB version upgrade for Sunflower.
-
 
 ## 3.3.2 2025-02-24
 * [SIP2-249](https://issues.folio.org/browse/SIP2-249): Checkout Request for Item with '/' in barcode fails with cql parse error - TITLE NOT FOUND

@@ -1,25 +1,24 @@
 package org.folio.edge.sip2.handlers;
 
+import static org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils.executeFreemarkerTemplate;
+
 import freemarker.template.Template;
 import io.vertx.core.Future;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.inject.Inject;
-import javax.inject.Named;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.requests.PatronStatusRequest;
 import org.folio.edge.sip2.domain.messages.responses.PatronStatusResponse;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
-import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
 
-
 public class PatronStatusHandler implements ISip2RequestHandler {
-  private static final Logger log = LogManager.getLogger();
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(PatronStatusHandler.class);
 
 
   private final PatronRepository patronRepository;
@@ -39,7 +38,7 @@ public class PatronStatusHandler implements ISip2RequestHandler {
   public Future<String> execute(Object message, SessionData sessionData) {
     final PatronStatusRequest patronStatus = (PatronStatusRequest) message;
 
-    log.debug("PatronStatusRequest: {}", () -> patronStatus);
+    log.debug(sessionData, "PatronStatusRequest: {}", () -> patronStatus);
 
     final Future<PatronStatusResponse> patronStatusFuture =
         patronRepository.performPatronStatusCommand(patronStatus, sessionData);
@@ -65,7 +64,7 @@ public class PatronStatusHandler implements ISip2RequestHandler {
   public String createPatronStatusResponse(
       SessionData sessionData,
       PatronStatusResponse patronStatusResponse) {
-    log.info("PatronStatusResponse: {}", () -> patronStatusResponse);
+    log.info(sessionData, "PatronStatusResponse: {}", () -> patronStatusResponse);
 
     final Map<String, Object> root = new HashMap<>();
     root.put("formatDateTime", new FormatDateTimeMethodModel());
@@ -73,10 +72,9 @@ public class PatronStatusHandler implements ISip2RequestHandler {
     root.put("patronStatusResponse", patronStatusResponse);
     root.put("timezone", sessionData.getTimeZone());
 
-    final String response = FreemarkerUtils
-        .executeFreemarkerTemplate(root, commandTemplate);
+    final String response = executeFreemarkerTemplate(sessionData, root, commandTemplate);
 
-    log.debug("SIP patronStatus response: {}", response);
+    log.debug(sessionData, "SIP patronStatus response: {}", response);
     return response;
   }
 }
