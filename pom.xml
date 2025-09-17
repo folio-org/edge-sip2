@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>edge-sip2</artifactId>
-  <version>3.3.3-SNAPSHOT</version>
+  <version>3.3.4-SNAPSHOT</version>
   <name>Standard Interchange Protocol v2 (SIP2)</name>
   <url>https://github.com/folio-org/edge-sip2</url>
   <description>Support for SIP2 in FOLIO. This allow self service circulation and patron services stations to perform supported operations in FOLIO.</description>
@@ -48,6 +48,8 @@
     <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
     <java.version>17</java.version>
     <raml-module-builder-version>35.3.0</raml-module-builder-version>
+    <lombok.version>1.18.40</lombok.version>
+    <awssdk.version>2.33.9</awssdk.version>
   </properties>
 
   <dependencyManagement>
@@ -176,6 +178,12 @@
         <artifactId>util</artifactId>
         <version>${raml-module-builder-version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <scope>provided</scope>
+    </dependency>
 
     <!-- Test dependencies -->
     <dependency>
@@ -206,7 +214,7 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcpkix-jdk15to18</artifactId>
-      <version>1.78</version>
+      <version>1.80</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -223,7 +231,7 @@
     <dependency>
       <groupId>org.wiremock</groupId>
       <artifactId>wiremock</artifactId>
-      <version>3.9.1</version>
+      <version>3.12.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -292,6 +300,12 @@
           <version>0.2.0</version>
           <scope>runtime</scope>
         </dependency>
+        <dependency>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>s3</artifactId>
+          <version>${awssdk.version}</version>
+          <scope>runtime</scope>
+        </dependency>
       </dependencies>
       <repositories>
         <repository>
@@ -308,7 +322,15 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven-compiler-plugin.version}</version>
         <configuration>
-          <release>17</release>
+          <release>${java.version}</release>
+          <encoding>UTF-8</encoding>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+          </annotationProcessorPaths>
         </configuration>
       </plugin>
       <plugin>

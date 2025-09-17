@@ -10,6 +10,7 @@ import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.PATRON_STATUS_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.RENEW_ALL_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.RENEW_RESPONSE;
+import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -19,6 +20,7 @@ import java.time.Clock;
 import javax.inject.Named;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.repositories.CirculationRepository;
+import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.FeeFinesRepository;
 import org.folio.edge.sip2.repositories.FolioResourceProvider;
 import org.folio.edge.sip2.repositories.IRequestData;
@@ -40,6 +42,7 @@ public class ApplicationModule extends AbstractModule {
     bind(new TypeLiteral<IResourceProvider<IRequestData>>() {})
         .to(FolioResourceProvider.class).asEagerSingleton();
     bind(Clock.class).toInstance(Clock.systemUTC());
+    bind(ConfigurationRepository.class);
     bind(CirculationRepository.class);
     bind(FeeFinesRepository.class);
     bind(LoginRepository.class);
@@ -108,6 +111,9 @@ public class ApplicationModule extends AbstractModule {
     return FreemarkerRepository.getInstance().getFreemarkerTemplate(FEE_PAID_RESPONSE);
   }
 
-
-
+  @Provides
+  @Named("scStatusResponse")
+  Template scStatusResponseTemplate() {
+    return FreemarkerRepository.getInstance().getFreemarkerTemplate(SC_STATUS);
+  }
 }

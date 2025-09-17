@@ -181,17 +181,14 @@ public class ConfigurationRepository {
           ? config.getString("currency") : "";
       currencyConfig = currencyConfig.toUpperCase();
       log.debug("currencyConfig is {}", currencyConfig);
-      String currencyValue = null;
-      for (CurrencyType c : CurrencyType.values()) {
-        if (c.name().equals(currencyConfig)) {
-          currencyValue = c.name();
-          break;
-        }
-      }
+      var currencyValue = CurrencyType.fromStringSafe(currencyConfig);
       if (currencyValue == null) {
         log.warn("No currency type found for currency code '{}'", currencyConfig);
+        sessionData.setCurrency(null);
+        return;
       }
-      sessionData.setCurrency(currencyValue);
+
+      sessionData.setCurrency(currencyValue.name());
     }
   }
 

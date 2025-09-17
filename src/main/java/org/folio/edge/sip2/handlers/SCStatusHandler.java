@@ -8,6 +8,8 @@ import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
@@ -32,7 +34,10 @@ public class SCStatusHandler implements ISip2RequestHandler {
    * @param template the template to apply to the data.
    *
    */
-  public SCStatusHandler(ConfigurationRepository configurationRepository, Template template) {
+  @Inject
+  public SCStatusHandler(
+      ConfigurationRepository configurationRepository,
+      @Named("scStatusResponse") Template template) {
     this.configurationRepository = configurationRepository;
     log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
     this.template = template;

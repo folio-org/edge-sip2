@@ -1,11 +1,11 @@
 package org.folio.edge.sip2.handlers;
 
-import com.google.inject.Inject;
 import freemarker.template.Template;
 import io.vertx.core.Future;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

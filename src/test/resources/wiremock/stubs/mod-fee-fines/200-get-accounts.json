@@ -1,0 +1,63 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/accounts",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "userId==\"bec20636-fb68-41fd-84ea-2cf910673599\""
+      },
+      "limit": {
+        "equalTo": "1000"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "accounts": [
+        {
+          "amount": 25.0,
+          "remaining": 25.0,
+          "status": {
+            "name": "Open"
+          },
+          "paymentStatus": {
+            "name": "Outstanding"
+          },
+          "feeFineType": "type",
+          "feeFineOwner": "owner",
+          "callNumber": "",
+          "metadata": {
+            "createdDate": "2025-09-09T15:19:58.439+00:00",
+            "createdByUserId": "94c8673f-1873-4c6c-a177-7b5858fd0641",
+            "updatedDate": "2025-09-09T15:19:58.439+00:00",
+            "updatedByUserId": "94c8673f-1873-4c6c-a177-7b5858fd0641"
+          },
+          "userId": "bec20636-fb68-41fd-84ea-2cf910673599",
+          "feeFineId": "3344e74e-8cb7-484b-ae33-f2644ed2b268",
+          "ownerId": "591d9d91-30d5-4781-bab1-06f081c04102",
+          "id": "cee0de04-533b-4e64-91c4-bbde19064709",
+          "contributors": []
+        }
+      ],
+      "totalRecords": 1,
+      "resultInfo": {
+        "totalRecords": 1,
+        "facets": [],
+        "diagnostics": []
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

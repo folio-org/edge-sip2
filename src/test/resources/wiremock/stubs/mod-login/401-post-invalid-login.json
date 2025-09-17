@@ -1,0 +1,24 @@
+{
+  "priority": 10,
+  "request": {
+    "method": "POST",
+    "urlPath": "/authn/login-with-expiry"
+  },
+  "response": {
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "errors": [
+        {
+          "message": "Unauthorized error",
+          "type": "UnauthorizedException",
+          "code": "unauthorized_error",
+          "parameters": []
+        }
+      ],
+      "total_records": 1
+    }
+  }
+}
