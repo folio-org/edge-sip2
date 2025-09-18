@@ -2,8 +2,7 @@
 <Configuration>
   <Appenders>
     <Console name="STDOUT" target="SYSTEM_OUT">
-      <PatternLayout pattern="%d{HH:mm:ss} [%X{requestid}] [%X{edgesip2}] [%X{tenantid}] [edge-sip2] %-5p %-20.20c{1} %m%n"/>
-      -->
+      <PatternLayout pattern="%d{HH:mm:ss} [%X{requestid}] [%X{tenantid}] [%X{userid}] [%X{moduleid}] %-5p %-20.20c{1} %m%n"/>
     </Console>
   </Appenders>
   <Loggers>

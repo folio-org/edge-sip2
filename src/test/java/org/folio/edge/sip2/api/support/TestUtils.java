@@ -3,6 +3,11 @@ package org.folio.edge.sip2.api.support;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.junit5.VertxTestContext;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Files;
@@ -19,6 +24,9 @@ import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.support.Sip2Session;
 import org.folio.edge.sip2.support.Sip2SessionConfiguration;
 import org.folio.edge.sip2.support.Sip2TestCommand;
+import org.folio.edge.sip2.support.vertx.VertxModule;
+import org.junit.function.ThrowingRunnable;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 public class TestUtils {
   private TestUtils() {
@@ -159,5 +167,45 @@ public class TestUtils {
         // ignore
       }
     } while (true);
+  }
+
+  /**
+   * Deploys a Vert.x module with the given configuration, runs the provided tenant handler,
+   * and ensures proper undeployment and test context completion.
+   *
+   * @param vertx              the Vert.x instance
+   * @param testContext        the VertxTestContext for handling async test completion and failures
+   * @param sip2Configuration  the configuration for the SIP2 module as a JsonObject
+   * @param asyncResultHandler a Handler to execute after deployment
+   */
+  public static void withDeployedModule(Vertx vertx, VertxTestContext testContext,
+      JsonObject sip2Configuration, Handler<AsyncResult<String>> asyncResultHandler) {
+    new VertxModule(vertx, sip2Configuration)
+        .deployModule()
+        .onComplete(asyncResultHandler)
+        .onSuccess(vertx::undeploy)
+        .onComplete(testContext.succeedingThenComplete());
+  }
+
+  /**
+   * Deploys a Vert.x module with the given configuration, runs the provided tenant handler,
+   * and ensures proper undeployment and test context completion.
+   *
+   * @param vertx             the Vert.x instance
+   * @param testContext       the VertxTestContext for handling async test completion and failures
+   * @param sip2Configuration the configuration for the SIP2 module as a JsonObject
+   * @param requestHandler    a ThrowingRunnable to execute after deployment
+   */
+  public static void withDeployedModule(Vertx vertx, VertxTestContext testContext,
+      JsonObject sip2Configuration, ThrowingRunnable requestHandler) {
+    withDeployedModule(vertx, testContext, sip2Configuration,
+        testContext.succeeding(deploymentId -> {
+          try {
+            requestHandler.run();
+          } catch (Throwable e) {
+            testContext.failNow(e);
+          }
+        })
+    );
   }
 }
