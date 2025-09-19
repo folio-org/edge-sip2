@@ -1,0 +1,114 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/circulation/check-in-by-barcode",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$[?(@.itemBarcode == 'test123456789')]"
+      },
+      {
+        "matchesJsonPath": "$[?(@.servicePointId == '1a62fa88-e887-4454-a345-24b4a01095fa')]"
+      }
+    ]
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "item": {
+        "id": "7212ba6a-8dcf-45a1-be9a-ffaa847c4423",
+        "holdingsRecordId": "e3ff6133-b9a2-4d4c-a1c9-dc1867d4df19",
+        "instanceId": "5bf370e0-8cca-4d9c-82e4-5170ab2a0a39",
+        "instanceHrid": "inst000000000022",
+        "title": "A semantic web primer",
+        "barcode": "test123456789",
+        "contributors": [
+          {
+            "name": "Antoniou, Grigoris"
+          },
+          {
+            "name": "Van Harmelen, Frank"
+          }
+        ],
+        "callNumber": "TK5105.88815 . A58 2004 FT MEADE",
+        "copyNumber": "Copy 2",
+        "seriesStatements": [
+          "Cooperative information systems"
+        ],
+        "datesOfPublication": [
+          "c2004"
+        ],
+        "physicalDescriptions": [
+          "xx, 238 p. : ill. ; 24 cm."
+        ],
+        "callNumberComponents": {
+          "callNumber": "TK5105.88815 . A58 2004 FT MEADE"
+        },
+        "status": {
+          "name": "In transit"
+        },
+        "inTransitDestinationServicePointId": "3a40852d-49fd-4df2-a1f9-6e2641a6e91f",
+        "inTransitDestinationServicePoint": {
+          "id": "3a40852d-49fd-4df2-a1f9-6e2641a6e91f",
+          "name": "Circ Desk 1"
+        },
+        "location": {
+          "name": "Main Library"
+        },
+        "materialType": {
+          "name": "book"
+        }
+      },
+      "staffSlipContext": {
+        "item": {
+          "title": "A semantic web primer",
+          "instanceHrid": "inst000000000022",
+          "primaryContributor": null,
+          "allContributors": "Antoniou, Grigoris; Van Harmelen, Frank",
+          "datesOfPublication": "c2004",
+          "editions": "",
+          "seriesStatements": "Cooperative information systems",
+          "physicalDescriptions": "xx, 238 p. : ill. ; 24 cm.",
+          "barcode": "test123456789",
+          "status": "In transit",
+          "enumeration": "",
+          "volume": null,
+          "chronology": "",
+          "yearCaption": "",
+          "materialType": "book",
+          "loanType": "Can circulate",
+          "copy": "Copy 2",
+          "numberOfPieces": null,
+          "displaySummary": null,
+          "descriptionOfPieces": null,
+          "accessionNumber": null,
+          "administrativeNotes": "",
+          "effectiveLocationSpecific": "Main Library",
+          "effectiveLocationLibrary": "Datalogisk Institut",
+          "effectiveLocationCampus": "City Campus",
+          "effectiveLocationInstitution": "Københavns Universitet",
+          "effectiveLocationDiscoveryDisplayName": null,
+          "effectiveLocationPrimaryServicePointName": "Circ Desk 1",
+          "callNumber": "TK5105.88815 . A58 2004 FT MEADE",
+          "callNumberPrefix": null,
+          "callNumberSuffix": null,
+          "lastCheckedInDateTime": "2025-09-19T14:19:57.682Z",
+          "toServicePoint": "Circ Desk 1",
+          "fromServicePoint": "Circ Desk 2"
+        },
+        "currentDateTime": "2025-09-19T14:19:57.682Z"
+      },
+      "inHouseUse": false
+    }
+  }
+}

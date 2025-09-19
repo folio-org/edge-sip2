@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.support;
 
 import org.folio.edge.sip2.parser.LanguageMapper;
+import org.folio.edge.sip2.support.model.CheckInCommand;
 import org.folio.edge.sip2.support.model.EndSessionCommand;
 import org.folio.edge.sip2.support.model.LoginCommand;
 import org.folio.edge.sip2.support.model.PatronInformationCommand;
@@ -60,6 +61,18 @@ public interface Sip2Commands {
         .patronIdentifier(patronIdentifier)
         .languageCode(LanguageMapper.ENGLISH)
         .summary(summary)
+        .build();
+  }
+
+  /**
+   * Creates a {@link CheckInCommand} with the specified item identifier.
+   *
+   * @param itemIdentifier - the identifier of the item to check in
+   * @return a new {@link CheckInCommand} instance
+   */
+  static Sip2Command checkIn(String itemIdentifier) {
+    return CheckInCommand.builder()
+        .itemIdentifier(itemIdentifier)
         .build();
   }
 

@@ -3,6 +3,7 @@ package org.folio.edge.sip2.support.model;
 import static java.util.Objects.requireNonNullElse;
 
 import com.networknt.schema.utils.StringUtils;
+import java.util.Objects;
 
 public class Sip2MessageBuilder {
 
@@ -18,7 +19,7 @@ public class Sip2MessageBuilder {
   public Sip2MessageBuilder(int commandCode, char fieldDelimiter) {
     this.fieldDelimiter = fieldDelimiter;
     this.builder = new StringBuilder()
-        .append(commandCode);
+        .append(String.format("%02d", commandCode));
   }
 
   /**
@@ -29,6 +30,11 @@ public class Sip2MessageBuilder {
    */
   public Sip2MessageBuilder withValue(Object messagePart) {
     if (messagePart == null) {
+      return this;
+    }
+
+    if (messagePart instanceof Boolean booleanMsgPart) {
+      this.builder.append(booleanMsgPart ? "Y" : "N");
       return this;
     }
 
@@ -50,8 +56,8 @@ public class Sip2MessageBuilder {
   /**
    * Appends a field code and its value to the message with an optional delimiter.
    *
-   * @param code          - field code
-   * @param value         - field value
+   * @param code              - field code
+   * @param value             - field value
    * @param withLeadDelimiter - whether to prepend the field with a delimiter
    * @return the current Sip2MessageBuilder instance for method chaining
    */
@@ -60,18 +66,22 @@ public class Sip2MessageBuilder {
       this.builder.append(fieldDelimiter);
     }
 
-    this.builder
-        .append(requireNonNullElse(code, ""))
-        .append(requireNonNullElse(value, ""));
+    this.builder.append(requireNonNullElse(code, ""));
 
+    if (value instanceof Boolean boolValue) {
+      this.builder.append(boolValue ? "Y" : "N");
+      return this;
+    }
+
+    this.builder.append(requireNonNullElse(value, ""));
     return this;
   }
 
   /**
    * Appends a field code and its value to the message with an optional delimiter.
    *
-   * @param code          - field code
-   * @param value         - field value
+   * @param code  - field code
+   * @param value - field value
    * @return the current Sip2MessageBuilder instance for method chaining
    */
   public Sip2MessageBuilder withOptFieldValue(String code, Object value) {

@@ -1,0 +1,112 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/inventory/items",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "barcode==\"test123456789\""
+      },
+      "limit": {
+        "equalTo": "1"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "items": [
+        {
+          "id": "43bd226b-0a1b-4e91-92f0-aaedc078b469",
+          "_version": "2",
+          "status": {
+            "name": "Available",
+            "date": "2025-09-19T01:29:28.860+00:00"
+          },
+          "administrativeNotes": [],
+          "title": "A semantic web primer",
+          "callNumber": "TK5105.88815 . A58 2004 FT MEADE",
+          "hrid": "item000000000014",
+          "contributorNames": [
+            {
+              "name": "Antoniou, Grigoris"
+            },
+            {
+              "name": "Van Harmelen, Frank"
+            }
+          ],
+          "formerIds": [],
+          "discoverySuppress": true,
+          "holdingsRecordId": "e3ff6133-b9a2-4d4c-a1c9-dc1867d4df19",
+          "barcode": "test123456789",
+          "itemLevelCallNumber": "TK5105.88815 . A58 2004 FT MEADE",
+          "additionalCallNumbers": [],
+          "enumeration": "",
+          "chronology": "",
+          "copyNumber": "Copy 2",
+          "notes": [],
+          "circulationNotes": [],
+          "tags": {
+            "tagList": []
+          },
+          "yearCaption": [],
+          "order": 1,
+          "electronicAccess": [
+            {
+              "uri": "http://www.loc.gov/catdir/toc/ecip0718/2007020429.html",
+              "linkText": "Links available",
+              "materialsSpecification": "Table of contents",
+              "publicNote": "Table of contents only",
+              "relationshipId": "3b430592-2e09-4b48-9a0c-0636d66b9fb3"
+            }
+          ],
+          "statisticalCodeIds": [
+            "b5968c9e-cddc-4576-99e3-8e60aed8b0dd"
+          ],
+          "purchaseOrderLineIdentifier": null,
+          "materialType": {
+            "id": "1a54b431-2e4f-452d-9cae-9cee66c9a892",
+            "name": "book"
+          },
+          "permanentLoanType": {
+            "id": "2b94c631-fca9-4892-a730-03ee529ffe27",
+            "name": "Can circulate"
+          },
+          "permanentLocation": {
+            "id": "fcd64ce1-6995-48f0-840e-89ffa2288371",
+            "name": "Main Library"
+          },
+          "metadata": {
+            "createdDate": "2025-09-19T01:29:28.860+00:00",
+            "updatedDate": "2025-09-19T10:42:37.792+00:00",
+            "updatedByUserId": "e182a266-adea-43b1-a98d-8920227c19f4"
+          },
+          "effectiveCallNumberComponents": {
+            "callNumber": "TK5105.88815 . A58 2004 FT MEADE",
+            "prefix": null,
+            "suffix": null,
+            "typeId": "512173a7-bd09-490e-b773-17d83f2b63fe"
+          },
+          "effectiveShelvingOrder": "TK5105.88815 . A58 2004 FT MEADE Copy 2",
+          "isBoundWith": false,
+          "effectiveLocation": {
+            "id": "fcd64ce1-6995-48f0-840e-89ffa2288371",
+            "name": "Main Library"
+          }
+        }
+      ],
+      "totalRecords": 1
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
