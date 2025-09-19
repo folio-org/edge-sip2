@@ -16,10 +16,12 @@ import org.folio.edge.sip2.support.Sip2Commands;
 import org.folio.edge.sip2.support.Sip2SessionConfiguration;
 import org.folio.edge.sip2.support.Sip2TestConfig;
 import org.folio.edge.sip2.support.tags.EnableTls;
+import org.folio.edge.sip2.support.tags.IntegrationTest;
 import org.folio.edge.sip2.support.wiremock.WiremockStubs;
 import org.junit.jupiter.api.Test;
 
 @EnableTls
+@IntegrationTest
 @Sip2TestConfig("sip2-checksum-verification-enabled.conf")
 class SipTlsEnabledIT extends BaseIntegrationTest {
 

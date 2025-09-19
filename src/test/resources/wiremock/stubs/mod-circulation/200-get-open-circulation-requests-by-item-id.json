@@ -1,0 +1,29 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/circulation/requests",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "itemId==\"7212ba6a-8dcf-45a1-be9a-ffaa847c4423\" and status=\"Open\""
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "requests": [],
+      "totalRecords": 0
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

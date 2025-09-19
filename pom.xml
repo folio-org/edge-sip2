@@ -49,15 +49,15 @@
     <java.version>21</java.version>
     <okapi-common.version>6.2.3</okapi-common.version>
     <raml-module-builder-version>35.4.0</raml-module-builder-version>
+    <folio-s3-client.version>2.3.0</folio-s3-client.version>
 
     <!-- 3rd party library versions  -->
     <ipaddress.version>5.5.1</ipaddress.version>
     <lombok.version>1.18.38</lombok.version>
-    <awssdk.version>2.32.30</awssdk.version>
 
     <!-- Testing library versions-->
     <folio-backed-testing.version>3.0.3</folio-backed-testing.version>
-    <wiremock.version>3.12.1</wiremock.version>
+    <wiremock.version>3.13.1</wiremock.version>
     <rest-assured.version>5.5.6</rest-assured.version>
     <testcontainers-bom.version>1.21.3</testcontainers-bom.version>
     <junit-bom.version>5.13.4</junit-bom.version>
@@ -195,6 +195,17 @@
       <version>${ipaddress.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>folio-s3-client</artifactId>
+      <version>${folio-s3-client.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcprov-jdk18on</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>${lombok.version}</version>
@@ -242,6 +253,11 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>minio</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -303,32 +319,6 @@
           <scope>runtime</scope>
         </dependency>
       </dependencies>
-    </profile>
-    <profile>
-      <id>vertx-config-s3</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <dependencies>
-        <dependency>
-          <groupId>com.github.mikelee2082</groupId>
-          <artifactId>vertx-config-s3</artifactId>
-          <version>0.2.0</version>
-          <scope>runtime</scope>
-        </dependency>
-        <dependency>
-          <groupId>software.amazon.awssdk</groupId>
-          <artifactId>s3</artifactId>
-          <version>${awssdk.version}</version>
-          <scope>runtime</scope>
-        </dependency>
-      </dependencies>
-      <repositories>
-        <repository>
-          <id>jitpack.io</id>
-          <url>https://jitpack.io</url>
-        </repository>
-      </repositories>
     </profile>
   </profiles>
 
