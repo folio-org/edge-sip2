@@ -65,7 +65,7 @@ class S3ConfigIT {
     var port = getRandomPort();
     var sip2Configuration = s3Configuration(port, s3TenantStoreConfig());
     var s3Client = MinioContainerExtension.getS3Client();
-    var tenantConfig = new ByteArrayInputStream(getScTenantConfContent(port).getBytes(UTF_8));
+    var tenantConfig = new ByteArrayInputStream(scTenantsContent(port).getBytes(UTF_8));
     s3Client.write("sip2/sip2-tenants.conf", tenantConfig);
 
     withDeployedModule(vertx, testContext, sip2Configuration, () ->
@@ -94,11 +94,10 @@ class S3ConfigIT {
     new VertxModule(vertx, sip2Configuration)
         .deployModule()
         .onComplete(testContext.failing(err -> {
-          assertThat(err, instanceOf(Error.class));
+          assertThat(err, instanceOf(IllegalStateException.class));
+          assertThat(err.getMessage(), is("Failed to create S3ConfigStore"));
           assertThat(err.getCause(), instanceOf(IllegalArgumentException.class));
-          var expectedErrorMsg = "java.lang.IllegalArgumentException: "
-              + "'access_key' is required for s3 configuration";
-          assertThat(err.getMessage(), is(expectedErrorMsg));
+          assertThat(err.getCause().getMessage(), is("'key' is required for s3 configuration"));
           testContext.completeNow();
         }));
   }
@@ -166,7 +165,7 @@ class S3ConfigIT {
         .build();
   }
 
-  private static String getScTenantConfContent(int port) {
+  private static String scTenantsContent(int port) {
     var scTenantObject = new JsonObject()
         .put("port", port)
         .put("scSubnet", "0.0.0.0/0")
