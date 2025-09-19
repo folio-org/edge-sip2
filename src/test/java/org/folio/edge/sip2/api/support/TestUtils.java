@@ -26,7 +26,6 @@ import org.folio.edge.sip2.support.Sip2SessionConfiguration;
 import org.folio.edge.sip2.support.Sip2TestCommand;
 import org.folio.edge.sip2.support.vertx.VertxModule;
 import org.junit.function.ThrowingRunnable;
-import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 public class TestUtils {
   private TestUtils() {

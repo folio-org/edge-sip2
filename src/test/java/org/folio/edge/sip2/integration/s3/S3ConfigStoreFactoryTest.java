@@ -39,8 +39,9 @@ class S3ConfigStoreFactoryTest {
   void create_negative() {
     var configuration = s3ConfigStoreConfiguration(null);
     configuration.put("bucket", null);
+    var vertx = Vertx.vertx();
     var exception = assertThrows(IllegalStateException.class,
-        () -> s3ConfigStoreFactory.create(Vertx.vertx(), configuration));
+        () -> s3ConfigStoreFactory.create(vertx, configuration));
     assertEquals("Failed to create S3ConfigStore", exception.getMessage());
     assertInstanceOf(IllegalArgumentException.class, exception.getCause());
     assertEquals("'bucket' is required for s3 configuration", exception.getCause().getMessage());

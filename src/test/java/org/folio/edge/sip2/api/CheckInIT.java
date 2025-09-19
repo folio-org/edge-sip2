@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
     "wiremock/stubs/mod-login/201-post-acs-login.json",
     "wiremock/stubs/mod-configuration/200-get-configuration.json"
 })
-public class CheckInIT extends AbstractErrorDetectionEnabledTest {
+class CheckInIT extends AbstractErrorDetectionEnabledTest {
 
   private static final String ITEM_BARCODE = "test123456789";
 

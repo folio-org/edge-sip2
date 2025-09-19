@@ -3,7 +3,6 @@ package org.folio.edge.sip2.support.model;
 import static java.util.Objects.requireNonNullElse;
 
 import com.networknt.schema.utils.StringUtils;
-import java.util.Objects;
 
 public class Sip2MessageBuilder {
 
