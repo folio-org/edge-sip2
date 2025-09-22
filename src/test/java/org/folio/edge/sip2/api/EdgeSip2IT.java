@@ -22,6 +22,7 @@ import io.vertx.core.json.JsonObject;
 import java.nio.file.Path;
 import org.folio.edge.sip2.support.Sip2Commands;
 import org.folio.edge.sip2.support.Sip2SessionConfiguration;
+import org.folio.edge.sip2.support.tags.IntegrationTest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -41,6 +42,7 @@ import org.testcontainers.utility.MountableFile;
  * <p>It checks the Dockerfile (this is not tested in "mvn test" unit tests).
  */
 @Testcontainers
+@IntegrationTest
 @WireMockTest(httpPort = 9130)
 class EdgeSip2IT {
   private static final Logger LOGGER = LoggerFactory.getLogger(EdgeSip2IT.class);
