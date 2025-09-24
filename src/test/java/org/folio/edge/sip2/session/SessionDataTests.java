@@ -44,7 +44,6 @@ class SessionDataTests {
 
     sessionData = SessionData.createSession(tenant, fieldDelimiter, errorDetectionEnabled, charset);
     sessionData.setScLocation(scLocation);
-    sessionData.setAuthenticationToken(authenticationToken);
     sessionData.setMaxPrintWidth(maxWidth);
     sessionData.setUsername(username);
     sessionData.setPassword(password);
@@ -62,17 +61,6 @@ class SessionDataTests {
   void testSetScLocation() {
     sessionData.setScLocation("jupiter");
     assertEquals("jupiter", sessionData.getScLocation());
-  }
-
-  @Test
-  void testGetAuthenticationToken() {
-    assertEquals(authenticationToken, sessionData.getAuthenticationToken());
-  }
-
-  @Test
-  void testSetAuthenticationToken() {
-    sessionData.setAuthenticationToken("890xyz");
-    assertEquals("890xyz", sessionData.getAuthenticationToken());
   }
 
   @Test
@@ -187,7 +175,6 @@ class SessionDataTests {
     assertEquals('^', newSessionData.getFieldDelimiter());
     assertFalse(newSessionData.isErrorDetectionEnabled());
     assertEquals("UTF-8", newSessionData.getCharset());
-    assertNull(newSessionData.getAuthenticationToken());
     assertEquals(-1, newSessionData.getMaxPrintWidth());
     assertNull(newSessionData.getPassword());
     assertNull(newSessionData.getScLocation());

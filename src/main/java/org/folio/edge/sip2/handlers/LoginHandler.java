@@ -1,6 +1,8 @@
 package org.folio.edge.sip2.handlers;
 
 import static java.lang.Boolean.FALSE;
+import static java.util.Objects.requireNonNull;
+import static org.folio.edge.sip2.domain.TenantResolutionContext.createContextForLoginPhase;
 
 import freemarker.template.Template;
 import io.vertx.core.Future;
@@ -8,39 +10,58 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import org.folio.edge.sip2.domain.messages.requests.Login;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
+import org.folio.edge.sip2.exception.TenantNotResolvedException;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.LoginRepository;
+import org.folio.edge.sip2.service.config.TenantConfigurationService;
+import org.folio.edge.sip2.service.tenant.Sip2TenantResolver;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
 
-
 public class LoginHandler implements ISip2RequestHandler {
   private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(LoginHandler.class);
 
+  private final Sip2TenantResolver sip2TenantResolver;
   private final ConfigurationRepository configurationRepository;
   private final LoginRepository loginRepository;
   private final Template commandTemplate;
+  private final TenantConfigurationService tenantConfigurationService;
 
   @Inject
-  LoginHandler(LoginRepository loginRepository, ConfigurationRepository configurationRepository,
+  LoginHandler(
+      LoginRepository loginRepository,
+      ConfigurationRepository configurationRepository,
+      Sip2TenantResolver tenantResolver,
+      TenantConfigurationService tenantConfigurationService,
       @Named("loginResponse") Template commandTemplate) {
-    this.loginRepository = Objects.requireNonNull(loginRepository,
+    this.loginRepository = requireNonNull(loginRepository,
         "LoginRepository cannot be null");
-    this.configurationRepository = Objects.requireNonNull(configurationRepository,
+    this.configurationRepository = requireNonNull(configurationRepository,
         "ConfigurationRepository cannot be null");
-    this.commandTemplate = Objects.requireNonNull(commandTemplate, "Template cannot be null");
+    this.commandTemplate = requireNonNull(commandTemplate, "Template cannot be null");
+    this.sip2TenantResolver = requireNonNull(tenantResolver, "Sip2TenantResolver cannot be null");
+    this.tenantConfigurationService = requireNonNull(tenantConfigurationService,
+        "TenantConfigurationService cannot be null");
   }
 
   @Override
   public Future<String> execute(Object message, SessionData sessionData) {
-    log.debug(sessionData, "LoginHandler :: execute message:{} sessionData:{}",message,sessionData);
+    log.debug(sessionData, "LoginHandler :: execute message:{} sessionData:{}", message,
+        sessionData);
+
     final Login login = (Login) message;
+    sessionData.setUsername(login.getLoginUserId());
+    sessionData.setPassword(login.getLoginPassword());
+    sessionData.setScLocation(login.getLocationCode());
+
+    if (!resolveTenant(sessionData)) {
+      return Future.failedFuture(new TenantNotResolvedException(sessionData.getRequestId()));
+    }
 
     log.info(sessionData, "LoginHandler :: execute Login: {}", login::getLoginLogInfo);
     log.debug(sessionData, "Session user is {}", sessionData.getUsername());
@@ -66,6 +87,27 @@ public class LoginHandler implements ISip2RequestHandler {
       Future.succeededFuture(
         constructLoginResponse(
           sessionData, loginResponse)));
+  }
+
+  private boolean resolveTenant(SessionData sessionData) {
+    log.debug(sessionData, "LoginHandler :: Resolving tenant for the login request");
+    var multiTenantConfig = tenantConfigurationService.getConfiguration();
+    var resolutionContext = createContextForLoginPhase(multiTenantConfig, sessionData);
+    var newTenant = sip2TenantResolver.resolve(resolutionContext)
+        .map(configuration -> configuration.getString("tenant"))
+        .orElse(null);
+
+    if (newTenant != null) {
+      sessionData.setTenant(newTenant);
+      return true;
+    }
+
+    if (sessionData.getTenant() == null) {
+      log.warn(sessionData, "Tenant is not resolved for the login request");
+      return false;
+    }
+
+    return true;
   }
 
   /**

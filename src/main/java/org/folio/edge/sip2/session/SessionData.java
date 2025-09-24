@@ -8,27 +8,27 @@ import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.domain.integration.login.FolioLoginResponse;
 
 @Data
+@Log4j2
 @EqualsAndHashCode
 @RequiredArgsConstructor
 public class SessionData {
   private final char fieldDelimiter;
-  private final String tenant;
   private final boolean errorDetectionEnabled;
   private final String charset;
   private final String requestId;
+  private String tenant;
   private String loginErrorMessage;
   private Object errorResponseMessage;
   private String scLocation;
-  private String authenticationToken;
   private int maxPrintWidth = -1; // since 0 is valid
   private String username;
   private String password; // should we really save this?
+  private String authenticationToken;
   private PreviousMessage previousMessage;
   private String timeZone;
   private String currency;
@@ -39,7 +39,6 @@ public class SessionData {
   private boolean alwaysCheckPatronPassword;
   private FolioLoginResponse loginResponse;
 
-  private static final Logger log = LogManager.getLogger();
   private static final String DEFAULT_CURRENCY = "USD";
   private static final String DEFAULT_TIMEZONE = "Etc/UTC";
 
@@ -107,6 +106,12 @@ public class SessionData {
       charset);
   }
 
+  /**
+   * Gets the currency for the session.
+   * Returns the session currency if set, otherwise returns the default currency.
+   *
+   * @return the currency code as a String
+   */
   public String getCurrency() {
     return currency != null ? currency : DEFAULT_CURRENCY;
   }
@@ -128,5 +133,15 @@ public class SessionData {
   private static String generateRequestId() {
     var random = new SecureRandom();
     return format("%06d%s", random.nextInt(1000000), "/sip2");
+  }
+
+  /**
+   * Sets the tenant for the session and logs the change.
+   *
+   * @param tenant the new tenant identifier
+   */
+  public void setTenant(String tenant) {
+    log.debug("Tenant is updated in session data: old='{}', new='{}'", this.tenant, tenant);
+    this.tenant = tenant;
   }
 }

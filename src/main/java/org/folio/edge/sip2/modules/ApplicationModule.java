@@ -15,6 +15,7 @@ import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
 import freemarker.template.Template;
 import jakarta.inject.Named;
 import java.time.Clock;
@@ -29,6 +30,13 @@ import org.folio.edge.sip2.repositories.ItemRepository;
 import org.folio.edge.sip2.repositories.LoginRepository;
 import org.folio.edge.sip2.repositories.PasswordVerifier;
 import org.folio.edge.sip2.repositories.UsersRepository;
+import org.folio.edge.sip2.service.config.TenantConfigurationService;
+import org.folio.edge.sip2.service.tenant.IpTenantResolver;
+import org.folio.edge.sip2.service.tenant.LocationCodeTenantResolver;
+import org.folio.edge.sip2.service.tenant.PortTenantResolver;
+import org.folio.edge.sip2.service.tenant.Sip2TenantResolver;
+import org.folio.edge.sip2.service.tenant.TenantResolver;
+import org.folio.edge.sip2.service.tenant.UsernamePrefixTenantResolver;
 
 /**
  * Module to bind dependencies for injection.
@@ -37,10 +45,20 @@ import org.folio.edge.sip2.repositories.UsersRepository;
  *
  */
 public class ApplicationModule extends AbstractModule {
+
   @Override
   protected void configure() {
+    var tenantResolverBinder = Multibinder.newSetBinder(binder(), TenantResolver.class);
+    tenantResolverBinder.addBinding().to(IpTenantResolver.class);
+    tenantResolverBinder.addBinding().to(PortTenantResolver.class);
+    tenantResolverBinder.addBinding().to(UsernamePrefixTenantResolver.class);
+    tenantResolverBinder.addBinding().to(LocationCodeTenantResolver.class);
+    bind(Sip2TenantResolver.class).asEagerSingleton();
+
     bind(new TypeLiteral<IResourceProvider<IRequestData>>() {})
         .to(FolioResourceProvider.class).asEagerSingleton();
+
+    bind(TenantConfigurationService.class).asEagerSingleton();
     bind(Clock.class).toInstance(Clock.systemUTC());
     bind(ConfigurationRepository.class);
     bind(CirculationRepository.class);

@@ -1,27 +1,16 @@
 package org.folio.edge.sip2;
 
 import static java.lang.Boolean.FALSE;
-import static java.lang.System.getenv;
-import static org.folio.edge.sip2.parser.Command.CHECKIN;
-import static org.folio.edge.sip2.parser.Command.CHECKOUT;
-import static org.folio.edge.sip2.parser.Command.END_PATRON_SESSION;
-import static org.folio.edge.sip2.parser.Command.FEE_PAID;
-import static org.folio.edge.sip2.parser.Command.ITEM_INFORMATION;
+import static org.apache.commons.lang3.StringEscapeUtils.ESCAPE_JAVA;
+import static org.folio.edge.sip2.domain.TenantResolutionContext.createContextForConnectPhase;
 import static org.folio.edge.sip2.parser.Command.LOGIN;
-import static org.folio.edge.sip2.parser.Command.PATRON_INFORMATION;
-import static org.folio.edge.sip2.parser.Command.PATRON_STATUS_REQUEST;
-import static org.folio.edge.sip2.parser.Command.RENEW;
-import static org.folio.edge.sip2.parser.Command.RENEW_ALL;
 import static org.folio.edge.sip2.parser.Command.REQUEST_ACS_RESEND;
-import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
-import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 import static org.folio.edge.sip2.parser.Command.UNKNOWN;
 import static org.folio.edge.sip2.utils.LogUtils.callWithContext;
 import static org.folio.edge.sip2.utils.Utils.getEnvOrDefault;
 
 import com.google.inject.Guice;
-import com.google.inject.Injector;
-import io.micrometer.common.util.StringUtils;
+import com.google.inject.Key;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -38,63 +27,54 @@ import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
-import io.vertx.ext.web.client.WebClient;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.commons.lang3.StringUtils;
 import org.folio.edge.sip2.cache.TokenCacheFactory;
+import org.folio.edge.sip2.domain.ConnectionDetails;
 import org.folio.edge.sip2.domain.PreviousMessage;
-import org.folio.edge.sip2.handlers.CheckinHandler;
-import org.folio.edge.sip2.handlers.CheckoutHandler;
-import org.folio.edge.sip2.handlers.EndPatronSessionHandler;
-import org.folio.edge.sip2.handlers.FeePaidHandler;
-import org.folio.edge.sip2.handlers.HandlersFactory;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
-import org.folio.edge.sip2.handlers.ItemInformationHandler;
-import org.folio.edge.sip2.handlers.LoginHandler;
-import org.folio.edge.sip2.handlers.PatronInformationHandler;
-import org.folio.edge.sip2.handlers.PatronStatusHandler;
-import org.folio.edge.sip2.handlers.RenewAllHandler;
-import org.folio.edge.sip2.handlers.RenewHandler;
-import org.folio.edge.sip2.handlers.SCStatusHandler;
 import org.folio.edge.sip2.metrics.Metrics;
 import org.folio.edge.sip2.modules.ApplicationModule;
 import org.folio.edge.sip2.modules.FolioResourceProviderModule;
+import org.folio.edge.sip2.modules.RequestHandlerModule;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
+import org.folio.edge.sip2.service.config.TenantConfigurationService;
+import org.folio.edge.sip2.service.tenant.Sip2TenantResolver;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Sip2LogAdapter;
-import org.folio.edge.sip2.utils.TenantUtils;
 import org.folio.edge.sip2.utils.WebClientUtils;
 
 public class MainVerticle extends AbstractVerticle {
 
   private static final String HEALTH_CHECK_PORT_ENV_VAR = "HEALTH_CHECK_PORT";
   private static final String HEALTH_CHECK_PORT_PROPERTY = "healthCheckPort";
-  private static final String  HEALTH_CHECK_PATH = "/admin/health";
+  private static final String HEALTH_CHECK_PATH = "/admin/health";
   private static final int HEALTH_CHECK_DEFAULT_PORT = 8081;
 
-  private final Sip2LogAdapter log = Sip2LogAdapter.getLogger(MainVerticle.class);
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(MainVerticle.class);
   private final Map<Integer, Metrics> metricsMap = new HashMap<>();
 
-  private List<NetServer> servers = new ArrayList<>();
+  private Sip2TenantResolver tenantResolver;
+  private TenantConfigurationService tenantConfigurationService;
   private Map<Command, ISip2RequestHandler> handlers;
-  private JsonObject multiTenantConfig = new JsonObject();
+
+  private List<NetServer> servers = new ArrayList<>();
   private ConfigRetriever configRetriever;
 
   public static final int DEFAULT_TOKEN_CACHE_CAPACITY = 100;
-
   public static final String SYS_TOKEN_CACHE_CAPACITY = "token_cache_capacity";
+
   /**
    * Construct the {@code MainVerticle}.
    */
-
   public MainVerticle() {
     super();
   }
@@ -106,7 +86,7 @@ public class MainVerticle extends AbstractVerticle {
   private String getSanitizedConfig() {
     JsonObject sc = config().copy();
     JsonPointer.from("/tenantConfigRetrieverOptions/stores/0/config").writeJson(sc, "******");
-    return sc.encodePrettily();
+    return sc.encode();
   }
 
   @Override
@@ -119,7 +99,7 @@ public class MainVerticle extends AbstractVerticle {
     TokenCacheFactory.initialize(config()
         .getInteger(SYS_TOKEN_CACHE_CAPACITY, DEFAULT_TOKEN_CACHE_CAPACITY));
 
-    setupHandlers();
+    setupGuiceContext();
 
     var portList = determinePorts();
 
@@ -138,14 +118,19 @@ public class MainVerticle extends AbstractVerticle {
       metricsMap.putIfAbsent(port, metrics);
 
       server.connectHandler(socket -> {
-        String clientAddress = socket.remoteAddress().host();
+        var clientAddress = socket.remoteAddress().host();
+        var connectionDetails = ConnectionDetails.of(port, clientAddress);
+        var multiTenantConfig = tenantConfigurationService.getConfiguration();
+        var context = createContextForConnectPhase(multiTenantConfig, connectionDetails);
+        var tenantConfig = tenantResolver.resolve(context).orElseGet(() -> {
+          log.debug("Multi-tenant configuration not found, using: {}", multiTenantConfig::encode);
+          return multiTenantConfig;
+        });
 
-        JsonObject tenantConfig = TenantUtils.lookupTenantConfigForIpAddress(multiTenantConfig,
-              clientAddress, port);
+        var sessionData = getSessionData(tenantConfig);
+        var messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
 
-        final SessionData sessionData = getSessionData(tenantConfig);
-        final String messageDelimiter = tenantConfig.getString("messageDelimiter", "\r");
-
+        logNewConnectionDetails(connectionDetails, sessionData, messageDelimiter);
         socket.handler(RecordParser.newDelimited(messageDelimiter, buffer ->
             handleBuffer(buffer, socket, sessionData, messageDelimiter, metrics)));
 
@@ -183,13 +168,6 @@ public class MainVerticle extends AbstractVerticle {
                             String messageDelimiter, Metrics metrics) {
     final Timer.Sample sample = metrics.sample();
 
-    if (Objects.isNull(sessionData.getTenant())) {
-      String clientAddress = socket.remoteAddress().host();
-      log.error(sessionData, "No tenant configured for address: {}  message ignored.",
-          clientAddress);
-      return;
-    }
-
     final String messageString = buffer.getString(0, buffer.length(),
         sessionData.getCharset());
 
@@ -203,6 +181,13 @@ public class MainVerticle extends AbstractVerticle {
           sessionData, () -> parser.parseMessage(messageString));
 
       command = message.getCommand();
+
+      if (command != LOGIN && Objects.isNull(sessionData.getTenant())) {
+        String clientAddress = socket.remoteAddress().host();
+        log.error(sessionData, "No tenant configured for address: {}  message ignored.",
+            clientAddress);
+        return;
+      }
 
       // process validation results
       if (!message.isValid()) {
@@ -252,13 +237,19 @@ public class MainVerticle extends AbstractVerticle {
   }
 
   /**
-   * Returns sessionData.
-   * @param tenantConfig sip config details
-   * @return sessionData
+   * Returns a new {@link SessionData} object.
+   *
+   * <p>
+   * {@code tenant} in configuration is nullable, and then it can be resolved during the login
+   * operation based on username/location code (if enabled).
+   * </p>
+   *
+   * @param tenantConfig - sip config details
+   * @return new {@link SessionData} instance
    */
-  private SessionData getSessionData(JsonObject tenantConfig) {
+  private static SessionData getSessionData(JsonObject tenantConfig) {
     return SessionData.createSession(
-      tenantConfig.getString("tenant"),
+      tenantConfig.getString("tenant", ""),
       tenantConfig.getString("fieldDelimiter", "|").charAt(0),
       tenantConfig.getBoolean("errorDetectionEnabled", FALSE),
       tenantConfig.getString("charset", "IBM850"));
@@ -298,8 +289,9 @@ public class MainVerticle extends AbstractVerticle {
   private Future<Void> listenToMessages(Promise<Void> promise, NetServer server) {
     configRetriever.getConfig(ar -> {
       if (ar.succeeded()) {
-        multiTenantConfig = ar.result();
-        log.info("Tenant config loaded: {}", () -> multiTenantConfig.encodePrettily());
+        var multiTenantConfig = ar.result();
+        tenantConfigurationService.updateConfiguration(multiTenantConfig);
+        log.info("Tenant config loaded: {}", multiTenantConfig::encode);
 
         server.listen(result -> {
           if (result.succeeded()) {
@@ -318,8 +310,9 @@ public class MainVerticle extends AbstractVerticle {
     });
 
     configRetriever.listen(change -> {
-      multiTenantConfig = change.getNewConfiguration();
-      log.info("Tenant config changed: {}", () -> multiTenantConfig.encodePrettily());
+      var multiTenantConfig = change.getNewConfiguration();
+      tenantConfigurationService.updateConfiguration(multiTenantConfig);
+      log.info("Tenant config changed: {}", multiTenantConfig::encode);
     });
 
     return promise.future();
@@ -354,7 +347,7 @@ public class MainVerticle extends AbstractVerticle {
             messageDelimiter);
           }
           handler.writeHistory(sessionData, message, responseMsg);
-          log.info(sessionData, "Sip response {}", responseMsg);
+          log.info(sessionData, "Sip response {}", () -> getEscapedString(responseMsg));
           sample.stop(metrics.commandTimer(message.getCommand()));
           socket.write(responseMsg, sessionData.getCharset());
         }).onFailure(e -> {
@@ -389,7 +382,7 @@ public class MainVerticle extends AbstractVerticle {
     String prvMessage = sessionData
         .getPreviousMessage()
         .getPreviousMessageResponse();
-    log.info(sessionData, "Sending previous Sip response {}", prvMessage);
+    log.info(sessionData, "Sending previous Sip response {}", () -> getEscapedString(prvMessage));
     sample.stop(metrics.commandTimer(command));
     socket.write(prvMessage, sessionData.getCharset());
   }
@@ -397,27 +390,19 @@ public class MainVerticle extends AbstractVerticle {
   /**
    * Initialize the handlers.
    */
-  private void setupHandlers() {
+  private void setupGuiceContext() {
     if (handlers == null) {
-      String okapiUrl = config().getString("okapiUrl");
-      final WebClient webClient = WebClientUtils.create(vertx, config());
-      final Injector injector = Guice.createInjector(
+      var okapiUrl = config().getString("okapiUrl");
+      var webClient = WebClientUtils.create(vertx, config());
+      var injector = Guice.createInjector(
           new FolioResourceProviderModule(okapiUrl, webClient),
-          new ApplicationModule());
-      handlers = new EnumMap<>(Command.class);
-      handlers.put(CHECKOUT, injector.getInstance(CheckoutHandler.class));
-      handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
-      handlers.put(SC_STATUS, injector.getInstance(SCStatusHandler.class));
-      handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
-      handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
-      handlers.put(PATRON_INFORMATION, injector.getInstance(PatronInformationHandler.class));
-      handlers.put(PATRON_STATUS_REQUEST, injector.getInstance(PatronStatusHandler.class));
-      handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
-      handlers.put(END_PATRON_SESSION, injector.getInstance(EndPatronSessionHandler.class));
-      handlers.put(FEE_PAID, injector.getInstance(FeePaidHandler.class));
-      handlers.put(ITEM_INFORMATION, injector.getInstance(ItemInformationHandler.class));
-      handlers.put(RENEW,  injector.getInstance(RenewHandler.class));
-      handlers.put(RENEW_ALL,  injector.getInstance(RenewAllHandler.class));
+          new ApplicationModule(),
+          new RequestHandlerModule()
+      );
+
+      handlers = injector.getInstance(new Key<>() {});
+      tenantResolver = injector.getInstance(Sip2TenantResolver.class);
+      tenantConfigurationService = injector.getInstance(TenantConfigurationService.class);
     }
   }
 
@@ -513,7 +498,8 @@ public class MainVerticle extends AbstractVerticle {
 
       sb.append("AZ");
 
-      int checksum = getChecksum(sb.toString(), Charset.forName(sessionData.getCharset()));
+      var charset = Charset.forName(sessionData.getCharset());
+      int checksum = getChecksum(sessionData, sb.toString(), charset);
 
       sb.append(String.format("%04X", checksum)).append(messageDelimiter);
 
@@ -525,8 +511,9 @@ public class MainVerticle extends AbstractVerticle {
     return result;
   }
 
-  protected int getChecksum(String message, Charset charset) {
-    log.debug("Calculating checksum for {} using charset {}", message, charset);
+  protected int getChecksum(SessionData sessionData, String message, Charset charset) {
+    log.debug(sessionData, "Calculating checksum for {} using charset {}",
+        () -> getEscapedString(message), () -> charset);
     final byte[] bytes = message.getBytes(charset);
     int checksum = 0;
     for (final byte b : bytes) {
@@ -554,7 +541,25 @@ public class MainVerticle extends AbstractVerticle {
     } else {
       log.debug(sessionData, "requiredResending is TRUE");
       return currentMessage.getChecksumsString().equals(prevMessage.getPreviousRequestChecksum())
-        && currentMessage.getSequenceNumber() == prevMessage.getPreviousRequestSequenceNo();
+          && currentMessage.getSequenceNumber() == prevMessage.getPreviousRequestSequenceNo();
     }
+  }
+
+  private static void logNewConnectionDetails(ConnectionDetails cd,
+      SessionData sessionData, String messageDelimiter) {
+    log.debug("Handling a new connection: {}", () -> new JsonObject()
+        .put("clientAddress", cd.getClientAddress() + ":" + cd.getClientPort())
+        .put("sessionId", sessionData.getRequestId())
+        .put("tenant", sessionData.getTenant())
+        .put("messageDelimiter", messageDelimiter)
+        .put("errorDetectionEnabled", sessionData.isErrorDetectionEnabled())
+        .put("fieldDelimiter", sessionData.getFieldDelimiter())
+        .put("charset", sessionData.getCharset())
+        .encode()
+    );
+  }
+
+  private static String getEscapedString(String input) {
+    return StringUtils.isNotBlank(input) ? ESCAPE_JAVA.translate(input) : input;
   }
 }
