@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.service.tenant;
 
 import static org.folio.edge.sip2.domain.TenantResolutionContext.createContextForLoginPhase;
+import static org.folio.edge.sip2.domain.type.TenantResolutionPhase.LOGIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -94,6 +95,18 @@ class LocationCodeTenantResolverTest {
     var result = tenantResolver.resolve(tenantContext);
 
     assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void getPhase_positive() {
+    var result = tenantResolver.getPhase();
+    assertEquals(LOGIN, result);
+  }
+
+  @Test
+  void getName_positive() {
+    var result = tenantResolver.getName();
+    assertEquals("LOCATION_CODE", result);
   }
 
   private static String generateLocationCode() {

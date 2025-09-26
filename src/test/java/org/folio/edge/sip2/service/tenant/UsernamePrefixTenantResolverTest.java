@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.service.tenant;
 
 import static org.folio.edge.sip2.domain.TenantResolutionContext.createContextForLoginPhase;
+import static org.folio.edge.sip2.domain.type.TenantResolutionPhase.LOGIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -44,6 +45,18 @@ class UsernamePrefixTenantResolverTest {
     var result = tenantResolver.resolve(tenantContext);
 
     assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void getPhase_positive() {
+    var result = tenantResolver.getPhase();
+    assertEquals(LOGIN, result);
+  }
+
+  @Test
+  void getName_positive() {
+    var result = tenantResolver.getName();
+    assertEquals("USERNAME_PREFIX", result);
   }
 
   private static SessionData testSessionData(String username) {

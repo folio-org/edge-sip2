@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.service.tenant;
 
 import static org.folio.edge.sip2.domain.TenantResolutionContext.createContextForConnectPhase;
+import static org.folio.edge.sip2.domain.type.TenantResolutionPhase.CONNECT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -231,6 +232,35 @@ class IpTenantResolverTest {
         }""";
 
     assertNull(getTenantFromPort(config, "2001:db8:ffff::1", DEFAULT_PORT));
+  }
+
+  @Test
+  void resolve_positive_subnetIsNotDefined() {
+    var config = """
+        {
+          "scTenants": [
+            {
+              "tenant": "tenant1",
+              "errorDetectionEnabled": true,
+              "messageDelimiter": "\\r",
+              "charset": "ISO-8859-1"
+            }
+          ]
+        }""";
+
+    assertNull(getTenantFromPort(config, "2001:db8:ffff::1", DEFAULT_PORT));
+  }
+
+  @Test
+  void getPhase_positive() {
+    var result = resolver.getPhase();
+    assertEquals(CONNECT, result);
+  }
+
+  @Test
+  void getName_positive() {
+    var result = resolver.getName();
+    assertEquals("IP_SUBNET", result);
   }
 
   private String getTenantFromPort(String configJson, String ip, int port) {

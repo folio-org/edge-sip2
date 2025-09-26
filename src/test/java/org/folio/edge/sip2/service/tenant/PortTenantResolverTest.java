@@ -1,13 +1,16 @@
 package org.folio.edge.sip2.service.tenant;
 
 import static org.folio.edge.sip2.domain.TenantResolutionContext.createContextForConnectPhase;
+import static org.folio.edge.sip2.domain.type.TenantResolutionPhase.CONNECT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import io.vertx.core.json.JsonObject;
 import java.util.Optional;
 import org.folio.edge.sip2.domain.ConnectionDetails;
 import org.folio.edge.sip2.support.tags.UnitTest;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -83,5 +86,41 @@ class PortTenantResolverTest {
 
     var actualTenantOptional = result.map(config -> config.getString("tenant"));
     assertEquals(Optional.ofNullable(expectedTenant), actualTenantOptional);
+  }
+
+  @Test
+  void resolve_positive_invalidPortValue() {
+    var config = """
+        {
+          "scTenants": [
+            {
+              "port": "invalidPort",
+              "tenant": "tenant1",
+              "errorDetectionEnabled": true,
+              "messageDelimiter": "\\r",
+              "charset": "ISO-8859-1"
+            }
+          ]
+        }""";
+
+    var configuration = new JsonObject(config);
+    var connectionDetails = ConnectionDetails.of(6443, "127.0.0.1");
+    var tenantContext = createContextForConnectPhase(configuration, connectionDetails);
+
+    var result = resolver.resolve(tenantContext);
+
+    assertFalse(result.isPresent());
+  }
+
+  @Test
+  void getPhase_positive() {
+    var result = resolver.getPhase();
+    assertEquals(CONNECT, result);
+  }
+
+  @Test
+  void getName_positive() {
+    var result = resolver.getName();
+    assertEquals("PORT", result);
   }
 }
