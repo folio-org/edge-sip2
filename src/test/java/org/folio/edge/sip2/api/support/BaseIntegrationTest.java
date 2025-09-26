@@ -7,23 +7,15 @@ import static org.folio.edge.sip2.support.Sip2TestCommand.sip2Exchange;
 import static org.folio.edge.sip2.support.wiremock.WiremockContainerExtension.WM_URL_PROPERTY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.NetClient;
-import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SelfSignedCertificate;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.support.Sip2Commands;
 import org.folio.edge.sip2.support.Sip2SessionConfiguration;
 import org.folio.edge.sip2.support.Sip2TestCommand;
@@ -49,7 +41,6 @@ public abstract class BaseIntegrationTest {
   protected static final String TEST_USERNAME = "test_username";
   protected static final String TEST_PASSWORD = "test_password";
 
-  protected static Logger log = LogManager.getLogger();
   protected static VertxModule module;
   protected static SelfSignedCertificate certificate;
   protected static AtomicReference<String> moduleIdReference = new AtomicReference<>();
