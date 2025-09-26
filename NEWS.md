@@ -12,6 +12,7 @@
 * [SIP2-296](https://folio-org.atlassian.net/browse/SIP2-296): Update hard-coded currency list
 * [SIP2-242](https://folio-org.atlassian.net/browse/SIP2-242): Skip null barcodes in PatronInformation response
 * [SIP2-294](https://folio-org.atlassian.net/browse/SIP2-294): Replace com.github.mikelee2082:vertx-config-s3 with folio-s3-client configuration
+* [SIP2-255](https://folio-org.atlassian.net/browse/SIP2-255): Add new capabilities to resolve tenants (location code, username prefix)
 
 
 ## 3.4.0 2025-03-14
