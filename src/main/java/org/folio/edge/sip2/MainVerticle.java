@@ -47,7 +47,7 @@ import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
 import org.folio.edge.sip2.service.config.TenantConfigurationService;
-import org.folio.edge.sip2.service.tenant.Sip2TenantResolver;
+import org.folio.edge.sip2.service.tenant.Sip2TenantService;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.edge.sip2.utils.WebClientUtils;
@@ -62,7 +62,7 @@ public class MainVerticle extends AbstractVerticle {
   private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(MainVerticle.class);
   private final Map<Integer, Metrics> metricsMap = new HashMap<>();
 
-  private Sip2TenantResolver tenantResolver;
+  private Sip2TenantService tenantResolver;
   private TenantConfigurationService tenantConfigurationService;
   private Map<Command, ISip2RequestHandler> handlers;
 
@@ -122,7 +122,7 @@ public class MainVerticle extends AbstractVerticle {
         var connectionDetails = ConnectionDetails.of(port, clientAddress);
         var multiTenantConfig = tenantConfigurationService.getConfiguration();
         var context = createContextForConnectPhase(multiTenantConfig, connectionDetails);
-        var tenantConfig = tenantResolver.resolve(context).orElseGet(() -> {
+        var tenantConfig = tenantResolver.findConfiguration(context).orElseGet(() -> {
           log.debug("Multi-tenant configuration not found, using: {}", multiTenantConfig::encode);
           return multiTenantConfig;
         });
@@ -401,7 +401,7 @@ public class MainVerticle extends AbstractVerticle {
       );
 
       handlers = injector.getInstance(new Key<>() {});
-      tenantResolver = injector.getInstance(Sip2TenantResolver.class);
+      tenantResolver = injector.getInstance(Sip2TenantService.class);
       tenantConfigurationService = injector.getInstance(TenantConfigurationService.class);
     }
   }

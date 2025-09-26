@@ -8,8 +8,6 @@ import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
 import org.folio.edge.sip2.domain.TenantResolutionContext;
 import org.folio.edge.sip2.domain.type.TenantResolutionPhase;
-import org.folio.edge.sip2.session.SessionData;
-import org.folio.edge.sip2.utils.Sip2LogAdapter;
 
 /**
  * Resolves a tenant based on the client port from the SIP2 connection.

@@ -4,6 +4,7 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toMap;
 import static org.folio.edge.sip2.service.tenant.TenantResolverNames.IP_SUBNET_RESOLVER_NAME;
 import static org.folio.edge.sip2.service.tenant.TenantResolverNames.PORT_RESOLVER_NAME;
+import static org.folio.edge.sip2.utils.TenantUtils.SC_TENANTS;
 
 import io.vertx.core.json.JsonObject;
 import jakarta.inject.Inject;
@@ -20,11 +21,10 @@ import org.folio.edge.sip2.domain.TenantResolutionContext;
 import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.edge.sip2.utils.Utils;
 
-public class Sip2TenantResolver {
+public class Sip2TenantService {
 
-  private final Sip2LogAdapter log = Sip2LogAdapter.getLogger(Sip2TenantResolver.class);
+  private final Sip2LogAdapter log = Sip2LogAdapter.getLogger(Sip2TenantService.class);
 
-  public static final String SC_TENANTS = "scTenants";
   private static final String SIP_2_TENANT_RESOLVERS_ENV_VAR = "SIP2_TENANT_RESOLVERS";
   private static final String SIP_2_TENANT_RESOLVERS_SYSTEM_PROPERTY = "sip2TenantResolvers";
 
@@ -36,7 +36,7 @@ public class Sip2TenantResolver {
   private final List<TenantResolver> tenantResolvers;
 
   @Inject
-  public Sip2TenantResolver(Set<TenantResolver> tenantResolvers) {
+  public Sip2TenantService(Set<TenantResolver> tenantResolvers) {
     this.tenantResolvers = collectResolvers(tenantResolvers);
   }
 
@@ -48,13 +48,13 @@ public class Sip2TenantResolver {
    * @param context the tenant resolution context containing resolution phase and other data
    * @return an {@link Optional} containing the resolved tenant config, or empty if none found
    */
-  public Optional<JsonObject> resolve(TenantResolutionContext context) {
+  public Optional<JsonObject> findConfiguration(TenantResolutionContext context) {
     var sessionData = context.getSessionData();
     var resolutionPhase = context.getResolutionPhase();
     var sip2TenantsConfig = context.getSip2TenantsConfig();
 
     if (!sip2TenantsConfig.containsKey(SC_TENANTS)) {
-      log.debug(sessionData, "LookupTenantConfig scTenants key not found in config, "
+      log.debug(sessionData, "Sip2TenantService :: scTenants key not found in config, "
           + "support for muti-tenant not available");
       return Optional.empty();
     }
@@ -68,11 +68,12 @@ public class Sip2TenantResolver {
       var tenantConfig = resolver.resolve(context);
       var resolverClassName = resolver.getClass().getSimpleName();
       if (tenantConfig.isEmpty()) {
-        log.debug(sessionData, "{} not resolved multi-tenant configuration.", resolverClassName);
+        log.debug(sessionData,
+            "Sip2TenantService:: {} not resolved multi-tenant configuration.", resolverClassName);
         continue;
       }
 
-      log.debug(sessionData, "Multi-tenant configuration found (by '{}'): {}",
+      log.debug(sessionData, "Sip2TenantService :: Multi-tenant configuration found (by '{}'): {}",
           () -> resolverClassName, () -> tenantConfig.get().encode());
       return tenantConfig;
     }
@@ -100,12 +101,14 @@ public class Sip2TenantResolver {
         continue;
       }
 
-      log.debug("Enabling tenant resolver: {}", () -> resolver.getClass().getSimpleName());
+      log.debug("Sip2TenantService :: Enabling tenant resolver: {}",
+          () -> resolver.getClass().getSimpleName());
       resultResolvers.add(resolver);
     }
 
     if (!notFoundNames.isEmpty()) {
-      log.warn("The following tenant resolvers were not found by names: {}, allowed values are: {}",
+      log.warn("Sip2TenantService :: The following tenant resolvers "
+              + "were not found by names: {}, allowed values are: {}",
           String.join(",", notFoundNames), new TreeSet<>(resolversByName.keySet()));
     }
 

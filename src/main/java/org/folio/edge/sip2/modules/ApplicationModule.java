@@ -34,7 +34,7 @@ import org.folio.edge.sip2.service.config.TenantConfigurationService;
 import org.folio.edge.sip2.service.tenant.IpTenantResolver;
 import org.folio.edge.sip2.service.tenant.LocationCodeTenantResolver;
 import org.folio.edge.sip2.service.tenant.PortTenantResolver;
-import org.folio.edge.sip2.service.tenant.Sip2TenantResolver;
+import org.folio.edge.sip2.service.tenant.Sip2TenantService;
 import org.folio.edge.sip2.service.tenant.TenantResolver;
 import org.folio.edge.sip2.service.tenant.UsernamePrefixTenantResolver;
 
@@ -53,7 +53,7 @@ public class ApplicationModule extends AbstractModule {
     tenantResolverBinder.addBinding().to(PortTenantResolver.class);
     tenantResolverBinder.addBinding().to(UsernamePrefixTenantResolver.class);
     tenantResolverBinder.addBinding().to(LocationCodeTenantResolver.class);
-    bind(Sip2TenantResolver.class).asEagerSingleton();
+    bind(Sip2TenantService.class).asEagerSingleton();
 
     bind(new TypeLiteral<IResourceProvider<IRequestData>>() {})
         .to(FolioResourceProvider.class).asEagerSingleton();

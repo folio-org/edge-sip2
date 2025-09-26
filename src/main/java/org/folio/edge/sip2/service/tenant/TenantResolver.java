@@ -1,6 +1,6 @@
 package org.folio.edge.sip2.service.tenant;
 
-import static org.folio.edge.sip2.service.tenant.Sip2TenantResolver.SC_TENANTS;
+import static org.folio.edge.sip2.utils.TenantUtils.SC_TENANTS;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

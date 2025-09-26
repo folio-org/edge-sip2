@@ -25,14 +25,14 @@ import org.folio.edge.sip2.domain.messages.enumerations.UIDAlgorithm;
 import org.folio.edge.sip2.domain.messages.requests.Login;
 import org.folio.edge.sip2.domain.messages.responses.ACSStatus;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
-import org.folio.edge.sip2.exception.TenantNotResolvedException;
+import org.folio.edge.sip2.exception.TenantNotResolvedThrowable;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
 import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.LoginRepository;
 import org.folio.edge.sip2.service.config.TenantConfigurationService;
-import org.folio.edge.sip2.service.tenant.Sip2TenantResolver;
+import org.folio.edge.sip2.service.tenant.Sip2TenantService;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.junit.jupiter.api.Test;
@@ -45,11 +45,11 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({ VertxExtension.class, MockitoExtension.class })
-public class LoginHandlerTests {
+class LoginHandlerTests {
 
   @InjectMocks private LoginHandler handler;
   @Mock private LoginRepository mockLoginRepository;
-  @Mock private Sip2TenantResolver sip2TenantResolver;
+  @Mock private Sip2TenantService sip2TenantService;
   @Mock private ConfigurationRepository mockConfigurationRepository;
   @Mock private TenantConfigurationService mockTenantConfigurationService;
   @Spy private Template template =
@@ -57,7 +57,7 @@ public class LoginHandlerTests {
   @Captor private ArgumentCaptor<SessionData> sessionDataCaptor;
 
   @Test
-  public void canExecuteASampleLoginUsingHandler(VertxTestContext testContext) throws Exception {
+  void canExecuteASampleLoginUsingHandler(VertxTestContext testContext) throws Exception {
     final Login login = Login.builder()
         .uidAlgorithm(UIDAlgorithm.NO_ENCRYPTION)
         .pwdAlgorithm(PWDAlgorithm.NO_ENCRYPTION)
@@ -69,7 +69,7 @@ public class LoginHandlerTests {
     var sessionData = SessionData.createSession("diku", '|', false, "IBM850");
     var tenantResolutionContext = createContextForLoginPhase(sip2TenantConfig(), sessionData);
     when(mockTenantConfigurationService.getConfiguration()).thenReturn(sip2TenantConfig());
-    when(sip2TenantResolver.resolve(tenantResolutionContext)).thenReturn(Optional.empty());
+    when(sip2TenantService.findConfiguration(tenantResolutionContext)).thenReturn(Optional.empty());
 
     when(mockLoginRepository.login(any(), any()))
         .thenReturn(Future.succeededFuture(LoginResponse.builder().ok(TRUE).build()));
@@ -92,7 +92,7 @@ public class LoginHandlerTests {
   }
 
   @Test
-  public void canExecuteASampleLoginUsingHandlerWithNewTenant(VertxTestContext testContext) {
+  void canExecuteASampleLoginUsingHandlerWithNewTenant(VertxTestContext testContext) {
     final Login login = Login.builder()
         .uidAlgorithm(UIDAlgorithm.NO_ENCRYPTION)
         .pwdAlgorithm(PWDAlgorithm.NO_ENCRYPTION)
@@ -101,10 +101,10 @@ public class LoginHandlerTests {
         .locationCode("library")
         .build();
 
-    final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
-    var tenantContext = createContextForLoginPhase(sip2TenantConfig(), sessionData);
+    var sessionData = SessionData.createSession("diku", '|', false, "IBM850");
+    var context = createContextForLoginPhase(sip2TenantConfig(), sessionData);
     when(mockTenantConfigurationService.getConfiguration()).thenReturn(sip2TenantConfig());
-    when(sip2TenantResolver.resolve(tenantContext)).thenReturn(Optional.of(newTenantConfig()));
+    when(sip2TenantService.findConfiguration(context)).thenReturn(Optional.of(newTenantConfig()));
 
     when(mockLoginRepository.login(any(), sessionDataCaptor.capture()))
         .thenReturn(Future.succeededFuture(LoginResponse.builder().ok(TRUE).build()));
@@ -128,7 +128,7 @@ public class LoginHandlerTests {
   }
 
   @Test
-  public void cannotExecuteASampleLoginUsingHandlerWhenTenantIsNull(VertxTestContext testContext) {
+  void cannotExecuteASampleLoginUsingHandlerWhenTenantIsNull(VertxTestContext testContext) {
     final Login login = Login.builder()
         .uidAlgorithm(UIDAlgorithm.NO_ENCRYPTION)
         .pwdAlgorithm(PWDAlgorithm.NO_ENCRYPTION)
@@ -140,12 +140,12 @@ public class LoginHandlerTests {
     var sessionData = SessionData.createSession(null, '|', false, "IBM850");
     var tenantContext = createContextForLoginPhase(sip2TenantConfig(), sessionData);
     when(mockTenantConfigurationService.getConfiguration()).thenReturn(sip2TenantConfig());
-    when(sip2TenantResolver.resolve(tenantContext)).thenReturn(Optional.empty());
+    when(sip2TenantService.findConfiguration(tenantContext)).thenReturn(Optional.empty());
 
     handler.execute(login, sessionData).onComplete(
         testContext.failing(error -> testContext.verify(() -> {
           var expectedMessage = "Tenant configuration is not resolved for session";
-          assertInstanceOf(TenantNotResolvedException.class, error);
+          assertInstanceOf(TenantNotResolvedThrowable.class, error);
           assertTrue(error.getMessage().startsWith(expectedMessage));
 
           testContext.completeNow();
@@ -153,7 +153,7 @@ public class LoginHandlerTests {
   }
 
   @Test
-  public void canExecuteASampleLoginUsingHandlerWithFailedConfig(VertxTestContext testContext) {
+  void canExecuteASampleLoginUsingHandlerWithFailedConfig(VertxTestContext testContext) {
     final Login login = Login.builder()
         .uidAlgorithm(UIDAlgorithm.NO_ENCRYPTION)
         .pwdAlgorithm(PWDAlgorithm.NO_ENCRYPTION)
@@ -165,7 +165,7 @@ public class LoginHandlerTests {
     var sessionData = SessionData.createSession("diku", '|', false, "IBM850");
     var tenantResolutionContext = createContextForLoginPhase(sip2TenantConfig(), sessionData);
     when(mockTenantConfigurationService.getConfiguration()).thenReturn(sip2TenantConfig());
-    when(sip2TenantResolver.resolve(tenantResolutionContext)).thenReturn(Optional.empty());
+    when(sip2TenantService.findConfiguration(tenantResolutionContext)).thenReturn(Optional.empty());
 
     when(mockLoginRepository.login(any(), any()))
         .thenReturn(Future.succeededFuture(LoginResponse.builder().ok(TRUE).build()));
@@ -184,7 +184,7 @@ public class LoginHandlerTests {
   }
 
   @Test
-  public void canExecuteASampleFailedLoginUsingHandler(VertxTestContext testContext) {
+  void canExecuteASampleFailedLoginUsingHandler(VertxTestContext testContext) {
     final Login login = Login.builder()
         .uidAlgorithm(UIDAlgorithm.NO_ENCRYPTION)
         .pwdAlgorithm(PWDAlgorithm.NO_ENCRYPTION)
@@ -224,7 +224,7 @@ public class LoginHandlerTests {
     var sessionData = SessionData.createSession("diku", '|', false, "IBM850");
     var tenantResolutionContext = createContextForLoginPhase(sip2TenantConfig(), sessionData);
     when(mockTenantConfigurationService.getConfiguration()).thenReturn(sip2TenantConfig());
-    when(sip2TenantResolver.resolve(tenantResolutionContext)).thenReturn(Optional.empty());
+    when(sip2TenantService.findConfiguration(tenantResolutionContext)).thenReturn(Optional.empty());
 
     when(mockLoginRepository.login(any(), any()))
         .thenReturn(Future.failedFuture(new ClientException("Incorrect username")));
@@ -241,22 +241,8 @@ public class LoginHandlerTests {
         })));
   }
 
-  private String constructLoginResponse(LoginResponse loginResponse) {
-    final Map<String, Object> root = new HashMap<>();
-    root.put("formatDateTime", new FormatDateTimeMethodModel());
-    root.put("delimiter", "|");
-    root.put("loginResponse", loginResponse);
-
-    final String response = FreemarkerUtils
-        .executeFreemarkerTemplate(null, root,
-            FreemarkerRepository
-                .getInstance()
-                .getFreemarkerTemplate(LOGIN_RESPONSE));
-    return response;
-  }
-
   @Test
-  public void cannotCreateHandlerDueToMissingLoginRepository() {
+  void cannotCreateHandlerDueToMissingLoginRepository() {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
         () -> new LoginHandler(null, null, null, null, null));
@@ -268,9 +254,20 @@ public class LoginHandlerTests {
   public void cannotCreateHandlerDueToMissingTemplate() {
     final NullPointerException thrown = assertThrows(NullPointerException.class,
         () -> new LoginHandler(mockLoginRepository, mockConfigurationRepository,
-            sip2TenantResolver, mockTenantConfigurationService, null));
+            sip2TenantService, mockTenantConfigurationService, null));
 
     assertEquals("Template cannot be null", thrown.getMessage());
+  }
+
+  private String constructLoginResponse(LoginResponse loginResponse) {
+    final Map<String, Object> root = new HashMap<>();
+    root.put("formatDateTime", new FormatDateTimeMethodModel());
+    root.put("delimiter", "|");
+    root.put("loginResponse", loginResponse);
+
+    var freemarkerTemplate = FreemarkerRepository.getInstance()
+        .getFreemarkerTemplate(LOGIN_RESPONSE);
+    return FreemarkerUtils.executeFreemarkerTemplate(null, root, freemarkerTemplate);
   }
 
   private static JsonObject sip2TenantConfig() {
