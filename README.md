@@ -238,6 +238,7 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
 | Property   | Type     | Description                             |
 |------------|----------|-----------------------------------------|
 | `timezone` | `string` | The tenant's time zone as set in FOLIO. | 
+| `currency` | `string` | Currency code (ISO-4217).               | 
 
 #### Example `configuration` object
 
@@ -246,7 +247,7 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
   "module": "ORG",
   "configName": "localeSettings",
   "enabled": true,
-  "value": "{\"timezone\":\"America/New_York\"}"
+  "value": "{\"timezone\":\"America/New_York\",\"currency\":\"USD\"}"
 }
 ```
 
