@@ -433,6 +433,10 @@ configuration for each SIP2 client connection. This is achieved through a set of
 Resolver classes, each designed to identify the tenant using different connection or protocol
 attributes. The supported resolvers and their resolution strategies are described below.
 
+Tenant resolvers are configured with system property (`sip2TenantResolvers`) or environment variable
+(`SIP2_TENANT_RESOLVERS`), default value is `PORT, IP_SUBNET`. It is a comma-separated values with
+tenant resolver names.
+
 There are 2 tenant detection phases:
 1. **Connection Phase (CONNECT)**: This phase occurs when a SIP2 client establishes a TCP connection
    with the edge-sip2 server. During this phase, the Tenant Resolver inspects connection-level
