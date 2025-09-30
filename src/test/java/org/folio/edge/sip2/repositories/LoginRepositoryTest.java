@@ -84,7 +84,6 @@ class LoginRepositoryTest {
       var lr = sessionData.getLoginResponse();
       assertNotNull(lr);
       assertEquals(JWT, lr.getAccessToken());
-      assertEquals(SERVICE_POINT, sessionData.getScLocation());
       assertEquals(OffsetDateTime.parse("2025-01-01T00:00:00Z"), lr.getAccessTokenExpiration());
       assertEquals(OffsetDateTime.parse("2025-01-01T00:00:00Z"), lr.getRefreshTokenExpiration());
       testContext.completeNow();

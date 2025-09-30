@@ -13,6 +13,48 @@ issue requests and receive responses in Standard Interchange Protocol v2 (SIP2).
 These requests will be serviced by FOLIO APIs and the responses will be based on
 FOLIO results for all supported (TBD) SIP2 commands.
 
+
+## Table of Contents
+
+<!-- TOC -->
+* [edge-sip2](#edge-sip2)
+  * [Overview](#overview)
+  * [Table of Contents](#table-of-contents)
+  * [Configuration](#configuration)
+    * [Tenant configuration located in AWS S3](#tenant-configuration-located-in-aws-s3)
+  * [FOLIO Configuration](#folio-configuration)
+    * [Tenant Properties](#tenant-properties)
+      * [`supportedMessages` object properties](#supportedmessages-object-properties)
+      * [Example `configuration` object](#example-configuration-object)
+    * [Kiosk (service point) Properties](#kiosk-service-point-properties)
+      * [Example `configuration` object](#example-configuration-object-1)
+    * [FOLIO Provided Properties](#folio-provided-properties)
+      * [Example `configuration` object](#example-configuration-object-2)
+  * [Implemented Messages](#implemented-messages)
+  * [Security](#security)
+  * [Permissions](#permissions)
+      * [Security concerns for developers](#security-concerns-for-developers)
+  * [Health check](#health-check)
+  * [Metrics](#metrics)
+    * [Enabling Vert.x metrics](#enabling-vertx-metrics)
+    * [Available metrics](#available-metrics)
+    * [Building with metrics](#building-with-metrics)
+    * [Launching with the community Docker image](#launching-with-the-community-docker-image)
+  * [Setting Up SIP2 for Multi-tenant usage](#setting-up-sip2-for-multi-tenant-usage)
+    * [Summary](#summary)
+    * [Multi-tenant configuration resolvers](#multi-tenant-configuration-resolvers)
+      * [Ip Subnet](#ip-subnet)
+      * [Port](#port)
+      * [Location Code](#location-code)
+      * [Username Prefix](#username-prefix)
+  * [Common Problems](#common-problems)
+    * ["Unable to find all necessary configuration(s). Found \<N\> of \<M\>"](#unable-to-find-all-necessary-configurations-found-n-of-m)
+    * ["Configuration error: please add a value to Location Code."](#configuration-error-please-add-a-value-to-location-code)
+  * [Additional information](#additional-information)
+    * [Issue tracker](#issue-tracker)
+    * [Other documentation](#other-documentation)
+<!-- TOC -->
+
 ## Configuration
 
 The edge-sip2 module can be launched via `edge-sip2-fat.jar` as follows:
@@ -70,26 +112,31 @@ command line arguments to point it to the right path (e.g. `-conf /path/to/confi
 Note: edge-sip2 now requires two config files: the main bootstrap sip2.conf and tenant configuration: sip2-tenants.conf. The additional config file is required to support multi-tenants and runtime reloading of tenant configuration without restarting the edge-sip2 module.
  
 Here is a sample sip2-tenants.conf file:
-```
+```json
 {
-"scTenants": [
-  {
-  "scSubnet": "11.11.00.00/16",
-  "tenant": "test_tenant1",
+  "tenant": "default_single_tenant",
   "errorDetectionEnabled": true,
   "messageDelimiter": "\r",
-  "fieldDelimiter": "\|",
-  "charset": "ISO-8859-1"
-  },
-  {
-  "scSubnet": "22.22.00.00/16",
-  "tenant": "test_tenant2",
-  "errorDetectionEnabled": true,
-  "messageDelimiter": "\r",
-  "fieldDelimiter": "\|",
-  "charset": "ISO-8859-1"
-  }
-]
+  "fieldDelimiter": "|",
+  "charset": "ISO-8859-1",
+  "scTenants": [
+    {
+      "scSubnet": "11.11.00.00/16",
+      "tenant": "multi-tenant1",
+      "errorDetectionEnabled": true,
+      "messageDelimiter": "\r",
+      "fieldDelimiter": "|",
+      "charset": "ISO-8859-1"
+    },
+    {
+      "scSubnet": "22.22.00.00/16",
+      "tenant": "multi_tenant2",
+      "errorDetectionEnabled": true,
+      "messageDelimiter": "\r",
+      "fieldDelimiter": "|",
+      "charset": "ISO-8859-1"
+    }
+  ]
 }
 ```
 
@@ -191,6 +238,7 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
 | Property   | Type     | Description                             |
 |------------|----------|-----------------------------------------|
 | `timezone` | `string` | The tenant's time zone as set in FOLIO. | 
+| `currency` | `string` | Currency code (ISO-4217).               | 
 
 #### Example `configuration` object
 
@@ -199,7 +247,7 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
   "module": "ORG",
   "configName": "localeSettings",
   "enabled": true,
-  "value": "{\"timezone\":\"America/New_York\"}"
+  "value": "{\"timezone\":\"America/New_York\",\"currency\":\"USD\"}"
 }
 ```
 
@@ -378,113 +426,244 @@ $ docker run -v /my/metrics/libs:/metrics -p 6443:6443 --expose 8081 -p 8081:808
 
 This example shows how to launch with the Prometheus binding. Since Prometheus needs to scrape the metrics, we need to expose port for the HTTP server.
 
-## Setting Up SIP2 for Multiple Tenant-Specific Ports
+## Setting Up SIP2 for Multi-tenant usage
+
+### Summary
+Edge-sip2 supports multi-tenant environments by dynamically resolving the correct tenant
+configuration for each SIP2 client connection. This is achieved through a set of pluggable Tenant
+Resolver classes, each designed to identify the tenant using different connection or protocol
+attributes. The supported resolvers and their resolution strategies are described below.
+
+Tenant resolvers are configured with system property (`sip2TenantResolvers`) or environment variable
+(`SIP2_TENANT_RESOLVERS`), default value is `PORT, IP_SUBNET`. It is a comma-separated values with
+tenant resolver names.
+
+There are 2 tenant detection phases:
+1. **Connection Phase (CONNECT)**: This phase occurs when a SIP2 client establishes a TCP connection
+   with the edge-sip2 server. During this phase, the Tenant Resolver inspects connection-level
+   attributes, such as the client's IP address or the port number used for the connection, to
+   determine the appropriate tenant. This phase is crucial for initial tenant identification,
+   especially in environments where multiple tenants share the same SIP2 server instance.
+   > **Note:** This phase is essential and required to set the following parameters: 
+   > * message delimiter (`messageDelimiter`) (default is `\r`)
+   > * encoding charset (`charset`) (default is `IBM850`)
+   > * error detection (`errorDetectionEnabled`) (default is `false`)
+   > * field delimiter (`fieldDelimiter`) (default is `|`)
+   > 
+   > If these values are not specified in the multi-tenant configuration, the values from the single 
+   > tenant configuration will be used, if they are not found either, then the default values 
+   > will be applied.
+    
+2. **Protocol Phase (LOGIN)**: This phase takes place when the SIP2 client sends a LOGIN message
+   after establishing the connection. The Tenant Resolver analyzes protocol-level attributes,
+   such as the "Location Code" or **Username** field in the LOGIN message, to further refine or
+   confirm the tenant identification. This phase is essential for scenarios where the initial 
+   connection attributes may not be sufficient for accurate tenant resolution.
+   > **Note:** This phase provides only a capability to change tenant. Connection details, such
+   > as message delimiter, field delimiter, error detection, and encoding charset, cannot be
+   > changed.
+
+### Multi-tenant configuration resolvers
+
+#### Ip Subnet
+
+| Key              | Value                                                                                                                                                                                                                                                                 |
+|:-----------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Config Name      | `IP_SUBNET`                                                                                                                                                                                                                                                           |
+| Resolution Phase | `CONNECT`                                                                                                                                                                                                                                                             |
+| Purpose          | Resolves the tenant based on the client's IP address subnet.                                                                                                                                                                                                          |
+| How it works     | Checks if the client's IP address falls within any configured subnet in the SIP2 tenants configuration. Uses IPAddressString for IP validation and subnet matching. If a match is found, returns the corresponding tenant configuration. IPv4 and IPv6 are supported. |
+
+Configuration example:
+```json
+{
+  "tenant": "default_single_tenant",
+  "errorDetectionEnabled": true,
+  "messageDelimiter": "\r",
+  "fieldDelimiter": "|",
+  "charset": "ISO-8859-1",
+  "scTenants": [
+    {
+      "scSubnet": "11.11.00.00/16",
+      "tenant": "multi-tenant1",
+      "errorDetectionEnabled": true,
+      "messageDelimiter": "\r",
+      "fieldDelimiter": "|",
+      "charset": "ISO-8859-1"
+    },
+    {
+      "scSubnet": "22.22.00.00/16",
+      "tenant": "multi_tenant2",
+      "errorDetectionEnabled": true,
+      "messageDelimiter": "\r",
+      "fieldDelimiter": "|",
+      "charset": "ISO-8859-1"
+    },
+    {
+      "scSubnet": "1001:db8:1::/48",
+      "tenant": "multi_tenant3",
+      "errorDetectionEnabled": false,
+      "messageDelimiter": "\r\n",
+      "fieldDelimiter": "~",
+      "charset": "UTF-8"
+    }
+  ]
+}
+```
+
+#### Port
+
+| Key              | Value                                                                                                                                                                               |
+|:-----------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Config Name      | `IP_SUBNET`                                                                                                                                                                         |
+| Resolution Phase | `CONNECT`                                                                                                                                                                           |
+| Purpose          | Resolves a tenant based on the client port from the SIP2 connection.                                                                                                                |
+| How it works     | Inspects the client port from the connection details and matches it against the configured tenant port values. If a match is found, returns the corresponding tenant configuration. |
+
+
 To configure sip2 for a port dedicated to a specific tenant, two modifications are necessary:
 1. Modify the existing port config property in the sip2.conf from an integer value to an array of integer values, as demonstrated below:
-```json
-{ 
-  "port": [6443, 6444, 6445],
-  "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
-  "tenantConfigRetrieverOptions": {
-    "scanPeriod": 300000,
-    "stores": [{
-      "type": "file",
-      "format": "json",
-      "config": {
-        "path": "sip2-tenants.conf"
-      },
-      "optional": false
-    }]
-  }
-}
-```
+   ```json
+   {
+     "port": [ 6443, 6444, 6445 ],
+     "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
+     "tenantConfigRetrieverOptions": {
+       "scanPeriod": 300000,
+       "stores": [
+         {
+           "type": "file",
+           "format": "json",
+           "config": {
+             "path": "sip2-tenants.conf"
+           },
+           "optional": false
+         }
+       ]
+     }
+   }
+   ```
 2. In the sip2-tenants.conf, include a new property named 'port' and assign it the dedicated port value as indexed in the array from the previous conf file, as shown below:
+   ```json
+   {
+     "scTenants": [
+       {
+         "scSubnet": "11.11.00.00/16",
+         "port": "6443",
+         "tenant": "test_tenant1",
+         "errorDetectionEnabled": true,
+         "messageDelimiter": "\r",
+         "fieldDelimiter": "|",
+         "charset": "ISO-8859-1"
+       },
+       {
+         "scSubnet": "22.22.00.00/16",
+         "port": "6444",
+         "tenant": "test_tenant2",
+         "errorDetectionEnabled": true,
+         "messageDelimiter": "\r",
+         "fieldDelimiter": "|",
+         "charset": "ISO-8859-1"
+       },
+       {
+         "scSubnet": "33.33.00.00/16",
+         "port": "6445",
+         "tenant": "test_tenant3",
+         "errorDetectionEnabled": true,
+         "messageDelimiter": "\r",
+         "fieldDelimiter": "|",
+         "charset": "ISO-8859-1"
+       }
+     ]
+   }
+   ```
+
+> **Note:** Only 1 tenant can be assigned to a specific port. If multiple tenants are configured
+> with the same port, only the first tenant found will be used.
+
+#### Location Code
+
+| Key              | Value                                                                                                                                                                                                                    |
+|:-----------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Config Name      | `LOCATION_CODE`                                                                                                                                                                                                          |
+| Resolution Phase | `LOGIN`                                                                                                                                                                                                                  |
+| Purpose          | Resolves a tenant based on the SIP2 login location code.                                                                                                                                                                 |
+| How it works     | Checks the session data for a location code and matches it against configured tenant location codes (`locationCodes` in `scTenants` config object). If a match is found, returns the corresponding tenant configuration. |
+
+`sip2-tenants.json` example (if the same connection parameters can be applied to multiple tenants):
+
 ```json
 {
-"scTenants": [
-  {
-  "scSubnet": "11.11.00.00/16",
-  "port": "6443",
-  "tenant": "test_tenant1",
   "errorDetectionEnabled": true,
   "messageDelimiter": "\r",
   "fieldDelimiter": "|",
-  "charset": "ISO-8859-1"
-  },
-  {
-  "scSubnet": "22.22.00.00/16",
-  "port": "6444",
-  "tenant": "test_tenant2",
-  "errorDetectionEnabled": true,
-  "messageDelimiter": "\r",
-  "fieldDelimiter": "|",
-  "charset": "ISO-8859-1"
-  },
-   {
-  "scSubnet": "33.33.00.00/16",
-  "port": "6445",
-  "tenant": "test_tenant3",
-  "errorDetectionEnabled": true,
-  "messageDelimiter": "\r",
-  "fieldDelimiter": "|",
-  "charset": "ISO-8859-1"
-  }
-]
+  "charset": "ISO-8859-1",
+  "scTenants": [
+    {
+      "tenant": "test_tenant1",
+      "locationCodes": [
+        "f79ed33a-d39e-4f39-a6b2-8d43504cfb1c",
+        "961b41ba-9bbd-4781-a735-2e1cf9a9c899"
+      ]
+    },
+    {
+      "scSubnet": "22.22.00.00/16",
+      "tenant": "test_tenant2",
+      "locationCodes": [
+        "c3da3e63-edb0-4704-b5f9-f675f8756077",
+        "6326e2ed-12ba-40b0-ae65-ac7414ef7157"
+      ]
+    }
+  ]
 }
 ```
 
-## Setting up SIP2 using a single port for all tenants
-To set up SIP2 using one port across all tenants, you need to make two changes:
-1. Specify the single port value in the sip2.conf file, as illustrated below:
-```json
-{ 
-  "port": 6443,
-  "okapiUrl": "https://folio-testing-okapi.dev.folio.org",
-  "tenantConfigRetrieverOptions": {
-    "scanPeriod": 300000,
-    "stores": [{
-      "type": "file",
-      "format": "json",
-      "config": {
-        "path": "sip2-tenants.conf"
-      },
-      "optional": false
-    }]
-  }
-}
-```
-2. In the sip2-tenants.conf file, list multiple tenant names along with their corresponding scSubnet range values. These entries will allow the setup of multiple tenants to the designated port, as depicted below:
+`sip2-tenants.json` example (if any of the tenants require special charset, message delimiter, etc.):
+> **Note:** Note that IP subnet being used to identify connection parameters in this example, and
+> tenant will be defined during the login operation.
 ```json
 {
-"scTenants": [
-  {
-  "scSubnet": "11.11.00.00/16",
-  "tenant": "test_tenant1",
-  "errorDetectionEnabled": true,
-  "messageDelimiter": "\r",
-  "fieldDelimiter": "\|",
-  "charset": "ISO-8859-1"
-  },
-  {
-  "scSubnet": "22.22.00.00/16",
-  "tenant": "test_tenant2",
-  "errorDetectionEnabled": true,
-  "messageDelimiter": "\r",
-  "fieldDelimiter": "\|",
-  "charset": "ISO-8859-1"
-  },
-   {
-  "scSubnet": "33.33.00.00/16",
-  "tenant": "test_tenant3",
-  "errorDetectionEnabled": true,
-  "messageDelimiter": "\r",
-  "fieldDelimiter": "\|",
-  "charset": "ISO-8859-1"
-  }
-]
+  "scTenants": [
+    {
+      "scSubnet": "11.11.00.00/16",
+      "errorDetectionEnabled": true,
+      "messageDelimiter": "\r",
+      "fieldDelimiter": "|",
+      "charset": "ISO-8859-1"
+    },
+    {
+      "scSubnet": "22.22.00.00/16",
+      "errorDetectionEnabled": true,
+      "messageDelimiter": "\r",
+      "fieldDelimiter": "|",
+      "charset": "UTF-8"
+    },
+    {
+      "tenant": "test_tenant1",
+      "locationCodes": [
+        "f79ed33a-d39e-4f39-a6b2-8d43504cfb1c",
+        "961b41ba-9bbd-4781-a735-2e1cf9a9c899"
+      ]
+    },
+    {
+      "scSubnet": "22.22.00.00/16",
+      "tenant": "test_tenant2",
+      "locationCodes": [
+        "c3da3e63-edb0-4704-b5f9-f675f8756077",
+        "6326e2ed-12ba-40b0-ae65-ac7414ef7157"
+      ]
+    }
+  ]
 }
 ```
 
+#### Username Prefix
+
+| Key              | Value                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+|:-----------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Config Name      | `LOCATION_CODE`                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Resolution Phase | `LOGIN`                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Purpose          | Resolves a tenant based on a prefix in the SIP2 username.                                                                                                                                                                                                                                                                                                                                                                                      |
+| How it works     | Extracts the tenant identifier from the username by splitting it using a configurable delimiter (default: `__`). The prefix before the delimiter is used as the tenant identifier. Uses the delimiter from the system variable `sip2TenantUsernamePrefixDelimiter` or environment variable `SIP2_TENANT_USERNAME_PREFIX_DELIMITER`, defaulting to `__` if not set. It uses only usernames containing delimiter, values without it are ignored. |
 
 ## Common Problems
 

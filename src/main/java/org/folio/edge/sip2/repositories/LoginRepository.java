@@ -67,9 +67,6 @@ public class LoginRepository {
   public Future<LoginResponse> login(Login login, SessionData sessionData) {
     var user = login.getLoginUserId();
     var password = login.getLoginPassword();
-    sessionData.setUsername(user);
-    sessionData.setPassword(password);
-    sessionData.setScLocation(login.getLocationCode());
 
     return performLogin(sessionData, user, password, true)
         .map(loginResponse -> setLoginResponseToSessionData(sessionData, loginResponse))

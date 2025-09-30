@@ -199,7 +199,7 @@ public class Sip2Session implements AutoCloseable {
     var bytesRead = sip2Socket.getInputStream().read(buffer);
     if (bytesRead > 0) {
       var responseMessage = new String(buffer, 0, bytesRead, config.getCharset());
-      log.debug("SIP2 Response Message: '{}'", responseMessage);
+      log.debug("SIP2 Response Message: '{}'", responseMessage.trim());
       return responseMessage.trim();
     }
 
