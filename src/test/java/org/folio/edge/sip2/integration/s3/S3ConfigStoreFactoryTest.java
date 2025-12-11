@@ -36,6 +36,15 @@ class S3ConfigStoreFactoryTest {
   }
 
   @Test
+  void create_positive_emptyCredentials() {
+    var configuration = s3ConfigStoreConfiguration("null");
+    configuration.remove("access_key");
+    configuration.remove("secret_access_key");
+    var result = s3ConfigStoreFactory.create(Vertx.vertx(), configuration);
+    assertNotNull(result);
+  }
+
+  @Test
   void create_negative() {
     var configuration = s3ConfigStoreConfiguration(null);
     configuration.put("bucket", null);

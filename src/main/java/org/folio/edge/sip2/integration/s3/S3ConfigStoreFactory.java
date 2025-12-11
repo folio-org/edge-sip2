@@ -39,8 +39,8 @@ public class S3ConfigStoreFactory implements ConfigStoreFactory {
 
     var configuration = S3ClientProperties.builder()
         .endpoint(endpointUrl)
-        .accessKey(getRequiredValue(conf, "access_key"))
-        .secretKey(getRequiredValue(conf, "secret_access_key"))
+        .accessKey(conf.getString("access_key"))
+        .secretKey(conf.getString("secret_access_key"))
         .bucket(getRequiredValue(conf, "bucket"))
         .region(region)
         .awsSdk(true)
