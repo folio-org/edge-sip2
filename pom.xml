@@ -42,12 +42,12 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <exec.mainClass>org.folio.edge.sip2.MainVerticle</exec.mainClass>
-    <vertx.version>4.5.10</vertx.version>
+    <vertx.version>4.5.23</vertx.version>
     <log4j2.version>2.23.1</log4j2.version>
     <micrometer.version>1.12.4</micrometer.version>
     <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
     <java.version>17</java.version>
-    <raml-module-builder-version>35.3.0</raml-module-builder-version>
+    <raml-module-builder-version>35.3.2</raml-module-builder-version>
     <lombok.version>1.18.40</lombok.version>
     <awssdk.version>2.33.9</awssdk.version>
   </properties>
