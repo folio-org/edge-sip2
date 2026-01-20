@@ -1,3 +1,6 @@
+## 3.4.3 2026-08-10
+* [SIP2-306](https://folio-org.atlassian.net/browse/SIP2-306): RMB 35.4.2 and Vertx 4.5.23 fixing Netty vulns
+
 ## 3.4.2 2025-09-15
 * [SIP2-247](https://folio-org.atlassian.net/browse/SIP2-247): Add environment variable for health check port
 * [SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276): Add support for MYR currency type
