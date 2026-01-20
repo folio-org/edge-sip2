@@ -1,3 +1,6 @@
+## 3.3.4 2026-01-10
+* [SIP2-305](https://folio-org.atlassian.net/browse/SIP2-305): RMB 35.3.2 and Vertx 4.5.23 fixing vulns
+
 ## 3.3.3 2025-09-12
 * [SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276): Add support for MYR currency type
 * [SIP2-291](https://folio-org.atlassian.net/browse/SIP2-291): Implement a single login operation per session

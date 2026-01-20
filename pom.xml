@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>edge-sip2</artifactId>
-  <version>3.3.4-SNAPSHOT</version>
+  <version>3.3.5-SNAPSHOT</version>
   <name>Standard Interchange Protocol v2 (SIP2)</name>
   <url>https://github.com/folio-org/edge-sip2</url>
   <description>Support for SIP2 in FOLIO. This allow self service circulation and patron services stations to perform supported operations in FOLIO.</description>
@@ -42,12 +42,12 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <exec.mainClass>org.folio.edge.sip2.MainVerticle</exec.mainClass>
-    <vertx.version>4.5.10</vertx.version>
+    <vertx.version>4.5.23</vertx.version>
     <log4j2.version>2.23.1</log4j2.version>
     <micrometer.version>1.12.4</micrometer.version>
     <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
     <java.version>17</java.version>
-    <raml-module-builder-version>35.3.0</raml-module-builder-version>
+    <raml-module-builder-version>35.3.2</raml-module-builder-version>
     <lombok.version>1.18.40</lombok.version>
     <awssdk.version>2.33.9</awssdk.version>
   </properties>
