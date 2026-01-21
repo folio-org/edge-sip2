@@ -252,11 +252,10 @@ public class SettingsRepository {
     var mergedMap = new LinkedHashMap<>(settingsMap);
     for (var entry : configMap.entrySet()) {
       var key = entry.getKey();
-      var settingsValue = mergedMap.get(key);
-      if (settingsValue == null) {
-        log.warn(sessionData, "Using value from 'mod-configuration' by key: {}", key);
-        mergedMap.put(key, entry.getValue());
-      }
+      mergedMap.computeIfAbsent(key, k -> {
+        log.warn(sessionData, "Using value from 'mod-configuration' by key: {}", k);
+        return entry.getValue();
+      });
     }
     return mergedMap;
   }
@@ -294,7 +293,7 @@ public class SettingsRepository {
 
     @Override
     public String getPath() {
-      var cqlQuery = (CqlQuery) null;
+      CqlQuery cqlQuery = null;
       for (var entry : parameters) {
         var subQuery = exactMatchByScope(entry.scope()).and(exactMatchByKey(entry.key()), true);
         cqlQuery = cqlQuery == null ? subQuery : cqlQuery.or(subQuery);

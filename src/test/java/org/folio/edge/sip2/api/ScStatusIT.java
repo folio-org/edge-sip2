@@ -30,22 +30,7 @@ class ScStatusIT extends AbstractErrorDetectionEnabledTest {
       "/wiremock/stubs/mod-login/201-post-acs-login.json",
   })
   void getAcsStatus_positive() throws Throwable {
-    var timezone = "Europe/Paris";
-    var currentTs = OffsetDateTime.now(ZoneId.of(timezone)).truncatedTo(SECONDS);
-    executeInSession(
-        successLoginExchange(),
-        sip2Exchange(Sip2Commands.status(), sip2Result -> {
-          assertSuccessfulExchange(sip2Result);
-          var respMsg = sip2Result.getResponseMessage();
-          var acsStatus = new ScStatusResponseParser(delimiter, timezone).parse(respMsg);
-          assertThat(acsStatus)
-              .satisfies(status -> assertThat(status.getDateTimeSync())
-                  .isAfterOrEqualTo(currentTs)
-                  .isBeforeOrEqualTo(currentTs.plusSeconds(5)))
-              .usingRecursiveComparison()
-              .ignoringFields("dateTimeSync")
-              .isEqualTo(expectedAcsStatus());
-        }));
+    performStatusCheckUsingTimezone("Europe/Paris");
   }
 
   @Test
@@ -56,22 +41,7 @@ class ScStatusIT extends AbstractErrorDetectionEnabledTest {
       "/wiremock/stubs/mod-configuration/200-get-configuration.json"
   })
   void getAcsStatus_positive_allSettingsNotFound() throws Throwable {
-    var timezone = "America/New_York";
-    var currentTs = OffsetDateTime.now(ZoneId.of(timezone)).truncatedTo(SECONDS);
-    executeInSession(
-        successLoginExchange(),
-        sip2Exchange(Sip2Commands.status(), sip2Result -> {
-          assertSuccessfulExchange(sip2Result);
-          var respMsg = sip2Result.getResponseMessage();
-          var acsStatus = new ScStatusResponseParser(delimiter, timezone).parse(respMsg);
-          assertThat(acsStatus)
-              .satisfies(status -> assertThat(status.getDateTimeSync())
-                  .isAfterOrEqualTo(currentTs)
-                  .isBeforeOrEqualTo(currentTs.plusSeconds(5)))
-              .usingRecursiveComparison()
-              .ignoringFields("dateTimeSync")
-              .isEqualTo(expectedAcsStatus());
-        }));
+    performStatusCheckUsingTimezone("America/New_York");
   }
 
   @Test
@@ -82,22 +52,7 @@ class ScStatusIT extends AbstractErrorDetectionEnabledTest {
       "/wiremock/stubs/mod-configuration/200-get-configuration.json"
   })
   void getAcsStatus_positive_settingsNotFound() throws Throwable {
-    var timezone = "Europe/Paris";
-    var currentTs = OffsetDateTime.now(ZoneId.of(timezone)).truncatedTo(SECONDS);
-    executeInSession(
-        successLoginExchange(),
-        sip2Exchange(Sip2Commands.status(), sip2Result -> {
-          assertSuccessfulExchange(sip2Result);
-          var respMsg = sip2Result.getResponseMessage();
-          var acsStatus = new ScStatusResponseParser(delimiter, timezone).parse(respMsg);
-          assertThat(acsStatus)
-              .satisfies(status -> assertThat(status.getDateTimeSync())
-                  .isAfterOrEqualTo(currentTs)
-                  .isBeforeOrEqualTo(currentTs.plusSeconds(5)))
-              .usingRecursiveComparison()
-              .ignoringFields("dateTimeSync")
-              .isEqualTo(expectedAcsStatus());
-        }));
+    performStatusCheckUsingTimezone("Europe/Paris");
   }
 
   @Test
@@ -133,6 +88,24 @@ class ScStatusIT extends AbstractErrorDetectionEnabledTest {
               assertFalse(sip2Result.isChecksumValid());
               assertThat(sip2Result.getResponseMessage());
             }));
+  }
+
+  private void performStatusCheckUsingTimezone(String timezone) throws Throwable {
+    var currentTs = OffsetDateTime.now(ZoneId.of(timezone)).truncatedTo(SECONDS);
+    executeInSession(
+        successLoginExchange(),
+        sip2Exchange(Sip2Commands.status(), sip2Result -> {
+          assertSuccessfulExchange(sip2Result);
+          var respMsg = sip2Result.getResponseMessage();
+          var acsStatus = new ScStatusResponseParser(delimiter, timezone).parse(respMsg);
+          assertThat(acsStatus)
+              .satisfies(status -> assertThat(status.getDateTimeSync())
+                  .isAfterOrEqualTo(currentTs)
+                  .isBeforeOrEqualTo(currentTs.plusSeconds(5)))
+              .usingRecursiveComparison()
+              .ignoringFields("dateTimeSync")
+              .isEqualTo(expectedAcsStatus());
+        }));
   }
 
   private static ACSStatus expectedAcsStatus() {

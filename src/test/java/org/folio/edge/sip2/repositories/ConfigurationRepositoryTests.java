@@ -23,21 +23,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({ VertxExtension.class, MockitoExtension.class })
-public class ConfigurationRepositoryTests {
+class ConfigurationRepositoryTests {
 
   @InjectMocks private ConfigurationRepository configurationRepository;
   @Mock private IResourceProvider<IRequestData> resourceProvider;
   @Captor private ArgumentCaptor<IRequestData> requestDataCaptor;
 
   @Test
-  public void cannotCreateConfigurationRepoWhenConfigProviderIsNull() {
+  void cannotCreateConfigurationRepoWhenConfigProviderIsNull() {
     assertThatThrownBy(() -> new ConfigurationRepository(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("ConfigGateway cannot be null");
   }
 
   @Test
-  public void retrieveConfigurations_positive(VertxTestContext context) {
+  void retrieveConfigurations_positive(VertxTestContext context) {
     var configurationResponse = new JsonObject()
         .put("totalRecords", 3)
         .put("configs", new JsonArray()
@@ -72,7 +72,7 @@ public class ConfigurationRepositoryTests {
   }
 
   @Test
-  public void retrieveConfigurations_positive_scLocationIsNull(VertxTestContext context) {
+  void retrieveConfigurations_positive_scLocationIsNull(VertxTestContext context) {
     var configurationResponse = new JsonObject()
         .put("totalRecords", 3)
         .put("configs", new JsonArray()
@@ -97,7 +97,7 @@ public class ConfigurationRepositoryTests {
   }
 
   @Test
-  public void retrieveConfigurations_positive_nullStringInValue(VertxTestContext context) {
+  void retrieveConfigurations_positive_nullStringInValue(VertxTestContext context) {
     var configurationResponse = new JsonObject()
         .put("totalRecords", 3)
         .put("configs", new JsonArray()
@@ -121,7 +121,7 @@ public class ConfigurationRepositoryTests {
   }
 
   @Test
-  public void retrieveConfigurations_positive_fewerConfigurationFound(VertxTestContext context) {
+  void retrieveConfigurations_positive_fewerConfigurationFound(VertxTestContext context) {
     var configurationResponse = new JsonObject()
         .put("totalRecords", 2)
         .put("configs", new JsonArray()

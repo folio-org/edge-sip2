@@ -44,7 +44,7 @@ class SettingsRepositoryTest {
   @Captor private ArgumentCaptor<IRequestData> requestCaptor;
 
   @Test
-  public void getACSStatus_positive_allValuesFound(VertxTestContext testContext) {
+  void getACSStatus_positive_allValuesFound(VertxTestContext testContext) {
     var settingsResponse = new JsonObject()
         .put("items", new JsonArray(List.of(acsTenantConfigValue(), scConfigValue())))
         .put("resultInfo", new JsonObject().put("totalRecords", 2));
@@ -82,7 +82,7 @@ class SettingsRepositoryTest {
   }
 
   @Test
-  public void getACSStatus_negative_failedToRetrieveSettings(VertxTestContext testContext) {
+  void getACSStatus_negative_failedToRetrieveSettings(VertxTestContext testContext) {
     when(resourceProvider.retrieveResource(any()))
         .thenReturn(succeededFuture(SettingsRepositoryTest::tenantLocale))
         .thenReturn(failedFuture(new FolioRequestThrowable("Internal server error")));
@@ -98,7 +98,7 @@ class SettingsRepositoryTest {
   }
 
   @Test
-  public void getACSStatus_positive_localeNotFound(VertxTestContext testContext) {
+  void getACSStatus_positive_localeNotFound(VertxTestContext testContext) {
     var settingsResponse = new JsonObject()
         .put("items", new JsonArray(List.of(acsTenantConfigValue(), scConfigValue())))
         .put("resultInfo", new JsonObject().put("totalRecords", 2));
@@ -119,7 +119,7 @@ class SettingsRepositoryTest {
   }
 
   @Test
-  public void getACSStatus_positive_settingsNotFound(VertxTestContext testContext) {
+  void getACSStatus_positive_settingsNotFound(VertxTestContext testContext) {
     var settingsResponse = new JsonObject()
         .put("items", new JsonArray())
         .put("resultInfo", new JsonObject().put("totalRecords", 0));
@@ -140,7 +140,7 @@ class SettingsRepositoryTest {
   }
 
   @Test
-  public void getACSStatus_positive_emptyConfigurationAndSettings(VertxTestContext testContext) {
+  void getACSStatus_positive_emptyConfigurationAndSettings(VertxTestContext testContext) {
     var settingsResponse = new JsonObject()
         .put("items", new JsonArray())
         .put("resultInfo", new JsonObject().put("totalRecords", 0));
@@ -161,7 +161,7 @@ class SettingsRepositoryTest {
   }
 
   @Test
-  public void getACSStatus_negative_invalidJsonValue(VertxTestContext testContext) {
+  void getACSStatus_negative_invalidJsonValue(VertxTestContext testContext) {
     var acsTenantConfigValue = acsTenantConfigValue().put("value", false);
     var settingsResponse = new JsonObject()
         .put("items", new JsonArray(List.of(scConfigValue(), acsTenantConfigValue)))
@@ -183,7 +183,7 @@ class SettingsRepositoryTest {
   }
 
   @Test
-  public void getACSStatus_positive_invalidSettingItem(VertxTestContext testContext) {
+  void getACSStatus_positive_invalidSettingItem(VertxTestContext testContext) {
     var settingsResponse = new JsonObject()
         .put("items", new JsonArray(List.of(scConfigValue(), "test")))
         .put("resultInfo", new JsonObject().put("totalRecords", 2));
@@ -204,7 +204,7 @@ class SettingsRepositoryTest {
   }
 
   @Test
-  public void getACSStatus_positive_settingItemWithoutKey(VertxTestContext testContext) {
+  void getACSStatus_positive_settingItemWithoutKey(VertxTestContext testContext) {
     var acsTenantConfigValue = acsTenantConfigValue();
     acsTenantConfigValue.remove("key");
     var settingsResponse = new JsonObject()
@@ -227,7 +227,7 @@ class SettingsRepositoryTest {
   }
 
   @Test
-  public void getACSStatus_negative_invalidJsonValueString(VertxTestContext testContext) {
+  void getACSStatus_negative_invalidJsonValueString(VertxTestContext testContext) {
     var acsTenantConfigValue = acsTenantConfigValue()
         .put("value", "{\"test");
     var settingsResponse = new JsonObject()
