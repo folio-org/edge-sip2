@@ -120,8 +120,7 @@ public class AcsTenantConfig {
    *
    * @return this {@link AcsTenantConfig} with new supportedMessages value
    */
-  public AcsTenantConfig supportedMessages(
-      List<SupportedMessage> supportedMessages) {
+  public AcsTenantConfig supportedMessages(List<SupportedMessage> supportedMessages) {
     this.supportedMessages = supportedMessages;
     return this;
   }

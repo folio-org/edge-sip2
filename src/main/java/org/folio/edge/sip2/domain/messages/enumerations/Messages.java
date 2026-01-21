@@ -33,7 +33,7 @@ public enum Messages {
    */
   public static Messages fromStringSafe(String value) {
     for (var type : Messages.values()) {
-      if (type.name().equals(value)) {
+      if (type.name().equalsIgnoreCase(value)) {
         return type;
       }
     }
