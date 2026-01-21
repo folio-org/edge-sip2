@@ -15,8 +15,9 @@ class LoginIT extends AbstractErrorDetectionEnabledTest {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/201-post-acs-login.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration.json"
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings.json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
   })
   void login_positive() throws Throwable {
     executeInSession(
@@ -29,7 +30,7 @@ class LoginIT extends AbstractErrorDetectionEnabledTest {
   }
 
   @Test
-  @WiremockStubs({ "wiremock/stubs/mod-login/401-post-invalid-login.json" })
+  @WiremockStubs("/wiremock/stubs/mod-login/401-post-invalid-login.json")
   void login_negative_invalidCredentials() throws Throwable {
     executeInSession(
         sip2Exchange(

@@ -1,0 +1,29 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/locale",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "locale": "fr-FR-u-nu-latn",
+      "timezone": "Europe/Paris",
+      "currency": "EUR",
+      "numberingSystem": "latn"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
+
+

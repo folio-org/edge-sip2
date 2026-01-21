@@ -26,6 +26,14 @@
     {
       "id": "search-inventory",
       "version": "1.0"
+    },
+    {
+      "id": "locale",
+      "version": "1.0"
+    },
+    {
+      "id": "settings",
+      "version": "1.2"
     }
   ],
   "permissionSets": [
@@ -49,8 +57,20 @@
         "users.item.get",
         "patron-blocks.automated-patron-blocks.collection.get",
         "inventory-storage.holdings.item.get",
-        "inventory.instances.item.get"
+        "inventory.instances.item.get",
+        "locale.item.get",
+        "mod-settings.global.read.edge-sip2"
       ]
+    },
+    {
+      "permissionName": "mod-settings.global.read.edge-sip2",
+      "displayName": "edge-sip2 - get settings collection",
+      "description": "To read the setting from mod-settings"
+    },
+    {
+      "permissionName": "mod-settings.global.write.edge-sip2",
+      "displayName": "edge-sip2 - write settings",
+      "description": "To write the setting to mod-settings"
     }
   ],
   "launchDescriptor": {

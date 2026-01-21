@@ -8,15 +8,22 @@ import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.domain.integration.login.FolioLoginResponse;
+import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
+import org.folio.edge.sip2.repositories.SettingsRepository;
+import org.folio.edge.sip2.utils.Sip2LogAdapter;
 
 @Data
-@Log4j2
 @EqualsAndHashCode
 @RequiredArgsConstructor
 public class SessionData {
+
+  private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(SettingsRepository.class);
+
+  public static final String DEFAULT_CURRENCY = "USD";
+  public static final String DEFAULT_TIMEZONE = "Etc/UTC";
+
   private final char fieldDelimiter;
   private final boolean errorDetectionEnabled;
   private final String charset;
@@ -38,9 +45,6 @@ public class SessionData {
   private boolean usePinForPatronVerification;
   private boolean alwaysCheckPatronPassword;
   private FolioLoginResponse loginResponse;
-
-  private static final String DEFAULT_CURRENCY = "USD";
-  private static final String DEFAULT_TIMEZONE = "Etc/UTC";
 
   private SessionData(String tenant, char fieldDelimiter,
                       boolean errorDetectionEnabled, String charset) {
@@ -121,13 +125,13 @@ public class SessionData {
    *
    * @param currency The currency value to set the session to
    */
-  public void setCurrency(String currency) {
+  public void setCurrency(CurrencyType currency) {
     if (currency == null) {
       log.warn("Null currency value, therefore default value {} will be used", DEFAULT_CURRENCY);
       return;
     }
 
-    this.currency = currency;
+    this.currency = currency.name();
   }
 
   private static String generateRequestId() {
@@ -141,7 +145,7 @@ public class SessionData {
    * @param tenant the new tenant identifier
    */
   public void setTenant(String tenant) {
-    log.debug("Tenant is updated in session data: old='{}', new='{}'", this.tenant, tenant);
+    log.debug(this, "Tenant is updated in session data: old='{}', new='{}'", this.tenant, tenant);
     this.tenant = tenant;
   }
 }

@@ -32,20 +32,20 @@ class SipTlsEnabledIT extends BaseIntegrationTest {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/201-post-acs-login.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration.json",
-      "wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
-      "wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
-      "wiremock/stubs/mod-login/401-post-invalid-login.json",
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings.json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
+      "/wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
   })
   void tlsCommands_positive() throws Throwable {
     executeInSession(
         successLoginExchange(),
         sip2Exchange(
             Sip2Commands.status(),
-            sup2Result -> {
-              assertSuccessfulExchange(sup2Result);
-              var respMsg = sup2Result.getResponseMessage();
+            sip2Result -> {
+              assertSuccessfulExchange(sip2Result);
+              var respMsg = sip2Result.getResponseMessage();
               assertThat(respMsg, startsWith("98YYYYNN"));
               assertThat(respMsg, containsString("BXYYYNYNYYYYYNNNYY"));
             }),

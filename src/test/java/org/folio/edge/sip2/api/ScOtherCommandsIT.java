@@ -14,13 +14,14 @@ import org.junit.jupiter.api.Test;
 
 @IntegrationTest
 @Sip2TestConfig("sip2-checksum-verification-enabled.conf")
-@WiremockStubs({
-    "wiremock/stubs/mod-login/201-post-acs-login.json",
-    "wiremock/stubs/mod-configuration/200-get-configuration.json"
-})
 class ScOtherCommandsIT extends AbstractErrorDetectionEnabledTest {
 
   @Test
+  @WiremockStubs({
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings.json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+  })
   void getAcsStatus_negative_invalidStatusRequestAndGetErrorMessage() throws Throwable {
     executeInSession(
         successLoginExchange(),

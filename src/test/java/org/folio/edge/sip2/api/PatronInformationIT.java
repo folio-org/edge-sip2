@@ -17,23 +17,24 @@ import org.junit.jupiter.api.Test;
 
 @IntegrationTest
 @WiremockStubs({
-    "wiremock/stubs/mod-login/201-post-acs-login.json",
-    "wiremock/stubs/mod-configuration/200-get-configuration.json"
+    "/wiremock/stubs/mod-settings/200-get-locale.json",
+    "/wiremock/stubs/mod-settings/200-get-settings.json",
+    "/wiremock/stubs/mod-login/201-post-acs-login.json",
 })
 class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/401-post-invalid-login.json",
-      "wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
-      "wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
-      "wiremock/stubs/mod-circulation/200-get-circulation-open-loans.json",
-      "wiremock/stubs/mod-circulation/200-get-circulation-open-loans-by-due-date.json",
-      "wiremock/stubs/mod-circulation/200-get-circulation-requests-hold.json",
-      "wiremock/stubs/mod-circulation/200-get-circulation-requests-recall.json",
-      "wiremock/stubs/mod-fee-fines/200-get-accounts.json",
-      "wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
-      "wiremock/stubs/mod-fee-fines/200-get-feefines-empty.json",
+      "/wiremock/stubs/mod-login/401-post-invalid-login.json",
+      "/wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
+      "/wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-open-loans.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-open-loans-by-due-date.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-requests-hold.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-requests-recall.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-accounts.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-feefines-empty.json",
   })
   void getPatronInformation_positive_holdSummaryType() throws Throwable {
     executeInSession(
@@ -52,16 +53,16 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/401-post-invalid-login.json",
-      "wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
-      "wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
-      "wiremock/stubs/mod-circulation/200-get-circulation-open-loans.json",
-      "wiremock/stubs/mod-circulation/200-get-circulation-open-loans-by-due-date.json",
-      "wiremock/stubs/mod-circulation/200-get-circulation-requests-hold(no item barcode).json",
-      "wiremock/stubs/mod-circulation/200-get-circulation-requests-recall.json",
-      "wiremock/stubs/mod-fee-fines/200-get-accounts-empty.json",
-      "wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
-      "wiremock/stubs/mod-fee-fines/500-get-feefines-invalid-query.json",
+      "/wiremock/stubs/mod-login/401-post-invalid-login.json",
+      "/wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
+      "/wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-open-loans.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-open-loans-by-due-date.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-requests-hold(no item barcode).json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-requests-recall.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-accounts-empty.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
+      "/wiremock/stubs/mod-fee-fines/500-get-feefines-invalid-query.json",
   })
   void getPatronInformation_positive_holdSummaryTypeAndEmptyRequests() throws Throwable {
     executeInSession(

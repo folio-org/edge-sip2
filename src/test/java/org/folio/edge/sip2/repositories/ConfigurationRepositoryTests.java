@@ -1,255 +1,189 @@
 package org.folio.edge.sip2.repositories;
 
 import static io.vertx.core.Future.succeededFuture;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import java.time.Clock;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.stream.Stream;
+import java.util.Map;
 import org.folio.edge.sip2.api.support.TestUtils;
-import org.folio.edge.sip2.domain.messages.enumerations.Messages;
-import org.folio.edge.sip2.session.SessionData;
+import org.folio.okapi.common.UrlDecoder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith({VertxExtension.class, MockitoExtension.class})
+@ExtendWith({ VertxExtension.class, MockitoExtension.class })
 public class ConfigurationRepositoryTests {
 
+  @InjectMocks private ConfigurationRepository configurationRepository;
+  @Mock private IResourceProvider<IRequestData> resourceProvider;
+  @Captor private ArgumentCaptor<IRequestData> requestDataCaptor;
+
   @Test
-  public void canCreateConfigurationRepo(@Mock IResourceProvider<IRequestData> mockConfig,
-      @Mock Clock clock) {
-    ConfigurationRepository configRepo = new ConfigurationRepository(mockConfig, clock);
-    assertNotNull(configRepo);
+  public void cannotCreateConfigurationRepoWhenConfigProviderIsNull() {
+    assertThatThrownBy(() -> new ConfigurationRepository(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("ConfigGateway cannot be null");
   }
 
   @Test
-  public void cannotCreateConfigurationRepoWhenConfigProviderIsNull(@Mock Clock clock) {
+  public void retrieveConfigurations_positive(VertxTestContext context) {
+    var configurationResponse = new JsonObject()
+        .put("totalRecords", 3)
+        .put("configs", new JsonArray()
+            .add(configValue("localeSettings", "ORG", localeSettingsConfig()))
+            .add(configValue("acsTenantConfig", "edge-sip2", acsTenantConfig()))
+            .add(configValue("selfCheckoutConfig.SE10", "edge-sip2", scConfig())));
 
-    final NullPointerException thrown = assertThrows(
-        NullPointerException.class, () -> new ConfigurationRepository(null, clock));
+    when(resourceProvider.retrieveResource(requestDataCaptor.capture()))
+        .thenReturn(succeededFuture(() -> configurationResponse));
 
-    assertEquals("ConfigGateway cannot be null", thrown.getMessage());
-  }
-
-  @Test
-  public void canGetValidAcsStatus(Vertx vertx, VertxTestContext testContext,
-      @Mock IResourceProvider<IRequestData> mockFolioProvider) {
-
-    JsonObject tenantConfigObject = new JsonObject();
-    tenantConfigObject.put("value", "{\"tenantId\":\"diku\",\"supportedMessages\":"
-          + "[{\"messageName\": \"PATRON_INFORMATION\",\"isSupported\": \"Y\"},"
-          + "{\"messageName\": \"RENEW\",\"isSupported\": \"N\"},"
-          + "{\"messageName\": \"BLOCK_PATRON\",\"isSupported\": \"Y\"}],"
-          +  "\"onlineStatus\": false,\"statusUpdateOk\": false,\"offlineOk\":true,"
-          +  "\"protocolVersion\":\"1.23\",\"institutionId\":\"diku\","
-          +   "\"screenMessage\":\"Hello, welcome\","
-          +  "\"printLine\":\"testing\","
-          + "\"invalidCheckinStatuses\":\"Withdrawn,Restricted\"}");
-
-    tenantConfigObject.put("module", "edge-sip2");
-    tenantConfigObject.put("configName", "acsTenantConfig");
-
-
-    JsonObject scConfigObject = new JsonObject();
-    scConfigObject.put("value", "{\"checkinOk\": false,\"checkoutOk\": true,"
-          + "\"acsRenewalPolicy\": false,\"maxPrintWidth\" : 200,"
-          +  "\"timeoutPeriod\":3,\"retriesAllowed\":2,"
-          + "\"libraryName\": \"diku\",\"terminalLocation\": \"SE10\"}");
-    scConfigObject.put("module", "edge-sip2");
-    scConfigObject.put("configName", "selfCheckoutConfig.SE10");
-
-    JsonArray configsArray = new JsonArray();
-    configsArray.add(tenantConfigObject);
-    configsArray.add(scConfigObject);
-
-    //Need to add another JSON object to make it 3 (required for ACS Status,
-    //but can get away with 2 now. The third one is to get timezone, not needed here.
-    configsArray.add(new JsonObject());
-
-    JsonObject resultsWrapper = new JsonObject();
-    resultsWrapper.put("configs", configsArray);
-
-    when(mockFolioProvider.retrieveResource(any()))
-        .thenReturn(succeededFuture(() -> resultsWrapper));
-
-    Clock clock = TestUtils.getUtcFixedClock();
-
-    ConfigurationRepository configurationRepository =
-        new ConfigurationRepository(mockFolioProvider, clock);
-
-    SessionData sessionData = TestUtils.getMockedSessionData();
+    var sessionData = TestUtils.getMockedSessionData();
     sessionData.setScLocation("SE10");
 
-    configurationRepository.getACSStatus(sessionData).onComplete(
-        testContext.succeeding(status -> testContext.verify(() -> {
+    configurationRepository.retrieveConfigurations(sessionData).onComplete(
+        context.succeeding(configMap -> context.verify(() -> {
+          assertThat(configMap).isEqualTo(Map.of(
+              "selfCheckoutConfig.SE10", scConfig().encode(),
+              "acsTenantConfig", acsTenantConfig().encode(),
+              "localeSettings", localeSettingsConfig().encode()));
+          context.completeNow();
 
-          assertNotNull(status);
-          assertEquals(true, status.getOnLineStatus());
-          assertEquals(false, status.getCheckinOk());
-          assertEquals(true, status.getCheckoutOk());
-          assertEquals(false, status.getAcsRenewalPolicy());
-          assertEquals(true, status.getOffLineOk());
-          assertEquals(3, status.getTimeoutPeriod());
-          assertEquals(2, status.getRetriesAllowed());
-          assertEquals("2.00", status.getProtocolVersion());
-          assertEquals("dikutest", status.getInstitutionId());
-          assertEquals("diku", status.getLibraryName());
-          assertEquals("SE10", status.getTerminalLocation());
-          assertEquals(OffsetDateTime.now(clock), status.getDateTimeSync());
-          assertFalse(sessionData.isValidCheckinStatus("WITHDRAWN"));
-          assertFalse(sessionData.isValidCheckinStatus("restricted"));
-          assertTrue(sessionData.isValidCheckinStatus("Lost and paid"));
-          assertTrue(sessionData.isValidCheckinStatus("AVAILABLE"));
-
-          assertEquals(2, status.getSupportedMessages().size());
-          Messages[] supportedMsgsArr = status.getSupportedMessages().toArray(new Messages[2]);
-
-          //note that the messages will be reordered because it's stored in a list.
-          //it's up to the appropriate handler to re-present the messages in the correct order
-          assertEquals(Messages.BLOCK_PATRON, supportedMsgsArr[0]);
-          assertEquals(Messages.PATRON_INFORMATION, supportedMsgsArr[1]);
-
-          testContext.completeNow();
+          var capturedValue = requestDataCaptor.getValue();
+          assertThat(UrlDecoder.decode(capturedValue.getPath())).isEqualTo(
+              "/configurations/entries"
+                  + "?query=(module==\"edge-sip2\" AND configName==\"acsTenantConfig\") "
+                  + "OR (module==\"edge-sip2\" AND configName==\"selfCheckoutConfig.SE10\") "
+                  + "OR (module==\"ORG\" AND configName==\"localeSettings\")");
+          assertThat(capturedValue.getHeaders()).contains(entry("accept", "application/json"));
+          assertThat(capturedValue.getBody()).isNull();
+          assertThat(capturedValue.getSessionData()).isNotNull();
         })));
   }
 
   @Test
-  public void canRetrieveTenantConfiguration(
-      Vertx vertx,
-      VertxTestContext testContext, @Mock Clock clock) {
+  public void retrieveConfigurations_positive_scLocationIsNull(VertxTestContext context) {
+    var configurationResponse = new JsonObject()
+        .put("totalRecords", 3)
+        .put("configs", new JsonArray()
+            .add(configValue("localeSettings", "ORG", localeSettingsConfig()))
+            .add(configValue("acsTenantConfig", "edge-sip2", acsTenantConfig()))
+            .add(configValue("selfCheckoutConfig.null", "edge-sip2", scConfig())));
 
-    List<LinkedHashMap<String, String>> configParamsList = new ArrayList<>();
-    LinkedHashMap<String, String> configParamsSet = new LinkedHashMap<>();
-    configParamsSet.put("module", "edge-sip2");
-    configParamsSet.put("configName", "acsTenantConfig");
-    String configKey = String.format("%s.%s.%s", "edge-sip2", "acsTenantConfig", "null");
+    when(resourceProvider.retrieveResource(any()))
+        .thenReturn(succeededFuture(() -> configurationResponse));
 
-    configParamsList.add(configParamsSet);
+    var sessionData = TestUtils.getMockedSessionData();
+    sessionData.setScLocation(null);
 
-    IResourceProvider<IRequestData> resourceProvider =
-        new DefaultResourceProvider("json/ACSConfigurationWithMissingConfigs.json");
-    ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider, clock);
-
-    configRepo.retrieveConfigurations(TestUtils.getMockedSessionData(),
-        configParamsList).onComplete(
-          testContext.succeeding(testTenantConfig -> testContext.verify(() -> {
-            assertNotNull(testTenantConfig);
-
-            JsonObject config = testTenantConfig.get(configKey);
-
-            assertEquals("dikutest",
-                config.getString("tenantId"));
-            assertEquals("Krona", config.getString("currencyType"));
-
-            testContext.completeNow();
-          })));
-  }
-
-  /**
-   * Tests the retrieval of locale configuration with alternate currency settings from a JSON file.
-   * This method verifies that the configuration repository correctly loads the currency value
-   * based on the provided JSON file.
-   *
-   * <p>This is a parameterized test that accepts different JSON files and their expected
-   * currency values to ensure that the configuration repository behaves as expected for
-   * various inputs.</p>
-   *
-   * @param jsonFilePath     the path to the JSON file containing the configuration settings
-   * @param expectedCurrency the expected currency code that should be retrieved from
-   *                         the configuration
-   * @param testContext      the test context for managing asynchronous test execution
-   * @param clock            a mock clock used to control time-sensitive operations
-   */
-  @ParameterizedTest
-  @MethodSource("provideJsonFilesAndExpectedCurrencies")
-  public void canRetrieveLocaleConfigurationWithAlternateCurrency(
-      String jsonFilePath,
-      String expectedCurrency,
-      VertxTestContext testContext,
-      @Mock Clock clock) {
-
-    List<LinkedHashMap<String, String>> configParamsList = new ArrayList<>();
-    LinkedHashMap<String, String> configParamsSet = new LinkedHashMap<>();
-    configParamsSet.put("module", "edge-sip2");
-    configParamsSet.put("configName", "acsTenantConfig");
-    String configKey = String.format("%s.%s.%s", "ORG", "localeSettings", "null");
-
-    configParamsList.add(configParamsSet);
-
-    IResourceProvider<IRequestData> resourceProvider =
-        new DefaultResourceProvider(jsonFilePath);
-    ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider, clock);
-
-    configRepo.retrieveConfigurations(TestUtils.getMockedSessionData(),
-        configParamsList).onComplete(
-        testContext.succeeding(testTenantConfig -> testContext.verify(() -> {
-          assertNotNull(testTenantConfig);
-
-          JsonObject config = testTenantConfig.get(configKey);
-
-          assertEquals(expectedCurrency, config.getString("currency"));
-
-          testContext.completeNow();
+    configurationRepository.retrieveConfigurations(sessionData).onComplete(
+        context.succeeding(configMap -> context.verify(() -> {
+          assertThat(configMap).isEqualTo(Map.of(
+              "selfCheckoutConfig.null", scConfig().encode(),
+              "acsTenantConfig", acsTenantConfig().encode(),
+              "localeSettings", localeSettingsConfig().encode()));
+          context.completeNow();
         })));
   }
 
-  /**
-   * Tests the retrieval of ACS status and validates the session data currency.
-   * This method uses a parameterized test to check different JSON files and their expected
-   * currency values.
-   *
-   * @param jsonFilePath     the path to the JSON file containing the ACS configuration
-   * @param expectedCurrency the expected currency code that should be set in the session data
-   * @param testContext      the test context for managing asynchronous test execution
-   * @param clock            a mock clock used to control time-sensitive operations
-   */
-  @ParameterizedTest
-  @MethodSource("provideJsonFilesAndExpectedCurrencies")
-  public void testGetACSStatusAndValidateSessionDataCurrency(
-        String jsonFilePath,
-        String expectedCurrency,
-        VertxTestContext testContext,
-        @Mock Clock clock) {
+  @Test
+  public void retrieveConfigurations_positive_nullStringInValue(VertxTestContext context) {
+    var configurationResponse = new JsonObject()
+        .put("totalRecords", 3)
+        .put("configs", new JsonArray()
+            .add(configValue("localeSettings", "ORG", null))
+            .add(configValue("acsTenantConfig", "edge-sip2", acsTenantConfig()))
+            .add(configValue("selfCheckoutConfig.SE10", "edge-sip2", scConfig())));
 
-    IResourceProvider<IRequestData> resourceProvider = new DefaultResourceProvider(jsonFilePath);
-    ConfigurationRepository configRepo = new ConfigurationRepository(resourceProvider, clock);
+    when(resourceProvider.retrieveResource(any()))
+        .thenReturn(succeededFuture(() -> configurationResponse));
 
-    SessionData sessionData = TestUtils.getMockedSessionData();
-    configRepo.getACSStatus(sessionData).onComplete(h -> {
-      testContext.verify(() -> {
-        assertNotNull(sessionData);
-        assertEquals(expectedCurrency, sessionData.getCurrency());
-        testContext.completeNow();
-      });
-    });
+    var sessionData = TestUtils.getMockedSessionData();
+    sessionData.setScLocation("SE10");
+
+    configurationRepository.retrieveConfigurations(sessionData).onComplete(
+        context.succeeding(configMap -> context.verify(() -> {
+          assertThat(configMap).isEqualTo(Map.of(
+              "selfCheckoutConfig.SE10", scConfig().encode(),
+              "acsTenantConfig", acsTenantConfig().encode()));
+          context.completeNow();
+        })));
   }
 
-  private static Stream<Arguments> provideJsonFilesAndExpectedCurrencies() {
-    return Stream.of(
-      Arguments.of("json/DefaultACSConfigurationNonDefaultedCurrency.json", "EUR"),
-      Arguments.of("json/DefaultACSConfigurationCopCurrency.json", "COP"),
-      Arguments.of("json/DefaultACSConfigurationZARCurrency.json", "ZAR"),
-      Arguments.of("json/DefaultACSConfigurationMYRCurrency.json", "MYR")
-    );
+  @Test
+  public void retrieveConfigurations_positive_fewerConfigurationFound(VertxTestContext context) {
+    var configurationResponse = new JsonObject()
+        .put("totalRecords", 2)
+        .put("configs", new JsonArray()
+            .add(configValue("localeSettings", "ORG", localeSettingsConfig()))
+            .add(configValue("selfCheckoutConfig.SE10", "edge-sip2", scConfig())));
+
+    when(resourceProvider.retrieveResource(any()))
+        .thenReturn(succeededFuture(() -> configurationResponse));
+
+    var sessionData = TestUtils.getMockedSessionData();
+    sessionData.setScLocation("SE10");
+
+    configurationRepository.retrieveConfigurations(sessionData).onComplete(
+        context.succeeding(configMap -> context.verify(() -> {
+          assertThat(configMap).isEqualTo(Map.of(
+              "selfCheckoutConfig.SE10", scConfig().encode(),
+              "localeSettings", localeSettingsConfig().encode()));
+          context.completeNow();
+        })));
+  }
+
+  private static JsonObject configValue(String name, String module, JsonObject value) {
+    return new JsonObject()
+        .put("configName", name)
+        .put("module", module)
+        .put("value", value != null ? value.encode() : null);
+  }
+
+  private static JsonObject localeSettingsConfig() {
+    return new JsonObject()
+        .put("locale", "en-US")
+        .put("timezone", "America/New_York")
+        .put("currency", "USD");
+  }
+
+  private static JsonObject scConfig() {
+    return new JsonObject()
+        .put("checkinOk", false)
+        .put("checkoutOk", true)
+        .put("acsRenewalPolicy", false)
+        .put("maxPrintWidth", 200)
+        .put("timeoutPeriod", 3)
+        .put("retriesAllowed", 2)
+        .put("libraryName", "diku")
+        .put("terminalLocation", "testLocation");
+  }
+
+  private static JsonObject acsTenantConfig() {
+    return new JsonObject()
+        .put("tenantId", "diku")
+        .put("supportedMessages", new JsonArray()
+            .add(new JsonObject().put("messageName", "PATRON_INFORMATION").put("isSupported", "Y"))
+            .add(new JsonObject().put("messageName", "RENEW").put("isSupported", "N"))
+            .add(new JsonObject().put("messageName", "BLOCK_PATRON").put("isSupported", "Y")))
+        .put("onlineStatus", false)
+        .put("statusUpdateOk", false)
+        .put("offlineOk", true)
+        .put("protocolVersion", "1.23")
+        .put("institutionId", "diku")
+        .put("screenMessage", "Hello, welcome")
+        .put("printLine", "testing")
+        .put("invalidCheckinStatuses", "Withdrawn,Restricted");
   }
 }
 

@@ -17,12 +17,14 @@ import static org.folio.edge.sip2.support.Sip2TestCommand.sip2Exchange;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import io.vertx.core.json.JsonObject;
 import java.nio.file.Path;
 import org.folio.edge.sip2.support.Sip2Commands;
 import org.folio.edge.sip2.support.Sip2SessionConfiguration;
 import org.folio.edge.sip2.support.tags.IntegrationTest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -65,6 +67,11 @@ class EdgeSip2IT {
     org.testcontainers.Testcontainers.exposeHostPorts(9130);
   }
 
+  @AfterEach
+  void tearDown() {
+    WireMock.reset();
+  }
+
   @Test
   void health() {
     var baseUrl = "http://" + EDGE_SIP2.getHost() + ":" + EDGE_SIP2.getMappedPort(8081);
@@ -84,7 +91,8 @@ class EdgeSip2IT {
             .withHeader("Set-Cookie", "folioAccessToken=abc.def.ghi"))
     );
 
-    stubFor(get(urlPathEqualTo("/configurations/entries")).willReturn(ok()));
+    stubFor(get(urlPathEqualTo("/locale")).willReturn(ok()));
+    stubFor(get(urlPathEqualTo("/settings/entries")).willReturn(ok()));
     executeInSession(getSip2SessionConfiguration(),
         sip2Exchange(
             Sip2Commands.login("Matrin", "password"),

@@ -1,0 +1,123 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/settings/entries",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "(scope==\"edge-sip2\" and key==\"acsTenantConfig\") or (scope==\"edge-sip2\" and key==\"selfCheckoutConfig.1a62fa88-e887-4454-a345-24b4a01095fa\")"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "items": [
+        {
+          "id": "acd6dae1-b1ae-4780-8e06-993fbed00061",
+          "scope": "edge-sip2",
+          "key": "selfCheckoutConfig.1a62fa88-e887-4454-a345-24b4a01095fa",
+          "value": {
+            "timeoutPeriod": 5,
+            "retriesAllowed": 3,
+            "checkinOk": true,
+            "checkoutOk": true,
+            "acsRenewalPolicy": true,
+            "libraryName": "TestLibrary",
+            "terminalLocation": "1a62fa88-e887-4454-a345-24b4a01095fa"
+          }
+        },
+        {
+          "id": "fb0ba4d3-6591-4a2c-99a7-d4009d711b4a",
+          "scope": "edge-sip2",
+          "key": "acsTenantConfig",
+          "value": {
+            "supportedMessages": [
+              {
+                "messageName": "PATRON_STATUS_REQUEST",
+                "isSupported": "Y"
+              },
+              {
+                "messageName": "CHECKOUT",
+                "isSupported": "Y"
+              },
+              {
+                "messageName": "CHECKIN",
+                "isSupported": "Y"
+              },
+              {
+                "messageName": "BLOCK_PATRON",
+                "isSupported": "N"
+              },
+              {
+                "messageName": "SC_ACS_STATUS",
+                "isSupported": "Y"
+              },
+              {
+                "messageName": "LOGIN",
+                "isSupported": "Y"
+              },
+              {
+                "messageName": "PATRON_INFORMATION",
+                "isSupported": "Y"
+              },
+              {
+                "messageName": "END_PATRON_SESSION",
+                "isSupported": "Y"
+              },
+              {
+                "messageName": "FEE_PAID",
+                "isSupported": "Y"
+              },
+              {
+                "messageName": "ITEM_INFORMATION",
+                "isSupported": "Y"
+              },
+              {
+                "messageName": "ITEM_STATUS_UPDATE",
+                "isSupported": "N"
+              },
+              {
+                "messageName": "PATRON_ENABLE",
+                "isSupported": "N"
+              },
+              {
+                "messageName": "HOLD",
+                "isSupported": "N"
+              },
+              {
+                "messageName": "RENEW",
+                "isSupported": "Y"
+              },
+              {
+                "messageName": "RENEW_ALL",
+                "isSupported": "Y"
+              }
+            ],
+            "statusUpdateOk": false,
+            "offlineOk": false,
+            "currencyType": "USD",
+            "language": "en",
+            "patronPasswordVerificationRequired": false
+          }
+        }
+      ],
+      "resultInfo": {
+        "totalRecords": 2,
+        "facets": [],
+        "diagnostics": []
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

@@ -16,28 +16,28 @@ import org.folio.edge.sip2.domain.messages.enumerations.StatusCode;
 import org.folio.edge.sip2.domain.messages.requests.SCStatus;
 import org.folio.edge.sip2.domain.messages.responses.ACSStatus;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
-import org.folio.edge.sip2.repositories.ConfigurationRepository;
+import org.folio.edge.sip2.repositories.SettingsRepository;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.utils.Sip2LogAdapter;
 
 public class SCStatusHandler implements ISip2RequestHandler {
 
-  private final ConfigurationRepository configurationRepository;
+  private final SettingsRepository settingsRepository;
   private final Sip2LogAdapter log;
   private final Template template;
 
   /**
    * Constructor of SCStatusHandler.
    *
-   * @param configurationRepository the repository necessary to retrieve config data from.
+   * @param settingsRepository the repository necessary to retrieve config data from.
    * @param template the template to apply to the data.
    *
    */
   @Inject
   public SCStatusHandler(
-      ConfigurationRepository configurationRepository,
+      SettingsRepository settingsRepository,
       @Named("scStatusResponse") Template template) {
-    this.configurationRepository = configurationRepository;
+    this.settingsRepository = settingsRepository;
     log = Sip2LogAdapter.getLogger(MethodHandles.lookup().lookupClass());
     this.template = template;
   }
@@ -53,7 +53,7 @@ public class SCStatusHandler implements ISip2RequestHandler {
     StatusCode scStatusCode = scStatus.getStatusCode();
     if (scStatusCode == StatusCode.SC_OK) {
 
-      Future<ACSStatus> future = configurationRepository.getACSStatus(sessionData);
+      Future<ACSStatus> future = settingsRepository.getACSStatus(sessionData);
 
       return future.compose(acsStatus -> {
         Map<String, Object> root = new HashMap<>();

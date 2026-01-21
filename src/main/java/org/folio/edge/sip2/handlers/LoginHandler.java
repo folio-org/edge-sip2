@@ -15,8 +15,8 @@ import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
 import org.folio.edge.sip2.exception.TenantNotResolvedThrowable;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
-import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.LoginRepository;
+import org.folio.edge.sip2.repositories.SettingsRepository;
 import org.folio.edge.sip2.service.config.TenantConfigurationService;
 import org.folio.edge.sip2.service.tenant.Sip2TenantService;
 import org.folio.edge.sip2.session.SessionData;
@@ -27,7 +27,7 @@ public class LoginHandler implements ISip2RequestHandler {
   private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(LoginHandler.class);
 
   private final Sip2TenantService sip2TenantService;
-  private final ConfigurationRepository configurationRepository;
+  private final SettingsRepository settingsRepository;
   private final LoginRepository loginRepository;
   private final Template commandTemplate;
   private final TenantConfigurationService tenantConfigurationService;
@@ -35,14 +35,14 @@ public class LoginHandler implements ISip2RequestHandler {
   @Inject
   LoginHandler(
       LoginRepository loginRepository,
-      ConfigurationRepository configurationRepository,
+      SettingsRepository settingsRepository,
       Sip2TenantService tenantResolver,
       TenantConfigurationService tenantConfigurationService,
       @Named("loginResponse") Template commandTemplate) {
     this.loginRepository = requireNonNull(loginRepository,
         "LoginRepository cannot be null");
-    this.configurationRepository = requireNonNull(configurationRepository,
-        "ConfigurationRepository cannot be null");
+    this.settingsRepository = requireNonNull(settingsRepository,
+        "SettingsRepository cannot be null");
     this.commandTemplate = requireNonNull(commandTemplate, "Template cannot be null");
     this.sip2TenantService = requireNonNull(tenantResolver, "Sip2TenantResolver cannot be null");
     this.tenantConfigurationService = requireNonNull(tenantConfigurationService,
@@ -68,7 +68,7 @@ public class LoginHandler implements ISip2RequestHandler {
 
     Future<LoginResponse> responseFuture = loginRepository.login(login, sessionData)
         .compose(loginResponse ->
-            configurationRepository.getACSStatus(sessionData)
+            settingsRepository.getACSStatus(sessionData)
             .map(loginResponse)
             .recover(cause -> Future.succeededFuture(loginResponse))
         //Even if it fails, just do the login

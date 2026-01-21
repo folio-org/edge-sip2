@@ -57,9 +57,10 @@ class LocationCodeConfigIT {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/201-post-acs-login.json",
-      "wiremock/stubs/mod-login/401-post-invalid-login.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration.json",
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings.json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-login/401-post-invalid-login.json",
   })
   void deployVerticle_positive_singleLocationCode(Vertx vertx, VertxTestContext testContext) {
     var port = getRandomPort();
@@ -78,11 +79,12 @@ class LocationCodeConfigIT {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/201-post-acs-login.json",
-      "wiremock/stubs/mod-login/401-post-invalid-login.json",
-      "wiremock/stubs/mod-login/201-post-acs-login-otherTenant.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration-otherTenant.json",
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-locale(other tenant).json",
+      "/wiremock/stubs/mod-settings/200-get-settings.json",
+      "/wiremock/stubs/mod-settings/200-get-settings(other tenant).json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-login/201-post-acs-login-otherTenant.json",
   })
   void deployVerticle_positive_multipleLocationCodes(Vertx vertx, VertxTestContext testContext) {
     var port = getRandomPort();
@@ -102,11 +104,7 @@ class LocationCodeConfigIT {
   }
 
   @Test
-  @WiremockStubs({
-      "wiremock/stubs/mod-login/201-post-acs-login.json",
-      "wiremock/stubs/mod-login/401-post-invalid-login.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration.json",
-  })
+  @WiremockStubs("/wiremock/stubs/mod-login/401-post-invalid-login.json")
   void deployVerticle_positive_locationCodeNotDefined(Vertx vertx, VertxTestContext testContext) {
     var port = getRandomPort();
     var tenantStore = tenantStore(TEST_TENANT_ID);
@@ -200,5 +198,6 @@ class LocationCodeConfigIT {
         .build();
   }
 
-  record Credentials(String username, String password, String locationCode) {}
+  record Credentials(String username, String password, String locationCode) {
+  }
 }
