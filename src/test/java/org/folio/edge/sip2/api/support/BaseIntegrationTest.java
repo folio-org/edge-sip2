@@ -67,7 +67,8 @@ public abstract class BaseIntegrationTest {
     sipConfig.put("port", mainVerticlePort);
     sipConfig.put("okapiUrl", requireNonNull(getProperty(WM_URL_PROPERTY)));
 
-    if (isTlsEnabledForTest(testInfo)) {
+    if (isTlsEnabledForTest(testInfo)
+        && !sipConfig.getJsonObject("netServerOptions", new JsonObject()).containsKey("ssl")) {
       certificate = SelfSignedCertificate.create();
       sipConfig.put("netServerOptions", new JsonObject()
           .put("ssl", true)
