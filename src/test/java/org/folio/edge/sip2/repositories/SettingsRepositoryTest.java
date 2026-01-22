@@ -73,8 +73,9 @@ class SettingsRepositoryTest {
           assertThat(capturedSettingsRequest.getSessionData()).isNotNull();
           assertThat(UrlDecoder.decode(capturedSettingsRequest.getPath()))
               .isEqualTo("/settings/entries?query="
-                  + "(scope==\"edge-sip2\" and key==\"acsTenantConfig\") "
-                  + "or (scope==\"edge-sip2\" and key==\"selfCheckoutConfig.testLocation\")"
+                  + "(scope==\"edge-sip2.config.manage\" and key==\"acsTenantConfig\") "
+                  + "or (scope==\"edge-sip2.config.manage\""
+                  + " and key==\"selfCheckoutConfig.testLocation\")"
                   + "&limit=100&offset=0");
 
           testContext.completeNow();

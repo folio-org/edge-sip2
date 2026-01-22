@@ -31,7 +31,7 @@ import org.folio.edge.sip2.utils.Sip2LogAdapter;
 public class SettingsRepository {
 
   private static final int QUERY_LIMIT = 100;
-  private static final String SIP2_MODULE_SCOPE = "edge-sip2";
+  private static final String SIP2_MODULE_SCOPE = "edge-sip2.config.manage";
   private static final String ACS_TENANT_CONFIG_KEY = "acsTenantConfig";
   private static final String SC_STATION_CONFIG_KEY = "selfCheckoutConfig";
   private static final String LOCALE_SETTINGS_KEY = "localeSettings";

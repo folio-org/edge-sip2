@@ -13,7 +13,7 @@
     },
     "queryParameters": {
       "query": {
-        "equalTo": "(scope==\"edge-sip2\" and key==\"acsTenantConfig\") or (scope==\"edge-sip2\" and key==\"selfCheckoutConfig.1a62fa88-e887-4454-a345-24b4a01095fa\")"
+        "equalTo": "(scope==\"edge-sip2.config.manage\" and key==\"acsTenantConfig\") or (scope==\"edge-sip2.config.manage\" and key==\"selfCheckoutConfig.1a62fa88-e887-4454-a345-24b4a01095fa\")"
       }
     }
   },
