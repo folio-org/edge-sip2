@@ -63,14 +63,14 @@
       ]
     },
     {
-      "permissionName": "mod-settings.global.read.edge-sip2",
+      "permissionName": "mod-settings.global.read.edge-sip2.config.manage",
       "displayName": "edge-sip2 - get settings collection",
-      "description": "To read the setting from mod-settings"
+      "description": "To read the setting from mod-settings with edge-sip2 scop"
     },
     {
-      "permissionName": "mod-settings.global.write.edge-sip2",
+      "permissionName": "mod-settings.global.write.edge-sip2.config.manage",
       "displayName": "edge-sip2 - write settings",
-      "description": "To write the setting to mod-settings"
+      "description": "To write the setting to mod-settings with edge-sip2 scope"
     }
   ],
   "launchDescriptor": {
