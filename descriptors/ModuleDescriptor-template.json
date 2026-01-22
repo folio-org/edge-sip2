@@ -59,6 +59,7 @@
         "inventory-storage.holdings.item.get",
         "inventory.instances.item.get",
         "locale.item.get",
+        "mod-settings.entries.collection.get",
         "mod-settings.global.read.edge-sip2"
       ]
     },
