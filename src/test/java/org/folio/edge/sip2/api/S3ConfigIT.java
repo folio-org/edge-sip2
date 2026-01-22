@@ -57,9 +57,9 @@ class S3ConfigIT {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/201-post-acs-login.json",
-      "wiremock/stubs/mod-login/401-post-invalid-login.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration.json",
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings.json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
   })
   void deployVerticle_positive_configurationFound(Vertx vertx, VertxTestContext testContext) {
     var port = getRandomPort();

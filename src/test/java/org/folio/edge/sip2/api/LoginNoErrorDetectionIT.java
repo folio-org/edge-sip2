@@ -18,8 +18,9 @@ class LoginNoErrorDetectionIT extends AbstractErrorDetectionDisabledTest {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/201-post-acs-login.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration.json"
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings.json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
   })
   void login_positive() {
     try (var session = new Sip2Session(getSip2SessionConfig())) {
@@ -31,7 +32,7 @@ class LoginNoErrorDetectionIT extends AbstractErrorDetectionDisabledTest {
   }
 
   @Test
-  @WiremockStubs({ "wiremock/stubs/mod-login/401-post-invalid-login.json" })
+  @WiremockStubs("/wiremock/stubs/mod-login/401-post-invalid-login.json")
   void login_negative_invalidCredentials() {
     try (var session = new Sip2Session(getSip2SessionConfig())) {
       var command = Sip2Commands.login("test_username", "test_password", SERVICE_POINT_ID);

@@ -1,0 +1,35 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/settings/entries",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "(scope==\"edge-sip2.config.manage\" and key==\"acsTenantConfig\") or (scope==\"edge-sip2.config.manage\" and key==\"selfCheckoutConfig.1a62fa88-e887-4454-a345-24b4a01095fa\")"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "items": [],
+      "totalRecords": 0,
+      "resultInfo": {
+        "totalRecords": 0,
+        "facets": [],
+        "diagnostics": []
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

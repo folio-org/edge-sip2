@@ -49,9 +49,10 @@ class PortConfigIT {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/201-post-acs-login.json",
-      "wiremock/stubs/mod-login/401-post-invalid-login.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration.json",
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings.json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-login/401-post-invalid-login.json",
   })
   @DisplayName("Should handle multiple port configurations correctly")
   void singlePortConfigTest_positive(Vertx vertx, VertxTestContext testContext) {
@@ -70,11 +71,13 @@ class PortConfigIT {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/201-post-acs-login.json",
-      "wiremock/stubs/mod-login/401-post-invalid-login.json",
-      "wiremock/stubs/mod-login/201-post-acs-login-otherTenant.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration-otherTenant.json",
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-locale(other tenant).json",
+      "/wiremock/stubs/mod-settings/200-get-settings.json",
+      "/wiremock/stubs/mod-settings/200-get-settings(other tenant).json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-login/201-post-acs-login-otherTenant.json",
+      "/wiremock/stubs/mod-login/401-post-invalid-login.json",
   })
   @DisplayName("Should handle multiple port configurations correctly")
   void multiplePortConfigTest_positive(Vertx vertx, VertxTestContext testContext) {
@@ -232,5 +235,6 @@ class PortConfigIT {
         .build();
   }
 
-  record Credentials(String username, String password, String locationCode) {}
+  record Credentials(String username, String password, String locationCode) {
+  }
 }

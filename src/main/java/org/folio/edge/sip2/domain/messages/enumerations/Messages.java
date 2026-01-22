@@ -23,5 +23,20 @@ public enum Messages {
   PATRON_ENABLE,
   HOLD,
   RENEW,
-  RENEW_ALL
+  RENEW_ALL;
+
+  /**
+   * Safely converts a string to a Messages enum value.
+   *
+   * @param value the string representation of the message type
+   * @return the corresponding Messages enum value, or null if no match is found
+   */
+  public static Messages fromStringSafe(String value) {
+    for (var type : Messages.values()) {
+      if (type.name().equalsIgnoreCase(value)) {
+        return type;
+      }
+    }
+    return null;
+  }
 }

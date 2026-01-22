@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "id": "4e9b45dd-ed0b-4426-b75e-248e39e5b5d2",
+      "scope": "stripes-core.prefs.manage",
+      "key": "tenantLocaleSettings",
+      "value": {
+        "locale": "en-SE",
+        "timezone": "Etc/UTC",
+        "currency": "USD"
+      }
+    }
+  ],
+  "totalRecords": 1,
+  "resultInfo": {
+    "totalRecords": 1,
+    "facets": [],
+    "diagnostics": []
+  }
+}

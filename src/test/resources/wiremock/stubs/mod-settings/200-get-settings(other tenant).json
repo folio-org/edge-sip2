@@ -1,0 +1,70 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/settings/entries",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "other_tenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "other-test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "(scope==\"edge-sip2.config.manage\" and key==\"acsTenantConfig\") or (scope==\"edge-sip2.config.manage\" and key==\"selfCheckoutConfig.986e5b2e-98c8-4da0-9c0d-b1608939e945\")"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "items": [
+        {
+          "id": "acd6dae1-b1ae-4780-8e06-993fbed00061",
+          "scope": "edge-sip2",
+          "key": "selfCheckoutConfig.986e5b2e-98c8-4da0-9c0d-b1608939e945",
+          "value": {
+            "timeoutPeriod": 3,
+            "retriesAllowed": 20,
+            "checkinOk": false,
+            "checkoutOk": false,
+            "acsRenewalPolicy": false,
+            "libraryName": "TestLibrary#2",
+            "terminalLocation": "986e5b2e-98c8-4da0-9c0d-b1608939e945"
+          }
+        },
+        {
+          "id": "fb0ba4d3-6591-4a2c-99a7-d4009d711b4a",
+          "scope": "edge-sip2",
+          "key": "acsTenantConfig",
+          "value": {
+            "supportedMessages": [
+              {
+                "messageName": "SC_ACS_STATUS",
+                "isSupported": "Y"
+              },
+              {
+                "messageName": "LOGIN",
+                "isSupported": "Y"
+              }
+            ],
+            "statusUpdateOk": false,
+            "offlineOk": false,
+            "patronPasswordVerificationRequired": true,
+            "usePinForPatronVerification": true
+          }
+        }
+      ],
+      "resultInfo": {
+        "totalRecords": 2,
+        "facets": [],
+        "diagnostics": []
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

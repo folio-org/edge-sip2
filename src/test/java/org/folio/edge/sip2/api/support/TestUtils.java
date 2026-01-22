@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
+import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.support.Sip2Session;
 import org.folio.edge.sip2.support.Sip2SessionConfiguration;
@@ -73,7 +74,7 @@ public class TestUtils {
     SessionData sessionData = SessionData.createSession("dikutest", '|', false, "IBM850");
     sessionData.setTimeZone(UTCTimeZone);
     sessionData.setMaxPrintWidth(100);
-    sessionData.setCurrency("USD");
+    sessionData.setCurrency(CurrencyType.USD);
     sessionData.setScLocation("testLocation");
     return sessionData;
   }

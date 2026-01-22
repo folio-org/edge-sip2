@@ -327,7 +327,7 @@ public enum CurrencyType {
    */
   public static CurrencyType fromStringSafe(String value) {
     for (CurrencyType type : CurrencyType.values()) {
-      if (type.name().equals(value)) {
+      if (type.name().equalsIgnoreCase(value)) {
         return type;
       }
     }

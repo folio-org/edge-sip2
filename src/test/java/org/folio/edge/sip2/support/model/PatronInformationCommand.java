@@ -9,7 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.edge.sip2.parser.LanguageMapper;
 
 @Data

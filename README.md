@@ -178,7 +178,15 @@ Here is a sample sip2.conf for storing tenant config in S3:
 
 ## FOLIO Configuration
 
-Certain properties are retrieved from FOLIO configuration once a user has logged in via SIP2. There are properties at the tenant level and properties per kiosk, which is defined as a FOLIO service point. Properties are stored as JSON via the `configuration` module. Missing configuration properties will lead to edge-sip2 runtime failures. The edge-sip2 properties listed below must be manually created via the `POST` `/configurations/entries` API using a tool such as curl or postman.
+Certain properties are retrieved from FOLIO configuration once a user has logged in via SIP2. There are properties at
+the tenant level and properties per kiosk, which is defined as a FOLIO service point. Properties are stored as JSON via
+the `settings` or deprecated `configuration` module. Missing configuration properties will lead to edge-sip2 runtime
+failures.
+
+- The edge-sip2 properties listed below must be manually created via the `POST /settings/entries` API using a
+  tool such as curl or postman.
+- **Deprecated:**  _The edge-sip2 properties listed below must be manually created via
+  the `POST /configurations/entries` API using a tool such as curl or postman._
 
 ### Tenant Properties
 
@@ -199,7 +207,40 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
 | `messageName` | `string` | The name of the message. See: [Messages](src/main/java/org/folio/edge/sip2/domain/messages/enumerations/Messages.java) |
 | `isSupported` | `string` | `Y` or `N` to indicate to the kiosk whether or not the message is supported                                            |
 
-#### Example `configuration` object
+#### Example `settings` object
+
+```json
+{
+  "id": "111c1c6d-d6cf-41c1-95ff-90c5a6a783ad",
+  "scope": "edge-sip2.config.manage",
+  "key": "acsTenantConfig",
+  "value": {
+    "statusUpdateOk": false,
+    "offlineOk": false,
+    "patronPasswordVerificationRequired": true,
+    "supportedMessages": [
+      { "messageName": "PATRON_STATUS_REQUEST", "isSupported": "N" },
+      { "messageName": "CHECKOUT", "isSupported": "Y" },
+      { "messageName": "CHECKIN", "isSupported": "Y" },
+      { "messageName": "BLOCK_PATRON", "isSupported": "N" },
+      { "messageName": "SC_ACS_STATUS", "isSupported": "Y" },
+      { "messageName": "LOGIN", "isSupported": "Y" },
+      { "messageName": "PATRON_INFORMATION", "isSupported": "Y" },
+      { "messageName": "END_PATRON_SESSION", "isSupported": "Y" },
+      { "messageName": "FEE_PAID", "isSupported": "N" },
+      { "messageName": "ITEM_INFORMATION", "isSupported": "N" },
+      { "messageName": "ITEM_STATUS_UPDATE", "isSupported": "N" },
+      { "messageName": "PATRON_ENABLE", "isSupported": "N" },
+      { "messageName": "HOLD", "isSupported": "N" },
+      { "messageName": "RENEW", "isSupported": "N" },
+      { "messageName": "RENEW_ALL", "isSupported": "N" },
+      { "messageName": "REQUEST_SC_ACS_RESEND", "isSupported": "Y" }
+    ]
+  }
+}
+```
+
+#### (Deprecated) Example `configuration` object
 
 ```json
 {
@@ -222,7 +263,25 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
 | `libraryName`      | `string`  | The name of the library where the kiosk is located or whatever makes sense for the tenant.                                                                                                                                                                   |
 | `terminalLocation` | `string`  | This could be the location of the kiosk within the library or the UUID of the service point.                                                                                                                                                                 |
 
-#### Example `configuration` object
+#### Example `settings` object
+```json
+{
+  "id": "ecac2f7d-82cd-43fd-b6b5-50199967390c",
+  "scope": "edge-sip2.config.manage",
+  "key": "acsTenantConfig",
+  "value": {
+    "timeoutPeriod": 5,
+    "retriesAllowed": 3,
+    "checkinOk": true,
+    "checkoutOk": true,
+    "acsRenewalPolicy": false,
+    "libraryName": "Datalogisk Institut",
+    "terminalLocation": "e0ab8c91-2a4a-433d-a3cf-1837053c89a8"
+  }
+}
+```
+
+#### (Deprecated) Example `configuration` object (Deprecated)
 
 ```json
 {
@@ -240,7 +299,9 @@ Certain properties are retrieved from FOLIO configuration once a user has logged
 | `timezone` | `string` | The tenant's time zone as set in FOLIO. | 
 | `currency` | `string` | Currency code (ISO-4217).               | 
 
-#### Example `configuration` object
+Locale configuration is provided by `mod-settings` under `GET /locale` API Call.
+
+#### (Deprecated) Example `configuration` object
 
 ```json
 {

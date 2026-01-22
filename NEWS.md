@@ -14,6 +14,7 @@
 * [SIP2-294](https://folio-org.atlassian.net/browse/SIP2-294): Replace com.github.mikelee2082:vertx-config-s3 with folio-s3-client configuration
 * [SIP2-255](https://folio-org.atlassian.net/browse/SIP2-255): Add new capabilities to resolve tenants (location code, username prefix)
 * [SIP2-304](https://folio-org.atlassian.net/browse/SIP2-304): Remove required credentials for s3 store
+* [SIP2-279](https://folio-org.atlassian.net/browse/SIP2-279): Implement loading configuration from mod-settings
 
 
 ## 3.4.0 2025-03-14

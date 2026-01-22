@@ -29,8 +29,8 @@ import org.folio.edge.sip2.exception.TenantNotResolvedThrowable;
 import org.folio.edge.sip2.handlers.freemarker.FormatDateTimeMethodModel;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerUtils;
-import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.repositories.LoginRepository;
+import org.folio.edge.sip2.repositories.SettingsRepository;
 import org.folio.edge.sip2.service.config.TenantConfigurationService;
 import org.folio.edge.sip2.service.tenant.Sip2TenantService;
 import org.folio.edge.sip2.session.SessionData;
@@ -50,7 +50,7 @@ class LoginHandlerTests {
   @InjectMocks private LoginHandler handler;
   @Mock private LoginRepository mockLoginRepository;
   @Mock private Sip2TenantService sip2TenantService;
-  @Mock private ConfigurationRepository mockConfigurationRepository;
+  @Mock private SettingsRepository mockSettingsRepository;
   @Mock private TenantConfigurationService mockTenantConfigurationService;
   @Spy private Template template =
       FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE);
@@ -74,7 +74,7 @@ class LoginHandlerTests {
     when(mockLoginRepository.login(any(), any()))
         .thenReturn(Future.succeededFuture(LoginResponse.builder().ok(TRUE).build()));
 
-    when(mockConfigurationRepository.getACSStatus(any()))
+    when(mockSettingsRepository.getACSStatus(any()))
         .thenReturn(Future.succeededFuture(ACSStatus.builder().checkinOk(true).build()));
 
     sessionData.setConfigurationLoaded(true);
@@ -109,7 +109,7 @@ class LoginHandlerTests {
     when(mockLoginRepository.login(any(), sessionDataCaptor.capture()))
         .thenReturn(Future.succeededFuture(LoginResponse.builder().ok(TRUE).build()));
 
-    when(mockConfigurationRepository.getACSStatus(any()))
+    when(mockSettingsRepository.getACSStatus(any()))
         .thenReturn(Future.succeededFuture(ACSStatus.builder().checkinOk(true).build()));
 
     sessionData.setConfigurationLoaded(true);
@@ -170,7 +170,7 @@ class LoginHandlerTests {
     when(mockLoginRepository.login(any(), any()))
         .thenReturn(Future.succeededFuture(LoginResponse.builder().ok(TRUE).build()));
 
-    when(mockConfigurationRepository.getACSStatus(any()))
+    when(mockSettingsRepository.getACSStatus(any()))
         .thenReturn(Future.failedFuture("Unable to load config"));
 
     handler.execute(login, sessionData).onComplete(
@@ -196,7 +196,7 @@ class LoginHandlerTests {
     when(mockLoginRepository.login(any(), any()))
         .thenReturn(Future.succeededFuture(LoginResponse.builder().ok(FALSE).build()));
 
-    when(mockConfigurationRepository.getACSStatus(any()))
+    when(mockSettingsRepository.getACSStatus(any()))
         .thenReturn(Future.succeededFuture(ACSStatus.builder().checkinOk(true).build()));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
@@ -253,7 +253,7 @@ class LoginHandlerTests {
   @Test
   public void cannotCreateHandlerDueToMissingTemplate() {
     final NullPointerException thrown = assertThrows(NullPointerException.class,
-        () -> new LoginHandler(mockLoginRepository, mockConfigurationRepository,
+        () -> new LoginHandler(mockLoginRepository, mockSettingsRepository,
             sip2TenantService, mockTenantConfigurationService, null));
 
     assertEquals("Template cannot be null", thrown.getMessage());

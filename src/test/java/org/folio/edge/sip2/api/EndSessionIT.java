@@ -17,11 +17,11 @@ class EndSessionIT extends AbstractErrorDetectionEnabledTest {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/201-post-acs-login.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration.json",
-      "wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
-      "wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
-      "wiremock/stubs/mod-login/401-post-invalid-login.json",
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings.json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
+      "/wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
   })
   void endSession_positive_allFields() throws Throwable {
     executeInSession(
@@ -40,11 +40,12 @@ class EndSessionIT extends AbstractErrorDetectionEnabledTest {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/201-post-acs-login.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration(pin validation).json",
-      "wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
-      "wiremock/stubs/mod-users/200-post-patron-pin.json",
-      "wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings(pin-validation).json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
+      "/wiremock/stubs/mod-users/200-post-patron-pin.json",
+      "/wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
   })
   void endSession_positive_pinVerificationEnabledForPatron() throws Throwable {
     executeInSession(
@@ -63,11 +64,12 @@ class EndSessionIT extends AbstractErrorDetectionEnabledTest {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/201-post-acs-login.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration(pin validation).json",
-      "wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
-      "wiremock/stubs/mod-users/422-post-patron-pin.json",
-      "wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings(pin-validation).json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
+      "/wiremock/stubs/mod-users/422-post-patron-pin.json",
+      "/wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
   })
   void endSession_negative_pinVerificationEnabledForPatronWithInvalidPin() throws Throwable {
     executeInSession(
@@ -86,9 +88,10 @@ class EndSessionIT extends AbstractErrorDetectionEnabledTest {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/201-post-acs-login.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration.json",
-      "wiremock/stubs/mod-users/200-get-user-by-patron-identifier(not found).json",
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings.json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-users/200-get-user-by-patron-identifier(not found).json",
   })
   void endSession_negative_userNotFound() throws Throwable {
     executeInSession(
@@ -107,11 +110,11 @@ class EndSessionIT extends AbstractErrorDetectionEnabledTest {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/201-post-acs-login.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration.json",
-      "wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
-      "wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
-      "wiremock/stubs/mod-login/401-post-invalid-login.json",
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings.json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
+      "/wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
   })
   void endSession_positive_onlyPatronIdentifier() throws Throwable {
     executeInSession(

@@ -1,0 +1,32 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/locale",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    }
+  },
+  "response": {
+    "status": 404,
+    "jsonBody": {
+      "errors": [
+        {
+          "message": "Locale settings not found for tenant testtenant",
+          "code": "localeSettings.notFound"
+        }
+      ],
+      "totalRecords": 0
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
+
+

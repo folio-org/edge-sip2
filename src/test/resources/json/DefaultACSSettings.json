@@ -1,0 +1,111 @@
+{
+  "items": [
+    {
+      "id": "acd6dae1-b1ae-4780-8e06-993fbed00061",
+      "scope": "edge-sip2.config.manage",
+      "key": "selfCheckoutConfig.TL01",
+      "value": {
+        "timeoutPeriod": 5,
+        "retriesAllowed": 3,
+        "terminalDelimeter": "\r",
+        "fieldDelimeter": "|",
+        "errorDetectionEnabled": true,
+        "charset": "IBM850",
+        "SCtimeZone": "CEST",
+        "checkinOk": true,
+        "checkoutOk": false,
+        "acsRenewalPolicy": true,
+        "maxPrintWidth": 200,
+        "libraryName": "diku",
+        "terminalLocation": "TL01"
+      }
+    },
+    {
+      "id": "fb0ba4d3-6591-4a2c-99a7-d4009d711b4a",
+      "scope": "edge-sip2.config.manage",
+      "key": "acsTenantConfig",
+      "value": {
+        "tenantId": "dikutest",
+        "supportedMessages": [
+          {
+            "messageName": "PATRON_STATUS_REQUEST",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "CHECKOUT",
+            "isSupported": "N"
+          },
+          {
+            "messageName": "CHECKIN",
+            "isSupported": "N"
+          },
+          {
+            "messageName": "BLOCK_PATRON",
+            "isSupported": "N"
+          },
+          {
+            "messageName": "SC_ACS_STATUS",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "LOGIN",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "PATRON_INFORMATION",
+            "isSupported": "N"
+          },
+          {
+            "messageName": "END_PATRON_SESSION",
+            "isSupported": "N"
+          },
+          {
+            "messageName": "FEE_PAID",
+            "isSupported": "N"
+          },
+          {
+            "messageName": "ITEM_INFORMATION",
+            "isSupported": "N"
+          },
+          {
+            "messageName": "ITEM_STATUS_UPDATE",
+            "isSupported": "N"
+          },
+          {
+            "messageName": "PATRON_ENABLE",
+            "isSupported": "N"
+          },
+          {
+            "messageName": "HOLD",
+            "isSupported": "N"
+          },
+          {
+            "messageName": "RENEW",
+            "isSupported": "Y"
+          },
+          {
+            "messageName": "RENEW_ALL",
+            "isSupported": "N"
+          }
+        ],
+        "onlineStatus": true,
+        "statusUpdateOk": false,
+        "offlineOk": false,
+        "protocolVersion": "1.23",
+        "screenMessage": "screenMessages",
+        "printLine": "line",
+        "localTimeZone": "CEST",
+        "holdItemsLimit": 25,
+        "overdueItemsLimit": 5,
+        "feeLimit": 100,
+        "currencyType": "Krona",
+        "language": "en"
+      }
+    }
+  ],
+  "resultInfo": {
+    "totalRecords": 2,
+    "facets": [],
+    "diagnostics": []
+  }
+}

@@ -14,8 +14,9 @@ import org.junit.jupiter.api.Test;
 
 @IntegrationTest
 @WiremockStubs({
-    "wiremock/stubs/mod-login/201-post-acs-login.json",
-    "wiremock/stubs/mod-configuration/200-get-configuration.json"
+    "/wiremock/stubs/mod-settings/200-get-locale.json",
+    "/wiremock/stubs/mod-settings/200-get-settings.json",
+    "/wiremock/stubs/mod-login/201-post-acs-login.json",
 })
 class CheckInIT extends AbstractErrorDetectionEnabledTest {
 
@@ -23,9 +24,9 @@ class CheckInIT extends AbstractErrorDetectionEnabledTest {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-inventory/200-items-by-barcode.json",
-      "wiremock/stubs/mod-circulation/201-check-in-by-barcode.json",
-      "wiremock/stubs/mod-circulation/200-get-open-circulation-requests-by-item-id.json",
+      "/wiremock/stubs/mod-inventory/200-items-by-barcode.json",
+      "/wiremock/stubs/mod-circulation/201-check-in-by-barcode.json",
+      "/wiremock/stubs/mod-circulation/200-get-open-circulation-requests-by-item-id.json",
   })
   void performCheckin_positive_holdSummaryType() throws Throwable {
     executeInSession(

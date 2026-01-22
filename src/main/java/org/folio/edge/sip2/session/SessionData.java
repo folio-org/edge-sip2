@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.domain.integration.login.FolioLoginResponse;
+import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 
 @Data
 @Log4j2
@@ -121,13 +122,13 @@ public class SessionData {
    *
    * @param currency The currency value to set the session to
    */
-  public void setCurrency(String currency) {
+  public void setCurrency(CurrencyType currency) {
     if (currency == null) {
       log.warn("Null currency value, therefore default value {} will be used", DEFAULT_CURRENCY);
       return;
     }
 
-    this.currency = currency;
+    this.currency = currency.name();
   }
 
   private static String generateRequestId() {
