@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
-
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -34,7 +33,8 @@ public class WiremockContainerExtension implements BeforeAllCallback, AfterAllCa
 
   private static final DockerImageName WM_IMAGE = DockerImageName.parse("wiremock/wiremock:3.13.1");
   private static final String WM_URL_VARS_FILE = "wiremock-url.vars";
-  private static final String WM_KEYSTORE_PATH = "src/test/resources/certificates/test.keystore.jks";
+  private static final String WM_KEYSTORE_PATH =
+      "src/test/resources/certificates/test.keystore.jks";
   private static final String WM_KEYSTORE_TYPE = "JKS";
   private static final String WM_KEYSTORE_PASS = "SecretPassword";
 
@@ -50,7 +50,8 @@ public class WiremockContainerExtension implements BeforeAllCallback, AfterAllCa
   public static Admin getWireMockAdminClient() {
     Boolean https = currentHttpsMode.get();
     if (https == null) {
-      throw new IllegalStateException("WireMock admin client context not initialized. Call from @EnableWiremock test.");
+      throw new IllegalStateException(
+          "WireMock admin client context not initialized. Call from @EnableWiremock test.");
     }
 
     Admin client = adminClientMap.get(https);
@@ -105,17 +106,16 @@ public class WiremockContainerExtension implements BeforeAllCallback, AfterAllCa
 
   private GenericContainer<?> createContainer(boolean https) {
     GenericContainer<?> container = new GenericContainer<>(WM_IMAGE)
-      .withNetwork(Network.SHARED)
-      .withAccessToHost(true)
-      .withNetworkAliases(WM_NETWORK_ALIAS)
-      .withCommand(buildCommand(https))
-      .withExposedPorts(https ? WM_DOCKER_HTTPS_PORT : WM_DOCKER_PORT)
-      .withLogConsumer(new Slf4jLogConsumer(log).withSeparateOutputStreams());
+        .withNetwork(Network.SHARED)
+        .withAccessToHost(true)
+        .withNetworkAliases(WM_NETWORK_ALIAS)
+        .withCommand(buildCommand(https))
+        .withExposedPorts(https ? WM_DOCKER_HTTPS_PORT : WM_DOCKER_PORT)
+        .withLogConsumer(new Slf4jLogConsumer(log).withSeparateOutputStreams());
 
     if (https) {
       container.withCopyFileToContainer(
-        MountableFile.forHostPath(WM_KEYSTORE_PATH),
-        "/home/wiremock/keystore.jks");
+          MountableFile.forHostPath(WM_KEYSTORE_PATH), "/home/wiremock/keystore.jks");
     }
 
     return container;
@@ -123,9 +123,9 @@ public class WiremockContainerExtension implements BeforeAllCallback, AfterAllCa
 
   private String[] buildCommand(boolean https) {
     List<String> base = List.of(
-      "--local-response-templating",
-      "--disable-banner",
-      "--verbose"
+        "--local-response-templating",
+        "--disable-banner",
+        "--verbose"
     );
 
     if (!https) {
@@ -133,12 +133,12 @@ public class WiremockContainerExtension implements BeforeAllCallback, AfterAllCa
     }
 
     return Stream.concat(base.stream(), Stream.of(
-      "--https-port", String.valueOf(WM_DOCKER_HTTPS_PORT),
-      "--https-keystore", "/home/wiremock/keystore.jks",
-      "--keystore-password", WM_KEYSTORE_PASS,
-      "--key-manager-password", WM_KEYSTORE_PASS,
-      "--keystore-type", WM_KEYSTORE_TYPE,
-      "--disable-http"
+        "--https-port", String.valueOf(WM_DOCKER_HTTPS_PORT),
+        "--https-keystore", "/home/wiremock/keystore.jks",
+        "--keystore-password", WM_KEYSTORE_PASS,
+        "--key-manager-password", WM_KEYSTORE_PASS,
+        "--keystore-type", WM_KEYSTORE_TYPE,
+        "--disable-http"
     )).toArray(String[]::new);
   }
 
@@ -151,8 +151,8 @@ public class WiremockContainerExtension implements BeforeAllCallback, AfterAllCa
   private void createAdminClient(boolean https, GenericContainer<?> container) {
     int mappedPort = container.getMappedPort(https ? WM_DOCKER_HTTPS_PORT : WM_DOCKER_PORT);
     Admin admin = https
-      ? new HttpAdminClient("https", container.getHost(), mappedPort)
-      : new HttpAdminClient(container.getHost(), mappedPort);
+        ? new HttpAdminClient("https", container.getHost(), mappedPort)
+        : new HttpAdminClient(container.getHost(), mappedPort);
     adminClientMap.put(https, admin);
   }
 
