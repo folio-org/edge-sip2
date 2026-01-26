@@ -4,9 +4,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;
+import io.vertx.core.net.PfxOptions;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,28 +29,42 @@ public class WebClientUtils {
    * @return WebClient
    */
   public static WebClient create(Vertx vertx, JsonObject config) {
-    JsonObject netServerOptions = config.getJsonObject(SYS_NET_SERVER_OPTIONS);
-    if (Objects.nonNull(netServerOptions)
-        && netServerOptions.containsKey(SYS_PEM_KEY_CERT_OPTIONS)) {
-      log.info("Creating WebClient with TLS on...");
+    WebClientOptions options = new WebClientOptions();
+    JsonObject netServerOptions = config.getJsonObject("netServerOptions");
 
-      JsonArray certPaths = netServerOptions.getJsonObject(SYS_PEM_KEY_CERT_OPTIONS)
-          .getJsonArray(SYS_CERT_PATHS);
-      if (Objects.isNull(certPaths) || certPaths.isEmpty()) {
-        throw new WebClientConfigException("No TLS certPaths were found in config");
+    if (netServerOptions != null) {
+      JsonObject pfx = netServerOptions.getJsonObject("pfxKeyCertOptions");
+      JsonObject pem = netServerOptions.getJsonObject("pemKeyCertOptions");
+      if (pfx != null) {
+        options
+          .setSsl(true)
+          .setTrustOptions(new PfxOptions()
+            .setPath(pfx.getString("path"))
+            .setPassword(pfx.getString("password")))
+            .setVerifyHost(false);
+
+        log.info("Creating WebClient with TLS on (using PFX truststore)...");
+        return WebClient.create(vertx, options);
       }
 
-      final PemTrustOptions pemTrustOptions = new PemTrustOptions();
-      certPaths.forEach(entry -> pemTrustOptions.addCertPath((String) entry));
-
-      final WebClientOptions webClientOptions = new WebClientOptions()
+      if (pem != null) {
+        JsonArray certPaths = pem.getJsonArray("certPaths");
+        if (certPaths == null || certPaths.isEmpty()) {
+          throw new WebClientConfigException("No TLS certPaths were found (pemKeyCertOptions)");
+        }
+        PemTrustOptions trust = new PemTrustOptions();
+        certPaths.forEach(path -> trust.addCertPath((String) path));
+        options
           .setSsl(true)
-          .setTrustOptions(pemTrustOptions)
-          .setVerifyHost(false); //Hardcoded now. Later it could be configurable using env vars.
-      return WebClient.create(vertx, webClientOptions);
-    } else {
-      log.info("Creating WebClient with TLS off...");
-      return WebClient.create(vertx);
+          .setTrustOptions(trust)
+            .setVerifyHost(false);
+
+        log.info("Creating WebClient with TLS on (using PEM truststore)...");
+        return WebClient.create(vertx, options);
+      }
     }
+
+    log.info("Creating WebClient with TLS off...");
+    return WebClient.create(vertx, options);
   }
 }
