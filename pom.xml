@@ -62,7 +62,7 @@
     <testcontainers-bom.version>1.21.3</testcontainers-bom.version>
     <junit-bom.version>5.13.4</junit-bom.version>
     <mockito-bom.version>5.16.0</mockito-bom.version>
-    <assertj-core.version>3.27.6</assertj-core.version>
+    <assertj-core.version>3.27.7</assertj-core.version>
   </properties>
 
   <dependencyManagement>
