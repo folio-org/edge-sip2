@@ -28,10 +28,11 @@ class PemCertificateIT extends BaseIntegrationTest {
 
   @Test
   @WiremockStubs({
-      "wiremock/stubs/mod-login/201-post-acs-login.json",
-      "wiremock/stubs/mod-configuration/200-get-configuration.json",
-      "wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
-      "wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
+    "/wiremock/stubs/mod-settings/200-get-locale.json",
+    "/wiremock/stubs/mod-settings/200-get-settings.json",
+    "/wiremock/stubs/mod-login/201-post-acs-login.json",
+    "/wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
+    "/wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
   })
   void pemCertificateCommands_positive() throws Throwable {
     executeInSession(
