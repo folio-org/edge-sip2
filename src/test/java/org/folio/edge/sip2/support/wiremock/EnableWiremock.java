@@ -9,4 +9,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @ExtendWith({ WiremockContainerExtension.class, WiremockStubExtension.class})
-public @interface EnableWiremock {}
+public @interface EnableWiremock {
+  boolean https() default false;
+}
