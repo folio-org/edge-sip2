@@ -5,10 +5,10 @@ import com.github.tomakehurst.wiremock.core.Admin;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -38,8 +38,8 @@ public class WiremockContainerExtension implements BeforeAllCallback, AfterAllCa
   private static final String WM_KEYSTORE_TYPE = "JKS";
   private static final String WM_KEYSTORE_PASS = "SecretPassword";
 
-  private static final Map<Boolean, GenericContainer<?>> containerMap = new HashMap<>();
-  private static final Map<Boolean, Admin> adminClientMap = new HashMap<>();
+  private static final Map<Boolean, GenericContainer<?>> containerMap = new ConcurrentHashMap<>();
+  private static final Map<Boolean, Admin> adminClientMap = new ConcurrentHashMap<>();
   private static final ThreadLocal<Boolean> currentHttpsMode = new ThreadLocal<>();
 
   /**

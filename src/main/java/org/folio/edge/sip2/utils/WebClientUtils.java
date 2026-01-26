@@ -16,6 +16,7 @@ public class WebClientUtils {
   public static final String SYS_PORT = "port";
   public static final String SYS_NET_SERVER_OPTIONS = "netServerOptions";
   public static final String SYS_PEM_KEY_CERT_OPTIONS = "pemKeyCertOptions";
+  public static final String SYS_PFX_KEY_CERT_OPTIONS = "pfxKeyCertOptions";
   public static final String SYS_CERT_PATHS = "certPaths";
   private static final Logger log = LogManager.getLogger();
 
@@ -30,11 +31,11 @@ public class WebClientUtils {
    */
   public static WebClient create(Vertx vertx, JsonObject config) {
     WebClientOptions options = new WebClientOptions();
-    JsonObject netServerOptions = config.getJsonObject("netServerOptions");
+    JsonObject netServerOptions = config.getJsonObject(SYS_NET_SERVER_OPTIONS);
 
     if (netServerOptions != null) {
-      JsonObject pfx = netServerOptions.getJsonObject("pfxKeyCertOptions");
-      JsonObject pem = netServerOptions.getJsonObject("pemKeyCertOptions");
+      JsonObject pfx = netServerOptions.getJsonObject(SYS_PFX_KEY_CERT_OPTIONS);
+      JsonObject pem = netServerOptions.getJsonObject(SYS_PEM_KEY_CERT_OPTIONS);
       if (pfx != null) {
         options
           .setSsl(true)

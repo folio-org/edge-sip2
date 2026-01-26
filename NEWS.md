@@ -15,6 +15,7 @@
 * [SIP2-255](https://folio-org.atlassian.net/browse/SIP2-255): Add new capabilities to resolve tenants (location code, username prefix)
 * [SIP2-304](https://folio-org.atlassian.net/browse/SIP2-304): Remove required credentials for s3 store
 * [SIP2-279](https://folio-org.atlassian.net/browse/SIP2-279): Implement loading configuration from mod-settings
+* [SIP2-227](https://folio-org.atlassian.net/browse/SIP2-227): Resolve SSL connection failures when using PEM configuration
 
 
 ## 3.4.0 2025-03-14
