@@ -23,7 +23,7 @@ class P12CertificateIT extends BaseIntegrationTest {
 
   @Override
   protected Sip2SessionConfiguration getSip2SessionConfig() {
-    return getSip2SessionConfiguration(true);
+    return getSip2SessionConfiguration();
   }
 
   @Test
@@ -55,11 +55,11 @@ class P12CertificateIT extends BaseIntegrationTest {
         ));
   }
 
-  private static Sip2SessionConfiguration getSip2SessionConfiguration(boolean useSsl) {
+  private static Sip2SessionConfiguration getSip2SessionConfiguration() {
     return Sip2SessionConfiguration.builder()
         .port(mainVerticlePort)
         .hostname("localhost")
-        .useSsl(useSsl)
+        .useSsl(true)
         .socketTimeout(Duration.ofSeconds(5))
         .charset(StandardCharsets.ISO_8859_1)
         .errorProtectionEnabled(true)

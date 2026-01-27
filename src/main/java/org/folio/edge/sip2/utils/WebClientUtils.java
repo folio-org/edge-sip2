@@ -38,8 +38,8 @@ public class WebClientUtils {
       JsonObject pem = netServerOptions.getJsonObject(SYS_PEM_KEY_CERT_OPTIONS);
       if (pfx != null) {
         options
-          .setSsl(true)
-          .setTrustOptions(new PfxOptions()
+            .setSsl(true)
+            .setTrustOptions(new PfxOptions()
             .setPath(pfx.getString("path"))
             .setPassword(pfx.getString("password")))
             .setVerifyHost(false);
@@ -56,8 +56,8 @@ public class WebClientUtils {
         PemTrustOptions trust = new PemTrustOptions();
         certPaths.forEach(path -> trust.addCertPath((String) path));
         options
-          .setSsl(true)
-          .setTrustOptions(trust)
+            .setSsl(true)
+            .setTrustOptions(trust)
             .setVerifyHost(false);
 
         log.info("Creating WebClient with TLS on (using PEM truststore)...");
