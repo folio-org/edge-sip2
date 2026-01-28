@@ -39,13 +39,6 @@ import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.domain.ConnectionDetails;
 import org.folio.edge.sip2.domain.PreviousMessage;
 import org.folio.edge.sip2.handlers.ISip2RequestHandler;
-import org.folio.edge.sip2.handlers.ItemInformationHandler;
-import org.folio.edge.sip2.handlers.LoginHandler;
-import org.folio.edge.sip2.handlers.PatronInformationHandler;
-import org.folio.edge.sip2.handlers.PatronStatusHandler;
-import org.folio.edge.sip2.handlers.RenewAllHandler;
-import org.folio.edge.sip2.handlers.RenewHandler;
-import org.folio.edge.sip2.handlers.SCStatusHandler;
 import org.folio.edge.sip2.metrics.Metrics;
 import org.folio.edge.sip2.modules.ApplicationModule;
 import org.folio.edge.sip2.modules.FolioResourceProviderModule;
@@ -53,7 +46,6 @@ import org.folio.edge.sip2.modules.RequestHandlerModule;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.parser.Message;
 import org.folio.edge.sip2.parser.Parser;
-import org.folio.edge.sip2.repositories.ConfigurationRepository;
 import org.folio.edge.sip2.service.config.TenantConfigurationService;
 import org.folio.edge.sip2.service.tenant.Sip2TenantService;
 import org.folio.edge.sip2.session.SessionData;
@@ -115,9 +107,9 @@ public class MainVerticle extends AbstractVerticle {
 
     for (int port : portList) {
       NetServerOptions options = new NetServerOptions(
-          config().getJsonObject("netServerOptions", new JsonObject()))
-          .setPort(port)
-          .setUseProxyProtocol(config().getBoolean("haProxy", false));
+            config().getJsonObject("netServerOptions", new JsonObject()))
+            .setPort(port)
+            .setUseProxyProtocol(config().getBoolean("haProxy", false));
 
       NetServer server = vertx.createNetServer(options);
       servers.add(server);
@@ -148,9 +140,9 @@ public class MainVerticle extends AbstractVerticle {
         });
       });
 
-      var crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
-      var crOptions = new ConfigRetrieverOptions(crOptionsJson);
-      this.configRetriever = ConfigRetriever.create(vertx, crOptions);
+      JsonObject crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
+      ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
+      configRetriever = ConfigRetriever.create(vertx, crOptions);
 
       // After tenant config is loaded, start listening for messages
       listenToMessages(Promise.promise(), server).onComplete(ar -> {
@@ -166,14 +158,14 @@ public class MainVerticle extends AbstractVerticle {
   /**
    * Handles the processing of incoming buffer data from the socket connection.
    *
-   * @param buffer           The buffer containing the incoming message.
-   * @param socket           The NetSocket connection used for communication.
-   * @param sessionData      The session-specific data used for processing.
+   * @param buffer The buffer containing the incoming message.
+   * @param socket The NetSocket connection used for communication.
+   * @param sessionData The session-specific data used for processing.
    * @param messageDelimiter The delimiter used to separate messages.
-   * @param metrics          The metrics object used for recording performance data.
+   * @param metrics The metrics object used for recording performance data.
    */
   private void handleBuffer(Buffer buffer, NetSocket socket, SessionData sessionData,
-      String messageDelimiter, Metrics metrics) {
+                            String messageDelimiter, Metrics metrics) {
     final Timer.Sample sample = metrics.sample();
 
     final String messageString = buffer.getString(0, buffer.length(),
@@ -237,11 +229,11 @@ public class MainVerticle extends AbstractVerticle {
    */
   private Parser getParser(SessionData sessionData) {
     return Parser.builder()
-        .delimiter(sessionData.getFieldDelimiter())
-        .charset(Charset.forName(sessionData.getCharset()))
-        .errorDetectionEnabled(sessionData.isErrorDetectionEnabled())
-        .timezone(sessionData.getTimeZone())
-        .build();
+      .delimiter(sessionData.getFieldDelimiter())
+      .charset(Charset.forName(sessionData.getCharset()))
+      .errorDetectionEnabled(sessionData.isErrorDetectionEnabled())
+      .timezone(sessionData.getTimeZone())
+      .build();
   }
 
   /**
@@ -287,7 +279,7 @@ public class MainVerticle extends AbstractVerticle {
       });
     } else {
       throw new IllegalArgumentException("Port configuration must be an integer "
-          + "or a list of integers");
+        + "or a list of integers");
     }
 
     return portList;
@@ -297,8 +289,8 @@ public class MainVerticle extends AbstractVerticle {
   private Future<Void> listenToMessages(Promise<Void> promise, NetServer server) {
     configRetriever.getConfig()
         .onSuccess(config -> {
-          this.multiTenantConfig = config;
-          log.info("Tenant config loaded: {}", config::encodePrettily);
+          tenantConfigurationService.updateConfiguration(config);
+          log.info("Tenant config loaded: {}", config::encode);
 
           server.listen()
               .onSuccess(result -> {
@@ -326,22 +318,21 @@ public class MainVerticle extends AbstractVerticle {
 
   /**
    * Execute the command.
-   *
-   * @param message          message
-   * @param sessionData      sessionData
+   * @param message message
+   * @param sessionData sessionData
    * @param messageDelimiter messageDelimiter
-   * @param handler          handler
-   * @param sample           sample
-   * @param socket           socket
-   * @param metrics          metrics
+   * @param handler handler
+   * @param sample sample
+   * @param socket socket
+   * @param metrics metrics
    */
   private void executeHandler(Message<Object> message,
-      SessionData sessionData,
-      String messageDelimiter,
-      ISip2RequestHandler handler,
-      Timer.Sample sample,
-      NetSocket socket,
-      Metrics metrics) {
+                              SessionData sessionData,
+                              String messageDelimiter,
+                              ISip2RequestHandler handler,
+                              Timer.Sample sample,
+                              NetSocket socket,
+                              Metrics metrics) {
     handler
         .execute(message.getRequest(), sessionData)
         .onSuccess(result -> {
@@ -351,7 +342,7 @@ public class MainVerticle extends AbstractVerticle {
             responseMsg = result;
           } else {
             responseMsg = formatResponse(result, message, sessionData,
-                messageDelimiter);
+            messageDelimiter);
           }
           handler.writeHistory(sessionData, message, responseMsg);
           log.info(sessionData, "Sip response {}", () -> getEscapedString(responseMsg));
@@ -367,7 +358,7 @@ public class MainVerticle extends AbstractVerticle {
           }
           sample.stop(metrics.commandTimer(message.getCommand()));
           socket.write(responseMessage != null ? responseMessage
-                  : e.getMessage() + messageDelimiter,
+              : e.getMessage() + messageDelimiter,
               sessionData.getCharset());
           metrics.responseError();
         });
@@ -375,15 +366,17 @@ public class MainVerticle extends AbstractVerticle {
 
   /**
    * Resend the previous message.
-   *
    * @param sessionData sessionData
-   * @param sample      sample
-   * @param metrics     metrics
-   * @param socket      socket
-   * @param command     command
+   * @param sample sample
+   * @param metrics metrics
+   * @param socket socket
+   * @param command command
    */
-  private void resendPreviousMessage(SessionData sessionData, Timer.Sample sample,
-      Metrics metrics, NetSocket socket, Command command) {
+  private void resendPreviousMessage(SessionData sessionData,
+                                     Timer.Sample sample,
+                                     Metrics metrics,
+                                     NetSocket socket,
+                                     Command command) {
     String prvMessage = sessionData
         .getPreviousMessage()
         .getPreviousMessageResponse();
@@ -401,21 +394,13 @@ public class MainVerticle extends AbstractVerticle {
       var webClient = WebClientUtils.create(vertx, config());
       var injector = Guice.createInjector(
           new FolioResourceProviderModule(okapiUrl, webClient),
-          new ApplicationModule());
-      handlers = new EnumMap<>(Command.class);
-      handlers.put(CHECKOUT, injector.getInstance(CheckoutHandler.class));
-      handlers.put(CHECKIN, injector.getInstance(CheckinHandler.class));
-      handlers.put(SC_STATUS, injector.getInstance(SCStatusHandler.class));
-      handlers.put(REQUEST_ACS_RESEND, HandlersFactory.getACSResendHandler());
-      handlers.put(LOGIN, injector.getInstance(LoginHandler.class));
-      handlers.put(PATRON_INFORMATION, injector.getInstance(PatronInformationHandler.class));
-      handlers.put(PATRON_STATUS_REQUEST, injector.getInstance(PatronStatusHandler.class));
-      handlers.put(REQUEST_SC_RESEND, HandlersFactory.getInvalidMessageHandler());
-      handlers.put(END_PATRON_SESSION, injector.getInstance(EndPatronSessionHandler.class));
-      handlers.put(FEE_PAID, injector.getInstance(FeePaidHandler.class));
-      handlers.put(ITEM_INFORMATION, injector.getInstance(ItemInformationHandler.class));
-      handlers.put(RENEW, injector.getInstance(RenewHandler.class));
-      handlers.put(RENEW_ALL, injector.getInstance(RenewAllHandler.class));
+          new ApplicationModule(),
+          new RequestHandlerModule()
+      );
+
+      handlers = injector.getInstance(new Key<>() {});
+      tenantResolver = injector.getInstance(Sip2TenantService.class);
+      tenantConfigurationService = injector.getInstance(TenantConfigurationService.class);
     }
   }
 
