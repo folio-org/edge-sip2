@@ -6,6 +6,7 @@ import static org.folio.edge.sip2.utils.WebClientUtils.SYS_PEM_KEY_CERT_OPTIONS;
 import static org.folio.edge.sip2.utils.WebClientUtils.SYS_PORT;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpHeaders;
@@ -89,28 +90,28 @@ public class WebClientUtilsTests {
         () -> WebClientUtils.create(vertx, config));
   }
 
-  // TODO: Fix this test after Vert.x 5.x migration - connection refused issue
-  // @Test
-  // void testWebClientServerCommunication(Vertx vertx, VertxTestContext testContext) {
-  //   JsonObject sipConfig = getCommonSipConfig(vertx);
-  //
-  //   sipConfig.put(SYS_PORT, serverPort);
-  //   sipConfig.put(SYS_NET_SERVER_OPTIONS, new JsonObject()
-  //       .put(SYS_PEM_KEY_CERT_OPTIONS, selfSignedCertificate.keyCertOptions().toJson()));
-  //
-  //   createServerTlsOn(vertx, testContext);
-  //
-  //   final WebClient webClient = WebClientUtils.create(vertx, sipConfig);
-  //   webClient.get(serverPort, "localhost", "/")
-  //       .send()
-  //       .onComplete(testContext.succeeding(response -> {
-  //         String message = response.body().toString();
-  //         log.info("WebClient sent message to port {}, message: {}", serverPort, message);
-  //         Assertions.assertEquals(HttpResponseStatus.OK.code(), response.statusCode());
-  //         Assertions.assertEquals(RESPONSE_MESSAGE, message);
-  //         testContext.completeNow();
-  //       }));
-  // }
+  @Test
+  void testWebClientServerCommunication(Vertx vertx, VertxTestContext testContext) {
+    JsonObject sipConfig = getCommonSipConfig(vertx);
+
+    sipConfig.put(SYS_PORT, serverPort);
+    sipConfig.put(SYS_NET_SERVER_OPTIONS, new JsonObject()
+      .put(SYS_PEM_KEY_CERT_OPTIONS, selfSignedCertificate.keyCertOptions().toJson()));
+
+    createServerTlsOn(vertx, testContext)
+      .onComplete(testContext.succeeding(server -> {
+        final WebClient webClient = WebClientUtils.create(vertx, sipConfig);
+        webClient.get(serverPort, "localhost", "/")
+          .send()
+          .onComplete(testContext.succeeding(response -> {
+            String message = response.body().toString();
+            log.info("WebClient sent message to port {}, message: {}", serverPort, message);
+            Assertions.assertEquals(HttpResponseStatus.OK.code(), response.statusCode());
+            Assertions.assertEquals(RESPONSE_MESSAGE, message);
+            testContext.completeNow();
+          }));
+      }));
+  }
 
   @Test
   void testFailingWebClientServerCommunication(Vertx vertx, VertxTestContext testContext) {
@@ -130,25 +131,19 @@ public class WebClientUtilsTests {
         }));
   }
 
-  private void createServerTlsOn(Vertx vertx, VertxTestContext testContext) {
+  private Future<HttpServer> createServerTlsOn(Vertx vertx, VertxTestContext testContext) {
     final HttpServerOptions httpServerOptions = new HttpServerOptions()
-        .setPort(serverPort)
-        .setSsl(true)
-        .setKeyCertOptions(selfSignedCertificate.keyCertOptions());
+      .setPort(serverPort)
+      .setSsl(true)
+      .setKeyCertOptions(selfSignedCertificate.keyCertOptions());
 
-    final HttpServer httpServer = vertx.createHttpServer(httpServerOptions);
-    httpServer
-        .requestHandler(req -> req.response()
-            .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
-            .end(RESPONSE_MESSAGE))
-        .listen(serverPort)
-        .onComplete(http -> {
-          if (http.succeeded()) {
-            log.info("Server started on port: {}", serverPort);
-          } else {
-            testContext.failNow(http.cause());
-          }
-        });
+    return vertx.createHttpServer(httpServerOptions)
+      .requestHandler(req -> req.response()
+        .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
+        .end(RESPONSE_MESSAGE))
+      .listen(serverPort)
+      .onSuccess(server -> log.info("Server started on port: {}", serverPort))
+      .onFailure(testContext::failNow);
   }
 
   private static JsonObject getCommonSipConfig(Vertx vertx) {
