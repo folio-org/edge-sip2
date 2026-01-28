@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.edge.sip2.cache.TokenCacheFactory;
 import org.folio.edge.sip2.domain.ConnectionDetails;
@@ -101,9 +100,12 @@ public class MainVerticle extends AbstractVerticle {
 
     setupGuiceContext();
 
-    var portList = determinePorts();
+    JsonObject crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
+    ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
+    configRetriever = ConfigRetriever.create(vertx, crOptions);
 
-    AtomicInteger remainingServers = new AtomicInteger(portList.size());
+    var portList = determinePorts();
+    List<Future<Void>> serverFutures = new ArrayList<>();
 
     for (int port : portList) {
       NetServerOptions options = new NetServerOptions(
@@ -140,19 +142,18 @@ public class MainVerticle extends AbstractVerticle {
         });
       });
 
-      JsonObject crOptionsJson = config().getJsonObject("tenantConfigRetrieverOptions");
-      ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
-      configRetriever = ConfigRetriever.create(vertx, crOptions);
-
-      // After tenant config is loaded, start listening for messages
-      listenToMessages(Promise.promise(), server).onComplete(ar -> {
-        if (ar.failed()) {
-          startFuture.fail(ar.cause());
-        } else if (remainingServers.decrementAndGet() == 0) {
-          startFuture.complete();
-        }
-      });
+      serverFutures.add(listenToMessages(Promise.promise(), server));
     }
+
+    Future.all(serverFutures)
+        .onSuccess(result -> {
+          log.info("All {} servers started successfully", portList.size());
+          startFuture.complete();
+        })
+        .onFailure(error -> {
+          log.error("Failed to start one or more servers", error);
+          startFuture.fail(error);
+        });
   }
 
   /**
