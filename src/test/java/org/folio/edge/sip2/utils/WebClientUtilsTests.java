@@ -96,21 +96,21 @@ public class WebClientUtilsTests {
 
     sipConfig.put(SYS_PORT, serverPort);
     sipConfig.put(SYS_NET_SERVER_OPTIONS, new JsonObject()
-      .put(SYS_PEM_KEY_CERT_OPTIONS, selfSignedCertificate.keyCertOptions().toJson()));
+        .put(SYS_PEM_KEY_CERT_OPTIONS, selfSignedCertificate.keyCertOptions().toJson()));
 
     createServerTlsOn(vertx, testContext)
-      .onComplete(testContext.succeeding(server -> {
-        final WebClient webClient = WebClientUtils.create(vertx, sipConfig);
-        webClient.get(serverPort, "localhost", "/")
-          .send()
-          .onComplete(testContext.succeeding(response -> {
-            String message = response.body().toString();
-            log.info("WebClient sent message to port {}, message: {}", serverPort, message);
-            Assertions.assertEquals(HttpResponseStatus.OK.code(), response.statusCode());
-            Assertions.assertEquals(RESPONSE_MESSAGE, message);
-            testContext.completeNow();
-          }));
-      }));
+        .onComplete(testContext.succeeding(server -> {
+          final WebClient webClient = WebClientUtils.create(vertx, sipConfig);
+          webClient.get(serverPort, "localhost", "/")
+              .send()
+              .onComplete(testContext.succeeding(response -> {
+                String message = response.body().toString();
+                log.info("WebClient sent message to port {}, message: {}", serverPort, message);
+                Assertions.assertEquals(HttpResponseStatus.OK.code(), response.statusCode());
+                Assertions.assertEquals(RESPONSE_MESSAGE, message);
+                testContext.completeNow();
+              }));
+        }));
   }
 
   @Test
@@ -133,9 +133,9 @@ public class WebClientUtilsTests {
 
   private Future<HttpServer> createServerTlsOn(Vertx vertx, VertxTestContext testContext) {
     final HttpServerOptions httpServerOptions = new HttpServerOptions()
-      .setPort(serverPort)
-      .setSsl(true)
-      .setKeyCertOptions(selfSignedCertificate.keyCertOptions());
+        .setPort(serverPort)
+        .setSsl(true)
+        .setKeyCertOptions(selfSignedCertificate.keyCertOptions());
 
     return vertx.createHttpServer(httpServerOptions)
       .requestHandler(req -> req.response()
