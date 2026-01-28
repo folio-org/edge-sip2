@@ -3,6 +3,7 @@ package org.folio.edge.sip2.utils;
 import static org.folio.edge.sip2.utils.WebClientUtils.SYS_CERT_PATHS;
 import static org.folio.edge.sip2.utils.WebClientUtils.SYS_NET_SERVER_OPTIONS;
 import static org.folio.edge.sip2.utils.WebClientUtils.SYS_PEM_KEY_CERT_OPTIONS;
+import static org.folio.edge.sip2.utils.WebClientUtils.SYS_PFX_KEY_CERT_OPTIONS;
 import static org.folio.edge.sip2.utils.WebClientUtils.SYS_PORT;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -18,7 +19,14 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
@@ -127,6 +135,49 @@ public class WebClientUtilsTests {
           log.info("Connection error: ", err);
           testContext.completeNow();
         }));
+  }
+
+  @Test
+  void testCreateWebClientTlsOnWithPfx(Vertx vertx) throws Exception {
+    String password = "changeit";
+    Path trustStore = createTrustStoreFrom(selfSignedCertificate, password);
+
+    JsonObject config = new JsonObject()
+        .put(SYS_NET_SERVER_OPTIONS, new JsonObject()
+        .put(SYS_PFX_KEY_CERT_OPTIONS, new JsonObject()
+          .put("path", trustStore.toString())
+          .put("password", password)));
+
+    Assertions.assertDoesNotThrow(() -> WebClientUtils.create(vertx, config));
+  }
+
+  @Test
+  void testCreateWebClientTlsOnWithPfxMissingPath(Vertx vertx) {
+    JsonObject config = new JsonObject()
+        .put(SYS_NET_SERVER_OPTIONS, new JsonObject()
+        .put(SYS_PFX_KEY_CERT_OPTIONS, new JsonObject()
+          .put("password", "secret")));
+
+    Assertions.assertDoesNotThrow(() -> WebClientUtils.create(vertx, config));
+  }
+
+  private static Path createTrustStoreFrom(SelfSignedCertificate certificate, String password)
+      throws Exception {
+    KeyStore keyStore = KeyStore.getInstance("PKCS12");
+    keyStore.load(null, password.toCharArray());
+
+    CertificateFactory factory = CertificateFactory.getInstance("X.509");
+    try (InputStream certStream = Files.newInputStream(Path.of(certificate.certificatePath()))) {
+      Certificate cert = factory.generateCertificate(certStream);
+      keyStore.setCertificateEntry("alias", cert);
+    }
+
+    Path temp = Files.createTempFile("sip2-truststore-", ".p12");
+    temp.toFile().deleteOnExit();
+    try (OutputStream out = Files.newOutputStream(temp)) {
+      keyStore.store(out, password.toCharArray());
+    }
+    return temp;
   }
 
   private void createServerTlsOn(Vertx vertx, VertxTestContext testContext) {
