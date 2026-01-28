@@ -9,7 +9,6 @@ import static io.vertx.ext.web.codec.BodyCodec.jsonObject;
 
 import io.vertx.core.Expectation;
 import io.vertx.core.Future;
-import io.vertx.core.VertxException;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpResponseExpectation;
 import io.vertx.core.http.HttpResponseHead;
