@@ -67,7 +67,7 @@ public abstract class BaseIntegrationTest {
     sipConfig.put("port", mainVerticlePort);
     sipConfig.put("okapiUrl", requireNonNull(getProperty(WM_URL_PROPERTY)));
 
-    if (isTlsEnabledForTest(testInfo)) {
+    if (isTlsEnabledForTest(testInfo) && !hasCustomTlsConfig(sipConfig)) {
       certificate = SelfSignedCertificate.create();
       sipConfig.put("netServerOptions", new JsonObject()
           .put("ssl", true)
@@ -80,6 +80,12 @@ public abstract class BaseIntegrationTest {
     module.deployModule()
         .onSuccess(id -> moduleIdReference.set(id))
         .onComplete(testContext.succeedingThenComplete());
+  }
+
+  private static boolean hasCustomTlsConfig(JsonObject sipConfig) {
+    return sipConfig
+        .getJsonObject("netServerOptions", new JsonObject())
+        .containsKey("ssl");
   }
 
   private static boolean isTlsEnabledForTest(TestInfo testInfo) {
