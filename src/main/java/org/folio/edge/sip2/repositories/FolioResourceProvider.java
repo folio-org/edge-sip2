@@ -141,16 +141,16 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
   static FolioRequestThrowable getHttpRequestError(SessionData sessionData,
       HttpResponseHead responseHead, Throwable throwable) {
     var statusMessage = responseHead.statusCode() + " " + responseHead.statusMessage();
-
     var errorMessage = throwable.getMessage();
+    
     if (responseHead instanceof HttpResponse<?> httpResponse) {
       log.error(sessionData,
-          "login:: Invalid response from FOLIO '{}': message='{}', responseBody={}",
+          "Invalid response from FOLIO '{}': message='{}', responseBody={}",
           () -> statusMessage, () -> errorMessage, httpResponse::body);
     } else {
       log.error(sessionData,
-          "login:: Invalid response from FOLIO '{}': message='{}'",
-          statusMessage, errorMessage);
+          "Invalid response from FOLIO '{}': message='{}'",
+          () -> statusMessage, () -> errorMessage);
     }
 
     return new FolioRequestThrowable("Failed to perform request: " + statusMessage);

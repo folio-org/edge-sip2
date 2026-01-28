@@ -104,6 +104,12 @@ public class MainVerticle extends AbstractVerticle {
     ConfigRetrieverOptions crOptions = new ConfigRetrieverOptions(crOptionsJson);
     configRetriever = ConfigRetriever.create(vertx, crOptions);
 
+    configRetriever.listen(change -> {
+      var multiTenantConfig = change.getNewConfiguration();
+      tenantConfigurationService.updateConfiguration(multiTenantConfig);
+      log.info("Tenant config changed: {}", multiTenantConfig::encode);
+    });
+
     var portList = determinePorts();
     List<Future<Void>> serverFutures = new ArrayList<>();
 
@@ -307,12 +313,6 @@ public class MainVerticle extends AbstractVerticle {
           log.error("Failed to load tenant config", error);
           promise.fail(error);
         });
-
-    configRetriever.listen(change -> {
-      var multiTenantConfig = change.getNewConfiguration();
-      tenantConfigurationService.updateConfiguration(multiTenantConfig);
-      log.info("Tenant config changed: {}", multiTenantConfig::encode);
-    });
 
     return promise.future();
   }
