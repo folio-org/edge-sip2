@@ -50,7 +50,7 @@
     <folio-s3-client.version>2.4.0</folio-s3-client.version>
 
     <!-- 3rd party library versions  -->
-    <vertx.version>5.0.7</vertx.version>
+    <vertx.version>5.0.6</vertx.version>
     <log4j2.version>2.25.1</log4j2.version>
     <ipaddress.version>5.5.1</ipaddress.version>
     <lombok.version>1.18.42</lombok.version>
