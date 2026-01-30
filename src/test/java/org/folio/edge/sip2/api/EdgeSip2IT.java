@@ -57,7 +57,7 @@ class EdgeSip2IT {
               "src/test/resources/sip2.conf"), "/usr/verticles/sip2.conf")
           .withCopyFileToContainer(MountableFile.forHostPath(
               "src/test/resources/sip2-tenants.conf"), "/usr/verticles/sip2-tenants.conf")
-          .withCommand("./run-java.sh -conf sip2.conf")
+          .withCommand("-conf", "sip2.conf")
           .withExposedPorts(6443, 8081)
           .withAccessToHost(true);
 

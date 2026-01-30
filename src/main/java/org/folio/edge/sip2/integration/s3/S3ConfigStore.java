@@ -41,4 +41,10 @@ public class S3ConfigStore implements ConfigStore {
       }
     });
   }
+
+  @Override
+  public Future<Void> close() {
+    // S3 client is managed externally, no cleanup needed here
+    return Future.succeededFuture();
+  }
 }

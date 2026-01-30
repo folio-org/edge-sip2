@@ -3,25 +3,33 @@ package org.folio.edge.sip2.repositories;
 import static io.vertx.core.Future.failedFuture;
 import static io.vertx.core.Future.succeededFuture;
 import static io.vertx.core.MultiMap.caseInsensitiveMultiMap;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpVersion.HTTP_1_1;
 import static io.vertx.core.http.impl.headers.HeadersMultiMap.httpHeaders;
+import static io.vertx.ext.web.codec.BodyCodec.jsonObject;
 import static java.util.Collections.emptyList;
+import static org.folio.okapi.common.XOkapiHeaders.REQUEST_ID;
+import static org.folio.okapi.common.XOkapiHeaders.TENANT;
+import static org.folio.okapi.common.XOkapiHeaders.TOKEN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.impl.HttpResponseImpl;
-import io.vertx.ext.web.codec.BodyCodec;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.util.Map;
@@ -62,12 +70,11 @@ class FolioResourceProviderTest {
   void retrieveResource_positive(VertxTestContext testContext) {
     var requestData = testRequestData();
     var expectedResponse = new JsonObject().put("test", "value");
-    var httpResponse = successResponse(200, "OK", expectedResponse);
+    var httpResponse = httpResponse(200, "OK", expectedResponse);
 
-    prepareGetRequestMocks(requestData);
+    prepareRequestMocks(GET, requestData);
     when(jsonRequest.send()).thenReturn(succeededFuture(httpResponse));
-    when(loginRepository.getSessionAccessToken(any(SessionData.class)))
-        .thenReturn(succeededFuture(ACCESS_TOKEN));
+    when(loginRepository.getSessionAccessToken(any())).thenReturn(succeededFuture(ACCESS_TOKEN));
 
     var resultFuture = provider.retrieveResource(requestData);
 
@@ -84,10 +91,8 @@ class FolioResourceProviderTest {
   void retrieveResource_negative_accessTokenMissing(VertxTestContext testContext) {
     var requestData = testRequestData();
 
-    when(loginRepository.getSessionAccessToken(any(SessionData.class)))
-        .thenReturn(Future.failedFuture(new MissingAccessTokenThrowable()));
-    when(webClient.getAbs(OKAPI_URL + requestData.getPath())).thenReturn(httpRequest);
-    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+    when(loginRepository.getSessionAccessToken(any()))
+        .thenReturn(failedFuture(new MissingAccessTokenThrowable()));
 
     var resultFuture = provider.retrieveResource(requestData);
 
@@ -98,7 +103,7 @@ class FolioResourceProviderTest {
 
       assertInstanceOf(MissingAccessTokenThrowable.class, error);
       assertEquals(expectedMessage, error.getMessage());
-      assertEquals("Failed to retrieve resource: " + expectedMessage, actualErrorMessage);
+      assertEquals("Headers not set correctly: " + expectedMessage, actualErrorMessage);
       testContext.completeNow();
     }));
   }
@@ -106,12 +111,11 @@ class FolioResourceProviderTest {
   @Test
   void retrieveResource_negative_httpError(VertxTestContext testContext) {
     var requestData = testRequestData();
-
-    prepareGetRequestMocks(requestData);
     var validationError = new IllegalStateException("Invalid http status");
+
+    prepareRequestMocks(GET, requestData);
     when(jsonRequest.send()).thenReturn(failedFuture(validationError));
-    when(loginRepository.getSessionAccessToken(any(SessionData.class)))
-        .thenReturn(succeededFuture(ACCESS_TOKEN));
+    when(loginRepository.getSessionAccessToken(any())).thenReturn(succeededFuture(ACCESS_TOKEN));
 
     var resultFuture = provider.retrieveResource(requestData);
 
@@ -126,14 +130,58 @@ class FolioResourceProviderTest {
   }
 
   @Test
+  void retrieveResource_negative_internalServerError(VertxTestContext testContext) {
+    var requestData = testRequestData();
+    var responseBody = new JsonObject().put("error", "error");
+    var response = httpResponse(500, "Internal Server Error", responseBody);
+
+    prepareRequestMocks(GET, requestData);
+    when(jsonRequest.send()).thenReturn(succeededFuture(response));
+    when(loginRepository.getSessionAccessToken(any())).thenReturn(succeededFuture(ACCESS_TOKEN));
+
+    var resultFuture = provider.retrieveResource(requestData);
+
+    resultFuture.onComplete(testContext.failing(error -> {
+      assertInstanceOf(FolioRequestThrowable.class, error);
+      var errorMsg = "Failed to perform request: 500 Internal Server Error";
+      assertEquals(errorMsg, error.getMessage());
+      var expectedMessage = "Error communicating with FOLIO: " + errorMsg;
+      assertEquals(expectedMessage, requestData.getSessionData().getErrorResponseMessage());
+      testContext.completeNow();
+    }));
+  }
+
+  @Test
+  void retrieveResource_negative_resourceNotFound(VertxTestContext testContext) {
+    var requestData = testRequestData();
+    var responseBody = new JsonObject().put("error", "not_found");
+    var response = httpResponse(404, "Not found", responseBody);
+
+    prepareRequestMocks(GET, requestData);
+    when(jsonRequest.send()).thenReturn(succeededFuture(response));
+    when(loginRepository.getSessionAccessToken(any())).thenReturn(succeededFuture(ACCESS_TOKEN));
+
+    var resultFuture = provider.retrieveResource(requestData);
+
+    resultFuture.onComplete(testContext.failing(error -> {
+      assertInstanceOf(FolioRequestThrowable.class, error);
+      var errorMsg = "Failed to perform request: 404 Not found";
+      assertEquals(errorMsg, error.getMessage());
+      var expectedMessage = "Error communicating with FOLIO: " + errorMsg;
+      assertEquals(expectedMessage, requestData.getSessionData().getErrorResponseMessage());
+      testContext.completeNow();
+    }));
+  }
+
+  @Test
   void createResource_positive(VertxTestContext testContext) {
     var requestData = testRequestDataWithBody(REQUEST_PATH, new JsonObject().put("name", "test"));
     var expectedResponse = new JsonObject().put("id", "123");
-    var httpResponse = successResponse(201, "Created", expectedResponse);
+    var httpResponse = httpResponse(201, "Created", expectedResponse);
 
-    preparePostRequestMocks(requestData, httpResponse);
-    when(loginRepository.getSessionAccessToken(any(SessionData.class)))
-        .thenReturn(succeededFuture(ACCESS_TOKEN));
+    prepareRequestMocks(POST, requestData);
+    when(jsonRequest.sendJsonObject(any())).thenReturn(succeededFuture(httpResponse));
+    when(loginRepository.getSessionAccessToken(any())).thenReturn(succeededFuture(ACCESS_TOKEN));
 
     var resultFuture = provider.createResource(requestData);
 
@@ -151,14 +199,13 @@ class FolioResourceProviderTest {
     var requestData = testRequestDataWithBody(REQUEST_PATH, new JsonObject());
 
     when(loginRepository.getSessionAccessToken(any(SessionData.class)))
-        .thenReturn(Future.failedFuture(new RuntimeException("Access token missing")));
-    when(webClient.postAbs(OKAPI_URL + requestData.getPath())).thenReturn(httpRequest);
-    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+        .thenReturn(failedFuture(new MissingAccessTokenThrowable()));
 
     var resultFuture = provider.createResource(requestData);
 
     resultFuture.onComplete(testContext.failing(error -> {
-      assertEquals("Access token missing", error.getMessage());
+      var msg = "Access token is missing. Please login to Folio to obtain a valid access token.";
+      assertEquals(msg, error.getMessage());
       testContext.completeNow();
     }));
   }
@@ -166,9 +213,10 @@ class FolioResourceProviderTest {
   @Test
   void doPinCheck_positive(VertxTestContext testContext) {
     var requestData = testRequestDataWithBody("/pin-verify", new JsonObject().put("pin", "1234"));
-    var httpResponse = successResponse(200, "OK", new JsonObject());
+    var httpResponse = httpResponse(200, "OK", new JsonObject());
 
-    preparePostRequestMocks(requestData, httpResponse);
+    prepareRequestMocks(POST, requestData);
+    when(jsonRequest.sendJsonObject(any())).thenReturn(succeededFuture(httpResponse));
     when(loginRepository.getSessionAccessToken(any(SessionData.class)))
         .thenReturn(succeededFuture(ACCESS_TOKEN));
 
@@ -185,9 +233,7 @@ class FolioResourceProviderTest {
     var requestData = testRequestDataWithBody("/pin-verify", new JsonObject());
 
     when(loginRepository.getSessionAccessToken(any(SessionData.class)))
-        .thenReturn(Future.failedFuture(new RuntimeException("Access token missing")));
-    when(webClient.postAbs(OKAPI_URL + requestData.getPath())).thenReturn(httpRequest);
-    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+        .thenReturn(failedFuture(new RuntimeException("Access token missing")));
 
     var resultFuture = provider.doPinCheck(requestData);
 
@@ -198,7 +244,7 @@ class FolioResourceProviderTest {
   }
 
   @Test
-  void edtResource_negative(VertxTestContext testContext) {
+  void editResource_negative(VertxTestContext testContext) {
     var requestData = testRequestDataWithBody("/entities", new JsonObject());
     var resultFuture = provider.editResource(requestData);
 
@@ -221,21 +267,27 @@ class FolioResourceProviderTest {
     }));
   }
 
-  private void prepareGetRequestMocks(IRequestData requestData) {
-    when(webClient.getAbs(OKAPI_URL + requestData.getPath())).thenReturn(httpRequest);
-    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
-    when(httpRequest.expect(any())).thenReturn(httpRequest);
-    when(httpRequest.as(BodyCodec.jsonObject())).thenReturn(jsonRequest);
+  @Test
+  void getHttpRequestError() {
+    var sessionData = SessionData.createSession(TENANT_ID, '|', true, "UTF-8");
+    var error = new RuntimeException("Error");
+    var httpClientResponse = mock(HttpClientResponse.class);
+    when(httpClientResponse.statusCode()).thenReturn(500);
+    when(httpClientResponse.statusMessage()).thenReturn("Internal Server Error");
+
+    var result = FolioResourceProvider.getHttpRequestError(sessionData, httpClientResponse, error);
+    assertInstanceOf(FolioRequestThrowable.class, result);
+    assertEquals("Failed to perform request: 500 Internal Server Error", result.getMessage());
   }
 
-  private void preparePostRequestMocks(
-      IRequestData requestData, HttpResponse<JsonObject> httpResponse) {
-    when(webClient.postAbs(OKAPI_URL + requestData.getPath())).thenReturn(httpRequest);
-    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
-    when(httpRequest.expect(any())).thenReturn(httpRequest);
-    when(httpRequest.as(BodyCodec.jsonObject())).thenReturn(jsonRequest);
-    when(jsonRequest.sendJsonObject(any(JsonObject.class)))
-        .thenReturn(succeededFuture(httpResponse));
+  private void prepareRequestMocks(HttpMethod method, IRequestData requestData) {
+
+    when(webClient.requestAbs(method, OKAPI_URL + requestData.getPath())).thenReturn(httpRequest);
+    when(httpRequest.as(jsonObject())).thenReturn(jsonRequest);
+    when(jsonRequest.putHeaders(any())).thenReturn(jsonRequest);
+    when(jsonRequest.putHeader(TOKEN, ACCESS_TOKEN)).thenReturn(jsonRequest);
+    when(jsonRequest.putHeader(TENANT, TENANT_ID)).thenReturn(jsonRequest);
+    when(jsonRequest.putHeader(eq(REQUEST_ID), anyString())).thenReturn(jsonRequest);
   }
 
   private static IRequestData testRequestData() {
@@ -246,7 +298,7 @@ class FolioResourceProviderTest {
     return new TestRequestData(path, body);
   }
 
-  private static HttpResponse<JsonObject> successResponse(
+  private static HttpResponse<JsonObject> httpResponse(
       int statusCode, String statusMessage, JsonObject body) {
     var headers = httpHeaders();
     headers.add("content-type", "application/json");

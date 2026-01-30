@@ -31,7 +31,7 @@ public class WiremockContainerExtension implements BeforeAllCallback, AfterAllCa
   public static final String WM_NETWORK_ALIAS = UUID.randomUUID().toString();
   public static final String WM_URL_PROPERTY = "wm.url";
 
-  private static final DockerImageName WM_IMAGE = DockerImageName.parse("wiremock/wiremock:3.13.1");
+  private static final DockerImageName WM_IMAGE = DockerImageName.parse("wiremock/wiremock:3.13.2");
   private static final String WM_URL_VARS_FILE = "wiremock-url.vars";
   private static final String WM_KEYSTORE_PATH =
       "src/test/resources/certificates/test.keystore.jks";

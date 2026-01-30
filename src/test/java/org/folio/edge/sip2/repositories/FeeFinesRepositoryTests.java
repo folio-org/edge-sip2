@@ -19,7 +19,7 @@ import static org.mockito.Mockito.withSettings;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.NoStackTraceThrowable;
+import io.vertx.core.VertxException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
@@ -178,7 +178,7 @@ class FeeFinesRepositoryTests {
       @Mock UsersRepository mockUsersRepository,
       @Mock Clock clock) {
     when(mockFolioProvider.retrieveResource(any()))
-        .thenReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")));
+        .thenReturn(Future.failedFuture(new VertxException("Test failure", true)));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 

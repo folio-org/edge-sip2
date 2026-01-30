@@ -120,6 +120,17 @@ public class Sip2LogAdapter {
   }
 
   /**
+   * Logs an error message with session context and throwable.
+   *
+   * @param sessionData    connection data context
+   * @param message        the error message to log
+   * @param paramSuppliers the parameter suppliers to substitute into the message
+   */
+  public void error(SessionData sessionData, String message, Supplier<?>... paramSuppliers) {
+    runWithContext(sessionData, () -> logger.error(message, paramSuppliers));
+  }
+
+  /**
    * Logs an error message with session context and parameters.
    *
    * @param sessionData   connection data context

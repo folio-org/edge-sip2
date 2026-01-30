@@ -17,7 +17,7 @@ import static org.mockito.Mockito.withSettings;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.NoStackTraceThrowable;
+import io.vertx.core.VertxException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -211,7 +211,7 @@ public class UsersRepositoryTests {
 
     final String barcode = "1234667";
 
-    doReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")))
+    doReturn(Future.failedFuture(new VertxException("Test failure", true)))
         .when(mockFolioProvider).retrieveResource(usersQueryPath(barcode));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
@@ -231,7 +231,7 @@ public class UsersRepositoryTests {
     final String userId = "4f0e711c-d583-41e0-9555-b62f1725023f";
     final String pin = "1234";
 
-    doReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")))
+    doReturn(Future.failedFuture(new VertxException("Test failure", true)))
             .when(mockFolioProvider).createResource(any());
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
@@ -321,7 +321,7 @@ public class UsersRepositoryTests {
 
     final String expectedUsersBlQueryPath = "/bl-users/by-id/" + userId;
 
-    //doReturn(Future.failedFuture(new NoStackTraceThrowable("Test failure")))
+    //doReturn(Future.failedFuture(new VertxException("Test failure", true)))
     doReturn(Future.failedFuture("Failed"))
             .when(mockFolioProvider).doPinCheck(any());
 
@@ -424,7 +424,7 @@ public class UsersRepositoryTests {
 
     final String barcode = "997383903573496";
 
-    doReturn(Future.failedFuture(new NoStackTraceThrowable("Null User or Something")))
+    doReturn(Future.failedFuture(new VertxException("Null User or Something", true)))
         .when(mockFolioProvider).retrieveResource(usersQueryPath(barcode));
 
     final SessionData sessionData = SessionData.createSession("diku", '|', false, "IBM850");
@@ -454,7 +454,7 @@ public class UsersRepositoryTests {
 
     final String expectedUsersBlQueryPath = "/bl-users/by-id/" + userId;
 
-    doReturn(Future.failedFuture(new NoStackTraceThrowable("bl-users lookup failed")))
+    doReturn(Future.failedFuture(new VertxException("bl-users lookup failed", true)))
         .when(mockFolioProvider).retrieveResource(
         argThat((IRequestData data2) -> data2.getPath().equals(expectedUsersBlQueryPath)));
 

@@ -40,29 +40,37 @@
   </ciManagement>
 
   <properties>
+    <java.version>21</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <exec.mainClass>org.folio.edge.sip2.MainVerticle</exec.mainClass>
-    <vertx.version>4.5.13</vertx.version>
-    <log4j2.version>2.24.3</log4j2.version>
-    <micrometer.version>1.14.5</micrometer.version>
-    <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
-    <java.version>21</java.version>
-    <okapi-common.version>6.2.3</okapi-common.version>
-    <raml-module-builder-version>35.4.0</raml-module-builder-version>
-    <folio-s3-client.version>2.3.0</folio-s3-client.version>
+
+    <!-- Folio library versions  -->
+    <raml-module-builder-version>35.4.2</raml-module-builder-version>
+    <okapi-common.version>7.0.1</okapi-common.version>
+    <folio-s3-client.version>2.4.0</folio-s3-client.version>
 
     <!-- 3rd party library versions  -->
+    <vertx.version>5.0.7</vertx.version>
+    <log4j2.version>2.25.1</log4j2.version>
     <ipaddress.version>5.5.1</ipaddress.version>
-    <lombok.version>1.18.38</lombok.version>
+    <lombok.version>1.18.42</lombok.version>
+    <micrometer.version>1.15.3</micrometer.version>
+    <commons-net.version>3.12.0</commons-net.version>
 
-    <!-- Testing library versions-->
-    <folio-backed-testing.version>3.0.3</folio-backed-testing.version>
-    <wiremock.version>3.13.1</wiremock.version>
-    <rest-assured.version>5.5.6</rest-assured.version>
-    <testcontainers-bom.version>1.21.3</testcontainers-bom.version>
+    <!-- 3rd party test library versions  -->
+    <rest-assured.version>6.0.0</rest-assured.version>
     <junit-bom.version>5.13.4</junit-bom.version>
-    <mockito-bom.version>5.16.0</mockito-bom.version>
+    <mockito-bom.version>5.21.0</mockito-bom.version>
+    <testcontainers-bom.version>1.21.4</testcontainers-bom.version>
+    <wiremock.version>3.13.2</wiremock.version>
+    <bcpkix-jdk15to18.version>1.83</bcpkix-jdk15to18.version>
     <assertj-core.version>3.27.6</assertj-core.version>
+
+    <!-- Maven plugin versions -->
+    <maven-release-plugin.version>3.3.1</maven-release-plugin.version>
+    <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
+    <maven-failsafe-plugin.version>3.5.4</maven-failsafe-plugin.version>
+    <maven-resources-plugin.version>3.4.0</maven-resources-plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -111,6 +119,7 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
   <dependencies>
     <!-- Application dependencies -->
     <dependency>
@@ -132,6 +141,10 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-config</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-launcher-application</artifactId>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
@@ -178,7 +191,7 @@
     <dependency>
       <groupId>commons-net</groupId>
       <artifactId>commons-net</artifactId>
-      <version>3.11.1</version>
+      <version>${commons-net.version}</version>
     </dependency>
     <dependency>
       <groupId>org.folio.okapi</groupId>
@@ -242,7 +255,7 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcpkix-jdk15to18</artifactId>
-      <version>1.80</version>
+      <version>${bcpkix-jdk15to18.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -375,14 +388,14 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.2</version>
+        <version>${maven-failsafe-plugin.version}</version>
         <configuration>
           <argLine>${surefireArgLine}</argLine>
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>3.3.1</version>
+        <version>${maven-resources-plugin.version}</version>
         <executions>
           <execution>
             <id>filter-descriptor-inputs</id>
@@ -424,7 +437,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.5.2</version>
+        <version>${maven-failsafe-plugin.version}</version>
           <executions>
             <execution>
               <goals>
@@ -482,7 +495,7 @@
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <manifestEntries>
-                    <Main-Class>io.vertx.core.Launcher</Main-Class>
+                    <Main-Class>io.vertx.launcher.application.VertxApplication</Main-Class>
                     <Main-Verticle>${exec.mainClass}</Main-Verticle>
                     <Multi-Release>true</Multi-Release>
                   </manifestEntries>
@@ -524,7 +537,6 @@
           <localCheckout>true</localCheckout>
         </configuration>
       </plugin>
-
     </plugins>
     <pluginManagement>
       <!--
@@ -540,7 +552,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-release-plugin</artifactId>
-          <version>3.1.1</version>
+          <version>${maven-release-plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
