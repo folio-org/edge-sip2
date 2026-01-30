@@ -45,7 +45,7 @@
     <exec.mainClass>org.folio.edge.sip2.MainVerticle</exec.mainClass>
 
     <!-- Folio library versions  -->
-    <raml-module-builder-version>35.4.2</raml-module-builder-version>
+    <raml-module-builder-version>36.0.0-SNAPSHOT</raml-module-builder-version>
     <okapi-common.version>7.0.1</okapi-common.version>
     <folio-s3-client.version>2.4.0</folio-s3-client.version>
 
