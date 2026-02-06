@@ -189,10 +189,8 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(recallsResponse),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockPasswordVerifier.doPatronPasswordVerification(
-        eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords
-        .builder().extendedUser(extendedUser).build()));
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -304,10 +302,8 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(recallsResponse),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockUsersRepository.doPatronPinVerification(
-        eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords
-        .builder().extendedUser(extendedUser).build()));
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
     sessionData.setUsePinForPatronVerification(true);
@@ -380,10 +376,8 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(recallsResponse),
         Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
         Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockPasswordVerifier.doPatronPasswordVerification(
-        eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords
-        .builder().extendedUser(extendedUser).passwordVerified(false).build()));
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -409,7 +403,7 @@ public class PatronRepositoryTests {
           assertNull(patronInformationResponse.getOverdueItemsLimit());
           assertNull(patronInformationResponse.getChargedItemsLimit());
           assertTrue(patronInformationResponse.getValidPatron());
-          assertFalse(patronInformationResponse.getValidPatronPassword());
+          assertNull(patronInformationResponse.getValidPatronPassword());
           assertEquals(CurrencyType.USD, patronInformationResponse.getCurrencyType());
           assertEquals("1.0", patronInformationResponse.getFeeAmount());
           assertNull(patronInformationResponse.getFeeLimit());
@@ -495,10 +489,8 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(recallsResponse),
         Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
         Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockPasswordVerifier.doPatronPasswordVerification(
-        eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords
-        .builder().extendedUser(extendedUser).passwordVerified(false).build()));
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -734,10 +726,6 @@ public class PatronRepositoryTests {
         Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
         Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
 
-    doReturn(Future.failedFuture(new Exception("blah")))
-        .when(mockLoginRepository)
-            .patronLoginNoCache(eq(extendedUser.getUser().getUsername()), anyString(), any());
-
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
     final PasswordVerifier passwordVerifier
@@ -751,7 +739,7 @@ public class PatronRepositoryTests {
           assertEquals(patronIdentifier, patronInformationResponse.getPatronIdentifier());
           assertEquals("Darius Auer", patronInformationResponse.getPersonalName());
           assertTrue(patronInformationResponse.getValidPatron());
-          assertFalse(patronInformationResponse.getValidPatronPassword());
+          assertNull(patronInformationResponse.getValidPatronPassword());
           assertEquals(CurrencyType.USD, patronInformationResponse.getCurrencyType());
           assertEquals("1.0", patronInformationResponse.getFeeAmount());
           assertNull(patronInformationResponse.getFeeLimit());
@@ -825,9 +813,8 @@ public class PatronRepositoryTests {
           .thenReturn(Future.succeededFuture(recallsResponse),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-        .extendedUser(extendedUser).build()));
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -937,9 +924,8 @@ public class PatronRepositoryTests {
           .thenReturn(Future.succeededFuture(recallsResponse),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-        .extendedUser(extendedUser).build()));
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -1388,9 +1374,8 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(recallsResponse),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
             Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-        .extendedUser(extendedUser).build()));
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -1503,9 +1488,8 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(recallsResponse),
         Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
         Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-        .extendedUser(extendedUser).build()));
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -1589,9 +1573,8 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(recallsResponse),
         Future.succeededFuture(new JsonObject().put("requests", new JsonArray())),
         Future.succeededFuture(new JsonObject().put("requests", new JsonArray())));
-    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-        .extendedUser(extendedUser).build()));
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -1671,9 +1654,8 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByItemId(
         eq("c70f966b-435f-4879-a7d1-3f66e6699191"), eq("Recall"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(recallsResponse2));
-    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-        .extendedUser(extendedUser).build()));
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -1748,8 +1730,8 @@ public class PatronRepositoryTests {
         .patronPassword("0989")
         .build();
 
-    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(null));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -1822,9 +1804,8 @@ public class PatronRepositoryTests {
     final ExtendedUser extendedUser = new ExtendedUser();
     extendedUser.setUser(new User.Builder().active(FALSE).build());
 
-    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-        .extendedUser(extendedUser).build()));
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -1897,9 +1878,8 @@ public class PatronRepositoryTests {
     final ExtendedUser extendedUser = new ExtendedUser();
     extendedUser.setUser(new User.Builder().active(TRUE).build());
 
-    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-          .extendedUser(extendedUser).build()));
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -2034,10 +2014,8 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(null));
-    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-        .extendedUser(extendedUser).build()));
-
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -2132,9 +2110,8 @@ public class PatronRepositoryTests {
     when(mockCirculationRepository.getRequestsByItemId(
         any(), eq("Recall"), any(), any(), any()))
         .thenReturn(Future.succeededFuture(null));
-    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-        .extendedUser(extendedUser).build()));
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -2230,9 +2207,8 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getLoansByUserId(any(), any(), eq(TEST_USER_LOANS_LIMIT), any()))
         .thenReturn(Future.succeededFuture(null));
-    when(mockPasswordVerifier.doPatronPasswordVerification(eq(patronIdentifier), eq("0989"), any()))
-        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-        .extendedUser(extendedUser).build()));
+    when(mockUsersRepository.getUserById(eq(patronIdentifier), any()))
+        .thenReturn(Future.succeededFuture(extendedUser));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 

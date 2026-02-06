@@ -120,6 +120,17 @@ public class PatronRepository {
     final String patronIdentifier = patronInformation.getPatronIdentifier();
     final String patronPassword = patronInformation.getPatronPassword();
 
+    if (patronPassword == null || patronPassword.isBlank()) {
+      log.debug(sessionData, "Patron password is empty or blank, skipping verification");
+      return usersRepository.getUserById(patronIdentifier, sessionData)
+          .compose(extendedUser -> {
+            if (extendedUser != null) {
+              return validPatron(extendedUser, patronInformation, sessionData, null);
+            }
+            return invalidPatron(patronInformation, null);
+          });
+    }
+
     Future<PatronPasswordVerificationRecords> passwordVerificationFuture
         = forceVerifyPinOrPassword(patronIdentifier, patronPassword, sessionData);
     log.debug(sessionData, "Verification return value is {}", passwordVerificationFuture);
@@ -851,6 +862,18 @@ public class PatronRepository {
       String patronPassword,
       SessionData sessionData
   ) {
+    if (!sessionData.isPatronPasswordVerificationRequired()) {
+      return usersRepository.getUserById(patronIdentifier, sessionData)
+          .compose(extendedUser -> {
+            if (extendedUser != null) {
+              return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+                  .extendedUser(extendedUser)
+                  .build());
+            }
+            return Future.succeededFuture(PatronPasswordVerificationRecords.builder().build());
+          });
+    }
+
     if (sessionData.isUsePinForPatronVerification()) {
       return usersRepository.doPatronPinVerification(patronIdentifier, patronPassword, sessionData);
     }
