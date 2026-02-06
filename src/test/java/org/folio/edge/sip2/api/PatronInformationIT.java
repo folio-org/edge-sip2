@@ -115,27 +115,27 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
   })
   void getPatronInformationWithPasswordVerificationRequired_invalidPassword() throws Throwable {
     executeInSession(
-      successLoginExchange(),
-      sip2Exchange(
-        PatronInformationCommand.builder()
-          .patronIdentifier(PATRON_BARCODE)
-          .languageCode(LanguageMapper.ENGLISH)
-          .summary(HOLD_ITEMS)
-          .patronPassword("test_password")
-          .build(),
-        sip2Result -> {
-          assertSuccessfulExchange(sip2Result);
+        successLoginExchange(),
+        sip2Exchange(
+            PatronInformationCommand.builder()
+                .patronIdentifier(PATRON_BARCODE)
+                .languageCode(LanguageMapper.ENGLISH)
+                .summary(HOLD_ITEMS)
+                .patronPassword("test_password")
+                .build(),
+            sip2Result -> {
+              assertSuccessfulExchange(sip2Result);
 
-          var respMsg = sip2Result.getResponseMessage();
-          assertThat(respMsg).startsWith("64");
+              var respMsg = sip2Result.getResponseMessage();
+              assertThat(respMsg).startsWith("64");
 
-          var patronInfo = new PatronInformationResponseParser(delimiter, "America/New_York")
-            .parse(respMsg);
+              var patronInfo = new PatronInformationResponseParser(delimiter, "America/New_York")
+                  .parse(respMsg);
 
-          assertThat(patronInfo.getValidPatron()).isTrue();
-          assertThat(patronInfo.getValidPatronPassword()).isFalse();
-        }
-      ));
+              assertThat(patronInfo.getValidPatron()).isTrue();
+              assertThat(patronInfo.getValidPatronPassword()).isFalse();
+            }
+        ));
   }
 
   @Test
@@ -156,27 +156,27 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
   })
   void getPatronInformationWithPasswordVerificationRequired_validPassword() throws Throwable {
     executeInSession(
-      successLoginExchange(),
-      sip2Exchange(
-        PatronInformationCommand.builder()
-          .patronIdentifier(PATRON_BARCODE)
-          .languageCode(LanguageMapper.ENGLISH)
-          .summary(HOLD_ITEMS)
-          .patronPassword("correct_password")
-          .build(),
-        sip2Result -> {
-          assertSuccessfulExchange(sip2Result);
+        successLoginExchange(),
+        sip2Exchange(
+            PatronInformationCommand.builder()
+                .patronIdentifier(PATRON_BARCODE)
+                .languageCode(LanguageMapper.ENGLISH)
+                .summary(HOLD_ITEMS)
+                .patronPassword("correct_password")
+                .build(),
+            sip2Result -> {
+              assertSuccessfulExchange(sip2Result);
 
-          var respMsg = sip2Result.getResponseMessage();
-          assertThat(respMsg).startsWith("64");
+              var respMsg = sip2Result.getResponseMessage();
+              assertThat(respMsg).startsWith("64");
 
-          var patronInfo = new PatronInformationResponseParser(delimiter, "America/New_York")
-            .parse(respMsg);
+              var patronInfo = new PatronInformationResponseParser(delimiter, "America/New_York")
+                  .parse(respMsg);
 
-          assertThat(patronInfo.getValidPatron()).isTrue();
-          assertThat(patronInfo.getValidPatronPassword()).isTrue();
-        }
-      ));
+              assertThat(patronInfo.getValidPatron()).isTrue();
+              assertThat(patronInfo.getValidPatronPassword()).isTrue();
+            }
+        ));
   }
 
   private static PatronInformationResponse expectedPatronInfoWithHolds() {
