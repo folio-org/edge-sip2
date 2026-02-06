@@ -2,7 +2,6 @@ package org.folio.edge.sip2.support.response;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.Language;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
