@@ -34,6 +34,8 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang3.StringUtils;
 import org.folio.edge.sip2.domain.messages.PatronAccountInfo;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
@@ -120,7 +122,7 @@ public class PatronRepository {
     final String patronIdentifier = patronInformation.getPatronIdentifier();
     final String patronPassword = patronInformation.getPatronPassword();
 
-    if (patronPassword == null || patronPassword.isBlank()) {
+    if (StringUtils.isBlank(patronPassword)) {
       log.debug(sessionData, "Patron password is empty or blank, skipping verification");
       return usersRepository.getUserById(patronIdentifier, sessionData)
           .compose(extendedUser -> {
