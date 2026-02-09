@@ -64,7 +64,7 @@
     <testcontainers-bom.version>1.21.4</testcontainers-bom.version>
     <wiremock.version>3.13.2</wiremock.version>
     <bcpkix-jdk15to18.version>1.83</bcpkix-jdk15to18.version>
-    <assertj-core.version>3.27.6</assertj-core.version>
+    <assertj-core.version>3.27.7</assertj-core.version>
 
     <!-- Maven plugin versions -->
     <maven-release-plugin.version>3.3.1</maven-release-plugin.version>
