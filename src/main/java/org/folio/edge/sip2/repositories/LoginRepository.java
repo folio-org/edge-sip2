@@ -112,8 +112,7 @@ public class LoginRepository {
    */
   public Future<String> patronLoginNoCache(String username, String password, SessionData sd) {
     if (StringUtils.isAnyBlank(password, username)) {
-      log.debug(sd,
-          "patronLoginNoCache:: No password or username provided for patron login, skipping login");
+      log.debug(sd, "patronLoginNoCache:: No password or username provided for login");
       return succeededFuture(null);
     }
 

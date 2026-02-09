@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 @RequiredArgsConstructor
 public abstract class Sip2ResponseParser<T> {
@@ -32,6 +33,10 @@ public abstract class Sip2ResponseParser<T> {
     }
     char value = messageChars[position++];
     return value == 'Y';
+  }
+
+  protected Boolean parseBoolean(String value) {
+    return StringUtils.isNotBlank(value) && value.charAt(0) == 'Y';
   }
 
   protected Integer parseInteger(char[] messageChars, int length) {

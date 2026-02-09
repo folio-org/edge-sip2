@@ -4,9 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.edge.sip2.support.Sip2TestCommand.sip2Exchange;
 import static org.folio.edge.sip2.support.model.PatronInformationCommand.PatronInfoSummaryType.HOLD_ITEMS;
 
+import java.time.OffsetDateTime;
 import java.util.EnumSet;
 import java.util.List;
 import org.folio.edge.sip2.api.support.AbstractErrorDetectionEnabledTest;
+import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.Language;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
@@ -20,6 +22,8 @@ import org.junit.jupiter.api.Test;
 
 @IntegrationTest
 class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
+
+  private static final String TIMEZONE = "Europe/Paris";
 
   @Test
   @WiremockStubs({
@@ -37,6 +41,7 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
       "/wiremock/stubs/mod-fee-fines/200-get-feefines-empty.json",
   })
   void getPatronInformation_positive_holdSummaryType() throws Throwable {
+    var currentTs = OffsetDateTime.now().toInstant();
     executeInSession(
         successLoginExchange(),
         sip2Exchange(
@@ -47,12 +52,13 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
               var respMsg = sip2Result.getResponseMessage();
               assertThat(respMsg).startsWith("64");
 
-              var patronInfo = new PatronInformationResponseParser(delimiter, "America/New_York")
-                  .parse(respMsg);
-
+              var patronInfo = parseResponse(respMsg);
               assertThat(patronInfo)
+                  .satisfies(pi -> assertThat(pi.getTransactionDate().toInstant())
+                      .isAfterOrEqualTo(currentTs.minusSeconds(1))
+                      .isBeforeOrEqualTo(currentTs.plusSeconds(5)))
                   .usingRecursiveComparison()
-                  .ignoringFields("transactionDate", "institutionId", "currencyType", "feeAmount")
+                  .ignoringFields("transactionDate")
                   .isEqualTo(expectedPatronInfoWithHolds());
             }
         ));
@@ -89,9 +95,7 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
               var respMsg = sip2Result.getResponseMessage();
               assertThat(respMsg).startsWith("64");
 
-              var patronInfo = new PatronInformationResponseParser(delimiter, "America/New_York")
-                  .parse(respMsg);
-
+              var patronInfo = parseResponse(respMsg);
               assertThat(patronInfo.getHoldItems()).isEmpty();
             }
         ));
@@ -129,9 +133,7 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
               var respMsg = sip2Result.getResponseMessage();
               assertThat(respMsg).startsWith("64");
 
-              var patronInfo = new PatronInformationResponseParser(delimiter, "America/New_York")
-                  .parse(respMsg);
-
+              var patronInfo = parseResponse(respMsg);
               assertThat(patronInfo.getValidPatron()).isTrue();
               assertThat(patronInfo.getValidPatronPassword()).isFalse();
             }
@@ -170,13 +172,15 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
               var respMsg = sip2Result.getResponseMessage();
               assertThat(respMsg).startsWith("64");
 
-              var patronInfo = new PatronInformationResponseParser(delimiter, "America/New_York")
-                  .parse(respMsg);
-
+              var patronInfo = parseResponse(respMsg);
               assertThat(patronInfo.getValidPatron()).isTrue();
               assertThat(patronInfo.getValidPatronPassword()).isTrue();
             }
         ));
+  }
+
+  private static PatronInformationResponse parseResponse(String respMsg) {
+    return new PatronInformationResponseParser(delimiter, TIMEZONE).parse(respMsg);
   }
 
   private static PatronInformationResponse expectedPatronInfoWithHolds() {
@@ -188,10 +192,13 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
       .chargedItemsCount(1)
       .fineItemsCount(1)
       .recallItemsCount(0)
+      .institutionId("")
       .patronIdentifier(PATRON_BARCODE)
       .personalName("panic morty")
       .validPatron(true)
       .validPatronPassword(null)
+      .currencyType(CurrencyType.EUR)
+      .feeAmount("25.0")
       .holdItems(List.of("testItemBarcode1"))
       .overdueItems(List.of())
       .chargedItems(List.of())
