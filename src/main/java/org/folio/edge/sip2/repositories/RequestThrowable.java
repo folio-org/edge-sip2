@@ -1,6 +1,7 @@
 package org.folio.edge.sip2.repositories;
 
-import io.vertx.core.impl.NoStackTraceThrowable;
+import io.vertx.core.VertxException;
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -9,11 +10,12 @@ import java.util.List;
  * @author mreno-EBSCO
  *
  */
-public abstract class RequestThrowable extends NoStackTraceThrowable {
-  private static final long serialVersionUID = 252204234554468581L;
+public abstract class RequestThrowable extends VertxException {
+
+  @Serial private static final long serialVersionUID = 252204234554468581L;
 
   public RequestThrowable(String message) {
-    super(message);
+    super(message, true);
   }
 
   public abstract List<String> getErrorMessages();

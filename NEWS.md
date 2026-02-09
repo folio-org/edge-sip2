@@ -16,6 +16,7 @@
 * [SIP2-304](https://folio-org.atlassian.net/browse/SIP2-304): Remove required credentials for s3 store
 * [SIP2-279](https://folio-org.atlassian.net/browse/SIP2-279): Implement loading configuration from mod-settings
 * [SIP2-227](https://folio-org.atlassian.net/browse/SIP2-227): Resolve SSL connection failures when using PEM configuration
+* [SIP2-290](https://folio-org.atlassian.net/browse/SIP2-290): Upgrade module to Vert.x 5.0
 
 
 ## 3.4.0 2025-03-14
