@@ -157,6 +157,28 @@ class LoginRepositoryTest {
   }
 
   @Test
+  void patronLoginNoCache_emptyPassword(VertxTestContext testContext) {
+    var sessionData = sessionData();
+    var resultFuture = loginRepository.patronLoginNoCache(USERNAME, "", sessionData);
+
+    resultFuture.onComplete(testContext.succeeding(result -> {
+      assertNull(result);
+      testContext.completeNow();
+    }));
+  }
+
+  @Test
+  void patronLoginNoCache_emptyUsername(VertxTestContext testContext) {
+    var sessionData = sessionData();
+    var resultFuture = loginRepository.patronLoginNoCache("", PASSWORD, sessionData);
+
+    resultFuture.onComplete(testContext.succeeding(result -> {
+      assertNull(result);
+      testContext.completeNow();
+    }));
+  }
+
+  @Test
   void getSessionAccessToken_positive(VertxTestContext testContext) {
     var sessionData = sessionData();
     var expiration = OffsetDateTime.now().plusMinutes(5);
