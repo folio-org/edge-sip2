@@ -34,7 +34,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.edge.sip2.domain.messages.PatronAccountInfo;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
@@ -121,19 +120,8 @@ public class PatronRepository {
     final String patronIdentifier = patronInformation.getPatronIdentifier();
     final String patronPassword = patronInformation.getPatronPassword();
 
-    if (StringUtils.isBlank(patronPassword)) {
-      log.debug(sessionData, "Patron password is empty or blank, skipping verification");
-      return usersRepository.getUserById(patronIdentifier, sessionData)
-          .compose(extendedUser -> {
-            if (extendedUser != null) {
-              return validPatron(extendedUser, patronInformation, sessionData, null);
-            }
-            return invalidPatron(patronInformation, null);
-          });
-    }
-
     Future<PatronPasswordVerificationRecords> passwordVerificationFuture
-        = forceVerifyPinOrPassword(patronIdentifier, patronPassword, sessionData);
+        = verifyPinOrPassword(patronIdentifier, patronPassword, sessionData);
     log.debug(sessionData, "Verification return value is {}", passwordVerificationFuture);
     return passwordVerificationFuture
         .onFailure(throwable -> {
@@ -856,30 +844,6 @@ public class PatronRepository {
       return usersRepository.verifyPatronPin(patronIdentifier, patronPassword, sessionData);
     }
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData);
-  }
-
-  private Future<PatronPasswordVerificationRecords> forceVerifyPinOrPassword(
-      String patronIdentifier,
-      String patronPassword,
-      SessionData sessionData
-  ) {
-    if (!sessionData.isPatronPasswordVerificationRequired()) {
-      return usersRepository.getUserById(patronIdentifier, sessionData)
-          .compose(extendedUser -> {
-            if (extendedUser != null) {
-              return Future.succeededFuture(PatronPasswordVerificationRecords.builder()
-                  .extendedUser(extendedUser)
-                  .build());
-            }
-            return Future.succeededFuture(PatronPasswordVerificationRecords.builder().build());
-          });
-    }
-
-    if (sessionData.isUsePinForPatronVerification()) {
-      return usersRepository.doPatronPinVerification(patronIdentifier, patronPassword, sessionData);
-    }
-    return passwordVerifier.doPatronPasswordVerification(patronIdentifier, patronPassword,
-        sessionData);
   }
 }
 
