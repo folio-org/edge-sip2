@@ -17,6 +17,7 @@
 * [SIP2-279](https://folio-org.atlassian.net/browse/SIP2-279): Implement loading configuration from mod-settings
 * [SIP2-227](https://folio-org.atlassian.net/browse/SIP2-227): Resolve SSL connection failures when using PEM configuration
 * [SIP2-290](https://folio-org.atlassian.net/browse/SIP2-290): Upgrade module to Vert.x 5.0
+* [SIP2-287](https://folio-org.atlassian.net/browse/SIP2-287): Fix patron account blocking from unnecessary password verification
 
 
 ## 3.4.0 2025-03-14

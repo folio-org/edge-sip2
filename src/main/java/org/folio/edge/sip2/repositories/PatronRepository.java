@@ -121,7 +121,7 @@ public class PatronRepository {
     final String patronPassword = patronInformation.getPatronPassword();
 
     Future<PatronPasswordVerificationRecords> passwordVerificationFuture
-        = forceVerifyPinOrPassword(patronIdentifier, patronPassword, sessionData);
+        = verifyPinOrPassword(patronIdentifier, patronPassword, sessionData);
     log.debug(sessionData, "Verification return value is {}", passwordVerificationFuture);
     return passwordVerificationFuture
         .onFailure(throwable -> {
@@ -844,18 +844,6 @@ public class PatronRepository {
       return usersRepository.verifyPatronPin(patronIdentifier, patronPassword, sessionData);
     }
     return passwordVerifier.verifyPatronPassword(patronIdentifier, patronPassword, sessionData);
-  }
-
-  private Future<PatronPasswordVerificationRecords> forceVerifyPinOrPassword(
-      String patronIdentifier,
-      String patronPassword,
-      SessionData sessionData
-  ) {
-    if (sessionData.isUsePinForPatronVerification()) {
-      return usersRepository.doPatronPinVerification(patronIdentifier, patronPassword, sessionData);
-    }
-    return passwordVerifier.doPatronPasswordVerification(patronIdentifier, patronPassword,
-        sessionData);
   }
 }
 

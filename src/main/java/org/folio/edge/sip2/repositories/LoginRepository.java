@@ -24,6 +24,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.time.OffsetDateTime;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.folio.edge.sip2.domain.integration.login.FolioLoginResponse;
 import org.folio.edge.sip2.domain.messages.requests.Login;
 import org.folio.edge.sip2.domain.messages.responses.LoginResponse;
@@ -110,6 +111,11 @@ public class LoginRepository {
    * @return a Future containing the access token as a String
    */
   public Future<String> patronLoginNoCache(String username, String password, SessionData sd) {
+    if (StringUtils.isAnyBlank(password, username)) {
+      log.debug(sd, "patronLoginNoCache:: No password or username provided for login");
+      return succeededFuture(null);
+    }
+
     return performLogin(sd, username, password, true)
         .map(FolioLoginResponse::getAccessToken);
   }
