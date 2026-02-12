@@ -1,0 +1,53 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/circulation/renew-by-barcode",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$[?(@.itemBarcode == 'renewableItem123')]"
+      },
+      {
+        "matchesJsonPath": "$[?(@.userBarcode == 'testBarcode')]"
+      },
+      {
+        "matchesJsonPath": "$[?(@.servicePointId == '1a62fa88-e887-4454-a345-24b4a01095fa')]"
+      }
+    ]
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "id": "loan-id-123",
+      "userId": "user-id-456",
+      "itemId": "item-id-789",
+      "dueDate": "2026-03-15T23:59:59.000Z",
+      "loanDate": "2026-02-11T10:00:00.000Z",
+      "renewalCount": 1,
+      "item": {
+        "id": "item-id-789",
+        "title": "Test Book Title",
+        "barcode": "renewableItem123",
+        "status": {
+          "name": "Checked out"
+        },
+        "location": {
+          "name": "Main Library"
+        },
+        "materialType": {
+          "name": "book"
+        }
+      }
+    }
+  }
+}
