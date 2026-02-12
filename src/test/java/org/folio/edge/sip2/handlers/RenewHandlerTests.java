@@ -107,15 +107,12 @@ class RenewHandlerTests {
     final RenewHandler handler = new RenewHandler(mockCirculationRepository,
         FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.RENEW_RESPONSE));
     final SessionData sessionData = TestUtils.getMockedSessionData();
-    final String expectedPrefix = "30" + "0" + "N";
+    final String expectedPrefix = "300N";
 
     handler.execute(renew, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
           assertNotNull(sipMessage);
-          assertEquals(expectedPrefix.charAt(0), sipMessage.charAt(0));
-          assertEquals(expectedPrefix.charAt(1), sipMessage.charAt(1));
-          assertEquals(expectedPrefix.charAt(2), sipMessage.charAt(2));
-          assertEquals(expectedPrefix.charAt(3), sipMessage.charAt(3));
+          assertEquals(expectedPrefix, sipMessage.substring(0, 4));
           testContext.completeNow();
         }
       )));
