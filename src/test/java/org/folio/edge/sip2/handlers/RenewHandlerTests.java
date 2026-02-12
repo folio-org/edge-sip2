@@ -111,14 +111,14 @@ class RenewHandlerTests {
 
     handler.execute(renew, sessionData).onComplete(
         testContext.succeeding(sipMessage -> testContext.verify(() -> {
-            assertNotNull(sipMessage);
-            assertEquals(expectedPrefix.charAt(0), sipMessage.charAt(0));
-            assertEquals(expectedPrefix.charAt(1), sipMessage.charAt(1));
-            assertEquals(expectedPrefix.charAt(2), sipMessage.charAt(2));
-            assertEquals(expectedPrefix.charAt(3), sipMessage.charAt(3));
-            testContext.completeNow();
-          }
-        )));
+          assertNotNull(sipMessage);
+          assertEquals(expectedPrefix.charAt(0), sipMessage.charAt(0));
+          assertEquals(expectedPrefix.charAt(1), sipMessage.charAt(1));
+          assertEquals(expectedPrefix.charAt(2), sipMessage.charAt(2));
+          assertEquals(expectedPrefix.charAt(3), sipMessage.charAt(3));
+          testContext.completeNow();
+        }
+      )));
   }
 
   @Test
