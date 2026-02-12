@@ -15,6 +15,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.vertx.core.Future;
@@ -1105,10 +1106,10 @@ class CirculationRepositoryTests {
         .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
+
     final CirculationRepository circulationRepository = new CirculationRepository(
         mockFolioProvider, mockPasswordVerifier, itemRepository,
         usersRepository, clock);
-
     circulationRepository.performRenewCommand(renew, sessionData).onComplete(
         testContext.succeeding(renewResponse -> testContext.verify(() -> {
           assertNotNull(renewResponse);
@@ -1121,7 +1122,68 @@ class CirculationRepositoryTests {
         })));
   }
 
+  @Test
+  void canRenewButWithWarningMessages(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock ItemRepository itemRepository,
+      @Mock UsersRepository mockUsersRepository) {
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final OffsetDateTime nbDueDate = OffsetDateTime.now().plusDays(30);
+    final String patronIdentifier = "1029384756";
+    final String itemIdentifier = "1234567890";
+    final String title = "Some book";
 
+    final Renew renew = Renew.builder()
+        .noBlock(FALSE)
+        .transactionDate(OffsetDateTime.now())
+        .nbDueDate(nbDueDate)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .itemIdentifier(itemIdentifier)
+        .terminalPassword("1234")
+        .patronPassword("7890")
+        .feeAcknowledged(FALSE)
+        .build();
+
+    final JsonObject response = new JsonObject()
+        .put("item", new JsonObject()
+        .put("title", title)
+        .put("barcode", itemIdentifier))
+        .put("dueDate", nbDueDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+
+    IResource resourceWithErrors = mock(IResource.class);
+    when(resourceWithErrors.getResource()).thenReturn(response);
+    when(resourceWithErrors.getErrorMessages())
+        .thenReturn(Collections.singletonList("Item has outstanding fees"));
+    when(mockFolioProvider.createResource(any()))
+        .thenReturn(Future.succeededFuture(resourceWithErrors));
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), eq("7890"), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder().build()));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    final CirculationRepository circulationRepository = new CirculationRepository(
+        mockFolioProvider, mockPasswordVerifier, itemRepository,
+        mockUsersRepository, clock);
+    circulationRepository.performRenewCommand(renew, sessionData).onComplete(
+        testContext.succeeding(renewResponse -> testContext.verify(() -> {
+          assertNotNull(renewResponse);
+          assertFalse(renewResponse.getOk());
+          assertTrue(renewResponse.getRenewalOk());
+          assertEquals("diku", renewResponse.getInstitutionId());
+          assertEquals(patronIdentifier, renewResponse.getPatronIdentifier());
+          assertEquals(itemIdentifier, renewResponse.getItemIdentifier());
+          assertEquals(title, renewResponse.getTitleIdentifier());
+          assertEquals(nbDueDate, renewResponse.getDueDate());
+          assertNotNull(renewResponse.getScreenMessage());
+          assertEquals(Collections.singletonList("Item has outstanding fees"),
+              renewResponse.getScreenMessage());
+
+          testContext.completeNow();
+        })));
+  }
 
   private static Stream<Arguments> provideCirculationErrors() {
     return Stream.of(
