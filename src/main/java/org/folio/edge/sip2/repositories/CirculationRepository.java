@@ -673,7 +673,7 @@ public class CirculationRepository {
             var errorMessage = Optional.of(resource.getErrorMessages())
                 .filter(v -> !v.isEmpty())
                 .orElse(null);
-            final Boolean ok = renewalOk && (errorMessage == null);
+            final Boolean ok = renewalOk && errorMessage == null;
 
             if (dueDate != null) {
               return Future.succeededFuture(buildRenewResponse(

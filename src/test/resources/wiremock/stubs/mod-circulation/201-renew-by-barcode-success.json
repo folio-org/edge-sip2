@@ -12,13 +12,11 @@
     },
     "bodyPatterns": [
       {
-        "matchesJsonPath": "$[?(@.itemBarcode == 'renewableItem123')]"
-      },
-      {
-        "matchesJsonPath": "$[?(@.userBarcode == 'testBarcode')]"
-      },
-      {
-        "matchesJsonPath": "$[?(@.servicePointId == '1a62fa88-e887-4454-a345-24b4a01095fa')]"
+        "equalToJson": {
+          "itemBarcode": "renewableItem123",
+          "userBarcode": "testBarcode",
+          "servicePointId": "1a62fa88-e887-4454-a345-24b4a01095fa"
+        }
       }
     ]
   },

@@ -7,6 +7,9 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
@@ -14,6 +17,17 @@ import org.apache.commons.lang3.StringUtils;
 public abstract class Sip2ResponseParser<T> {
 
   protected static final DateTimeFormatter DATE_TIME_FORMATTER = ofPattern("yyyyMMdd    HHmmss");
+  private static final Map<Character, Boolean> BOOLEAN_VALUES;
+
+  static {
+    Map<Character, Boolean> map = new HashMap<>();
+    map.put('Y', true);
+    map.put('1', true);
+    map.put('N', false);
+    map.put('0', false);
+    map.put('U', null);
+    BOOLEAN_VALUES = Collections.unmodifiableMap(map);
+  }
 
   protected int position;
   protected final char delimiter;
@@ -32,11 +46,14 @@ public abstract class Sip2ResponseParser<T> {
       return null;
     }
     char value = messageChars[position++];
-    return value == 'Y';
+    return BOOLEAN_VALUES.getOrDefault(value, null);
   }
 
   protected Boolean parseBoolean(String value) {
-    return StringUtils.isNotBlank(value) && value.charAt(0) == 'Y';
+    if (StringUtils.isBlank(value)) {
+      return null;
+    }
+    return BOOLEAN_VALUES.getOrDefault(value.charAt(0), null);
   }
 
   protected Integer parseInteger(char[] messageChars, int length) {
@@ -92,6 +109,19 @@ public abstract class Sip2ResponseParser<T> {
         .toOffsetDateTime();
     } catch (DateTimeParseException e) {
       throw new IllegalArgumentException("Invalid date time format", e);
+    }
+  }
+
+  protected OffsetDateTime parseDateTime(String dateTimeStr) {
+    if (dateTimeStr == null || dateTimeStr.length() != 18) {
+      return null;
+    }
+    try {
+      return LocalDateTime.parse(dateTimeStr, DATE_TIME_FORMATTER)
+        .atZone(ZoneId.of(timezone))
+        .toOffsetDateTime();
+    } catch (DateTimeParseException e) {
+      return null;
     }
   }
 }
