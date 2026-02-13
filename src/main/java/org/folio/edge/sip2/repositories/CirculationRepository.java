@@ -673,15 +673,16 @@ public class CirculationRepository {
             var errorMessage = Optional.of(resource.getErrorMessages())
                 .filter(v -> !v.isEmpty())
                 .orElse(null);
+            final Boolean ok = renewalOk && errorMessage == null;
 
             if (dueDate != null) {
               return Future.succeededFuture(buildRenewResponse(
-                true, renewalOk, dueDate, renew, itemTitle, errorMessage));
+                ok, renewalOk, dueDate, renew, itemTitle, errorMessage));
             }
 
             if (barcode == null) {
               return Future.succeededFuture(buildRenewResponse(
-                true, renewalOk, null, renew, itemTitle, errorMessage));
+                ok, renewalOk, null, renew, itemTitle, errorMessage));
             }
             return itemRepository.getItemAndLoanById(barcode, sessionData)
                 .otherwiseEmpty()
@@ -695,7 +696,7 @@ public class CirculationRepository {
                     }
                   }
                   return buildRenewResponse(
-                    true, renewalOk, fallbackDueDate, renew,
+                    ok, renewalOk, fallbackDueDate, renew,
                         itemTitle, errorMessage);
                 });
           });

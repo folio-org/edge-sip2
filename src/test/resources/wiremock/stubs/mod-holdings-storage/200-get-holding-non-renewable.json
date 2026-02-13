@@ -1,0 +1,25 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/holdings-storage/holdings/holding-id-999",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "id": "holding-id-999",
+      "instanceId": "instance-id-999",
+      "permanentLocationId": "location-id-999"
+    }
+  }
+}

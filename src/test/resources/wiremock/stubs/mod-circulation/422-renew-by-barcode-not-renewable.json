@@ -1,0 +1,42 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/circulation/renew-by-barcode",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "itemBarcode": "nonRenewableItem456",
+          "userBarcode": "testBarcode",
+          "servicePointId": "1a62fa88-e887-4454-a345-24b4a01095fa"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 422,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "errors": [
+        {
+          "message": "loan is not renewable",
+          "parameters": [
+            {
+              "key": "itemBarcode",
+              "value": "nonRenewableItem456"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

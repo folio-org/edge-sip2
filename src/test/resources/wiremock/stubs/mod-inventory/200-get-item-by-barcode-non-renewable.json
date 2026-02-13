@@ -1,0 +1,45 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/inventory/items",
+    "queryParameters": {
+      "query": {
+        "matches": ".*barcode==\"nonRenewableItem456\".*"
+      }
+    },
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "items": [
+        {
+          "id": "item-id-999",
+          "barcode": "nonRenewableItem456",
+          "holdingsRecordId": "holding-id-999",
+          "status": {
+            "name": "Checked out"
+          },
+          "title": "Non-Renewable Book",
+          "materialType": {
+            "name": "book"
+          },
+          "effectiveLocation": {
+            "name": "Main Library"
+          }
+        }
+      ],
+      "totalRecords": 1
+    }
+  }
+}

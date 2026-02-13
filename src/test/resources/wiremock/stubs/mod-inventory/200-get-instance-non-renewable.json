@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/inventory/instances/instance-id-999",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "id": "instance-id-999",
+      "title": "Non-Renewable Book"
+    }
+  }
+}

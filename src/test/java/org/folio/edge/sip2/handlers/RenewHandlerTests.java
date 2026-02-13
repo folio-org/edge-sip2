@@ -13,10 +13,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import java.time.Clock;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 import org.folio.edge.sip2.api.support.TestUtils;
 import org.folio.edge.sip2.domain.messages.requests.Renew;
 import org.folio.edge.sip2.domain.messages.responses.RenewResponse;
@@ -40,11 +37,6 @@ class RenewHandlerTests {
 
     final String patronIdentifier = "1029384756";
     final Clock clock = TestUtils.getUtcFixedClock();
-    final String title = "Some book";
-    final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
-    final String userId = UUID.randomUUID().toString();
-    final String itemId = UUID.randomUUID().toString();
-    List<String> emptyItems = new ArrayList<String>();
 
     final Renew renew = Renew.builder()
         .transactionDate(OffsetDateTime.now())
@@ -84,17 +76,55 @@ class RenewHandlerTests {
   }
 
   @Test
+  void canRenewWithHandler_negative_renewalNotAllowed(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock CirculationRepository mockCirculationRepository) {
+
+    final String patronIdentifier = "1029384756";
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final Renew renew = Renew.builder()
+        .transactionDate(OffsetDateTime.now())
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .patronPassword("7890")
+        .itemIdentifier("item123")
+        .terminalPassword("1234")
+        .feeAcknowledged(FALSE)
+        .build();
+
+    when(mockCirculationRepository.performRenewCommand(any(), any()))
+        .thenReturn(Future.succeededFuture(RenewResponse.builder()
+        .ok(FALSE)
+        .renewalOk(FALSE)
+        .transactionDate(OffsetDateTime.now(clock))
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .itemIdentifier("item123")
+        .screenMessage(Collections.singletonList("loan is not renewable"))
+        .build()
+      ));
+
+    final RenewHandler handler = new RenewHandler(mockCirculationRepository,
+        FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.RENEW_RESPONSE));
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+    final String expectedPrefix = "300N";
+
+    handler.execute(renew, sessionData).onComplete(
+        testContext.succeeding(sipMessage -> testContext.verify(() -> {
+          assertNotNull(sipMessage);
+          assertEquals(expectedPrefix, sipMessage.substring(0, 4));
+          testContext.completeNow();
+        }
+      )));
+  }
+
+  @Test
    void canRenewWithHandlerFail(Vertx vertx,
                                   VertxTestContext testContext,
                                   @Mock CirculationRepository mockCirculationRepository) {
 
     final String patronIdentifier = "1029384756";
     final Clock clock = TestUtils.getUtcFixedClock();
-    final String title = "Some book";
-    final OffsetDateTime nbDueDate =  OffsetDateTime.now().plusDays(30);
-    final String userId = UUID.randomUUID().toString();
-    final String itemId = UUID.randomUUID().toString();
-    List<String> emptyItems = new ArrayList<String>();
 
     final Renew renew = Renew.builder()
         .transactionDate(OffsetDateTime.now())
@@ -134,5 +164,4 @@ class RenewHandlerTests {
 
 
   }
-
 }
