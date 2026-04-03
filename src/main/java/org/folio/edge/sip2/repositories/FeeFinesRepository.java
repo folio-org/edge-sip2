@@ -453,6 +453,9 @@ public class FeeFinesRepository {
                 patronAccountInfo.setItemBarcode(accountJson.getString("barcode"));
                 patronAccountInfo.setFeeFineId(accountJson.getString("feeFineId"));
                 patronAccountInfo.setFeeFineAmount(accountJson.getDouble("amount"));
+                String accountDate = getDateFromAccountJson(accountJson);
+                patronAccountInfo.setFeeCreationDate(accountDate != null
+                    ? OffsetDateTime.parse(accountDate) : null);
                 patronAccountInfoList.add(patronAccountInfo);
               }
 
@@ -467,7 +470,7 @@ public class FeeFinesRepository {
                   acctIdList,
                   headers,
                   sessionData);
-              
+
               feePaymentRequestData.setUserName(sessionData.getUsername());
 
               log.debug(sessionData, "Json for payment request is {}",
@@ -585,5 +588,18 @@ public class FeeFinesRepository {
 
   private static String cqlUserId(String userId) {
     return "userId==" + StringUtil.cqlEncode(userId);
+  }
+
+  private String getDateFromAccountJson(JsonObject accountJson) {
+    if (accountJson == null) {
+      return null;
+    }
+    if (accountJson.getString("dateCreated") != null) {
+      return accountJson.getString("dateCreated");
+    }
+    if (accountJson.getJsonObject("metadata") != null) {
+      return accountJson.getJsonObject("metadata").getString("createdDate");
+    }
+    return null;
   }
 }
