@@ -1,25 +1,52 @@
-## 3.5.0 In Progress
-* [SIP2-98](https://folio-org.atlassian.net/browse/SIP2-98): Remove leading/trailing whitespaces for item barcodes
-* [SIP2-135](https://folio-org.atlassian.net/browse/SIP2-135): Add IPv6 matching
-* [SIP2-247](https://folio-org.atlassian.net/browse/SIP2-247): Add environment variable for health check port
-* [SIP2-250](https://folio-org.atlassian.net/browse/SIP2-250): Add the ability to use HA proxy
-* [SIP2-257](https://folio-org.atlassian.net/browse/SIP2-257): Increase default fetch size for circulation loans
-* [SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276): Add support for MYR currency type
-* [SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276): Add support for MYR currency type in FeePaidMessageParser
-* [SIP2-284](https://folio-org.atlassian.net/browse/SIP2-284): Update for Split Search & Browse APIs
-* [SIP2-286](https://folio-org.atlassian.net/browse/SIP2-286): Improve logging
-* [SIP2-291](https://folio-org.atlassian.net/browse/SIP2-291): Implement a single login operation per session
-* [SIP2-296](https://folio-org.atlassian.net/browse/SIP2-296): Update hard-coded currency list
-* [SIP2-242](https://folio-org.atlassian.net/browse/SIP2-242): Skip null barcodes in PatronInformation response
-* [SIP2-294](https://folio-org.atlassian.net/browse/SIP2-294): Replace com.github.mikelee2082:vertx-config-s3 with folio-s3-client configuration
-* [SIP2-255](https://folio-org.atlassian.net/browse/SIP2-255): Add new capabilities to resolve tenants (location code, username prefix)
-* [SIP2-304](https://folio-org.atlassian.net/browse/SIP2-304): Remove required credentials for s3 store
-* [SIP2-279](https://folio-org.atlassian.net/browse/SIP2-279): Implement loading configuration from mod-settings
-* [SIP2-227](https://folio-org.atlassian.net/browse/SIP2-227): Resolve SSL connection failures when using PEM configuration
-* [SIP2-290](https://folio-org.atlassian.net/browse/SIP2-290): Upgrade module to Vert.x 5.0
-* [SIP2-287](https://folio-org.atlassian.net/browse/SIP2-287): Fix patron account blocking from unnecessary password verification
-* [SIP2-303](https://folio-org.atlassian.net/browse/SIP2-303): Fix SIP2 renewal response code for non-renewable loans
+## 4.0.0 2026-04-16
 
+### Breaking changes
+* Upgrade module to Vert.x 5.0 ([SIP2-290](https://folio-org.atlassian.net/browse/SIP2-290))
+* Update for Split Search & Browse APIs: `search` 1.3 replaced by `search-inventory` 1.0 ([SIP2-284](https://folio-org.atlassian.net/browse/SIP2-284))
+
+### New APIs versions
+* Requires `search-inventory` v1.0 (replaces `search` v1.3)
+* Requires `locale` v1.0
+* Requires `settings` v1.2
+
+### Features
+* Add IPv6 matching ([SIP2-135](https://folio-org.atlassian.net/browse/SIP2-135))
+* Add environment variable for health check port ([SIP2-247](https://folio-org.atlassian.net/browse/SIP2-247))
+* Add the ability to use HA proxy ([SIP2-250](https://folio-org.atlassian.net/browse/SIP2-250))
+* Add location code and username prefix tenant lookup ([SIP2-255](https://folio-org.atlassian.net/browse/SIP2-255))
+* Increase default fetch size for circulation loans ([SIP2-257](https://folio-org.atlassian.net/browse/SIP2-257))
+* Add support for MYR currency type ([SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276))
+* Implement loading configuration from mod-settings ([SIP2-279](https://folio-org.atlassian.net/browse/SIP2-279))
+* Implement a single login operation per session ([SIP2-291](https://folio-org.atlassian.net/browse/SIP2-291))
+* Update hard-coded currency list ([SIP2-296](https://folio-org.atlassian.net/browse/SIP2-296))
+* Add fee creation date to PatronAccountInfo
+
+### Bug fixes
+* Remove leading/trailing whitespaces for item barcodes ([SIP2-98](https://folio-org.atlassian.net/browse/SIP2-98))
+* Resolve SSL connection failures when using PEM configuration ([SIP2-227](https://folio-org.atlassian.net/browse/SIP2-227))
+* Skip null barcodes in PatronInformation response ([SIP2-242](https://folio-org.atlassian.net/browse/SIP2-242))
+* Fix missing currency values in FeePaidMessageParser ([SIP2-276](https://folio-org.atlassian.net/browse/SIP2-276))
+* Fix patron account blocking from unnecessary password verification ([SIP2-287](https://folio-org.atlassian.net/browse/SIP2-287))
+* Fix SIP2 renewal response code for non-renewable loans ([SIP2-303](https://folio-org.atlassian.net/browse/SIP2-303))
+
+### Tech Dept
+* Use auth client that passes X-Okapi-Tenant ([SIP2-273](https://folio-org.atlassian.net/browse/SIP2-273))
+* Improve logging ([SIP2-286](https://folio-org.atlassian.net/browse/SIP2-286))
+* Replace `vertx-config-s3` with `folio-s3-client` configuration ([SIP2-294](https://folio-org.atlassian.net/browse/SIP2-294))
+* Remove required credentials for s3 store ([SIP2-304](https://folio-org.atlassian.net/browse/SIP2-304))
+
+### Dependencies
+* Bump `vertx` from `4.5.13` to `5.0.6`
+* Bump `raml-module-builder` from `35.4.0` to `36.0.0`
+* Bump `log4j2` from `2.24.3` to `2.25.1`
+* Bump `micrometer` from `1.14.5` to `1.15.3`
+* Add `folio-s3-client` `2.4.0`
+* Add `ipaddress` `5.5.1`
+* Add `lombok` `1.18.42`
+* Add `okapi-common` `7.0.1`
+* Add `commons-net` `3.12.0`
+
+---
 
 ## 3.4.0 2025-03-14
 * [SIP2-244](https://issues.folio.org/browse/SIP2-244): Rename automated patron blocks permission
