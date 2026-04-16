@@ -63,7 +63,7 @@
     <mockito-bom.version>5.21.0</mockito-bom.version>
     <testcontainers-bom.version>1.21.4</testcontainers-bom.version>
     <wiremock.version>3.13.2</wiremock.version>
-    <bcpkix-jdk15to18.version>1.83</bcpkix-jdk15to18.version>
+    <bcpkix-jdk15to18.version>1.84</bcpkix-jdk15to18.version>
     <assertj-core.version>3.27.7</assertj-core.version>
 
     <!-- Maven plugin versions -->
