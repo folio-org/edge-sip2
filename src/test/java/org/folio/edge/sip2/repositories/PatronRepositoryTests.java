@@ -1041,6 +1041,10 @@ public class PatronRepositoryTests {
     when(mockFeeFinesRepository.getFeeAmountByUserId(eq(userId), any()))
         .thenReturn(Future.succeededFuture(queryAccountResponse));
 
+    when(mockFeeFinesRepository.getManualBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject()
+            .put("manualblocks", new JsonArray()).put("totalRecords", 0)));
+
     PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
         mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier,
         clock);
@@ -1111,6 +1115,10 @@ public class PatronRepositoryTests {
     when(mockFeeFinesRepository.getFeeAmountByUserId(eq(userId), any()))
         .thenReturn(Future.succeededFuture(queryAccountResponse));
 
+    when(mockFeeFinesRepository.getManualBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject()
+            .put("manualblocks", new JsonArray()).put("totalRecords", 0)));
+
     PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
         mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier,
         clock);
@@ -1179,6 +1187,76 @@ public class PatronRepositoryTests {
         testContext.succeeding(patronStatusResponse -> testContext.verify(() -> {
           assertNotNull(patronStatusResponse);
           assertEquals(false, patronStatusResponse.getValidPatron());
+          testContext.completeNow();
+        }))
+    );
+  }
+
+  @Test
+  void canPerformPatronStatusWithManualBlocks(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock UsersRepository mockUsersRepository) {
+    final String patronIdentifier = "1029384756";
+    final String patronPassword = "1234";
+    final String institutionId = "diku";
+    final String userId = "99a81cee-d439-42c8-9860-2bd1de881c4a";
+    final String userBarcode = "2349871212";
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final Float feeAmount = 34.50f;
+    final Personal personal = new Personal.Builder()
+        .firstName("Joe")
+        .middleName("Zee")
+        .lastName("Blow")
+        .build();
+    final User user = new User.Builder()
+        .id(userId)
+        .barcode(userBarcode)
+        .personal(personal)
+        .build();
+
+    final ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(user);
+    extendedUser.setPatronGroup("patrons", "The Library Patrons", "12335");
+
+    final PatronStatusRequest patronStatus = PatronStatusRequest.builder()
+        .patronIdentifier(patronIdentifier)
+        .patronPassword(patronPassword)
+        .institutionId(institutionId)
+        .transactionDate(OffsetDateTime.now())
+        .build();
+
+    final JsonObject queryAccountResponse = new JsonObject()
+        .put("accounts", new JsonArray()
+            .add(new JsonObject()
+                .put("remaining", feeAmount)
+                .put("id", "2345")));
+
+    final JsonObject manualBlocksResponse = getManualBlockJsonObject(true, true, true);
+
+    when(mockPasswordVerifier.verifyPatronPassword(anyString(), anyString(), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .extendedUser(extendedUser).build()));
+    when(mockFeeFinesRepository.getFeeAmountByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(queryAccountResponse));
+    when(mockFeeFinesRepository.getManualBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(manualBlocksResponse));
+
+    final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    patronRepository.performPatronStatusCommand(patronStatus, sessionData).onComplete(
+        testContext.succeeding(patronStatusResponse -> testContext.verify(() -> {
+          assertNotNull(patronStatusResponse);
+          assertEquals(true, patronStatusResponse.getValidPatron());
+          assertEquals(feeAmount.toString(), patronStatusResponse.getFeeAmount());
+          assertEquals("Joe Zee Blow", patronStatusResponse.getPersonalName());
+          assertEquals(EnumSet.allOf(PatronStatus.class), patronStatusResponse.getPatronStatus());
+          assertEquals(Collections.singletonList("Pay your fines!"),
+              patronStatusResponse.getScreenMessage());
           testContext.completeNow();
         }))
     );
@@ -2379,28 +2457,28 @@ public class PatronRepositoryTests {
     return Stream.of(
         Arguments.of(getManualBlockJsonObject(true, true, true),
             EnumSet.allOf(PatronStatus.class),
-            Collections.singletonList(MESSAGE_BLOCKED_PATRON)),
+            Collections.singletonList("Pay your fines!")),
         Arguments.of(getManualBlockJsonObject(true, true, false),
             EnumSet.allOf(PatronStatus.class),
-            Collections.singletonList(MESSAGE_BLOCKED_PATRON)),
+            Collections.singletonList("Pay your fines!")),
         Arguments.of(getManualBlockJsonObject(false, true, true),
             EnumSet.of(RENEWAL_PRIVILEGES_DENIED,
                 HOLD_PRIVILEGES_DENIED,
                 RECALL_PRIVILEGES_DENIED),
-            Collections.singletonList(MESSAGE_BLOCKED_PATRON)),
+            Collections.singletonList("Pay your fines!")),
         Arguments.of(getManualBlockJsonObject(true, false, true),
             EnumSet.allOf(PatronStatus.class),
-            Collections.singletonList(MESSAGE_BLOCKED_PATRON)),
+            Collections.singletonList("Pay your fines!")),
         Arguments.of(getManualBlockJsonObject(true, false, false),
             EnumSet.allOf(PatronStatus.class),
-            Collections.singletonList(MESSAGE_BLOCKED_PATRON)),
+            Collections.singletonList("Pay your fines!")),
         Arguments.of(getManualBlockJsonObject(false, true, false),
             EnumSet.of(RENEWAL_PRIVILEGES_DENIED),
-            Collections.singletonList(MESSAGE_BLOCKED_PATRON)),
+            Collections.singletonList("Pay your fines!")),
         Arguments.of(getManualBlockJsonObject(false, false, true),
             EnumSet.of(HOLD_PRIVILEGES_DENIED,
                 RECALL_PRIVILEGES_DENIED),
-            Collections.singletonList(MESSAGE_BLOCKED_PATRON)),
+            Collections.singletonList("Pay your fines!")),
         Arguments.of(getManualBlockJsonObject(false, false, false),
             EnumSet.noneOf(PatronStatus.class),
             null));

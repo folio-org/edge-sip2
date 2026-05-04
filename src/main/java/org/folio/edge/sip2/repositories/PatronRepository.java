@@ -348,8 +348,18 @@ public class PatronRepository {
         .getFeeAmountByUserId(userId, sessionData)
         .map(accounts -> totalAmount(sessionData, accounts, builder));
 
-    return getFeeAmountFuture.map(result -> builder
-            .patronStatus(EnumSet.noneOf(PatronStatus.class))
+    final Future<PatronStatusResponseBuilder> manualBlocksFuture = feeFinesRepository
+        .getManualBlocksByUserId(userId, sessionData)
+        .map(blocks -> {
+          builder.patronStatus(extractPatronStatusFromBlocks(blocks));
+          final List<String> messages = extractBlockMessages(blocks);
+          if (!messages.isEmpty()) {
+            builder.screenMessage(messages);
+          }
+          return builder;
+        });
+
+    return Future.all(getFeeAmountFuture, manualBlocksFuture).map(cf -> builder
             .language(patronStatus.getLanguage())
             .transactionDate(OffsetDateTime.now(clock))
             .institutionId(patronStatus.getInstitutionId())
@@ -357,7 +367,6 @@ public class PatronRepository {
             .validPatron(TRUE)
             .validPatronPassword(validPassword)
             .build()
-
     );
   }
 
@@ -466,14 +475,28 @@ public class PatronRepository {
 
   private PatronInformationResponseBuilder buildPatronStatus(JsonObject blocks,
       PatronInformationResponseBuilder builder) {
+    final EnumSet<PatronStatus> patronStatus = extractPatronStatusFromBlocks(blocks);
+
+    if (!patronStatus.isEmpty()) {
+      final List<String> messages = extractBlockMessages(blocks);
+      if (!messages.isEmpty()) {
+        builder.screenMessage(messages);
+      } else {
+        builder.screenMessage(Collections.singletonList(MESSAGE_BLOCKED_PATRON));
+      }
+    }
+
+    return builder.patronStatus(patronStatus);
+  }
+
+  private static EnumSet<PatronStatus> extractPatronStatusFromBlocks(JsonObject blocks) {
     final EnumSet<PatronStatus> patronStatus = EnumSet.noneOf(PatronStatus.class);
 
-    if (blocks != null && getTotalRecords(blocks) > 0) {
+    if (blocks != null && blocks.getInteger(FIELD_TOTAL_RECORDS, 0) > 0) {
       blocks.getJsonArray("manualblocks", new JsonArray()).stream()
           .map(o -> (JsonObject) o)
           .forEach(jo -> {
             if (jo.getBoolean("borrowing", FALSE)) {
-              // Block everything
               patronStatus.addAll(EnumSet.allOf(PatronStatus.class));
             } else {
               if (jo.getBoolean("renewals", FALSE)) {
@@ -487,11 +510,31 @@ public class PatronRepository {
           });
     }
 
-    if (!patronStatus.isEmpty()) {
-      builder.screenMessage(Collections.singletonList(MESSAGE_BLOCKED_PATRON));
+    return patronStatus;
+  }
+
+  protected static List<String> extractBlockMessages(JsonObject blocks) {
+    if (blocks == null || blocks.getInteger(FIELD_TOTAL_RECORDS, 0) == 0) {
+      return Collections.emptyList();
     }
 
-    return builder.patronStatus(patronStatus);
+    return blocks.getJsonArray("manualblocks", new JsonArray()).stream()
+        .map(o -> (JsonObject) o)
+        .filter(jo -> jo.getBoolean("borrowing", FALSE)
+            || jo.getBoolean("renewals", FALSE)
+            || jo.getBoolean(FIELD_REQUESTS, FALSE))
+        .map(jo -> {
+          final String patronMessage = jo.getString("patronMessage");
+          if (patronMessage != null && !patronMessage.isBlank()) {
+            return patronMessage;
+          }
+          final String desc = jo.getString("desc");
+          if (desc != null && !desc.isBlank()) {
+            return desc;
+          }
+          return MESSAGE_BLOCKED_PATRON;
+        })
+        .toList();
   }
 
   private int getTotalRecords(JsonObject records) {
