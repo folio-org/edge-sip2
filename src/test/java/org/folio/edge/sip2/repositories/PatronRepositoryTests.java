@@ -2546,6 +2546,9 @@ public class PatronRepositoryTests {
             Collections.singletonList("Pay your fines!")),
         Arguments.of(getManualBlockJsonObject(false, false, false),
             EnumSet.noneOf(PatronStatus.class),
+            null),
+        Arguments.of(new JsonObject().put("totalRecords", 0).put("manualblocks", new JsonArray()),
+            EnumSet.noneOf(PatronStatus.class),
             null));
   }
 
