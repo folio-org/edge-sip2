@@ -478,12 +478,7 @@ public class PatronRepository {
     final EnumSet<PatronStatus> patronStatus = extractPatronStatusFromBlocks(blocks);
 
     if (!patronStatus.isEmpty()) {
-      final List<String> messages = extractBlockMessages(blocks);
-      if (!messages.isEmpty()) {
-        builder.screenMessage(messages);
-      } else {
-        builder.screenMessage(Collections.singletonList(MESSAGE_BLOCKED_PATRON));
-      }
+      builder.screenMessage(extractBlockMessages(blocks));
     }
 
     return builder.patronStatus(patronStatus);

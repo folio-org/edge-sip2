@@ -9,7 +9,6 @@ import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.HOLD
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RECALL_PRIVILEGES_DENIED;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RENEWAL_PRIVILEGES_DENIED;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.RECALL_ITEMS;
-import static org.folio.edge.sip2.repositories.PatronRepository.MESSAGE_BLOCKED_PATRON;
 import static org.folio.edge.sip2.repositories.PatronRepository.MESSAGE_INVALID_PATRON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -2426,6 +2425,72 @@ public class PatronRepositoryTests {
     List<String> barcodeList
         = PatronRepository.getBarcodesForOpenAccounts(accountResponse.getJsonArray("accounts"));
     assertEquals(1, barcodeList.size());
+  }
+
+  @Test
+  void extractBlockMessagesReturnsEmptyWhenBlocksIsNull() {
+    assertEquals(Collections.emptyList(), PatronRepository.extractBlockMessages(null));
+  }
+
+  @Test
+  void extractBlockMessagesReturnsEmptyWhenTotalRecordsIsZero() {
+    final JsonObject blocks = new JsonObject()
+        .put("manualblocks", new JsonArray())
+        .put("totalRecords", 0);
+    assertEquals(Collections.emptyList(), PatronRepository.extractBlockMessages(blocks));
+  }
+
+  @Test
+  void extractBlockMessagesReturnsEmptyForNonActionableBlock() {
+    // block with all flags false — filtered out, contributes no message
+    final JsonObject blocks = new JsonObject()
+        .put("totalRecords", 1)
+        .put("manualblocks", new JsonArray().add(new JsonObject()
+            .put("borrowing", false)
+            .put("renewals", false)
+            .put("requests", false)
+            .put("patronMessage", "Pay your fines!")));
+    assertEquals(Collections.emptyList(), PatronRepository.extractBlockMessages(blocks));
+  }
+
+  @Test
+  void extractBlockMessagesUsesDescWhenPatronMessageIsBlank() {
+    final JsonObject blocks = new JsonObject()
+        .put("totalRecords", 1)
+        .put("manualblocks", new JsonArray().add(new JsonObject()
+            .put("borrowing", true)
+            .put("renewals", false)
+            .put("requests", false)
+            .put("patronMessage", "  ")
+            .put("desc", "Staff description")));
+    assertEquals(Collections.singletonList("Staff description"),
+        PatronRepository.extractBlockMessages(blocks));
+  }
+
+  @Test
+  void extractBlockMessagesUsesGenericFallbackWhenNoMessageOrDesc() {
+    final JsonObject blocks = new JsonObject()
+        .put("totalRecords", 1)
+        .put("manualblocks", new JsonArray().add(new JsonObject()
+            .put("borrowing", true)
+            .put("renewals", false)
+            .put("requests", false)));
+    assertEquals(Collections.singletonList(PatronRepository.MESSAGE_BLOCKED_PATRON),
+        PatronRepository.extractBlockMessages(blocks));
+  }
+
+  @Test
+  void extractBlockMessagesUsesPatronMessageOverDesc() {
+    final JsonObject blocks = new JsonObject()
+        .put("totalRecords", 1)
+        .put("manualblocks", new JsonArray().add(new JsonObject()
+            .put("borrowing", false)
+            .put("renewals", false)
+            .put("requests", true)
+            .put("patronMessage", "Contact the library")
+            .put("desc", "Staff description")));
+    assertEquals(Collections.singletonList("Contact the library"),
+        PatronRepository.extractBlockMessages(blocks));
   }
 
   private static JsonObject getManualBlockJsonObject(boolean borrowing, boolean renewals,
