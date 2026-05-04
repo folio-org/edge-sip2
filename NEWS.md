@@ -1,3 +1,8 @@
+## 4.1.0-SNAPSHOT In progress
+
+## Bug fixes
+* Fix manual patron blocks not reflected in SIP2 Patron Status Response (24) ([SIP2-310](https://folio-org.atlassian.net/browse/SIP2-310))
+
 ## 4.0.0 2026-04-16
 
 ### Breaking changes
