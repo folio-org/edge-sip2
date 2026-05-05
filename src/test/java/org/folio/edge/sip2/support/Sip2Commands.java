@@ -6,6 +6,7 @@ import org.folio.edge.sip2.support.model.EndSessionCommand;
 import org.folio.edge.sip2.support.model.LoginCommand;
 import org.folio.edge.sip2.support.model.PatronInformationCommand;
 import org.folio.edge.sip2.support.model.PatronInformationCommand.PatronInfoSummaryType;
+import org.folio.edge.sip2.support.model.PatronStatusCommand;
 import org.folio.edge.sip2.support.model.RawCommand;
 import org.folio.edge.sip2.support.model.ResendCommand;
 import org.folio.edge.sip2.support.model.Sip2Command;
@@ -47,6 +48,19 @@ public interface Sip2Commands {
    */
   static StatusCommand status() {
     return new StatusCommand();
+  }
+
+  /**
+   * Creates a {@link PatronStatusCommand} for the given patron identifier.
+   *
+   * @param patronIdentifier - the identifier of the patron
+   * @return a new {@link PatronStatusCommand} instance
+   */
+  static PatronStatusCommand patronStatus(String patronIdentifier) {
+    return PatronStatusCommand.builder()
+        .patronIdentifier(patronIdentifier)
+        .languageCode(LanguageMapper.ENGLISH)
+        .build();
   }
 
   /**
