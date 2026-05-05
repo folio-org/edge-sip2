@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.folio.edge.sip2.domain.messages.PatronAccountInfo;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
@@ -520,11 +521,11 @@ public class PatronRepository {
             || jo.getBoolean(FIELD_REQUESTS, FALSE))
         .map(jo -> {
           final String patronMessage = jo.getString("patronMessage");
-          if (patronMessage != null && !patronMessage.isBlank()) {
+          if (StringUtils.isNotBlank(patronMessage)) {
             return patronMessage;
           }
           final String desc = jo.getString("desc");
-          if (desc != null && !desc.isBlank()) {
+          if (StringUtils.isNotBlank(desc)) {
             return desc;
           }
           return MESSAGE_BLOCKED_PATRON;
