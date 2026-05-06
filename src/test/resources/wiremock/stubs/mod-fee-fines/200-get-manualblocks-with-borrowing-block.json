@@ -1,0 +1,41 @@
+{
+  "priority": 2,
+  "request": {
+    "method": "GET",
+    "urlPath": "/manualblocks",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "queryParameters": {
+      "query": {
+        "equalTo": "userId==\"bec20636-fb68-41fd-84ea-2cf910673599\""
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "manualblocks": [
+        {
+          "type": "Manual",
+          "desc": "Pay your fines to restore access",
+          "patronMessage": "Your account is blocked. Please contact the library.",
+          "borrowing": true,
+          "renewals": true,
+          "requests": true,
+          "userId": "bec20636-fb68-41fd-84ea-2cf910673599",
+          "id": "43ec8e43-4a78-45b0-a46c-88426346d3df"
+        }
+      ],
+      "totalRecords": 1
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
