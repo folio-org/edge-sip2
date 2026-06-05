@@ -228,7 +228,8 @@ class LoginRepositoryTest {
   }
 
   @Test
-  void getSessionAccessToken_negative_expiredAccessToken_loginAlsoFailed(VertxTestContext testContext) {
+  void getSessionAccessToken_negative_expiredAccessToken_loginAlsoFailed(
+      VertxTestContext testContext) {
     var sessionData = sessionData(USERNAME, PASSWORD);
     var accessExp = OffsetDateTime.now().minusMinutes(5);
     var refreshExp = OffsetDateTime.now().plusMinutes(15);

@@ -165,7 +165,8 @@ public class LoginRepository {
         .map(LoginRepository::extractFolioAccessToken)
         .onSuccess(loginResponse -> handleSuccessRefresh(sessionData, loginResponse))
         .recover(err -> recoverRefreshToken(sessionData, err))
-        .onFailure(err -> handleErrorResponse(sessionData, "refreshToken:: Unable to refresh token", err));
+        .onFailure(err ->
+          handleErrorResponse(sessionData, "refreshToken:: Unable to refresh token", err));
   }
 
   private static JsonObject getLoginRequestBody(String username, String password) {
@@ -194,7 +195,8 @@ public class LoginRepository {
   }
 
   private Future<FolioLoginResponse> recoverRefreshToken(SessionData sessionData, Throwable err) {
-    log.warn(sessionData, "refreshToken:: Unable to refresh token, trying to get new access token...", err);
+    log.warn(sessionData,
+        "refreshToken:: Unable to refresh token, trying to get new access token...", err);
     return performLogin(sessionData, sessionData.getUsername(), sessionData.getPassword(), false);
   }
 
@@ -208,7 +210,8 @@ public class LoginRepository {
   private static FolioRequestThrowable getRefreshRequestError(SessionData sessionData,
       HttpResponseHead responseHead, Throwable e) {
     var status = responseHead.statusCode() + " " + responseHead.statusMessage();
-    log.error(sessionData, "refreshToken:: Invalid response from FOLIO '{}': {}", status, e.getMessage());
+    log.error(sessionData, "refreshToken:: Invalid response from FOLIO '{}': {}",
+        status, e.getMessage());
     return new FolioRequestThrowable("Failed to perform refresh request: " + status);
   }
 
@@ -249,7 +252,8 @@ public class LoginRepository {
     sd.setLoginErrorMessage(throwable.getMessage());
   }
 
-  private static void handleSuccessLogin(SessionData sd, boolean isPatron, FolioLoginResponse loginResponse) {
+  private static void handleSuccessLogin(SessionData sd, boolean isPatron,
+      FolioLoginResponse loginResponse) {
     if (isPatron) {
       log.info(sd, "login:: Access token requested for patron");
       return;
