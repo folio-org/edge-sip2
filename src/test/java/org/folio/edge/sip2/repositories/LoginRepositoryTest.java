@@ -220,6 +220,27 @@ class LoginRepositoryTest {
 
     resultFuture.onComplete(testContext.succeeding(result -> {
       assertEquals(JWT, result);
+      var lr = sessionData.getLoginResponse();
+      assertNotNull(lr);
+      assertEquals(JWT, lr.getAccessToken());
+      testContext.completeNow();
+    }));
+  }
+
+  @Test
+  void getSessionAccessToken_negative_expiredAccessToken_loginAlsoFailed(VertxTestContext testContext) {
+    var sessionData = sessionData(USERNAME, PASSWORD);
+    var accessExp = OffsetDateTime.now().minusMinutes(5);
+    var refreshExp = OffsetDateTime.now().plusMinutes(15);
+    sessionData.setLoginResponse(new FolioLoginResponse(EXPIRED_JWT, accessExp, refreshExp));
+
+    prepareRefreshRequestMocks(sessionData, loginResponse401());
+    prepareLoginRequestMocks(sessionData, loginResponse401());
+    var resultFuture = loginRepository.getSessionAccessToken(sessionData);
+
+    resultFuture.onComplete(testContext.failing(error -> {
+      assertInstanceOf(FolioRequestThrowable.class, error);
+      assertEquals("Failed to perform login request: 401 Unauthorized", error.getMessage());
       testContext.completeNow();
     }));
   }
@@ -236,6 +257,9 @@ class LoginRepositoryTest {
 
     resultFuture.onComplete(testContext.succeeding(result -> {
       assertEquals(JWT, result);
+      var lr = sessionData.getLoginResponse();
+      assertNotNull(lr);
+      assertEquals(JWT, lr.getAccessToken());
       testContext.completeNow();
     }));
   }

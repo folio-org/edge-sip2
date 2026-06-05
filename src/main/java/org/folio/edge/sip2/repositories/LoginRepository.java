@@ -140,7 +140,7 @@ public class LoginRepository {
         .sendJsonObject(getLoginRequestBody(username, password))
         .expecting(getLoginExpectations(sd))
         .map(LoginRepository::extractFolioAccessToken)
-        .onSuccess(loginResponse -> handleSuccessLogin(sd, isPatron))
+        .onSuccess(loginResponse -> handleSuccessLogin(sd, isPatron, loginResponse))
         .onFailure(err -> handleErrorResponse(sd, "login:: Unable to get the access token", err));
   }
 
@@ -161,11 +161,11 @@ public class LoginRepository {
         .putHeader(TENANT, sessionData.getTenant())
         .putHeader(REQUEST_ID, sessionData.getRequestId())
         .send()
-        .expecting(getLoginExpectations(sessionData))
+        .expecting(getRefreshExpectations(sessionData))
         .map(LoginRepository::extractFolioAccessToken)
-        .recover(err -> recoverRefreshToken(sessionData, err))
         .onSuccess(loginResponse -> handleSuccessRefresh(sessionData, loginResponse))
-        .onFailure(err -> handleErrorResponse(sessionData, "Unable to refresh token ", err));
+        .recover(err -> recoverRefreshToken(sessionData, err))
+        .onFailure(err -> handleErrorResponse(sessionData, "refreshToken:: Unable to refresh token", err));
   }
 
   private static JsonObject getLoginRequestBody(String username, String password) {
@@ -179,6 +179,10 @@ public class LoginRepository {
     return SC_CREATED.wrappingFailure((head, err) -> getLoginRequestError(sd, head, err));
   }
 
+  private static Expectation<HttpResponseHead> getRefreshExpectations(SessionData sd) {
+    return SC_CREATED.wrappingFailure((head, err) -> getRefreshRequestError(sd, head, err));
+  }
+
   private static void handleSuccessRefresh(SessionData sessionData, FolioLoginResponse resp) {
     log.info(sessionData, "refreshToken:: Access token refreshed");
     sessionData.setLoginResponse(resp);
@@ -190,7 +194,7 @@ public class LoginRepository {
   }
 
   private Future<FolioLoginResponse> recoverRefreshToken(SessionData sessionData, Throwable err) {
-    log.warn(sessionData, "Unable to refresh token, trying to get new access token...", err);
+    log.warn(sessionData, "refreshToken:: Unable to refresh token, trying to get new access token...", err);
     return performLogin(sessionData, sessionData.getUsername(), sessionData.getPassword(), false);
   }
 
@@ -199,6 +203,13 @@ public class LoginRepository {
     var status = responseHead.statusCode() + " " + responseHead.statusMessage();
     log.error(sessionData, "login:: Invalid response from FOLIO '{}': {}", status, e.getMessage());
     return new FolioRequestThrowable("Failed to perform login request: " + status);
+  }
+
+  private static FolioRequestThrowable getRefreshRequestError(SessionData sessionData,
+      HttpResponseHead responseHead, Throwable e) {
+    var status = responseHead.statusCode() + " " + responseHead.statusMessage();
+    log.error(sessionData, "refreshToken:: Invalid response from FOLIO '{}': {}", status, e.getMessage());
+    return new FolioRequestThrowable("Failed to perform refresh request: " + status);
   }
 
   private static FolioLoginResponse setLoginResponseToSessionData(
@@ -238,11 +249,12 @@ public class LoginRepository {
     sd.setLoginErrorMessage(throwable.getMessage());
   }
 
-  private static void handleSuccessLogin(SessionData sd, boolean isPatron) {
+  private static void handleSuccessLogin(SessionData sd, boolean isPatron, FolioLoginResponse loginResponse) {
     if (isPatron) {
       log.info(sd, "login:: Access token requested for patron");
       return;
     }
     log.info(sd, "login:: Session access token requested");
+    sd.setLoginResponse(loginResponse);
   }
 }
