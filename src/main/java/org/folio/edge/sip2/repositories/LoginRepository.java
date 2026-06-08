@@ -132,6 +132,11 @@ public class LoginRepository {
    */
   private Future<FolioLoginResponse> performLogin(SessionData sd,
       String username, String password, boolean isPatron) {
+    if (StringUtils.isAnyBlank(username, password)) {
+      log.warn(sd, "login:: Username or password is missing, skipping login operation");
+      return failedFuture(new FolioRequestThrowable("Username or password is missing for login"));
+    }
+
     log.debug(sd, "login:: performing login for user");
     return client.postAbs(okapiUrl + "/authn/login-with-expiry")
         .as(BodyCodec.jsonObject())

@@ -296,6 +296,39 @@ class LoginRepositoryTest {
     }));
   }
 
+  @Test
+  void performLogin_negative_missingCredentials_expiredRefreshToken(VertxTestContext testContext) {
+    var sessionData = sessionData(); // no username/password
+    var accessExp = OffsetDateTime.now().minusMinutes(5);
+    var refreshExp = OffsetDateTime.now().minusMinutes(5);
+    sessionData.setLoginResponse(new FolioLoginResponse(EXPIRED_JWT, accessExp, refreshExp));
+
+    var resultFuture = loginRepository.getSessionAccessToken(sessionData);
+
+    resultFuture.onComplete(testContext.failing(error -> {
+      assertInstanceOf(FolioRequestThrowable.class, error);
+      assertEquals("Username or password is missing for login", error.getMessage());
+      testContext.completeNow();
+    }));
+  }
+
+  @Test
+  void performLogin_negative_missingCredentials_expiredAccessToken(VertxTestContext testContext) {
+    var sessionData = sessionData(); // no username/password
+    var accessExp = OffsetDateTime.now().minusMinutes(5);
+    var refreshExp = OffsetDateTime.now().plusMinutes(15);
+    sessionData.setLoginResponse(new FolioLoginResponse(EXPIRED_JWT, accessExp, refreshExp));
+
+    prepareRefreshRequestMocks(sessionData, loginResponse401());
+    var resultFuture = loginRepository.getSessionAccessToken(sessionData);
+
+    resultFuture.onComplete(testContext.failing(error -> {
+      assertInstanceOf(FolioRequestThrowable.class, error);
+      assertEquals("Username or password is missing for login", error.getMessage());
+      testContext.completeNow();
+    }));
+  }
+
   private void prepareLoginRequestMocks(SessionData sd, HttpResponse<JsonObject> httpResponse) {
     when(webClient.postAbs(OKAPI_URL + "/authn/login-with-expiry")).thenReturn(httpRequest);
     when(httpRequest.as(BodyCodec.jsonObject())).thenReturn(jsonRequest);
