@@ -46,22 +46,22 @@
 
     <!-- Folio library versions  -->
     <raml-module-builder-version>36.0.0</raml-module-builder-version>
-    <okapi-common.version>7.0.1</okapi-common.version>
-    <folio-s3-client.version>2.4.0</folio-s3-client.version>
+    <okapi-common.version>7.0.4</okapi-common.version>
+    <folio-s3-client.version>3.0.1</folio-s3-client.version>
 
     <!-- 3rd party library versions  -->
-    <vertx.version>5.0.6</vertx.version>
-    <log4j2.version>2.25.1</log4j2.version>
-    <ipaddress.version>5.5.1</ipaddress.version>
-    <lombok.version>1.18.42</lombok.version>
-    <micrometer.version>1.15.3</micrometer.version>
-    <commons-net.version>3.12.0</commons-net.version>
+    <vertx.version>5.1.2</vertx.version>
+    <log4j2.version>2.26.0</log4j2.version>
+    <ipaddress.version>5.6.2</ipaddress.version>
+    <lombok.version>1.18.46</lombok.version>
+    <micrometer.version>1.17.0</micrometer.version>
+    <commons-net.version>3.13.0</commons-net.version>
 
     <!-- 3rd party test library versions  -->
     <rest-assured.version>6.0.0</rest-assured.version>
-    <junit-bom.version>5.13.4</junit-bom.version>
-    <mockito-bom.version>5.21.0</mockito-bom.version>
-    <testcontainers-bom.version>1.21.4</testcontainers-bom.version>
+    <junit-bom.version>6.1.0</junit-bom.version>
+    <mockito-bom.version>5.23.0</mockito-bom.version>
+    <testcontainers-bom.version>2.0.5</testcontainers-bom.version>
     <wiremock.version>3.13.2</wiremock.version>
     <bcpkix-jdk15to18.version>1.84</bcpkix-jdk15to18.version>
     <assertj-core.version>3.27.7</assertj-core.version>
@@ -266,12 +266,12 @@
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
+      <artifactId>testcontainers-junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>minio</artifactId>
+      <artifactId>testcontainers-minio</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -548,7 +548,7 @@
       <plugins>
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.8.1</version>
+          <version>3.11.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-release-plugin</artifactId>
