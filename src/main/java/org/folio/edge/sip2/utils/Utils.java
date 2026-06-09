@@ -161,4 +161,19 @@ public final class Utils {
       return defaultValue;
     }
   }
+
+  /**
+   * Checks if any of the provided strings is null or blank.
+   *
+   * @param values one or more strings to check
+   * @return {@code true} if at least one value is {@code null} or blank; {@code false} otherwise
+   */
+  public static boolean isAnyBlank(String... values) {
+    for (String value : values) {
+      if (value == null || StringUtils.isBlank(value)) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
