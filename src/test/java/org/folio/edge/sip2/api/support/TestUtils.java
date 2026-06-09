@@ -20,13 +20,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
+import org.assertj.core.api.SoftAssertionsProvider.ThrowingRunnable;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.support.Sip2Session;
 import org.folio.edge.sip2.support.Sip2SessionConfiguration;
 import org.folio.edge.sip2.support.Sip2TestCommand;
 import org.folio.edge.sip2.support.vertx.VertxModule;
-import org.junit.function.ThrowingRunnable;
 
 public class TestUtils {
   private TestUtils() {
@@ -101,8 +101,8 @@ public class TestUtils {
    */
   public static String getJsonFromFile(String fileName) {
     try {
-      return String.join("\n", Files.readAllLines(
-          Paths.get(TestUtils.class.getClassLoader().getResource(fileName).toURI())));
+      var resource = Objects.requireNonNull(TestUtils.class.getClassLoader().getResource(fileName));
+      return String.join("\n", Files.readAllLines(Paths.get(resource.toURI())));
     } catch (Exception e) {
       fail(e);
       return null;
@@ -207,5 +207,10 @@ public class TestUtils {
           }
         })
     );
+  }
+
+  @FunctionalInterface
+  public interface ThrowingRunnable {
+    void run() throws Throwable;
   }
 }

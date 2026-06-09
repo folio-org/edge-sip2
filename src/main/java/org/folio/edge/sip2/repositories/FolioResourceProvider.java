@@ -5,14 +5,15 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpResponseExpectation.SC_OK;
 import static io.vertx.core.http.HttpResponseExpectation.SC_SUCCESS;
 import static io.vertx.core.http.HttpResponseExpectation.contentType;
+import static io.vertx.core.http.impl.headers.Http1xHeaders.httpHeaders;
 import static io.vertx.ext.web.codec.BodyCodec.jsonObject;
 
 import io.vertx.core.Expectation;
 import io.vertx.core.Future;
+import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpResponseExpectation;
 import io.vertx.core.http.HttpResponseHead;
-import io.vertx.core.http.impl.headers.HeadersMultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
@@ -142,7 +143,7 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
       HttpResponseHead responseHead, Throwable throwable) {
     var statusMessage = responseHead.statusCode() + " " + responseHead.statusMessage();
     var errorMessage = throwable.getMessage();
-    
+
     if (responseHead instanceof HttpResponse<?> httpResponse) {
       log.error(sessionData,
           "Invalid response from FOLIO '{}': message='{}', responseBody={}",
@@ -166,8 +167,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     return Future.failedFuture(error);
   }
 
-  private static HeadersMultiMap getDataHeaders(IRequestData data) {
-    var headers = HeadersMultiMap.httpHeaders();
+  private static MultiMap getDataHeaders(IRequestData data) {
+    var headers = httpHeaders();
     data.getHeaders().forEach(headers::add);
     return headers;
   }
