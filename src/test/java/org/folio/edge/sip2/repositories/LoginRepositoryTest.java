@@ -42,6 +42,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @Slf4j
+@SuppressWarnings("java:S8692")
 @ExtendWith({ VertxExtension.class, MockitoExtension.class })
 class LoginRepositoryTest {
 
