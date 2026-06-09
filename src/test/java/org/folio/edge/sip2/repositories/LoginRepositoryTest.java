@@ -42,6 +42,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @Slf4j
+@SuppressWarnings("java:S8692")
 @ExtendWith({ VertxExtension.class, MockitoExtension.class })
 class LoginRepositoryTest {
 
@@ -220,6 +221,28 @@ class LoginRepositoryTest {
 
     resultFuture.onComplete(testContext.succeeding(result -> {
       assertEquals(JWT, result);
+      var lr = sessionData.getLoginResponse();
+      assertNotNull(lr);
+      assertEquals(JWT, lr.getAccessToken());
+      testContext.completeNow();
+    }));
+  }
+
+  @Test
+  void getSessionAccessToken_negative_expiredAccessToken_loginAlsoFailed(
+      VertxTestContext testContext) {
+    var sessionData = sessionData(USERNAME, PASSWORD);
+    var accessExp = OffsetDateTime.now().minusMinutes(5);
+    var refreshExp = OffsetDateTime.now().plusMinutes(15);
+    sessionData.setLoginResponse(new FolioLoginResponse(EXPIRED_JWT, accessExp, refreshExp));
+
+    prepareRefreshRequestMocks(sessionData, loginResponse401());
+    prepareLoginRequestMocks(sessionData, loginResponse401());
+    var resultFuture = loginRepository.getSessionAccessToken(sessionData);
+
+    resultFuture.onComplete(testContext.failing(error -> {
+      assertInstanceOf(FolioRequestThrowable.class, error);
+      assertEquals("Failed to perform login request: 401 Unauthorized", error.getMessage());
       testContext.completeNow();
     }));
   }
@@ -236,6 +259,9 @@ class LoginRepositoryTest {
 
     resultFuture.onComplete(testContext.succeeding(result -> {
       assertEquals(JWT, result);
+      var lr = sessionData.getLoginResponse();
+      assertNotNull(lr);
+      assertEquals(JWT, lr.getAccessToken());
       testContext.completeNow();
     }));
   }
@@ -268,6 +294,39 @@ class LoginRepositoryTest {
       var expectedErrorMessage = "Access token is missing. "
           + "Please login to Folio to obtain a valid access token.";
       assertEquals(expectedErrorMessage, error.getMessage());
+    }));
+  }
+
+  @Test
+  void performLogin_negative_missingCredentials_expiredRefreshToken(VertxTestContext testContext) {
+    var sessionData = sessionData(); // no username/password
+    var accessExp = OffsetDateTime.now().minusMinutes(5);
+    var refreshExp = OffsetDateTime.now().minusMinutes(5);
+    sessionData.setLoginResponse(new FolioLoginResponse(EXPIRED_JWT, accessExp, refreshExp));
+
+    var resultFuture = loginRepository.getSessionAccessToken(sessionData);
+
+    resultFuture.onComplete(testContext.failing(error -> {
+      assertInstanceOf(FolioRequestThrowable.class, error);
+      assertEquals("Username or password is missing for login", error.getMessage());
+      testContext.completeNow();
+    }));
+  }
+
+  @Test
+  void performLogin_negative_missingCredentials_expiredAccessToken(VertxTestContext testContext) {
+    var sessionData = sessionData(); // no username/password
+    var accessExp = OffsetDateTime.now().minusMinutes(5);
+    var refreshExp = OffsetDateTime.now().plusMinutes(15);
+    sessionData.setLoginResponse(new FolioLoginResponse(EXPIRED_JWT, accessExp, refreshExp));
+
+    prepareRefreshRequestMocks(sessionData, loginResponse401());
+    var resultFuture = loginRepository.getSessionAccessToken(sessionData);
+
+    resultFuture.onComplete(testContext.failing(error -> {
+      assertInstanceOf(FolioRequestThrowable.class, error);
+      assertEquals("Username or password is missing for login", error.getMessage());
+      testContext.completeNow();
     }));
   }
 
