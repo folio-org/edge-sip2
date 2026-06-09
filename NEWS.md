@@ -2,7 +2,9 @@
 
 ## Bug fixes
 * Fix manual patron blocks not reflected in SIP2 Patron Status Response (24) ([SIP2-310](https://folio-org.atlassian.net/browse/SIP2-310))
+* Use GitHub Workflows for Maven ([SIP2-307](https://folio-org.atlassian.net/browse/SIP2-307))
 
+---
 
 ## 4.0.0 2026-04-16
 
