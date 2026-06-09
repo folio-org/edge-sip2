@@ -6,7 +6,7 @@ import static io.vertx.core.MultiMap.caseInsensitiveMultiMap;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpVersion.HTTP_1_1;
-import static io.vertx.core.http.impl.headers.HeadersMultiMap.httpHeaders;
+import static io.vertx.core.http.impl.headers.Http1xHeaders.httpHeaders;
 import static io.vertx.ext.web.codec.BodyCodec.jsonObject;
 import static java.util.Collections.emptyList;
 import static org.folio.okapi.common.XOkapiHeaders.REQUEST_ID;

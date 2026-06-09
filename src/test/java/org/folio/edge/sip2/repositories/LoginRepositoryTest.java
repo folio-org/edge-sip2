@@ -2,7 +2,7 @@ package org.folio.edge.sip2.repositories;
 
 import static io.vertx.core.Future.succeededFuture;
 import static io.vertx.core.MultiMap.caseInsensitiveMultiMap;
-import static io.vertx.core.http.impl.headers.HeadersMultiMap.httpHeaders;
+import static io.vertx.core.http.impl.headers.Http1xHeaders.httpHeaders;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyList;
