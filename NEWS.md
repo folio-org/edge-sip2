@@ -1,3 +1,10 @@
+## 4.0.2 2026-06-19
+
+### Bug fixes
+* Fix misleading log messages when token refresh fails and recovery login is used([SIP2-316](https://folio-org.atlassian.net/browse/SIP2-316))
+
+---
+
 ## 4.0.1 2026-05-21
 
 ### Bug fixes
