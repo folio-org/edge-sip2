@@ -14,7 +14,7 @@ public class FreemarkerRepositoryTests {
 
   @BeforeAll
   public static void initRepo() {
-    freemarkerRepoInstance = FreemarkerRepository.getInstance();
+    freemarkerRepoInstance = new FreemarkerRepository();
   }
 
   @Test

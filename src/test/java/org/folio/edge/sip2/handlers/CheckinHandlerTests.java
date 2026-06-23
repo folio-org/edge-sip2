@@ -22,13 +22,18 @@ import org.folio.edge.sip2.domain.messages.responses.CheckinResponse;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.repositories.CirculationRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.support.tags.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+@UnitTest
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class CheckinHandlerTests {
+
+  private final FreemarkerRepository freemarkerRepository = new FreemarkerRepository();
+
   @Test
   public void canExecuteASampleCheckinUsingHandler(
       @Mock CirculationRepository mockCirculationRepository,
@@ -67,7 +72,7 @@ public class CheckinHandlerTests {
             .build()));
 
     final CheckinHandler handler = new CheckinHandler(mockCirculationRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKIN_RESPONSE));
+        freemarkerRepository.getFreemarkerTemplate(CHECKIN_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -119,7 +124,7 @@ public class CheckinHandlerTests {
             .build()));
 
     final CheckinHandler handler = new CheckinHandler(mockCirculationRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKIN_RESPONSE));
+        freemarkerRepository.getFreemarkerTemplate(CHECKIN_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -169,7 +174,7 @@ public class CheckinHandlerTests {
             .build()));
 
     final CheckinHandler handler = new CheckinHandler(mockCirculationRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKIN_RESPONSE));
+        freemarkerRepository.getFreemarkerTemplate(CHECKIN_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 

@@ -14,6 +14,7 @@ import static org.folio.edge.sip2.parser.Command.SC_STATUS;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import freemarker.template.Template;
@@ -70,68 +71,74 @@ public class ApplicationModule extends AbstractModule {
   }
 
   @Provides
+  @Singleton
+  FreemarkerRepository provideFreemarkerRepository() {
+    return new FreemarkerRepository();
+  }
+
+  @Provides
   @Named("checkoutResponse")
-  Template provideCheckoutResponseTemplate() {
-    return FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKOUT_RESPONSE);
+  Template provideCheckoutResponseTemplate(FreemarkerRepository freemarkerRepository) {
+    return freemarkerRepository.getFreemarkerTemplate(CHECKOUT_RESPONSE);
   }
 
   @Provides
   @Named("checkinResponse")
-  Template provideCheckinResponseTemplate() {
-    return FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKIN_RESPONSE);
+  Template provideCheckinResponseTemplate(FreemarkerRepository freemarkerRepository) {
+    return freemarkerRepository.getFreemarkerTemplate(CHECKIN_RESPONSE);
   }
 
   @Provides
   @Named("loginResponse")
-  Template provideLoginResponseTemplate() {
-    return FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE);
+  Template provideLoginResponseTemplate(FreemarkerRepository freemarkerRepository) {
+    return freemarkerRepository.getFreemarkerTemplate(LOGIN_RESPONSE);
   }
 
   @Provides
   @Named("patronStatusResponse")
-  Template providePatronStatusResponseTemplate() {
-    return FreemarkerRepository.getInstance().getFreemarkerTemplate(PATRON_STATUS_RESPONSE);
+  Template providePatronStatusResponseTemplate(FreemarkerRepository freemarkerRepository) {
+    return freemarkerRepository.getFreemarkerTemplate(PATRON_STATUS_RESPONSE);
   }
 
   @Provides
   @Named("patronInformationResponse")
-  Template providePatronInformationResponseTemplate() {
-    return FreemarkerRepository.getInstance().getFreemarkerTemplate(PATRON_INFORMATION_RESPONSE);
+  Template providePatronInformationResponseTemplate(FreemarkerRepository freemarkerRepository) {
+    return freemarkerRepository.getFreemarkerTemplate(PATRON_INFORMATION_RESPONSE);
   }
 
   @Provides
   @Named("endSessionResponse")
-  Template provideEndSessionResponseTemplate() {
-    return FreemarkerRepository.getInstance().getFreemarkerTemplate(END_SESSION_RESPONSE);
+  Template provideEndSessionResponseTemplate(FreemarkerRepository freemarkerRepository) {
+    return freemarkerRepository.getFreemarkerTemplate(END_SESSION_RESPONSE);
   }
 
   @Provides
   @Named("itemInformationResponse")
-  Template provideItemInformationResponseTemplate() {
-    return FreemarkerRepository.getInstance().getFreemarkerTemplate(ITEM_INFORMATION_RESPONSE);
+  Template provideItemInformationResponseTemplate(FreemarkerRepository freemarkerRepository) {
+    return freemarkerRepository.getFreemarkerTemplate(ITEM_INFORMATION_RESPONSE);
   }
 
   @Provides
   @Named("renewResponse")
-  Template renewResponseTemplate() {
-    return FreemarkerRepository.getInstance().getFreemarkerTemplate(RENEW_RESPONSE);
+  Template renewResponseTemplate(FreemarkerRepository freemarkerRepository) {
+    return freemarkerRepository.getFreemarkerTemplate(RENEW_RESPONSE);
   }
 
   @Provides
   @Named("renewAllResponse")
-  Template renewAllResponseTemplate() {
-    return FreemarkerRepository.getInstance().getFreemarkerTemplate(RENEW_ALL_RESPONSE);
+  Template renewAllResponseTemplate(FreemarkerRepository freemarkerRepository) {
+    return freemarkerRepository.getFreemarkerTemplate(RENEW_ALL_RESPONSE);
   }
 
   @Provides
   @Named("feePaidResponse")
-  Template feePaidResponseTemplate() {
-    return FreemarkerRepository.getInstance().getFreemarkerTemplate(FEE_PAID_RESPONSE);
+  Template feePaidResponseTemplate(FreemarkerRepository freemarkerRepository) {
+    return freemarkerRepository.getFreemarkerTemplate(FEE_PAID_RESPONSE);
   }
 
   @Provides
   @Named("scStatusResponse")
-  Template scStatusResponseTemplate() {
-    return FreemarkerRepository.getInstance().getFreemarkerTemplate(SC_STATUS);
+  Template scStatusResponseTemplate(FreemarkerRepository freemarkerRepository) {
+    return freemarkerRepository.getFreemarkerTemplate(SC_STATUS);
   }
 }

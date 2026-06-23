@@ -20,14 +20,19 @@ import org.folio.edge.sip2.domain.messages.responses.CheckoutResponse;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.repositories.CirculationRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.support.tags.UnitTest;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+@UnitTest
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class CheckoutHandlerTests {
+
+  private final FreemarkerRepository freemarkerRepository = new FreemarkerRepository();
+
   @Test
   public void canExecuteASampleCheckoutUsingHandler(
       @Mock CirculationRepository mockCirculationRepository,
@@ -68,7 +73,7 @@ public class CheckoutHandlerTests {
             .build()));
 
     final CheckoutHandler handler = new CheckoutHandler(mockCirculationRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKOUT_RESPONSE));
+        freemarkerRepository.getFreemarkerTemplate(CHECKOUT_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -116,7 +121,7 @@ public class CheckoutHandlerTests {
         .thenReturn(Future.failedFuture(new ClientException("Incorrect Username")));
 
     final CheckoutHandler handler = new CheckoutHandler(mockCirculationRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKOUT_RESPONSE));
+        freemarkerRepository.getFreemarkerTemplate(CHECKOUT_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
     sessionData.setPatronPasswordVerificationRequired(TRUE);
@@ -182,7 +187,7 @@ public class CheckoutHandlerTests {
             .build()));
 
     final CheckoutHandler handler = new CheckoutHandler(mockCirculationRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(CHECKOUT_RESPONSE));
+        freemarkerRepository.getFreemarkerTemplate(CHECKOUT_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 

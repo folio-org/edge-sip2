@@ -20,16 +20,19 @@ FOLIO results for all supported (TBD) SIP2 commands.
 * [edge-sip2](#edge-sip2)
   * [Overview](#overview)
   * [Table of Contents](#table-of-contents)
+  * [Environment Variables](#environment-variables)
   * [Configuration](#configuration)
     * [Tenant configuration located in AWS S3](#tenant-configuration-located-in-aws-s3)
   * [FOLIO Configuration](#folio-configuration)
     * [Tenant Properties](#tenant-properties)
       * [`supportedMessages` object properties](#supportedmessages-object-properties)
-      * [Example `configuration` object](#example-configuration-object)
+      * [Example `settings` object](#example-settings-object)
+      * [(Deprecated) Example `configuration` object](#deprecated-example-configuration-object)
     * [Kiosk (service point) Properties](#kiosk-service-point-properties)
-      * [Example `configuration` object](#example-configuration-object-1)
+      * [Example `settings` object](#example-settings-object-1)
+      * [(Deprecated) Example `configuration` object (Deprecated)](#deprecated-example-configuration-object-deprecated)
     * [FOLIO Provided Properties](#folio-provided-properties)
-      * [Example `configuration` object](#example-configuration-object-2)
+      * [(Deprecated) Example `configuration` object](#deprecated-example-configuration-object-1)
   * [Implemented Messages](#implemented-messages)
   * [Security](#security)
   * [Permissions](#permissions)
@@ -54,6 +57,15 @@ FOLIO results for all supported (TBD) SIP2 commands.
     * [Issue tracker](#issue-tracker)
     * [Other documentation](#other-documentation)
 <!-- TOC -->
+
+## Environment Variables
+
+| Env Property                            | System Propery                      | Required | Default Value  | Description                                                                                                                                                                                                                                                                                  |
+|-----------------------------------------|-------------------------------------|----------|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `HEALTH_CHECK_PORT_ENV_VAR`             | `healthCheckPort`                   | -        | 8081           | Health check port                                                                                                                                                                                                                                                                            | 
+| `SIP2_TEMPLATE_LOCALE`                  | `templateLocale`                    | -        | root           | Locale being used for freemarker template processing. The root locale is the locale whose language, country, and variant are empty ("") strings. This is regarded as the base locale of all locales, and is used as the language/country neutral locale for the locale sensitive operations. |
+| `SIP2_TENANT_RESOLVERS`                 | `sip2TenantResolvers`               | -        | PORT,IP_SUBNET | Approach for tenant resolution during connect/login operations                                                                                                                                                                                                                               |
+| `SIP2_TENANT_USERNAME_PREFIX_DELIMITER` | `sip2TenantUsernamePrefixDelimiter` | -        | _              | Delimiter used for tenant resolution based on username prefix.                                                                                                                                                                                                                               |
 
 ## Configuration
 

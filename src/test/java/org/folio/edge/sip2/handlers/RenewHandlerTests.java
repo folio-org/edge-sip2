@@ -21,14 +21,18 @@ import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.repositories.CirculationRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.support.tags.UnitTest;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+@UnitTest
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 class RenewHandlerTests {
+
+  private final FreemarkerRepository freemarkerRepository = new FreemarkerRepository();
 
   @Test
    void canRenewWithHandler(Vertx vertx,
@@ -57,7 +61,7 @@ class RenewHandlerTests {
       ));
 
     final RenewHandler handler = new RenewHandler(mockCirculationRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.RENEW_RESPONSE));
+        freemarkerRepository.getFreemarkerTemplate(Command.RENEW_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -105,7 +109,7 @@ class RenewHandlerTests {
       ));
 
     final RenewHandler handler = new RenewHandler(mockCirculationRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.RENEW_RESPONSE));
+        freemarkerRepository.getFreemarkerTemplate(Command.RENEW_RESPONSE));
     final SessionData sessionData = TestUtils.getMockedSessionData();
     final String expectedPrefix = "300N";
 
@@ -150,7 +154,7 @@ class RenewHandlerTests {
     );
 
     final RenewHandler handler = new RenewHandler(mockCirculationRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.RENEW_RESPONSE));
+        freemarkerRepository.getFreemarkerTemplate(Command.RENEW_RESPONSE));
 
     final String expectedString = "Invalid username";
 

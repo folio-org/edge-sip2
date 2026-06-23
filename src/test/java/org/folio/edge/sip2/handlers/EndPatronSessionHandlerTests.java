@@ -29,6 +29,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class EndPatronSessionHandlerTests {
+
+  private final FreemarkerRepository freemarkerRepository = new FreemarkerRepository();
+
   @Test
   public void canSuccessfullyGetEndPatronSessionResponse(
       @Mock PatronRepository mockPatronRepository,
@@ -55,9 +58,7 @@ public class EndPatronSessionHandlerTests {
           .institutionId(institutionId)
           .patronIdentifier(patronIdentifier)
           .build()));
-    Template template = FreemarkerRepository
-        .getInstance()
-        .getFreemarkerTemplate(END_SESSION_RESPONSE);
+    Template template = freemarkerRepository.getFreemarkerTemplate(END_SESSION_RESPONSE);
 
     final EndPatronSessionHandler handler =
         new EndPatronSessionHandler(mockPatronRepository, template);
@@ -111,9 +112,7 @@ public class EndPatronSessionHandlerTests {
           .institutionId(institutionId)
           .patronIdentifier(patronIdentifier)
           .build()));
-    Template template = FreemarkerRepository
-        .getInstance()
-        .getFreemarkerTemplate(END_SESSION_RESPONSE);
+    Template template = freemarkerRepository.getFreemarkerTemplate(END_SESSION_RESPONSE);
 
     final EndPatronSessionHandler handler =
         new EndPatronSessionHandler(mockPatronRepository, template);
@@ -163,9 +162,7 @@ public class EndPatronSessionHandlerTests {
 
     when(mockPatronRepository.performEndPatronSessionCommand(any(), any()))
         .thenReturn(Future.failedFuture(new ClientException("Incorrect username")));
-    Template template = FreemarkerRepository
-        .getInstance()
-        .getFreemarkerTemplate(END_SESSION_RESPONSE);
+    Template template = freemarkerRepository.getFreemarkerTemplate(END_SESSION_RESPONSE);
 
     final EndPatronSessionHandler handler =
         new EndPatronSessionHandler(mockPatronRepository, template);

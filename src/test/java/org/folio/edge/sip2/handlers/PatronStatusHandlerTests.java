@@ -24,15 +24,19 @@ import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.repositories.domain.Personal;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.support.tags.UnitTest;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-
+@UnitTest
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 class PatronStatusHandlerTests {
+
+  private final FreemarkerRepository freemarkerRepository = new FreemarkerRepository();
+
   @Test
   void canExecutePatronStatus(Vertx vertx,
       VertxTestContext testContext,
@@ -89,7 +93,7 @@ class PatronStatusHandlerTests {
         .thenReturn(Future.succeededFuture(patronStatusResponse));
 
     PatronStatusHandler handler = new PatronStatusHandler(mockPatronRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(PATRON_STATUS_RESPONSE));
+        freemarkerRepository.getFreemarkerTemplate(PATRON_STATUS_RESPONSE));
 
     handler.execute(patronStatus, sessionData).onComplete(testContext.succeeding(
         sipMessage -> testContext.verify(() -> {
@@ -151,7 +155,7 @@ class PatronStatusHandlerTests {
         .thenReturn(Future.failedFuture(new ClientException("Incorrect Username")));
 
     PatronStatusHandler handler = new PatronStatusHandler(mockPatronRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(PATRON_STATUS_RESPONSE));
+        freemarkerRepository.getFreemarkerTemplate(PATRON_STATUS_RESPONSE));
 
     handler.execute(patronStatus, sessionData).onComplete(testContext.failing(
         sipMessage -> testContext.verify(() -> {
