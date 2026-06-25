@@ -174,6 +174,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
@@ -289,6 +291,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
@@ -364,6 +368,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
@@ -480,6 +486,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
@@ -594,6 +602,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
 
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(accountResponse));
@@ -690,6 +700,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
@@ -802,6 +814,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
@@ -912,6 +926,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
@@ -1043,6 +1059,8 @@ public class PatronRepositoryTests {
     when(mockFeeFinesRepository.getManualBlocksByUserId(eq(userId), any()))
         .thenReturn(Future.succeededFuture(new JsonObject()
             .put("manualblocks", new JsonArray()).put("totalRecords", 0)));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(null));
 
     PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
         mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier,
@@ -1117,6 +1135,8 @@ public class PatronRepositoryTests {
     when(mockFeeFinesRepository.getManualBlocksByUserId(eq(userId), any()))
         .thenReturn(Future.succeededFuture(new JsonObject()
             .put("manualblocks", new JsonArray()).put("totalRecords", 0)));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(null));
 
     PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
         mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier,
@@ -1242,6 +1262,8 @@ public class PatronRepositoryTests {
         .thenReturn(Future.succeededFuture(queryAccountResponse));
     when(mockFeeFinesRepository.getManualBlocksByUserId(eq(userId), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(null));
 
     final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
         mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
@@ -1331,6 +1353,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
@@ -1446,6 +1470,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
@@ -1532,6 +1558,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
@@ -1610,6 +1638,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
@@ -1983,6 +2013,8 @@ public class PatronRepositoryTests {
     final JsonObject manualBlocksResponse = new JsonObject(manualBlocksResponseJson);
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
@@ -2076,6 +2108,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(null));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
@@ -2176,6 +2210,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     final String accountResponseJson = getJsonFromFile("json/account_request_response.json");
     final JsonObject accountResponse = new JsonObject(accountResponseJson);
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
@@ -2593,6 +2629,8 @@ public class PatronRepositoryTests {
 
     when(mockFeeFinesRepository.getManualBlocksByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(manualBlocksResponse));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(any(), any()))
+        .thenReturn(Future.succeededFuture(null));
     when(mockFeeFinesRepository.getAccountDataByUserId(any(), any()))
         .thenReturn(Future.succeededFuture(accountResponse));
     when(mockCirculationRepository.getOverdueLoansByUserId(any(), any(), any(), any(), any()))
@@ -2662,6 +2700,422 @@ public class PatronRepositoryTests {
 
           testContext.completeNow();
         })));
+  }
+
+  @Test
+  void canPerformPatronStatusWithAutomatedBlocks(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock UsersRepository mockUsersRepository) {
+    final String patronIdentifier = "1029384756";
+    final String patronPassword = "1234";
+    final String institutionId = "diku";
+    final String userId = "99a81cee-d439-42c8-9860-2bd1de881c4a";
+    final String userBarcode = "2349871212";
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final Float feeAmount = 34.50f;
+    final Personal personal = new Personal.Builder()
+        .firstName("Joe")
+        .middleName("Zee")
+        .lastName("Blow")
+        .build();
+    final User user = new User.Builder()
+        .id(userId)
+        .barcode(userBarcode)
+        .personal(personal)
+        .build();
+
+    final ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(user);
+    extendedUser.setPatronGroup("patrons", "The Library Patrons", "12335");
+
+    final PatronStatusRequest patronStatus = PatronStatusRequest.builder()
+        .patronIdentifier(patronIdentifier)
+        .patronPassword(patronPassword)
+        .institutionId(institutionId)
+        .transactionDate(OffsetDateTime.now())
+        .build();
+
+    final JsonObject queryAccountResponse = new JsonObject()
+        .put("accounts", new JsonArray()
+            .add(new JsonObject()
+                .put("remaining", feeAmount)
+                .put("id", "2345")));
+
+    final JsonObject automatedBlocksResponse = new JsonObject()
+        .put("automatedPatronBlocks", new JsonArray()
+            .add(new JsonObject()
+                .put("blockBorrowing", true)
+                .put("blockRenewals", true)
+                .put("blockRequests", true)
+                .put("message", "Patron has too many items checked out")))
+        .put("totalRecords", 1);
+
+    when(mockPasswordVerifier.verifyPatronPassword(anyString(), anyString(), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .extendedUser(extendedUser).build()));
+    when(mockFeeFinesRepository.getFeeAmountByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(queryAccountResponse));
+    when(mockFeeFinesRepository.getManualBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject()
+            .put("manualblocks", new JsonArray()).put("totalRecords", 0)));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(automatedBlocksResponse));
+
+    final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    patronRepository.performPatronStatusCommand(patronStatus, sessionData).onComplete(
+        testContext.succeeding(patronStatusResponse -> testContext.verify(() -> {
+          assertNotNull(patronStatusResponse);
+          assertEquals(true, patronStatusResponse.getValidPatron());
+          assertEquals(feeAmount.toString(), patronStatusResponse.getFeeAmount());
+          assertEquals("Joe Zee Blow", patronStatusResponse.getPersonalName());
+          assertEquals(EnumSet.allOf(PatronStatus.class), patronStatusResponse.getPatronStatus());
+          assertEquals(Collections.singletonList("Patron has too many items checked out"),
+              patronStatusResponse.getScreenMessage());
+          testContext.completeNow();
+        }))
+    );
+  }
+
+  @Test
+  void canPerformPatronStatusWithAutomatedBlocksApiUnavailable(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock UsersRepository mockUsersRepository) {
+    final String patronIdentifier = "1029384756";
+    final String patronPassword = "1234";
+    final String institutionId = "diku";
+    final String userId = "99a81cee-d439-42c8-9860-2bd1de881c4a";
+    final String userBarcode = "2349871212";
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final Float feeAmount = 34.50f;
+    final Personal personal = new Personal.Builder()
+        .firstName("Joe")
+        .middleName("Zee")
+        .lastName("Blow")
+        .build();
+    final User user = new User.Builder()
+        .id(userId)
+        .barcode(userBarcode)
+        .personal(personal)
+        .build();
+
+    final ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(user);
+    extendedUser.setPatronGroup("patrons", "The Library Patrons", "12335");
+
+    final PatronStatusRequest patronStatus = PatronStatusRequest.builder()
+        .patronIdentifier(patronIdentifier)
+        .patronPassword(patronPassword)
+        .institutionId(institutionId)
+        .transactionDate(OffsetDateTime.now())
+        .build();
+
+    final JsonObject queryAccountResponse = new JsonObject()
+        .put("accounts", new JsonArray()
+            .add(new JsonObject()
+                .put("remaining", feeAmount)
+                .put("id", "2345")));
+
+    when(mockPasswordVerifier.verifyPatronPassword(anyString(), anyString(), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .extendedUser(extendedUser).build()));
+    when(mockFeeFinesRepository.getFeeAmountByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(queryAccountResponse));
+    when(mockFeeFinesRepository.getManualBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject()
+            .put("manualblocks", new JsonArray()).put("totalRecords", 0)));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(null));
+
+    final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    patronRepository.performPatronStatusCommand(patronStatus, sessionData).onComplete(
+        testContext.succeeding(patronStatusResponse -> testContext.verify(() -> {
+          assertNotNull(patronStatusResponse);
+          assertEquals(true, patronStatusResponse.getValidPatron());
+          assertTrue(patronStatusResponse.getPatronStatus().isEmpty());
+          assertNull(patronStatusResponse.getScreenMessage());
+          testContext.completeNow();
+        }))
+    );
+  }
+
+  @Test
+  void extractAutomatedBlockMessagesReturnsMessageField() {
+    final JsonObject blocks = new JsonObject()
+        .put("totalRecords", 1)
+        .put("automatedPatronBlocks", new JsonArray().add(new JsonObject()
+            .put("blockBorrowing", true)
+            .put("blockRenewals", false)
+            .put("blockRequests", false)
+            .put("message", "Too many checked out")));
+    assertEquals(Collections.singletonList("Too many checked out"),
+        PatronRepository.extractAutomatedBlockMessages(blocks));
+  }
+
+  @Test
+  void extractAutomatedBlockMessagesFallsBackToDefaultMessage() {
+    final JsonObject blocks = new JsonObject()
+        .put("totalRecords", 1)
+        .put("automatedPatronBlocks", new JsonArray().add(new JsonObject()
+            .put("blockBorrowing", false)
+            .put("blockRenewals", true)
+            .put("blockRequests", false)));
+    assertEquals(Collections.singletonList(PatronRepository.MESSAGE_BLOCKED_PATRON),
+        PatronRepository.extractAutomatedBlockMessages(blocks));
+  }
+
+  @Test
+  void canPerformPatronStatusWithOnlyAutomatedRenewalBlock(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock UsersRepository mockUsersRepository) {
+    final String userId = "99a81cee-d439-42c8-9860-2bd1de881c4a";
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final ExtendedUser extendedUser = buildExtendedUser(userId);
+    final PatronStatusRequest patronStatus = buildPatronStatusRequest();
+
+    when(mockPasswordVerifier.verifyPatronPassword(anyString(), anyString(), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .extendedUser(extendedUser).build()));
+    when(mockFeeFinesRepository.getFeeAmountByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject()
+            .put("accounts", new JsonArray()).put("totalRecords", 0)));
+    when(mockFeeFinesRepository.getManualBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject()
+            .put("manualblocks", new JsonArray()).put("totalRecords", 0)));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject()
+            .put("totalRecords", 1)
+            .put("automatedPatronBlocks", new JsonArray().add(new JsonObject()
+                .put("blockBorrowing", false)
+                .put("blockRenewals", true)
+                .put("blockRequests", false)
+                .put("message", "Too many renewals")))));
+
+    final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    patronRepository.performPatronStatusCommand(patronStatus, sessionData).onComplete(
+        testContext.succeeding(patronStatusResponse -> testContext.verify(() -> {
+          assertNotNull(patronStatusResponse);
+          assertEquals(true, patronStatusResponse.getValidPatron());
+          assertEquals(EnumSet.of(RENEWAL_PRIVILEGES_DENIED),
+              patronStatusResponse.getPatronStatus());
+          assertEquals(Collections.singletonList("Too many renewals"),
+              patronStatusResponse.getScreenMessage());
+          testContext.completeNow();
+        }))
+    );
+  }
+
+  @Test
+  void canPerformPatronStatusWithOnlyAutomatedRequestBlock(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock UsersRepository mockUsersRepository) {
+    final String userId = "99a81cee-d439-42c8-9860-2bd1de881c4a";
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final ExtendedUser extendedUser = buildExtendedUser(userId);
+    final PatronStatusRequest patronStatus = buildPatronStatusRequest();
+
+    when(mockPasswordVerifier.verifyPatronPassword(anyString(), anyString(), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .extendedUser(extendedUser).build()));
+    when(mockFeeFinesRepository.getFeeAmountByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject()
+            .put("accounts", new JsonArray()).put("totalRecords", 0)));
+    when(mockFeeFinesRepository.getManualBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject()
+            .put("manualblocks", new JsonArray()).put("totalRecords", 0)));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject()
+            .put("totalRecords", 1)
+            .put("automatedPatronBlocks", new JsonArray().add(new JsonObject()
+                .put("blockBorrowing", false)
+                .put("blockRenewals", false)
+                .put("blockRequests", true)
+                .put("message", "Too many requests")))));
+
+    final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    patronRepository.performPatronStatusCommand(patronStatus, sessionData).onComplete(
+        testContext.succeeding(patronStatusResponse -> testContext.verify(() -> {
+          assertNotNull(patronStatusResponse);
+          assertEquals(true, patronStatusResponse.getValidPatron());
+          assertEquals(EnumSet.of(HOLD_PRIVILEGES_DENIED, RECALL_PRIVILEGES_DENIED),
+              patronStatusResponse.getPatronStatus());
+          assertEquals(Collections.singletonList("Too many requests"),
+              patronStatusResponse.getScreenMessage());
+          testContext.completeNow();
+        }))
+    );
+  }
+
+  @Test
+  void canPerformPatronStatusWithManualAndAutomatedBlocksMerged(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock PasswordVerifier mockPasswordVerifier,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock UsersRepository mockUsersRepository) {
+    final String userId = "99a81cee-d439-42c8-9860-2bd1de881c4a";
+    final Clock clock = TestUtils.getUtcFixedClock();
+    final ExtendedUser extendedUser = buildExtendedUser(userId);
+    final PatronStatusRequest patronStatus = buildPatronStatusRequest();
+
+    when(mockPasswordVerifier.verifyPatronPassword(anyString(), anyString(), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .extendedUser(extendedUser).build()));
+    when(mockFeeFinesRepository.getFeeAmountByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject()
+            .put("accounts", new JsonArray()).put("totalRecords", 0)));
+    when(mockFeeFinesRepository.getManualBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(getManualBlockJsonObject(false, true, false)));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject()
+            .put("totalRecords", 1)
+            .put("automatedPatronBlocks", new JsonArray().add(new JsonObject()
+                .put("blockBorrowing", false)
+                .put("blockRenewals", false)
+                .put("blockRequests", true)
+                .put("message", "Too many requests")))));
+
+    final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    patronRepository.performPatronStatusCommand(patronStatus, sessionData).onComplete(
+        testContext.succeeding(patronStatusResponse -> testContext.verify(() -> {
+          assertNotNull(patronStatusResponse);
+          assertEquals(true, patronStatusResponse.getValidPatron());
+          assertEquals(
+              EnumSet.of(RENEWAL_PRIVILEGES_DENIED, HOLD_PRIVILEGES_DENIED,
+                  RECALL_PRIVILEGES_DENIED),
+              patronStatusResponse.getPatronStatus());
+          assertEquals(List.of("Pay your fines!", "Too many requests"),
+              patronStatusResponse.getScreenMessage());
+          testContext.completeNow();
+        }))
+    );
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void canPerformPatronInformationWithAutomatedBlocks(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock CirculationRepository mockCirculationRepository,
+      @Mock FeeFinesRepository mockFeeFinesRepository,
+      @Mock PasswordVerifier mockPasswordVerifier) {
+    final Clock clock = Clock.fixed(Instant.now(), ZoneOffset.UTC);
+    final String patronIdentifier = "1234567890";
+    final PatronInformation patronInformation = PatronInformation.builder()
+        .language(ENGLISH)
+        .transactionDate(OffsetDateTime.now())
+        .summary(RECALL_ITEMS)
+        .institutionId("diku")
+        .patronIdentifier(patronIdentifier)
+        .terminalPassword("1234")
+        .patronPassword("0989")
+        .startItem(Integer.valueOf(1))
+        .endItem(Integer.valueOf(10))
+        .build();
+
+    final String userResponseJson = getJsonFromFile("json/user_response.json");
+    final User userResponse = Json.decodeValue(userResponseJson, User.class);
+    final String userId = userResponse.getId();
+
+    final ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(userResponse);
+    extendedUser.setPatronGroup("patrons", "The Library Patrons", "12335");
+
+    final JsonObject automatedBlocksResponse = new JsonObject()
+        .put("totalRecords", 1)
+        .put("automatedPatronBlocks", new JsonArray().add(new JsonObject()
+            .put("blockBorrowing", true)
+            .put("blockRenewals", true)
+            .put("blockRequests", true)
+            .put("message", "Patron has too many items checked out")));
+
+    final JsonObject emptyCircResponse = new JsonObject()
+        .put("loans", new JsonArray()).put("totalRecords", 0);
+    final JsonObject emptyRequestsResponse = new JsonObject()
+        .put("requests", new JsonArray()).put("totalRecords", 0);
+    final JsonObject emptyAccountResponse = new JsonObject()
+        .put("accounts", new JsonArray()).put("feesfines", new JsonArray())
+        .put("totalRecords", 0);
+
+    when(mockPasswordVerifier.verifyPatronPassword(eq(patronIdentifier), anyString(), any()))
+        .thenReturn(Future.succeededFuture(PatronPasswordVerificationRecords.builder()
+            .extendedUser(extendedUser).build()));
+    when(mockFeeFinesRepository.getManualBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(new JsonObject()
+            .put("manualblocks", new JsonArray()).put("totalRecords", 0)));
+    when(mockFeeFinesRepository.getAutomatedBlocksByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(automatedBlocksResponse));
+    when(mockFeeFinesRepository.getAccountDataByUserId(eq(userId), any()))
+        .thenReturn(Future.succeededFuture(emptyAccountResponse));
+    when(mockCirculationRepository.getLoansByUserId(eq(userId), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(emptyCircResponse));
+    when(mockCirculationRepository.getOverdueLoansByUserId(
+        eq(userId), any(), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(emptyCircResponse));
+    when(mockCirculationRepository.getRequestsByUserId(
+        eq(userId), eq("Hold"), any(), any(), any()))
+        .thenReturn(Future.succeededFuture(emptyRequestsResponse));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    final PatronRepository patronRepository = new PatronRepository(mockUsersRepository,
+        mockCirculationRepository, mockFeeFinesRepository, mockPasswordVerifier, clock);
+    patronRepository.performPatronInformationCommand(patronInformation, sessionData).onComplete(
+        testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
+          assertNotNull(patronInformationResponse);
+          assertTrue(patronInformationResponse.getValidPatron());
+          assertEquals(EnumSet.allOf(PatronStatus.class),
+              patronInformationResponse.getPatronStatus());
+          assertEquals(Collections.singletonList("Patron has too many items checked out"),
+              patronInformationResponse.getScreenMessage());
+          testContext.completeNow();
+        })));
+  }
+
+  private static ExtendedUser buildExtendedUser(String userId) {
+    final Personal personal = new Personal.Builder()
+        .firstName("Joe").middleName("Zee").lastName("Blow").build();
+    final User user = new User.Builder()
+        .id(userId).barcode("2349871212").personal(personal).build();
+    final ExtendedUser extendedUser = new ExtendedUser();
+    extendedUser.setUser(user);
+    extendedUser.setPatronGroup("patrons", "The Library Patrons", "12335");
+    return extendedUser;
+  }
+
+  private static PatronStatusRequest buildPatronStatusRequest() {
+    return PatronStatusRequest.builder()
+        .patronIdentifier("1029384756")
+        .patronPassword("1234")
+        .institutionId("diku")
+        .transactionDate(OffsetDateTime.now())
+        .build();
   }
 
   private static Stream<String> provideBlankPasswords() {

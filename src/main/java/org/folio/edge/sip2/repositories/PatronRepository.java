@@ -263,10 +263,11 @@ public class PatronRepository {
     addPersonalData(personal, patronInformation.getPatronIdentifier(), builder);
     final Integer startItem = patronInformation.getStartItem();
     final Integer endItem = patronInformation.getEndItem();
-    // Get manual blocks data to build patron status
-    final Future<PatronInformationResponseBuilder> manualBlocksFuture = feeFinesRepository
-        .getManualBlocksByUserId(userId, sessionData)
-        .map(blocks -> buildPatronStatus(blocks, builder));
+    // Get manual and automated blocks data to build patron status
+    final Future<PatronInformationResponseBuilder> patronStatusFuture = Future.all(
+        feeFinesRepository.getManualBlocksByUserId(userId, sessionData),
+        feeFinesRepository.getAutomatedBlocksByUserId(userId, sessionData))
+        .map(cf -> buildPatronStatus(cf.resultAt(0), cf.resultAt(1), builder));
     // Add fine count
     final Future<PatronInformationResponseBuilder> accountFuture = feeFinesRepository
         .getAccountDataByUserId(userId, sessionData)
@@ -306,7 +307,7 @@ public class PatronRepository {
         getRecalls(userId, sessionData).compose(recalls -> addRecalls(recalls, startItem, endItem,
             patronInformation.getSummary() == RECALL_ITEMS, builder));
     // When all operations complete, build and return the final PatronInformationResponse
-    return Future.all(manualBlocksFuture, accountFuture, holdsFuture,
+    return Future.all(patronStatusFuture, accountFuture, holdsFuture,
         overdueFuture, recallsFuture, loansFuture)
         .map(result -> {
           log.info(sessionData, "validPatron language:{} institutionId:{}",
@@ -349,18 +350,25 @@ public class PatronRepository {
         .getFeeAmountByUserId(userId, sessionData)
         .map(accounts -> totalAmount(sessionData, accounts, builder));
 
-    final Future<PatronStatusResponseBuilder> manualBlocksFuture = feeFinesRepository
-        .getManualBlocksByUserId(userId, sessionData)
-        .map(blocks -> {
-          builder.patronStatus(extractPatronStatusFromBlocks(blocks));
-          final List<String> messages = extractBlockMessages(blocks);
+    final Future<PatronStatusResponseBuilder> blocksFuture = Future.all(
+        feeFinesRepository.getManualBlocksByUserId(userId, sessionData),
+        feeFinesRepository.getAutomatedBlocksByUserId(userId, sessionData))
+        .map(cf -> {
+          final JsonObject manualBlocks = cf.resultAt(0);
+          final JsonObject automatedBlocks = cf.resultAt(1);
+          final EnumSet<PatronStatus> patronStatusFlags =
+              extractPatronStatusFromBlocks(manualBlocks);
+          patronStatusFlags.addAll(extractPatronStatusFromAutomatedBlocks(automatedBlocks));
+          builder.patronStatus(patronStatusFlags);
+          final List<String> messages = new ArrayList<>(extractBlockMessages(manualBlocks));
+          messages.addAll(extractAutomatedBlockMessages(automatedBlocks));
           if (!messages.isEmpty()) {
             builder.screenMessage(messages);
           }
           return builder;
         });
 
-    return Future.all(getFeeAmountFuture, manualBlocksFuture).map(cf -> builder
+    return Future.all(getFeeAmountFuture, blocksFuture).map(cf -> builder
             .language(patronStatus.getLanguage())
             .transactionDate(OffsetDateTime.now(clock))
             .institutionId(patronStatus.getInstitutionId())
@@ -474,15 +482,63 @@ public class PatronRepository {
   }
 
 
-  private PatronInformationResponseBuilder buildPatronStatus(JsonObject blocks,
+  private PatronInformationResponseBuilder buildPatronStatus(JsonObject manualBlocks,
+      JsonObject automatedBlocks,
       PatronInformationResponseBuilder builder) {
-    final EnumSet<PatronStatus> patronStatus = extractPatronStatusFromBlocks(blocks);
+    final EnumSet<PatronStatus> patronStatus = extractPatronStatusFromBlocks(manualBlocks);
+    patronStatus.addAll(extractPatronStatusFromAutomatedBlocks(automatedBlocks));
 
     if (!patronStatus.isEmpty()) {
-      builder.screenMessage(extractBlockMessages(blocks));
+      final List<String> messages = new ArrayList<>(extractBlockMessages(manualBlocks));
+      messages.addAll(extractAutomatedBlockMessages(automatedBlocks));
+      builder.screenMessage(messages);
     }
 
     return builder.patronStatus(patronStatus);
+  }
+
+  private static EnumSet<PatronStatus> extractPatronStatusFromAutomatedBlocks(JsonObject blocks) {
+    final EnumSet<PatronStatus> patronStatus = EnumSet.noneOf(PatronStatus.class);
+
+    if (blocks != null && blocks.getInteger(FIELD_TOTAL_RECORDS, 0) > 0) {
+      blocks.getJsonArray("automatedPatronBlocks", new JsonArray()).stream()
+          .map(o -> (JsonObject) o)
+          .forEach(jo -> {
+            if (jo.getBoolean("blockBorrowing", FALSE)) {
+              patronStatus.addAll(EnumSet.allOf(PatronStatus.class));
+            } else {
+              if (jo.getBoolean("blockRenewals", FALSE)) {
+                patronStatus.add(RENEWAL_PRIVILEGES_DENIED);
+              }
+              if (jo.getBoolean("blockRequests", FALSE)) {
+                patronStatus.add(HOLD_PRIVILEGES_DENIED);
+                patronStatus.add(RECALL_PRIVILEGES_DENIED);
+              }
+            }
+          });
+    }
+
+    return patronStatus;
+  }
+
+  protected static List<String> extractAutomatedBlockMessages(JsonObject blocks) {
+    if (blocks == null || blocks.getInteger(FIELD_TOTAL_RECORDS, 0) == 0) {
+      return Collections.emptyList();
+    }
+
+    return blocks.getJsonArray("automatedPatronBlocks", new JsonArray()).stream()
+        .map(o -> (JsonObject) o)
+        .filter(jo -> jo.getBoolean("blockBorrowing", FALSE)
+            || jo.getBoolean("blockRenewals", FALSE)
+            || jo.getBoolean("blockRequests", FALSE))
+        .map(jo -> {
+          final String message = jo.getString("message");
+          if (StringUtils.isNotBlank(message)) {
+            return message;
+          }
+          return MESSAGE_BLOCKED_PATRON;
+        })
+        .toList();
   }
 
   private static EnumSet<PatronStatus> extractPatronStatusFromBlocks(JsonObject blocks) {

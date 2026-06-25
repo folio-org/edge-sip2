@@ -669,4 +669,104 @@ class FeeFinesRepositoryTests {
     );
   }
 
+  @Test
+  void canGetAutomatedBlocksByUserIdWithNoBlocksApplied(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock Clock clock) {
+
+    final JsonObject emptyBlocksResponse = new JsonObject()
+        .put("automatedPatronBlocks", new JsonArray())
+        .put("totalRecords", 0);
+
+    when(mockFolioProvider.retrieveResource(any()))
+        .thenReturn(Future.succeededFuture(new FolioResource(emptyBlocksResponse,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    final FeeFinesRepository feeFinesRepository =
+        new FeeFinesRepository(mockFolioProvider, mockUsersRepository, clock);
+    feeFinesRepository.getAutomatedBlocksByUserId(UUID.randomUUID().toString(),
+        sessionData).onComplete(
+            testContext.succeeding(blocks -> testContext.verify(() -> {
+              assertNotNull(blocks);
+              assertNotNull(blocks.getJsonArray("automatedPatronBlocks"));
+              assertEquals(0, blocks.getJsonArray("automatedPatronBlocks").size());
+              assertEquals(0, blocks.getInteger(FIELD_TOTAL_RECORDS));
+
+              testContext.completeNow();
+            })));
+  }
+
+  @Test
+  void cannotGetAutomatedBlocksByUserId(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock Clock clock) {
+    when(mockFolioProvider.retrieveResource(any()))
+        .thenReturn(Future.failedFuture(new VertxException("Test failure", true)));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    final FeeFinesRepository feeFinesRepository =
+        new FeeFinesRepository(mockFolioProvider, mockUsersRepository, clock);
+    feeFinesRepository.getAutomatedBlocksByUserId(UUID.randomUUID().toString(),
+        sessionData).onComplete(
+            testContext.succeeding(blocks -> testContext.verify(() -> {
+              assertNull(blocks);
+
+              testContext.completeNow();
+            })));
+  }
+
+  @Test
+  void canGetAutomatedBlocksByUserIdWithBlocksApplied(Vertx vertx,
+      VertxTestContext testContext,
+      @Mock IResourceProvider<IRequestData> mockFolioProvider,
+      @Mock UsersRepository mockUsersRepository,
+      @Mock Clock clock) {
+
+    final String userId = "a23eac4b-955e-451c-b4ff-6ec2f5e63e23";
+    final JsonObject blocksResponse = new JsonObject()
+        .put("automatedPatronBlocks", new JsonArray()
+            .add(new JsonObject()
+                .put("blockBorrowing", true)
+                .put("blockRenewals", true)
+                .put("blockRequests", true)
+                .put("message", "Too many items checked out")
+                .put("userId", userId)))
+        .put("totalRecords", 1);
+
+    when(mockFolioProvider.retrieveResource(
+        argThat(arg -> arg.getPath().endsWith(encode("userId==\"" + userId + "\"").toString()))))
+        .thenReturn(Future.succeededFuture(new FolioResource(blocksResponse,
+            MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
+
+    final SessionData sessionData = TestUtils.getMockedSessionData();
+
+    final FeeFinesRepository feeFinesRepository =
+        new FeeFinesRepository(mockFolioProvider, mockUsersRepository, clock);
+    feeFinesRepository.getAutomatedBlocksByUserId(userId, sessionData).onComplete(
+        testContext.succeeding(blocks -> testContext.verify(() -> {
+          assertNotNull(blocks);
+          assertEquals(1, blocks.getInteger(FIELD_TOTAL_RECORDS));
+
+          final JsonArray blocksArray = blocks.getJsonArray("automatedPatronBlocks");
+          assertNotNull(blocksArray);
+          assertEquals(1, blocksArray.size());
+
+          final JsonObject block = blocksArray.getJsonObject(0);
+          assertNotNull(block);
+          assertTrue(block.getBoolean("blockBorrowing"));
+          assertTrue(block.getBoolean("blockRenewals"));
+          assertTrue(block.getBoolean("blockRequests"));
+          assertEquals("Too many items checked out", block.getString("message"));
+
+          testContext.completeNow();
+        })));
+  }
+
 }
