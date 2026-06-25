@@ -2,12 +2,16 @@ package org.folio.edge.sip2.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class UtilsTests {
 
@@ -53,8 +57,8 @@ public class UtilsTests {
     assertTrue(Utils.isStringNullOrEmpty(""));
   }
 
-  @CsvSource(nullValues = "null", value = { "30,30", "unknown,10" })
   @ParameterizedTest
+  @CsvSource(nullValues = "null", value = {"30,30", "unknown,10"})
   void getEnvOrDefault_positive_integerValue(String systemProperty, int expected) {
     var defaultValue = 10;
     var propertyName = "test";
@@ -71,5 +75,26 @@ public class UtilsTests {
   void getEnvOrDefault_positive_propertyNotFound() {
     var result = Utils.getEnvOrDefault("test", "TEST", 10, Integer::parseInt);
     assertEquals(10, result);
+  }
+
+  @ParameterizedTest
+  @MethodSource("isAnyBlankProvider")
+  void isAnyBlank_parameterized(boolean expected, String... values) {
+    assertEquals(expected, Utils.isAnyBlank(values));
+  }
+
+  private static Stream<Arguments> isAnyBlankProvider() {
+    return Stream.of(
+      arguments(true, new String[] {null}),
+      arguments(true, new String[] {""}),
+      arguments(true, new String[] {"   "}),
+      arguments(true, new String[] {"valid", null}),
+      arguments(true, new String[] {"valid", ""}),
+      arguments(true, new String[] {"valid", "   "}),
+      arguments(true, new String[] {null, "valid"}),
+      arguments(false, new String[] {"value"}),
+      arguments(false, new String[] {"value1", "value2"}),
+      arguments(false, new String[] {"value1", "value2", "value3"})
+    );
   }
 }
