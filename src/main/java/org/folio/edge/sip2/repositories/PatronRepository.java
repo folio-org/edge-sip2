@@ -504,13 +504,13 @@ public class PatronRepository {
       blocks.getJsonArray("automatedPatronBlocks", new JsonArray()).stream()
           .map(o -> (JsonObject) o)
           .forEach(jo -> {
-            if (jo.getBoolean("blockBorrowing", FALSE)) {
+            if (TRUE.equals(jo.getBoolean("blockBorrowing", FALSE))) {
               patronStatus.addAll(EnumSet.allOf(PatronStatus.class));
             } else {
-              if (jo.getBoolean("blockRenewals", FALSE)) {
+              if (TRUE.equals(jo.getBoolean("blockRenewals", FALSE))) {
                 patronStatus.add(RENEWAL_PRIVILEGES_DENIED);
               }
-              if (jo.getBoolean("blockRequests", FALSE)) {
+              if (TRUE.equals(jo.getBoolean("blockRequests", FALSE))) {
                 patronStatus.add(HOLD_PRIVILEGES_DENIED);
                 patronStatus.add(RECALL_PRIVILEGES_DENIED);
               }
