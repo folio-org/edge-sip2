@@ -26,6 +26,7 @@ import org.folio.edge.sip2.domain.messages.requests.FeePaid;
 import org.folio.edge.sip2.domain.messages.responses.FeePaidResponse;
 import org.folio.edge.sip2.repositories.domain.User;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.utils.CqlQuery;
 import org.folio.edge.sip2.utils.Sip2LogAdapter;
 import org.folio.edge.sip2.utils.Utils;
 import org.folio.util.PercentCodec;
@@ -197,12 +198,15 @@ public class FeeFinesRepository {
         new GetAutomatedBlocksByUserIdRequestData(userId, headers, sessionData);
 
     return resourceProvider.retrieveResource(requestData)
-        .otherwise(t -> {
-          log.warn(sessionData,
-              "Failed to retrieve automated patron blocks for user {}: {}", userId, t.getMessage());
-          return () -> null;
-        })
+        .onFailure(t -> logAutomatedPatronBlocksFetchError(userId, sessionData, t))
+        .otherwise(() -> null)
         .map(IResource::getResource);
+  }
+
+  private void logAutomatedPatronBlocksFetchError(String userId, SessionData sessionData,
+      Throwable t) {
+    log.warn(sessionData,
+        "Failed to retrieve automated patron blocks for user {}: {}", userId, t.getMessage());
   }
 
   protected static class GetAutomatedBlocksByUserIdRequestData implements IRequestData {
@@ -219,7 +223,7 @@ public class FeeFinesRepository {
 
     @Override
     public String getPath() {
-      return "/automated-patron-blocks?query=" + PercentCodec.encode(cqlUserId(userId));
+      return "/automated-patron-blocks?query=" + CqlQuery.exactMatch("userId", userId).toText();
     }
 
     @Override
