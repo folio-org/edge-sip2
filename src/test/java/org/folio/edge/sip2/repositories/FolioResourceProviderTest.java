@@ -230,10 +230,10 @@ class FolioResourceProviderTest {
   }
 
   @Test
-  void doPinCheck_positive_noContentResponse(VertxTestContext testContext) {
+  void doPinCheck_positive_missingContentTypeHeader(VertxTestContext testContext) {
     var requestData = testRequestDataWithBody("/patron-pin/verify",
         new JsonObject().put("pin", "1234"));
-    var httpResponse = httpResponseNoBody(204, "No Content");
+    var httpResponse = httpResponseNoBody(200, "OK");
 
     prepareRequestMocks(POST, requestData);
     when(jsonRequest.sendJsonObject(any())).thenReturn(succeededFuture(httpResponse));
@@ -249,19 +249,19 @@ class FolioResourceProviderTest {
   }
 
   @Test
-  void doPinCheck_realHttp_204NoContent(Vertx vertx, VertxTestContext testContext) {
-    var webClient = WebClient.create(vertx);
+  void doPinCheck_realHttp_200WithoutContentType(Vertx vertx, VertxTestContext testContext) {
+    var realClient = WebClient.create(vertx);
     var requestData = testRequestDataWithBody("/patron-pin/verify",
         new JsonObject().put("id", "user-id").put("pin", "1234"));
     when(loginRepository.getSessionAccessToken(any(SessionData.class)))
         .thenReturn(succeededFuture(ACCESS_TOKEN));
 
     vertx.createHttpServer()
-        .requestHandler(req -> req.response().setStatusCode(204).end())
+        .requestHandler(req -> req.response().setStatusCode(200).end())
         .listen(0)
         .compose(server -> {
           var realProvider = new FolioResourceProvider(
-              loginRepository, "http://localhost:" + server.actualPort(), webClient);
+              loginRepository, "http://localhost:" + server.actualPort(), realClient);
           return realProvider.doPinCheck(requestData)
               .compose(result -> server.close().map(result));
         })

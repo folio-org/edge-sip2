@@ -179,6 +179,84 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
         ));
   }
 
+  @Test
+  @WiremockStubs({
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings(pin-validation).json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
+      "/wiremock/stubs/mod-users/200-post-patron-pin.json",
+      "/wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-open-loans.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-open-loans-by-due-date.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-requests-hold.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-requests-recall.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-accounts.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-feefines-empty.json",
+  })
+  void getPatronInformation_positive_pinVerificationEnabled() throws Throwable {
+    executeInSession(
+        successLoginExchange(),
+        sip2Exchange(
+            PatronInformationCommand.builder()
+                .patronIdentifier(PATRON_BARCODE)
+                .languageCode(LanguageMapper.ENGLISH)
+                .summary(HOLD_ITEMS)
+                .patronPassword("132456")
+                .build(),
+            sip2Result -> {
+              assertSuccessfulExchange(sip2Result);
+
+              var respMsg = sip2Result.getResponseMessage();
+              assertThat(respMsg).startsWith("64");
+
+              var patronInfo = parseResponse(respMsg);
+              assertThat(patronInfo.getValidPatron()).isTrue();
+              assertThat(patronInfo.getValidPatronPassword()).isTrue();
+            }
+        ));
+  }
+
+  @Test
+  @WiremockStubs({
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings(pin-validation).json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
+      "/wiremock/stubs/mod-users/422-post-patron-pin.json",
+      "/wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-open-loans.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-open-loans-by-due-date.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-requests-hold.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-requests-recall.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-accounts.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-feefines-empty.json",
+  })
+  void getPatronInformation_negative_pinVerificationEnabledWithInvalidPin() throws Throwable {
+    executeInSession(
+        successLoginExchange(),
+        sip2Exchange(
+            PatronInformationCommand.builder()
+                .patronIdentifier(PATRON_BARCODE)
+                .languageCode(LanguageMapper.ENGLISH)
+                .summary(HOLD_ITEMS)
+                .patronPassword("132456")
+                .build(),
+            sip2Result -> {
+              assertSuccessfulExchange(sip2Result);
+
+              var respMsg = sip2Result.getResponseMessage();
+              assertThat(respMsg).startsWith("64");
+
+              var patronInfo = parseResponse(respMsg);
+              assertThat(patronInfo.getValidPatron()).isTrue();
+              assertThat(patronInfo.getValidPatronPassword()).isFalse();
+            }
+        ));
+  }
+
   private static PatronInformationResponse parseResponse(String respMsg) {
     return new PatronInformationResponseParser(delimiter, TIMEZONE).parse(respMsg);
   }
