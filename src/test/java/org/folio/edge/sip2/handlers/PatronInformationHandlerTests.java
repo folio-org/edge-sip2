@@ -38,12 +38,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @UnitTest
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class PatronInformationHandlerTests {
+class PatronInformationHandlerTests {
 
   private final FreemarkerRepository freemarkerRepository = new FreemarkerRepository();
 
   @Test
-  public void canExecuteASamplePatronInformationUsingHandler(
+  void canExecuteASamplePatronInformationUsingHandler(
       @Mock PatronRepository mockPatronRepository,
       Vertx vertx,
       VertxTestContext testContext) {
@@ -140,7 +140,6 @@ public class PatronInformationHandlerTests {
   }
 
   @Test
-
   void cantExecutePatronInformation(
        @Mock PatronRepository mockPatronRepository,
        Vertx vertx,
@@ -228,7 +227,7 @@ public class PatronInformationHandlerTests {
   }
 
   @Test
-  public void cannotCreateHandlerDueToMissingPatronRepository() {
+  void cannotCreateHandlerDueToMissingPatronRepository() {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
         () -> new PatronInformationHandler(null, null));
@@ -237,7 +236,7 @@ public class PatronInformationHandlerTests {
   }
 
   @Test
-  public void cannotCreateHandlerDueToMissingTemplate(@Mock PatronRepository mockPatronRepository) {
+  void cannotCreateHandlerDueToMissingTemplate(@Mock PatronRepository mockPatronRepository) {
     final NullPointerException thrown = assertThrows(NullPointerException.class,
         () -> new PatronInformationHandler(mockPatronRepository, null));
 

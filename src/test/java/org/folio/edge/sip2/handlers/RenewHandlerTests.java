@@ -35,7 +35,7 @@ class RenewHandlerTests {
   private final FreemarkerRepository freemarkerRepository = new FreemarkerRepository();
 
   @Test
-   void canRenewWithHandler(Vertx vertx,
+  void canRenewWithHandler(Vertx vertx,
       VertxTestContext testContext,
       @Mock CirculationRepository mockCirculationRepository) {
 
@@ -123,7 +123,7 @@ class RenewHandlerTests {
   }
 
   @Test
-   void canRenewWithHandlerFail(Vertx vertx,
+  void canRenewWithHandlerFail(Vertx vertx,
                                   VertxTestContext testContext,
                                   @Mock CirculationRepository mockCirculationRepository) {
 

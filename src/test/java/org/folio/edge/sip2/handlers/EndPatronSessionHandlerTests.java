@@ -28,12 +28,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class EndPatronSessionHandlerTests {
+class EndPatronSessionHandlerTests {
 
   private final FreemarkerRepository freemarkerRepository = new FreemarkerRepository();
 
   @Test
-  public void canSuccessfullyGetEndPatronSessionResponse(
+  void canSuccessfullyGetEndPatronSessionResponse(
       @Mock PatronRepository mockPatronRepository,
       Vertx vertx,
       VertxTestContext testContext) {
@@ -87,7 +87,7 @@ public class EndPatronSessionHandlerTests {
   }
 
   @Test
-  public void canSuccessfullyGetFailedEndPatronSessionResponse(
+   void canSuccessfullyGetFailedEndPatronSessionResponse(
       @Mock PatronRepository mockPatronRepository,
       Vertx vertx,
       VertxTestContext testContext) {
@@ -142,7 +142,7 @@ public class EndPatronSessionHandlerTests {
   }
 
   @Test
-   void incorrectUsernameFailure(
+  void incorrectUsernameFailure(
       @Mock PatronRepository mockPatronRepository,
       Vertx vertx,
       VertxTestContext testContext) {
@@ -189,5 +189,4 @@ public class EndPatronSessionHandlerTests {
           testContext.completeNow();
         })));
   }
-
 }

@@ -29,12 +29,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @UnitTest
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class CheckoutHandlerTests {
+class CheckoutHandlerTests {
 
   private final FreemarkerRepository freemarkerRepository = new FreemarkerRepository();
 
   @Test
-  public void canExecuteASampleCheckoutUsingHandler(
+  void canExecuteASampleCheckoutUsingHandler(
       @Mock CirculationRepository mockCirculationRepository,
       Vertx vertx,
       VertxTestContext testContext) {
@@ -148,7 +148,7 @@ public class CheckoutHandlerTests {
   }
 
   @Test
-  public void canExecuteASampleFailedCheckoutUsingHandler(
+  void canExecuteASampleFailedCheckoutUsingHandler(
       @Mock CirculationRepository mockCirculationRepository,
       Vertx vertx,
       VertxTestContext testContext) {
@@ -205,7 +205,7 @@ public class CheckoutHandlerTests {
   }
 
   @Test
-  public void cannotCreateHandlerDueToMissingCirculationRepository() {
+  void cannotCreateHandlerDueToMissingCirculationRepository() {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
         () -> new CheckinHandler(null, null));
@@ -214,7 +214,7 @@ public class CheckoutHandlerTests {
   }
 
   @Test
-  public void cannotCreateHandlerDueToMissingTemplate(@Mock CirculationRepository mock) {
+  void cannotCreateHandlerDueToMissingTemplate(@Mock CirculationRepository mock) {
     final NullPointerException thrown = assertThrows(NullPointerException.class,
         () -> new CheckinHandler(mock, null));
 

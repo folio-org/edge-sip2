@@ -30,12 +30,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @UnitTest
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class CheckinHandlerTests {
+class CheckinHandlerTests {
 
   private final FreemarkerRepository freemarkerRepository = new FreemarkerRepository();
 
   @Test
-  public void canExecuteASampleCheckinUsingHandler(
+  void canExecuteASampleCheckinUsingHandler(
       @Mock CirculationRepository mockCirculationRepository,
       Vertx vertx,
       VertxTestContext testContext) {
@@ -90,7 +90,7 @@ public class CheckinHandlerTests {
   }
 
   @Test
-  public void canExecuteASampleFailedCheckinUsingHandler(
+  void canExecuteASampleFailedCheckinUsingHandler(
       @Mock CirculationRepository mockCirculationRepository,
       Vertx vertx,
       VertxTestContext testContext) {
@@ -141,7 +141,7 @@ public class CheckinHandlerTests {
   }
 
   @Test
-  public void canExecuteInvalidCheckinUsingHandler(
+  void canExecuteInvalidCheckinUsingHandler(
       @Mock CirculationRepository mockCirculationRepository,
       Vertx vertx,
       VertxTestContext testContext) {
@@ -193,7 +193,7 @@ public class CheckinHandlerTests {
   }
 
   @Test
-  public void cannotCreateHandlerDueToMissingCirculationRepository() {
+  void cannotCreateHandlerDueToMissingCirculationRepository() {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
         () -> new CheckinHandler(null, null));
@@ -202,7 +202,7 @@ public class CheckinHandlerTests {
   }
 
   @Test
-  public void cannotCreateHandlerDueToMissingTemplate(@Mock CirculationRepository mock) {
+  void cannotCreateHandlerDueToMissingTemplate(@Mock CirculationRepository mock) {
     final NullPointerException thrown = assertThrows(NullPointerException.class,
         () -> new CheckinHandler(mock, null));
 

@@ -88,7 +88,7 @@ public class FreemarkerRepository {
   private Locale parseLocale(String tag) {
     try {
       var locale = new Locale.Builder().setLanguageTag(tag).build();
-      log.info("parseLocale:: Freemarker locale: {}", locale.toString());
+      log.info("parseLocale:: Freemarker locale: {}", locale);
       return locale;
     } catch (IllformedLocaleException e) {
       log.warn("Invalid locale tag '{}', falling back to locale: root", tag);

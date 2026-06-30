@@ -163,6 +163,4 @@ class PatronStatusHandlerTests {
           testContext.completeNow();
         })));
   }
-
-
 }

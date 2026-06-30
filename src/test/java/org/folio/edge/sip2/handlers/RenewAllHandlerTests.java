@@ -32,12 +32,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @UnitTest
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class RenewAllHandlerTests {
+class RenewAllHandlerTests {
 
   private static final FreemarkerRepository REPO = new FreemarkerRepository();
 
   @Test
-  public void canRenewAllWithHandler(Vertx vertx, VertxTestContext testContext,
+  void canRenewAllWithHandler(Vertx vertx, VertxTestContext testContext,
       @Mock CirculationRepository mockCirculationRepository) {
 
     final String patronIdentifier = "1029384756";

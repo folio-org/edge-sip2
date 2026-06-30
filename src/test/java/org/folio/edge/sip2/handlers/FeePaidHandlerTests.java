@@ -120,14 +120,6 @@ class FeePaidHandlerTests {
   }
 
   @Test
-  void defaultLocaleUsesDecimalPoint() {
-    // No SIP2_LOCALE / sip2Locale set → Locale.ROOT default → always "." decimal separator
-    var result = renderFeePaidResponse(new FreemarkerRepository());
-
-    assertThat(result).contains("FA0.01", "FG0.05");
-  }
-
-  @Test
   void renderFeePaidResponse_positive_defaultLocale() {
     var result = renderFeePaidResponse(new FreemarkerRepository());
     assertThat(result).contains("FA0.01", "FG0.05");
