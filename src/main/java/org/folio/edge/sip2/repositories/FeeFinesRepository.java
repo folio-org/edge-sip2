@@ -179,6 +179,63 @@ public class FeeFinesRepository {
       .map(IResource::getResource);
   }
 
+  /**
+   * Get a patron's automated patron blocks.
+   *
+   * @param userId the user's ID
+   * @param sessionData session data
+   * @return the automated patron blocks list in raw JSON or {@code null} if there was an error
+   */
+  public Future<JsonObject> getAutomatedBlocksByUserId(String userId, SessionData sessionData) {
+    Objects.requireNonNull(userId, "userId cannot be null");
+    Objects.requireNonNull(sessionData, "sessionData cannot be null");
+
+    final Map<String, String> headers = new HashMap<>();
+    headers.put(HEADER_ACCEPT, MIMETYPE_JSON);
+
+    final GetAutomatedBlocksByUserIdRequestData requestData =
+        new GetAutomatedBlocksByUserIdRequestData(userId, headers, sessionData);
+
+    return resourceProvider.retrieveResource(requestData)
+        .onFailure(t -> logAutomatedPatronBlocksFetchError(userId, sessionData, t))
+        .otherwise(() -> null)
+        .map(IResource::getResource);
+  }
+
+  private void logAutomatedPatronBlocksFetchError(String userId, SessionData sessionData,
+      Throwable t) {
+    log.warn(sessionData,
+        "Failed to retrieve automated patron blocks for user {}: {}", userId, t.getMessage());
+  }
+
+  protected static class GetAutomatedBlocksByUserIdRequestData implements IRequestData {
+    private final String userId;
+    private final Map<String, String> headers;
+    private final SessionData sessionData;
+
+    protected GetAutomatedBlocksByUserIdRequestData(String userId, Map<String, String> headers,
+        SessionData sessionData) {
+      this.userId = userId;
+      this.headers = Map.copyOf(headers);
+      this.sessionData = sessionData;
+    }
+
+    @Override
+    public String getPath() {
+      return "/automated-patron-blocks/" + userId;
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+      return headers;
+    }
+
+    @Override
+    public SessionData getSessionData() {
+      return sessionData;
+    }
+  }
+
   protected static class GetManualBlocksByUserIdRequestData implements IRequestData {
     private final String userId;
     private final Map<String, String> headers;
