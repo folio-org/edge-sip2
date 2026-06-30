@@ -83,7 +83,8 @@ public class FolioResourceProvider implements IResourceProvider<IRequestData> {
     log.debug(sessionData, "Doing pin verification at {}", requestData::getPath);
     return initHttpRequest(POST, requestData)
         .flatMap(request -> request.sendJsonObject(requestData.getBody()))
-        .expecting(getHttpRequestExpectations(sessionData, SC_SUCCESS))
+        .expecting(SC_SUCCESS.wrappingFailure(
+            (head, err) -> getHttpRequestError(sessionData, head, err)))
         .map(Boolean.TRUE)
         .onFailure(e -> log.error(sessionData, "Pin check failed", e));
   }

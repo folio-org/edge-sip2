@@ -6,6 +6,7 @@
 * Fix misleading log messages when token refresh fails and recovery login is used([SIP2-316](https://folio-org.atlassian.net/browse/SIP2-316))
 * Fix locale agnostic number formatting ([SIP2-300](https://folio-org.atlassian.net/browse/SIP2-300))
 * Add automated patron blocks support to patron status/information response ([SIP2-313](https://folio-org.atlassian.net/browse/SIP2-313))
+* Fix doPinCheck failing when FOLIO returns 200 without Content-Type header([SIP2-309](https://folio-org.atlassian.net/browse/SIP2-309))
 
 ---
 
