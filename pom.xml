@@ -46,11 +46,11 @@
 
     <!-- Folio library versions  -->
     <raml-module-builder-version>36.0.0</raml-module-builder-version>
-    <okapi-common.version>7.0.4</okapi-common.version>
+    <okapi-common.version>7.0.5</okapi-common.version>
     <folio-s3-client.version>3.0.1</folio-s3-client.version>
 
     <!-- 3rd party library versions  -->
-    <vertx.version>5.1.2</vertx.version>
+    <vertx.version>5.1.3</vertx.version>
     <log4j2.version>2.26.0</log4j2.version>
     <ipaddress.version>5.6.2</ipaddress.version>
     <lombok.version>1.18.46</lombok.version>
@@ -59,7 +59,7 @@
 
     <!-- 3rd party test library versions  -->
     <rest-assured.version>6.0.0</rest-assured.version>
-    <junit-bom.version>6.1.0</junit-bom.version>
+    <junit-bom.version>6.1.1</junit-bom.version>
     <mockito-bom.version>5.23.0</mockito-bom.version>
     <testcontainers-bom.version>2.0.5</testcontainers-bom.version>
     <wiremock.version>3.13.2</wiremock.version>
