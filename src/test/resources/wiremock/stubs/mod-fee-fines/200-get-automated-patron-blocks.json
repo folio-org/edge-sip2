@@ -1,0 +1,24 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/automated-patron-blocks/bec20636-fb68-41fd-84ea-2cf910673599",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "automatedPatronBlocks": []
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
