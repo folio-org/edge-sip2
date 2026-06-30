@@ -34,6 +34,7 @@ import org.folio.edge.sip2.repositories.SettingsRepository;
 import org.folio.edge.sip2.service.config.TenantConfigurationService;
 import org.folio.edge.sip2.service.tenant.Sip2TenantService;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.support.tags.UnitTest;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,16 +45,18 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+@UnitTest
 @ExtendWith({ VertxExtension.class, MockitoExtension.class })
 class LoginHandlerTests {
+
+  private final FreemarkerRepository freemarkerRepository = new FreemarkerRepository();
 
   @InjectMocks private LoginHandler handler;
   @Mock private LoginRepository mockLoginRepository;
   @Mock private Sip2TenantService sip2TenantService;
   @Mock private SettingsRepository mockSettingsRepository;
   @Mock private TenantConfigurationService mockTenantConfigurationService;
-  @Spy private Template template =
-      FreemarkerRepository.getInstance().getFreemarkerTemplate(LOGIN_RESPONSE);
+  @Spy private Template template = freemarkerRepository.getFreemarkerTemplate(LOGIN_RESPONSE);
   @Captor private ArgumentCaptor<SessionData> sessionDataCaptor;
 
   @Test
@@ -251,7 +254,7 @@ class LoginHandlerTests {
   }
 
   @Test
-  public void cannotCreateHandlerDueToMissingTemplate() {
+  void cannotCreateHandlerDueToMissingTemplate() {
     final NullPointerException thrown = assertThrows(NullPointerException.class,
         () -> new LoginHandler(mockLoginRepository, mockSettingsRepository,
             sip2TenantService, mockTenantConfigurationService, null));
@@ -265,7 +268,7 @@ class LoginHandlerTests {
     root.put("delimiter", "|");
     root.put("loginResponse", loginResponse);
 
-    var freemarkerTemplate = FreemarkerRepository.getInstance()
+    var freemarkerTemplate = freemarkerRepository
         .getFreemarkerTemplate(LOGIN_RESPONSE);
     return FreemarkerUtils.executeFreemarkerTemplate(null, root, freemarkerTemplate);
   }

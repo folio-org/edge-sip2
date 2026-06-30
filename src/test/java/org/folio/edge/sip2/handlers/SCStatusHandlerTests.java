@@ -25,14 +25,17 @@ import org.folio.edge.sip2.repositories.IResource;
 import org.folio.edge.sip2.repositories.IResourceProvider;
 import org.folio.edge.sip2.repositories.SettingsRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.support.tags.UnitTest;
 import org.folio.edge.sip2.utils.Utils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+@UnitTest
 @ExtendWith(VertxExtension.class)
 class SCStatusHandlerTests {
 
+  private final FreemarkerRepository repository = new FreemarkerRepository();
   private static final String DEFAULT_ACS_CONFIG_TEST_FILE = "json/DefaultACSConfiguration.json";
 
   @Test
@@ -164,12 +167,12 @@ class SCStatusHandlerTests {
     assertFalse(psm.getPatronInformation());
   }
 
-  private static SCStatusHandler getScStatusHandler(String localeFile, String settingsFile) {
-    var template = FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.ACS_STATUS);
+  private SCStatusHandler getScStatusHandler(String localeFile, String settingsFile) {
+    var template = repository.getFreemarkerTemplate(Command.ACS_STATUS);
     return getScStatusHandler(localeFile, DEFAULT_ACS_CONFIG_TEST_FILE, settingsFile, template);
   }
 
-  private static SCStatusHandler getScStatusHandler(String localeFile, String configFile,
+  private SCStatusHandler getScStatusHandler(String localeFile, String configFile,
       String settingsFile, Template template) {
     var configurationProvider = new DefaultResourceProvider(configFile);
     var configRepository = new ConfigurationRepository(configurationProvider);

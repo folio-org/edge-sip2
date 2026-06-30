@@ -23,18 +23,21 @@ import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.repositories.CirculationRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.support.tags.UnitTest;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+@UnitTest
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class RenewAllHandlerTests {
+class RenewAllHandlerTests {
+
+  private static final FreemarkerRepository REPO = new FreemarkerRepository();
 
   @Test
-  public void canRenewAllWithHandler(Vertx vertx,
-      VertxTestContext testContext,
+  void canRenewAllWithHandler(Vertx vertx, VertxTestContext testContext,
       @Mock CirculationRepository mockCirculationRepository) {
 
     final String patronIdentifier = "1029384756";
@@ -67,7 +70,7 @@ public class RenewAllHandlerTests {
       ));
 
     final RenewAllHandler handler = new RenewAllHandler(mockCirculationRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.RENEW_ALL_RESPONSE));
+        REPO.getFreemarkerTemplate(Command.RENEW_ALL_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -112,7 +115,7 @@ public class RenewAllHandlerTests {
         .thenReturn(Future.failedFuture(new ClientException("Incorrect Username")));
 
     final RenewAllHandler handler = new RenewAllHandler(mockCirculationRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(Command.RENEW_ALL_RESPONSE));
+        REPO.getFreemarkerTemplate(Command.RENEW_ALL_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
     sessionData.setPatronPasswordVerificationRequired(TRUE);

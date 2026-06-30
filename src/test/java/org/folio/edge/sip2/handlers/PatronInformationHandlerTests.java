@@ -14,8 +14,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -31,16 +29,21 @@ import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.repositories.PatronRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.support.tags.UnitTest;
 import org.folio.okapi.common.refreshtoken.client.ClientException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+@UnitTest
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class PatronInformationHandlerTests {
+class PatronInformationHandlerTests {
+
+  private final FreemarkerRepository freemarkerRepository = new FreemarkerRepository();
+
   @Test
-  public void canExecuteASamplePatronInformationUsingHandler(
+  void canExecuteASamplePatronInformationUsingHandler(
       @Mock PatronRepository mockPatronRepository,
       Vertx vertx,
       VertxTestContext testContext) {
@@ -61,10 +64,7 @@ public class PatronInformationHandlerTests {
     final String printLine = "This is a print line";
     final String borrowerType = "patron";
     final String borrowerTypeDescription = "the library patrons";
-    DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.getDefault());
-    DecimalFormat format = new DecimalFormat("###.00", symbols);
-    double totalRemaining = 55.30;
-    final String totalRemainingString = format.format(totalRemaining);
+    final String totalRemainingString = String.format(Locale.ROOT, "%.2f", 55.30);
     final PatronInformation patronInformation = PatronInformation.builder()
         .language(ENGLISH)
         .transactionDate(OffsetDateTime.now(clock))
@@ -114,7 +114,7 @@ public class PatronInformationHandlerTests {
             .build()));
 
     final PatronInformationHandler handler = new PatronInformationHandler(mockPatronRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(PATRON_INFORMATION_RESPONSE));
+        freemarkerRepository.getFreemarkerTemplate(PATRON_INFORMATION_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -140,7 +140,6 @@ public class PatronInformationHandlerTests {
   }
 
   @Test
-
   void cantExecutePatronInformation(
        @Mock PatronRepository mockPatronRepository,
        Vertx vertx,
@@ -179,7 +178,7 @@ public class PatronInformationHandlerTests {
         .thenReturn(Future.failedFuture(new ClientException("Incorrect Username")));
 
     final PatronInformationHandler handler = new PatronInformationHandler(mockPatronRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(PATRON_INFORMATION_RESPONSE));
+        freemarkerRepository.getFreemarkerTemplate(PATRON_INFORMATION_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -228,7 +227,7 @@ public class PatronInformationHandlerTests {
   }
 
   @Test
-  public void cannotCreateHandlerDueToMissingPatronRepository() {
+  void cannotCreateHandlerDueToMissingPatronRepository() {
     final NullPointerException thrown = assertThrows(
         NullPointerException.class,
         () -> new PatronInformationHandler(null, null));
@@ -237,7 +236,7 @@ public class PatronInformationHandlerTests {
   }
 
   @Test
-  public void cannotCreateHandlerDueToMissingTemplate(@Mock PatronRepository mockPatronRepository) {
+  void cannotCreateHandlerDueToMissingTemplate(@Mock PatronRepository mockPatronRepository) {
     final NullPointerException thrown = assertThrows(NullPointerException.class,
         () -> new PatronInformationHandler(mockPatronRepository, null));
 
