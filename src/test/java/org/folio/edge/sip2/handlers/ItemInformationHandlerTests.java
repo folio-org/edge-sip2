@@ -19,15 +19,18 @@ import org.folio.edge.sip2.domain.messages.responses.ItemInformationResponse;
 import org.folio.edge.sip2.handlers.freemarker.FreemarkerRepository;
 import org.folio.edge.sip2.repositories.ItemRepository;
 import org.folio.edge.sip2.session.SessionData;
+import org.folio.edge.sip2.support.tags.UnitTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-
-
+@UnitTest
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 class ItemInformationHandlerTests {
+
+  private final FreemarkerRepository freemarkerRepository = new FreemarkerRepository();
+
   @Test
   void canExecuteASampleItemInformationUsingHandler(
          @Mock ItemRepository mockItemRepository,
@@ -51,7 +54,7 @@ class ItemInformationHandlerTests {
         .build()));
 
     final ItemInformationHandler handler = new ItemInformationHandler(mockItemRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(ITEM_INFORMATION_RESPONSE));
+        freemarkerRepository.getFreemarkerTemplate(ITEM_INFORMATION_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
@@ -91,7 +94,7 @@ class ItemInformationHandlerTests {
         .build()));
 
     final ItemInformationHandler handler = new ItemInformationHandler(itemRepository,
-        FreemarkerRepository.getInstance().getFreemarkerTemplate(ITEM_INFORMATION_RESPONSE));
+        freemarkerRepository.getFreemarkerTemplate(ITEM_INFORMATION_RESPONSE));
 
     final SessionData sessionData = TestUtils.getMockedSessionData();
 
