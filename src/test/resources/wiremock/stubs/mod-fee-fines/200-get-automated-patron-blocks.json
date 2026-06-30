@@ -2,7 +2,7 @@
   "priority": 1,
   "request": {
     "method": "GET",
-    "urlPath": "/automated-patron-blocks",
+    "urlPath": "/automated-patron-blocks/bec20636-fb68-41fd-84ea-2cf910673599",
     "headers": {
       "x-okapi-tenant": {
         "equalTo": "testtenant"
@@ -10,18 +10,12 @@
       "x-okapi-token": {
         "equalTo": "test-jwt"
       }
-    },
-    "queryParameters": {
-      "query": {
-        "equalTo": "userId==\"bec20636-fb68-41fd-84ea-2cf910673599\""
-      }
     }
   },
   "response": {
     "status": 200,
     "jsonBody": {
-      "automatedPatronBlocks": [],
-      "totalRecords": 0
+      "automatedPatronBlocks": []
     },
     "headers": {
       "Content-Type": "application/json"

@@ -677,8 +677,7 @@ class FeeFinesRepositoryTests {
       @Mock Clock clock) {
 
     final JsonObject emptyBlocksResponse = new JsonObject()
-        .put("automatedPatronBlocks", new JsonArray())
-        .put("totalRecords", 0);
+        .put("automatedPatronBlocks", new JsonArray());
 
     when(mockFolioProvider.retrieveResource(any()))
         .thenReturn(Future.succeededFuture(new FolioResource(emptyBlocksResponse,
@@ -694,7 +693,6 @@ class FeeFinesRepositoryTests {
               assertNotNull(blocks);
               assertNotNull(blocks.getJsonArray("automatedPatronBlocks"));
               assertEquals(0, blocks.getJsonArray("automatedPatronBlocks").size());
-              assertEquals(0, blocks.getInteger(FIELD_TOTAL_RECORDS));
 
               testContext.completeNow();
             })));
@@ -737,11 +735,10 @@ class FeeFinesRepositoryTests {
                 .put("blockRenewals", true)
                 .put("blockRequests", true)
                 .put("message", "Too many items checked out")
-                .put("userId", userId)))
-        .put("totalRecords", 1);
+                .put("userId", userId)));
 
     when(mockFolioProvider.retrieveResource(
-        argThat(arg -> arg.getPath().endsWith(encode("userId==\"" + userId + "\"").toString()))))
+        argThat(arg -> arg.getPath().equals("/automated-patron-blocks/" + userId))))
         .thenReturn(Future.succeededFuture(new FolioResource(blocksResponse,
             MultiMap.caseInsensitiveMultiMap().add("x-okapi-token", "1234"))));
 
@@ -752,7 +749,6 @@ class FeeFinesRepositoryTests {
     feeFinesRepository.getAutomatedBlocksByUserId(userId, sessionData).onComplete(
         testContext.succeeding(blocks -> testContext.verify(() -> {
           assertNotNull(blocks);
-          assertEquals(1, blocks.getInteger(FIELD_TOTAL_RECORDS));
 
           final JsonArray blocksArray = blocks.getJsonArray("automatedPatronBlocks");
           assertNotNull(blocksArray);

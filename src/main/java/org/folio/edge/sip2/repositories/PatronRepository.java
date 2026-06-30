@@ -499,7 +499,7 @@ public class PatronRepository {
   private static EnumSet<PatronStatus> extractPatronStatusFromAutomatedBlocks(JsonObject blocks) {
     final var patronStatus = EnumSet.noneOf(PatronStatus.class);
 
-    if (blocks != null && blocks.getInteger(FIELD_TOTAL_RECORDS, 0) > 0) {
+    if (blocks != null) {
       blocks.getJsonArray("automatedPatronBlocks", new JsonArray()).stream()
           .map(o -> (JsonObject) o)
           .map(jo -> toBlockStatusFlags(
@@ -513,7 +513,7 @@ public class PatronRepository {
   }
 
   protected static List<String> extractAutomatedBlockMessages(JsonObject blocks) {
-    if (blocks == null || blocks.getInteger(FIELD_TOTAL_RECORDS, 0) == 0) {
+    if (blocks == null) {
       return Collections.emptyList();
     }
 

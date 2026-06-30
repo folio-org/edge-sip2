@@ -2853,7 +2853,6 @@ public class PatronRepositoryTests {
   @Test
   void extractAutomatedBlockMessagesReturnsMessageField() {
     final JsonObject blocks = new JsonObject()
-        .put("totalRecords", 1)
         .put("automatedPatronBlocks", new JsonArray().add(new JsonObject()
             .put("blockBorrowing", true)
             .put("blockRenewals", false)
@@ -2866,7 +2865,6 @@ public class PatronRepositoryTests {
   @Test
   void extractAutomatedBlockMessagesFallsBackToDefaultMessage() {
     final JsonObject blocks = new JsonObject()
-        .put("totalRecords", 1)
         .put("automatedPatronBlocks", new JsonArray().add(new JsonObject()
             .put("blockBorrowing", false)
             .put("blockRenewals", true)
@@ -2898,7 +2896,6 @@ public class PatronRepositoryTests {
             .put("manualblocks", new JsonArray()).put("totalRecords", 0)));
     when(mockFeeFinesRepository.getAutomatedBlocksByUserId(eq(userId), any()))
         .thenReturn(Future.succeededFuture(new JsonObject()
-            .put("totalRecords", 1)
             .put("automatedPatronBlocks", new JsonArray().add(new JsonObject()
                 .put("blockBorrowing", false)
                 .put("blockRenewals", true)

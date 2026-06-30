@@ -7,6 +7,5 @@
     "message" : "Patron has too many items checked out",
     "code" : "MAX_NUMBER_OF_ITEMS_CHARGED_OUT",
     "userId" : "a23eac4b-955e-451c-b4ff-6ec2f5e63e23"
-  } ],
-  "totalRecords" : 1
+  } ]
 }
