@@ -5,6 +5,7 @@ import static java.lang.Boolean.TRUE;
 import static org.folio.edge.sip2.api.support.TestUtils.getJsonFromFile;
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.ENGLISH;
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.UNKNOWN;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.CHARGE_PRIVILEGES_DENIED;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.HOLD_PRIVILEGES_DENIED;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RECALL_PRIVILEGES_DENIED;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RENEWAL_PRIVILEGES_DENIED;
@@ -1275,7 +1276,9 @@ public class PatronRepositoryTests {
           assertEquals(true, patronStatusResponse.getValidPatron());
           assertEquals(feeAmount.toString(), patronStatusResponse.getFeeAmount());
           assertEquals("Joe Zee Blow", patronStatusResponse.getPersonalName());
-          assertEquals(EnumSet.allOf(PatronStatus.class), patronStatusResponse.getPatronStatus());
+          assertEquals(EnumSet.of(CHARGE_PRIVILEGES_DENIED, RENEWAL_PRIVILEGES_DENIED,
+              RECALL_PRIVILEGES_DENIED, HOLD_PRIVILEGES_DENIED),
+              patronStatusResponse.getPatronStatus());
           assertEquals(Collections.singletonList("Pay your fines!"),
               patronStatusResponse.getScreenMessage());
           testContext.completeNow();
@@ -2557,10 +2560,11 @@ public class PatronRepositoryTests {
   private static Stream<Arguments> provideManualBlocks() {
     return Stream.of(
         Arguments.of(getManualBlockJsonObject(true, true, true),
-            EnumSet.allOf(PatronStatus.class),
+            EnumSet.of(CHARGE_PRIVILEGES_DENIED, RENEWAL_PRIVILEGES_DENIED,
+                RECALL_PRIVILEGES_DENIED, HOLD_PRIVILEGES_DENIED),
             Collections.singletonList("Pay your fines!")),
         Arguments.of(getManualBlockJsonObject(true, true, false),
-            EnumSet.allOf(PatronStatus.class),
+            EnumSet.of(CHARGE_PRIVILEGES_DENIED, RENEWAL_PRIVILEGES_DENIED),
             Collections.singletonList("Pay your fines!")),
         Arguments.of(getManualBlockJsonObject(false, true, true),
             EnumSet.of(RENEWAL_PRIVILEGES_DENIED,
@@ -2568,10 +2572,11 @@ public class PatronRepositoryTests {
                 RECALL_PRIVILEGES_DENIED),
             Collections.singletonList("Pay your fines!")),
         Arguments.of(getManualBlockJsonObject(true, false, true),
-            EnumSet.allOf(PatronStatus.class),
+            EnumSet.of(CHARGE_PRIVILEGES_DENIED, RECALL_PRIVILEGES_DENIED,
+                HOLD_PRIVILEGES_DENIED),
             Collections.singletonList("Pay your fines!")),
         Arguments.of(getManualBlockJsonObject(true, false, false),
-            EnumSet.allOf(PatronStatus.class),
+            EnumSet.of(CHARGE_PRIVILEGES_DENIED),
             Collections.singletonList("Pay your fines!")),
         Arguments.of(getManualBlockJsonObject(false, true, false),
             EnumSet.of(RENEWAL_PRIVILEGES_DENIED),
@@ -2774,7 +2779,9 @@ public class PatronRepositoryTests {
           assertEquals(true, patronStatusResponse.getValidPatron());
           assertEquals(feeAmount.toString(), patronStatusResponse.getFeeAmount());
           assertEquals("Joe Zee Blow", patronStatusResponse.getPersonalName());
-          assertEquals(EnumSet.allOf(PatronStatus.class), patronStatusResponse.getPatronStatus());
+          assertEquals(EnumSet.of(CHARGE_PRIVILEGES_DENIED, RENEWAL_PRIVILEGES_DENIED,
+              RECALL_PRIVILEGES_DENIED, HOLD_PRIVILEGES_DENIED),
+              patronStatusResponse.getPatronStatus());
           assertEquals(Collections.singletonList("Patron has too many items checked out"),
               patronStatusResponse.getScreenMessage());
           testContext.completeNow();
@@ -3087,7 +3094,8 @@ public class PatronRepositoryTests {
         testContext.succeeding(patronInformationResponse -> testContext.verify(() -> {
           assertNotNull(patronInformationResponse);
           assertTrue(patronInformationResponse.getValidPatron());
-          assertEquals(EnumSet.allOf(PatronStatus.class),
+          assertEquals(EnumSet.of(CHARGE_PRIVILEGES_DENIED, RENEWAL_PRIVILEGES_DENIED,
+              RECALL_PRIVILEGES_DENIED, HOLD_PRIVILEGES_DENIED),
               patronInformationResponse.getPatronStatus());
           assertEquals(Collections.singletonList("Patron has too many items checked out"),
               patronInformationResponse.getScreenMessage());

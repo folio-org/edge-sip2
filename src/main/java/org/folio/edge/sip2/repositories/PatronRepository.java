@@ -3,9 +3,18 @@ package org.folio.edge.sip2.repositories;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.UNKNOWN;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.CHARGE_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.EXCESSIVE_OUTSTANDING_FEES;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.EXCESSIVE_OUTSTANDING_FINES;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.HOLD_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RECALL_OVERDUE;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RECALL_PRIVILEGES_DENIED;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RENEWAL_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_CLAIMS_OF_ITEMS_RETURNED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_ITEMS_BILLED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_ITEMS_CHARGED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_ITEMS_LOST;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_ITEMS_OVERDUE;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.CHARGED_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.EXTENDED_FEES;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.FINE_ITEMS;
@@ -502,14 +511,38 @@ public class PatronRepository {
     if (blocks != null) {
       blocks.getJsonArray("automatedPatronBlocks", new JsonArray()).stream()
           .map(o -> (JsonObject) o)
-          .map(jo -> toBlockStatusFlags(
-              jo.getBoolean("blockBorrowing", FALSE),
-              jo.getBoolean("blockRenewals", FALSE),
-              jo.getBoolean("blockRequests", FALSE)))
+          .map(PatronRepository::toAutomatedBlockStatusFlags)
           .forEach(patronStatus::addAll);
     }
 
     return patronStatus;
+  }
+
+  private static EnumSet<PatronStatus> toAutomatedBlockStatusFlags(JsonObject jo) {
+    var flags = toBlockStatusFlags(
+        jo.getBoolean("blockBorrowing", FALSE),
+        jo.getBoolean("blockRenewals", FALSE),
+        jo.getBoolean("blockRequests", FALSE));
+    flags.addAll(toCodeStatusFlags(jo.getString("code")));
+    return flags;
+  }
+
+  private static EnumSet<PatronStatus> toCodeStatusFlags(String code) {
+    if (code == null) {
+      return EnumSet.noneOf(PatronStatus.class);
+    }
+    return switch (code) {
+      case "MAX_NUMBER_OF_ITEMS_CHARGED_OUT" -> EnumSet.of(TOO_MANY_ITEMS_CHARGED);
+      case "MAX_NUMBER_OF_OVERDUE_ITEMS" -> EnumSet.of(TOO_MANY_ITEMS_OVERDUE);
+      case "MAX_NUMBER_OF_OVERDUE_RECALLS",
+          "RECALL_OVERDUE_BY_MAX_NUMBER_OF_OVERDUE_DAYS" -> EnumSet.of(RECALL_OVERDUE);
+      case "MAX_NUMBER_OF_CLAIMS_RETURNED" -> EnumSet.of(TOO_MANY_CLAIMS_OF_ITEMS_RETURNED);
+      case "MAX_NUMBER_OF_LOST_ITEMS" -> EnumSet.of(TOO_MANY_ITEMS_LOST);
+      case "MAX_OUTSTANDING_FEE_FINE_BALANCE" ->
+          EnumSet.of(EXCESSIVE_OUTSTANDING_FINES, EXCESSIVE_OUTSTANDING_FEES);
+      case "MAX_NUMBER_OF_ITEMS_BILLED" -> EnumSet.of(TOO_MANY_ITEMS_BILLED);
+      default -> EnumSet.noneOf(PatronStatus.class);
+    };
   }
 
   protected static List<String> extractAutomatedBlockMessages(JsonObject blocks) {
@@ -555,15 +588,14 @@ public class PatronRepository {
       boolean borrowing, boolean renewals, boolean requests) {
     var flags = EnumSet.noneOf(PatronStatus.class);
     if (borrowing) {
-      flags.addAll(EnumSet.allOf(PatronStatus.class));
-    } else {
-      if (renewals) {
-        flags.add(RENEWAL_PRIVILEGES_DENIED);
-      }
-      if (requests) {
-        flags.add(HOLD_PRIVILEGES_DENIED);
-        flags.add(RECALL_PRIVILEGES_DENIED);
-      }
+      flags.add(CHARGE_PRIVILEGES_DENIED);
+    }
+    if (renewals) {
+      flags.add(RENEWAL_PRIVILEGES_DENIED);
+    }
+    if (requests) {
+      flags.add(HOLD_PRIVILEGES_DENIED);
+      flags.add(RECALL_PRIVILEGES_DENIED);
     }
     return flags;
   }
