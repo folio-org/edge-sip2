@@ -11,7 +11,6 @@ import static org.folio.edge.sip2.support.Sip2TestCommand.sip2Exchange;
 import java.util.EnumSet;
 import java.util.List;
 import org.folio.edge.sip2.api.support.AbstractErrorDetectionEnabledTest;
-import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
 import org.folio.edge.sip2.domain.messages.responses.PatronStatusResponse;
 import org.folio.edge.sip2.support.Sip2Commands;
 import org.folio.edge.sip2.support.response.PatronStatusResponseParser;
@@ -100,7 +99,7 @@ class PatronStatusIT extends AbstractErrorDetectionEnabledTest {
       "/wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
       "/wiremock/stubs/mod-fee-fines/200-get-automated-patron-blocks-with-borrowing-block.json",
   })
-  void getPatronStatus_withAutomatedBorrowingBlock_allStatusFlagsSetAndMessageReturned()
+  void getPatronStatus_withAutomatedBorrowingBlock_chargePrivilegesAndItemsChargedFlagsSet()
       throws Throwable {
     executeInSession(
         successLoginExchange(),

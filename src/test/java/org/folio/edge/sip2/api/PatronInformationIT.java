@@ -201,7 +201,7 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
       "/wiremock/stubs/mod-fee-fines/200-get-feefines-empty.json",
       "/wiremock/stubs/mod-fee-fines/200-get-automated-patron-blocks-with-borrowing-block.json",
   })
-  void getPatronInformation_withAutomatedBorrowingBlock_allStatusFlagsSetAndMessageReturned()
+  void getPatronInformation_withAutomatedBorrowingBlock_chargePrivilegesAndItemsChargedFlagsSet()
       throws Throwable {
     executeInSession(
         successLoginExchange(),
