@@ -10,8 +10,6 @@ import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.HOLD
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RECALL_OVERDUE;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RECALL_PRIVILEGES_DENIED;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RENEWAL_PRIVILEGES_DENIED;
-import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_CLAIMS_OF_ITEMS_RETURNED;
-import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_ITEMS_BILLED;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_ITEMS_CHARGED;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_ITEMS_LOST;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_ITEMS_OVERDUE;
@@ -81,6 +79,21 @@ public class PatronRepository {
   private static final String FIELD_ITEM = "item";
   private static final String FIELD_LOANS = "loans";
   private static final String FIELD_BARCODE = "barcode";
+  // FOLIO mod-patron-blocks seed patron-block-condition ids. The automated-patron-block
+  // response only carries this id, so the informational SIP2
+  // status positions are derived from these stable seed UUIDs.
+  private static final String CONDITION_MAX_ITEMS_CHARGED_OUT =
+      "3d7c52dc-c732-4223-8bf8-e5917801386f";
+  private static final String CONDITION_MAX_OVERDUE_ITEMS =
+      "584fbd4f-6a34-4730-a6ca-73a6a6a9d845";
+  private static final String CONDITION_MAX_OVERDUE_RECALLS =
+      "e5b45031-a202-4abb-917b-e1df9346fe2c";
+  private static final String CONDITION_RECALL_OVERDUE_BY_MAX_DAYS =
+      "08530ac4-07f2-48e6-9dda-a97bc2bf7053";
+  private static final String CONDITION_MAX_LOST_ITEMS =
+      "72b67965-5b73-4840-bc0b-be8f3f6e047e";
+  private static final String CONDITION_MAX_FEE_FINE_BALANCE =
+      "cf7a0d5f-a327-4ca1-aa9e-dc55ec006b8a";
   private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(PatronRepository.class);
   // These really should come from FOLIO
   static final String MESSAGE_INVALID_PATRON =
@@ -523,24 +536,28 @@ public class PatronRepository {
         jo.getBoolean("blockBorrowing", FALSE),
         jo.getBoolean("blockRenewals", FALSE),
         jo.getBoolean("blockRequests", FALSE));
-    flags.addAll(toCodeStatusFlags(jo.getString("code")));
+    flags.addAll(toConditionStatusFlags(jo.getString("patronBlockConditionId")));
     return flags;
   }
 
-  private static EnumSet<PatronStatus> toCodeStatusFlags(String code) {
-    if (code == null) {
+  /**
+   * Maps a FOLIO patron-block-condition id to the informational SIP2 patron status
+   * positions. Only the six seed conditions defined by mod-patron-blocks have a mapping.
+   * SIP2 positions 7 (too many renewals), 8 (too many claims returned) and 13 (too many
+   * items billed) have no corresponding FOLIO automated-block condition and are never set.
+   */
+  private static EnumSet<PatronStatus> toConditionStatusFlags(String conditionId) {
+    if (conditionId == null) {
       return EnumSet.noneOf(PatronStatus.class);
     }
-    return switch (code) {
-      case "MAX_NUMBER_OF_ITEMS_CHARGED_OUT" -> EnumSet.of(TOO_MANY_ITEMS_CHARGED);
-      case "MAX_NUMBER_OF_OVERDUE_ITEMS" -> EnumSet.of(TOO_MANY_ITEMS_OVERDUE);
-      case "MAX_NUMBER_OF_OVERDUE_RECALLS",
-          "RECALL_OVERDUE_BY_MAX_NUMBER_OF_OVERDUE_DAYS" -> EnumSet.of(RECALL_OVERDUE);
-      case "MAX_NUMBER_OF_CLAIMS_RETURNED" -> EnumSet.of(TOO_MANY_CLAIMS_OF_ITEMS_RETURNED);
-      case "MAX_NUMBER_OF_LOST_ITEMS" -> EnumSet.of(TOO_MANY_ITEMS_LOST);
-      case "MAX_OUTSTANDING_FEE_FINE_BALANCE" ->
+    return switch (conditionId) {
+      case CONDITION_MAX_ITEMS_CHARGED_OUT -> EnumSet.of(TOO_MANY_ITEMS_CHARGED);
+      case CONDITION_MAX_OVERDUE_ITEMS -> EnumSet.of(TOO_MANY_ITEMS_OVERDUE);
+      case CONDITION_MAX_OVERDUE_RECALLS,
+          CONDITION_RECALL_OVERDUE_BY_MAX_DAYS -> EnumSet.of(RECALL_OVERDUE);
+      case CONDITION_MAX_LOST_ITEMS -> EnumSet.of(TOO_MANY_ITEMS_LOST);
+      case CONDITION_MAX_FEE_FINE_BALANCE ->
           EnumSet.of(EXCESSIVE_OUTSTANDING_FINES, EXCESSIVE_OUTSTANDING_FEES);
-      case "MAX_NUMBER_OF_ITEMS_BILLED" -> EnumSet.of(TOO_MANY_ITEMS_BILLED);
       default -> EnumSet.noneOf(PatronStatus.class);
     };
   }
