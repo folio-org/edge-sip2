@@ -17,13 +17,11 @@
     "jsonBody": {
       "automatedPatronBlocks": [
         {
-          "patronBlockConditionId": "1a72f2de-5dd4-4543-a880-e0df97f9e9ad",
+          "patronBlockConditionId": "3d7c52dc-c732-4223-8bf8-e5917801386f",
           "blockBorrowing": true,
           "blockRenewals": false,
           "blockRequests": false,
-          "message": "Patron has too many items checked out",
-          "code": "MAX_NUMBER_OF_ITEMS_CHARGED_OUT",
-          "userId": "bec20636-fb68-41fd-84ea-2cf910673599"
+          "message": "Patron has too many items checked out"
         }
       ]
     },
