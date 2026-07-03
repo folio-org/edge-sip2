@@ -1,6 +1,8 @@
 package org.folio.edge.sip2.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.CHARGE_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_ITEMS_CHARGED;
 import static org.folio.edge.sip2.support.Sip2TestCommand.sip2Exchange;
 import static org.folio.edge.sip2.support.model.PatronInformationCommand.PatronInfoSummaryType.HOLD_ITEMS;
 
@@ -199,7 +201,7 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
       "/wiremock/stubs/mod-fee-fines/200-get-feefines-empty.json",
       "/wiremock/stubs/mod-fee-fines/200-get-automated-patron-blocks-with-borrowing-block.json",
   })
-  void getPatronInformation_withAutomatedBorrowingBlock_allStatusFlagsSetAndMessageReturned()
+  void getPatronInformation_withAutomatedBorrowingBlock_chargePrivilegesAndItemsChargedFlagsSet()
       throws Throwable {
     executeInSession(
         successLoginExchange(),
@@ -214,7 +216,7 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
               var patronInfo = parseResponse(respMsg);
               assertThat(patronInfo.getValidPatron()).isTrue();
               assertThat(patronInfo.getPatronStatus())
-                  .isEqualTo(EnumSet.allOf(PatronStatus.class));
+                  .isEqualTo(EnumSet.of(CHARGE_PRIVILEGES_DENIED, TOO_MANY_ITEMS_CHARGED));
               assertThat(patronInfo.getScreenMessage())
                   .isEqualTo(List.of("Patron has too many items checked out"));
             }

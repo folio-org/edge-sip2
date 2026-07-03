@@ -1,12 +1,16 @@
 package org.folio.edge.sip2.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.CHARGE_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.HOLD_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RECALL_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RENEWAL_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_ITEMS_CHARGED;
 import static org.folio.edge.sip2.support.Sip2TestCommand.sip2Exchange;
 
 import java.util.EnumSet;
 import java.util.List;
 import org.folio.edge.sip2.api.support.AbstractErrorDetectionEnabledTest;
-import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
 import org.folio.edge.sip2.domain.messages.responses.PatronStatusResponse;
 import org.folio.edge.sip2.support.Sip2Commands;
 import org.folio.edge.sip2.support.response.PatronStatusResponseParser;
@@ -75,7 +79,8 @@ class PatronStatusIT extends AbstractErrorDetectionEnabledTest {
               var response = parseResponse(respMsg);
               assertThat(response.getValidPatron()).isTrue();
               assertThat(response.getPatronStatus())
-                  .isEqualTo(EnumSet.allOf(PatronStatus.class));
+                  .isEqualTo(EnumSet.of(CHARGE_PRIVILEGES_DENIED, RENEWAL_PRIVILEGES_DENIED,
+                      RECALL_PRIVILEGES_DENIED, HOLD_PRIVILEGES_DENIED));
               assertThat(response.getScreenMessage())
                   .isEqualTo(List.of(
                       "Your account is blocked. Please contact the library."));
@@ -94,7 +99,7 @@ class PatronStatusIT extends AbstractErrorDetectionEnabledTest {
       "/wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
       "/wiremock/stubs/mod-fee-fines/200-get-automated-patron-blocks-with-borrowing-block.json",
   })
-  void getPatronStatus_withAutomatedBorrowingBlock_allStatusFlagsSetAndMessageReturned()
+  void getPatronStatus_withAutomatedBorrowingBlock_chargePrivilegesAndItemsChargedFlagsSet()
       throws Throwable {
     executeInSession(
         successLoginExchange(),
@@ -109,7 +114,7 @@ class PatronStatusIT extends AbstractErrorDetectionEnabledTest {
               var response = parseResponse(respMsg);
               assertThat(response.getValidPatron()).isTrue();
               assertThat(response.getPatronStatus())
-                  .isEqualTo(EnumSet.allOf(PatronStatus.class));
+                  .isEqualTo(EnumSet.of(CHARGE_PRIVILEGES_DENIED, TOO_MANY_ITEMS_CHARGED));
               assertThat(response.getScreenMessage())
                   .isEqualTo(List.of("Patron has too many items checked out"));
             }
