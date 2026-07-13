@@ -1,0 +1,58 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/accounts-bulk/pay",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "amount": "7.50",
+          "notifyPatron": true,
+          "servicePointId": "1a62fa88-e887-4454-a345-24b4a01095fa",
+          "userName": "test_username",
+          "paymentMethod": "Credit Card",
+          "accountIds": [
+            "cee0de04-533b-4e64-91c4-bbde19064709"
+          ]
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 201,
+    "jsonBody": {
+      "accountIds": [
+        "cee0de04-533b-4e64-91c4-bbde19064709"
+      ],
+      "feefineactions": [
+        {
+          "id": "550e8400-e29b-41d4-a716-446655440000",
+          "accountId": "cee0de04-533b-4e64-91c4-bbde19064709",
+          "userId": "bec20636-fb68-41fd-84ea-2cf910673599",
+          "dateAction": "2025-09-09T15:19:58.439+00:00",
+          "typeAction": "Paid partially",
+          "amountAction": 7.50,
+          "balance": 17.50,
+          "comments": "Partial payment processed",
+          "notify": true,
+          "transactionInformation": "CC-XXXX1234",
+          "createdAt": "1a62fa88-e887-4454-a345-24b4a01095fa",
+          "source": "system",
+          "paymentMethod": "Credit Card"
+        }
+      ],
+      "amount": "7.50"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

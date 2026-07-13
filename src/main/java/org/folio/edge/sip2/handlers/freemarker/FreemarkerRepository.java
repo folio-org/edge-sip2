@@ -14,7 +14,6 @@ import static org.folio.edge.sip2.parser.Command.RENEW_ALL_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.RENEW_RESPONSE;
 import static org.folio.edge.sip2.parser.Command.REQUEST_SC_RESEND;
 import static org.folio.edge.sip2.parser.Command.SC_STATUS;
-import static org.folio.edge.sip2.utils.Utils.getEnvOrDefault;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -22,16 +21,12 @@ import freemarker.template.TemplateExceptionHandler;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.EnumMap;
-import java.util.IllformedLocaleException;
 import java.util.Locale;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.edge.sip2.parser.Command;
 
 public class FreemarkerRepository {
-
-  private static final String SIP2_LOCALE_PROPERTY = "sip2TemplateLocale";
-  private static final String SIP2_LOCALE_ENV_VAR = "SIP2_TEMPLATE_LOCALE";
 
   private EnumMap<Command, Template> templates;
   private final Logger log;
@@ -66,9 +61,6 @@ public class FreemarkerRepository {
     configuration.setLogTemplateExceptions(false);
     configuration.setWrapUncheckedExceptions(true);
 
-    configuration.setLocale(getEnvOrDefault(
-        SIP2_LOCALE_PROPERTY, SIP2_LOCALE_ENV_VAR, ROOT, this::parseLocale));
-
     addTemplate(CHECKOUT_RESPONSE, "CheckoutResponse.ftl", configuration);
     addTemplate(CHECKIN_RESPONSE, "CheckinResponse.ftl", configuration);
     addTemplate(ACS_STATUS, "acs-status.ftl", configuration);
@@ -82,22 +74,9 @@ public class FreemarkerRepository {
     addTemplate(RENEW_ALL_RESPONSE, "RenewAllResponse.ftl", configuration);
     addTemplate(FEE_PAID_RESPONSE, "FeePaidResponse.ftl", configuration);
     addTemplate(SC_STATUS, "acs-status.ftl", configuration);
-
-  }
-
-  private Locale parseLocale(String tag) {
-    try {
-      var locale = new Locale.Builder().setLanguageTag(tag).build();
-      log.info("parseLocale:: Freemarker locale: {}", locale);
-      return locale;
-    } catch (IllformedLocaleException e) {
-      log.warn("Invalid locale tag '{}', falling back to locale: root", tag);
-      return ROOT;
-    }
   }
 
   private void addTemplate(Command command, String templateName, Configuration configuration) {
-
     Template template;
 
     try {

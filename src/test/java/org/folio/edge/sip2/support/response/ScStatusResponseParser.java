@@ -2,7 +2,6 @@ package org.folio.edge.sip2.support.response;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.Objects;
 import java.util.Set;
 import org.folio.edge.sip2.domain.messages.enumerations.Messages;
 import org.folio.edge.sip2.domain.messages.responses.ACSStatus;
@@ -14,20 +13,8 @@ public class ScStatusResponseParser extends Sip2ResponseParser<ACSStatus> {
   }
 
   @Override
-  public ACSStatus parse(String responseMessage) {
-    if (responseMessage == null || responseMessage.length() < 2) {
-      throw new IllegalArgumentException("Invalid response message");
-    }
-
-    position = 0;
-    var messageChars = responseMessage.toCharArray();
-    var statusCode = parseString(messageChars, 2);
-    if (!Objects.equals(statusCode, "98")) {
-      throw new IllegalArgumentException("Invalid message type: expected 98, got: " + statusCode);
-    }
-
+  public ACSStatus parseBody(char[] messageChars) {
     var builder = ACSStatus.builder();
-
     builder.onLineStatus(parseBoolean(messageChars));
     builder.checkinOk(parseBoolean(messageChars));
     builder.checkoutOk(parseBoolean(messageChars));
@@ -41,10 +28,7 @@ public class ScStatusResponseParser extends Sip2ResponseParser<ACSStatus> {
 
     var printLines = new ArrayList<String>();
     var screenMessages = new ArrayList<String>();
-    while (position < messageChars.length && messageChars[position] != delimiter) {
-      var fieldCode = parseFieldCode(messageChars);
-      var fieldValue = parseVariableLengthField(messageChars);
-
+    parseVariableLengthFields(messageChars, (fieldCode, fieldValue) -> {
       switch (fieldCode) {
         case "AO" -> builder.institutionId(fieldValue);
         case "AM" -> builder.libraryName(fieldValue);
@@ -52,15 +36,9 @@ public class ScStatusResponseParser extends Sip2ResponseParser<ACSStatus> {
         case "AN" -> builder.terminalLocation(fieldValue);
         case "AF" -> screenMessages.add(fieldValue);
         case "AG" -> printLines.add(fieldValue);
-        default -> {
-          // Ignore unrecognized field codes
-        }
+        default -> doNothing();
       }
-
-      if (position < messageChars.length && messageChars[position] == delimiter) {
-        position++;
-      }
-    }
+    });
 
     builder.screenMessage(screenMessages);
     builder.printLine(printLines);
@@ -68,12 +46,17 @@ public class ScStatusResponseParser extends Sip2ResponseParser<ACSStatus> {
     return builder.build();
   }
 
+  @Override
+  public int getCommandCode() {
+    return 98;
+  }
+
   private Set<Messages> parseSupportedMessages(String supportedMessagesStr) {
     Set<Messages> supportedMessages = EnumSet.noneOf(Messages.class);
 
     if (supportedMessagesStr.length() < 16) {
       throw new IllegalArgumentException(
-        "Invalid message (BX): expected 16 chars but got: " + supportedMessagesStr.length());
+          "Invalid message (BX): expected 16 chars but got: " + supportedMessagesStr.length());
     }
 
     var messageTypes = Messages.values();

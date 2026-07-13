@@ -428,6 +428,8 @@
         </configuration>
         <executions>
           <execution>
+            <id>verify-style</id>
+            <phase>process-classes</phase>
             <goals>
               <goal>check</goal>
             </goals>

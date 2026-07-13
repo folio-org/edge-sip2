@@ -5,9 +5,9 @@ import java.time.OffsetDateTime;
 public class PatronAccountInfo {
   private String id;
   private String feeFineType;
-  private Double feeFineAmount;
-  private Double feeFineRemaining;
-  private Double feeFinePaid;
+  private String feeFineAmount;
+  private String feeFineRemaining;
+  private String feeFinePaid;
   private String itemBarcode;
   private OffsetDateTime feeCreationDate;
   private String feeFineId;
@@ -46,19 +46,19 @@ public class PatronAccountInfo {
     this.feeFineType = feeFineType;
   }
 
-  public Double getFeeFineAmount() {
+  public String getFeeFineAmount() {
     return feeFineAmount;
   }
 
-  public Double getFeeFineRemaining() {
+  public String getFeeFineRemaining() {
     return feeFineRemaining;
   }
 
-  public void setFeeFineAmount(Double feeFineAmount) {
+  public void setFeeFineAmount(String feeFineAmount) {
     this.feeFineAmount = feeFineAmount;
   }
 
-  public void setFeeFineRemaining(Double feeFineRemaining) {
+  public void setFeeFineRemaining(String feeFineRemaining) {
     this.feeFineRemaining = feeFineRemaining;
   }
 
@@ -86,11 +86,11 @@ public class PatronAccountInfo {
     this.feeDescription = feeDescription;
   }
 
-  public Double getFeeFinePaid() {
+  public String getFeeFinePaid() {
     return feeFinePaid;
   }
 
-  public void setFeeFinePaid(Double feeFinePaid) {
+  public void setFeeFinePaid(String feeFinePaid) {
     this.feeFinePaid = feeFinePaid;
   }
 }
