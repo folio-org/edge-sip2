@@ -1,7 +1,6 @@
 package org.folio.edge.sip2.utils;
 
 import static java.util.Locale.ROOT;
-import static java.util.Locale.filter;
 
 import io.micrometer.common.util.StringUtils;
 import io.vertx.core.json.JsonObject;
