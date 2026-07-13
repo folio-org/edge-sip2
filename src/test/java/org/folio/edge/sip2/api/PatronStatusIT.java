@@ -63,6 +63,7 @@ class PatronStatusIT extends AbstractErrorDetectionEnabledTest {
       "/wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
       "/wiremock/stubs/mod-fee-fines/200-get-accounts-open-status.json",
       "/wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-automated-patron-blocks.json",
   })
   void getPatronStatus_noManualBlocks_feePaidWithGermanLocale() throws Throwable {
     executeInSession(
