@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
@@ -229,6 +230,48 @@ class FolioResourceProviderTest {
   }
 
   @Test
+  void doPinCheck_positive_missingContentTypeHeader(VertxTestContext testContext) {
+    var requestData = testRequestDataWithBody("/patron-pin/verify",
+        new JsonObject().put("pin", "1234"));
+    var httpResponse = httpResponseNoBody(200, "OK");
+
+    prepareRequestMocks(POST, requestData);
+    when(jsonRequest.sendJsonObject(any())).thenReturn(succeededFuture(httpResponse));
+    when(loginRepository.getSessionAccessToken(any(SessionData.class)))
+        .thenReturn(succeededFuture(ACCESS_TOKEN));
+
+    var resultFuture = provider.doPinCheck(requestData);
+
+    resultFuture.onComplete(testContext.succeeding(result -> {
+      assertTrue(result);
+      testContext.completeNow();
+    }));
+  }
+
+  @Test
+  void doPinCheck_realHttp_200WithoutContentType(Vertx vertx, VertxTestContext testContext) {
+    var realClient = WebClient.create(vertx);
+    var requestData = testRequestDataWithBody("/patron-pin/verify",
+        new JsonObject().put("id", "user-id").put("pin", "1234"));
+    when(loginRepository.getSessionAccessToken(any(SessionData.class)))
+        .thenReturn(succeededFuture(ACCESS_TOKEN));
+
+    vertx.createHttpServer()
+        .requestHandler(req -> req.response().setStatusCode(200).end())
+        .listen(0)
+        .compose(server -> {
+          var realProvider = new FolioResourceProvider(
+              loginRepository, "http://localhost:" + server.actualPort(), realClient);
+          return realProvider.doPinCheck(requestData)
+              .compose(result -> server.close().map(result));
+        })
+        .onComplete(testContext.succeeding(result -> {
+          assertTrue(result);
+          testContext.completeNow();
+        }));
+  }
+
+  @Test
   void doPinCheck_negative_accessTokenMissing(VertxTestContext testContext) {
     var requestData = testRequestDataWithBody("/pin-verify", new JsonObject());
 
@@ -304,6 +347,11 @@ class FolioResourceProviderTest {
     headers.add("content-type", "application/json");
     return new HttpResponseImpl<>(HTTP_1_1, statusCode, statusMessage,
         headers, caseInsensitiveMultiMap(), emptyList(), body, emptyList());
+  }
+
+  private static HttpResponse<JsonObject> httpResponseNoBody(int statusCode, String statusMessage) {
+    return new HttpResponseImpl<>(HTTP_1_1, statusCode, statusMessage,
+        httpHeaders(), caseInsensitiveMultiMap(), emptyList(), null, emptyList());
   }
 
   private static class TestRequestData implements IRequestData {

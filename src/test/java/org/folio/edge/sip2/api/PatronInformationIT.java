@@ -1,6 +1,8 @@
 package org.folio.edge.sip2.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.CHARGE_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_ITEMS_CHARGED;
 import static org.folio.edge.sip2.support.Sip2TestCommand.sip2Exchange;
 import static org.folio.edge.sip2.support.model.PatronInformationCommand.PatronInfoSummaryType.HOLD_ITEMS;
 
@@ -39,6 +41,7 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
       "/wiremock/stubs/mod-fee-fines/200-get-accounts.json",
       "/wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
       "/wiremock/stubs/mod-fee-fines/200-get-feefines-empty.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-automated-patron-blocks.json",
   })
   void getPatronInformation_positive_holdSummaryType() throws Throwable {
     var currentTs = OffsetDateTime.now().toInstant();
@@ -78,6 +81,7 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
       "/wiremock/stubs/mod-fee-fines/200-get-accounts-empty.json",
       "/wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
       "/wiremock/stubs/mod-fee-fines/500-get-feefines-invalid-query.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-automated-patron-blocks.json",
   })
   void getPatronInformation_positive_holdSummaryTypeAndEmptyRequests() throws Throwable {
     executeInSession(
@@ -116,6 +120,7 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
       "/wiremock/stubs/mod-fee-fines/200-get-accounts.json",
       "/wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
       "/wiremock/stubs/mod-fee-fines/200-get-feefines-empty.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-automated-patron-blocks.json",
   })
   void getPatronInformationWithPasswordVerificationRequired_invalidPassword() throws Throwable {
     executeInSession(
@@ -155,6 +160,7 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
     "/wiremock/stubs/mod-fee-fines/200-get-accounts.json",
     "/wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
     "/wiremock/stubs/mod-fee-fines/200-get-feefines-empty.json",
+    "/wiremock/stubs/mod-fee-fines/200-get-automated-patron-blocks.json",
   })
   void getPatronInformationWithPasswordVerificationRequired_validPassword() throws Throwable {
     executeInSession(
@@ -175,6 +181,124 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
               var patronInfo = parseResponse(respMsg);
               assertThat(patronInfo.getValidPatron()).isTrue();
               assertThat(patronInfo.getValidPatronPassword()).isTrue();
+            }
+        ));
+  }
+
+  @Test
+  @WiremockStubs({
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings.json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
+      "/wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-open-loans.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-open-loans-by-due-date.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-requests-hold.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-requests-recall.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-accounts.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-feefines-empty.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-automated-patron-blocks-with-borrowing-block.json",
+  })
+  void getPatronInformation_withAutomatedBorrowingBlock_chargePrivilegesAndItemsChargedFlagsSet()
+      throws Throwable {
+    executeInSession(
+        successLoginExchange(),
+        sip2Exchange(
+            Sip2Commands.patronInformation(PATRON_BARCODE, HOLD_ITEMS),
+            sip2Result -> {
+              assertSuccessfulExchange(sip2Result);
+
+              var respMsg = sip2Result.getResponseMessage();
+              assertThat(respMsg).startsWith("64");
+
+              var patronInfo = parseResponse(respMsg);
+              assertThat(patronInfo.getValidPatron()).isTrue();
+              assertThat(patronInfo.getPatronStatus())
+                  .isEqualTo(EnumSet.of(CHARGE_PRIVILEGES_DENIED, TOO_MANY_ITEMS_CHARGED));
+              assertThat(patronInfo.getScreenMessage())
+                  .isEqualTo(List.of("Patron has too many items checked out"));
+            }
+        ));
+  }
+
+  @Test
+  @WiremockStubs({
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings(pin-validation).json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
+      "/wiremock/stubs/mod-users/200-post-patron-pin.json",
+      "/wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-open-loans.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-open-loans-by-due-date.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-requests-hold.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-requests-recall.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-accounts.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-feefines-empty.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-automated-patron-blocks-with-borrowing-block.json",
+  })
+  void getPatronInformation_positive_pinVerificationEnabled() throws Throwable {
+    executeInSession(
+        successLoginExchange(),
+        sip2Exchange(
+            PatronInformationCommand.builder()
+                .patronIdentifier(PATRON_BARCODE)
+                .languageCode(LanguageMapper.ENGLISH)
+                .summary(HOLD_ITEMS)
+                .patronPassword("132456")
+                .build(),
+            sip2Result -> {
+              assertSuccessfulExchange(sip2Result);
+
+              var respMsg = sip2Result.getResponseMessage();
+              assertThat(respMsg).startsWith("64");
+
+              var patronInfo = parseResponse(respMsg);
+              assertThat(patronInfo.getValidPatron()).isTrue();
+              assertThat(patronInfo.getValidPatronPassword()).isTrue();
+            }
+        ));
+  }
+
+  @Test
+  @WiremockStubs({
+      "/wiremock/stubs/mod-settings/200-get-locale.json",
+      "/wiremock/stubs/mod-settings/200-get-settings(pin-validation).json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
+      "/wiremock/stubs/mod-users/422-post-patron-pin.json",
+      "/wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-open-loans.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-open-loans-by-due-date.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-requests-hold.json",
+      "/wiremock/stubs/mod-circulation/200-get-circulation-requests-recall.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-accounts.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-feefines-empty.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-automated-patron-blocks-with-borrowing-block.json",
+  })
+  void getPatronInformation_negative_pinVerificationEnabledWithInvalidPin() throws Throwable {
+    executeInSession(
+        successLoginExchange(),
+        sip2Exchange(
+            PatronInformationCommand.builder()
+                .patronIdentifier(PATRON_BARCODE)
+                .languageCode(LanguageMapper.ENGLISH)
+                .summary(HOLD_ITEMS)
+                .patronPassword("132456")
+                .build(),
+            sip2Result -> {
+              assertSuccessfulExchange(sip2Result);
+
+              var respMsg = sip2Result.getResponseMessage();
+              assertThat(respMsg).startsWith("64");
+
+              var patronInfo = parseResponse(respMsg);
+              assertThat(patronInfo.getValidPatron()).isTrue();
+              assertThat(patronInfo.getValidPatronPassword()).isFalse();
             }
         ));
   }

@@ -3,9 +3,16 @@ package org.folio.edge.sip2.repositories;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.folio.edge.sip2.domain.messages.enumerations.Language.UNKNOWN;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.CHARGE_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.EXCESSIVE_OUTSTANDING_FEES;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.EXCESSIVE_OUTSTANDING_FINES;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.HOLD_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RECALL_OVERDUE;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RECALL_PRIVILEGES_DENIED;
 import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.RENEWAL_PRIVILEGES_DENIED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_ITEMS_CHARGED;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_ITEMS_LOST;
+import static org.folio.edge.sip2.domain.messages.enumerations.PatronStatus.TOO_MANY_ITEMS_OVERDUE;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.CHARGED_ITEMS;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.EXTENDED_FEES;
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.FINE_ITEMS;
@@ -74,6 +81,21 @@ public class PatronRepository {
   private static final String FIELD_ITEM = "item";
   private static final String FIELD_LOANS = "loans";
   private static final String FIELD_BARCODE = "barcode";
+  // FOLIO mod-patron-blocks seed patron-block-condition ids. The automated-patron-block
+  // response only carries this id, so the informational SIP2
+  // status positions are derived from these stable seed UUIDs.
+  private static final String CONDITION_MAX_ITEMS_CHARGED_OUT =
+      "3d7c52dc-c732-4223-8bf8-e5917801386f";
+  private static final String CONDITION_MAX_OVERDUE_ITEMS =
+      "584fbd4f-6a34-4730-a6ca-73a6a6a9d845";
+  private static final String CONDITION_MAX_OVERDUE_RECALLS =
+      "e5b45031-a202-4abb-917b-e1df9346fe2c";
+  private static final String CONDITION_RECALL_OVERDUE_BY_MAX_DAYS =
+      "08530ac4-07f2-48e6-9dda-a97bc2bf7053";
+  private static final String CONDITION_MAX_LOST_ITEMS =
+      "72b67965-5b73-4840-bc0b-be8f3f6e047e";
+  private static final String CONDITION_MAX_FEE_FINE_BALANCE =
+      "cf7a0d5f-a327-4ca1-aa9e-dc55ec006b8a";
   private static final Sip2LogAdapter log = Sip2LogAdapter.getLogger(PatronRepository.class);
   // These really should come from FOLIO
   static final String MESSAGE_INVALID_PATRON =
@@ -265,10 +287,11 @@ public class PatronRepository {
     addPersonalData(personal, patronInformation.getPatronIdentifier(), builder);
     final Integer startItem = patronInformation.getStartItem();
     final Integer endItem = patronInformation.getEndItem();
-    // Get manual blocks data to build patron status
-    final Future<PatronInformationResponseBuilder> manualBlocksFuture = feeFinesRepository
-        .getManualBlocksByUserId(userId, sessionData)
-        .map(blocks -> buildPatronStatus(blocks, builder));
+    // Get manual and automated blocks data to build patron status
+    final Future<PatronInformationResponseBuilder> patronStatusFuture = Future.all(
+        feeFinesRepository.getManualBlocksByUserId(userId, sessionData),
+        feeFinesRepository.getAutomatedBlocksByUserId(userId, sessionData))
+        .map(cf -> buildPatronStatus(cf.resultAt(0), cf.resultAt(1), builder));
     // Add fine count
     final Future<PatronInformationResponseBuilder> accountFuture = feeFinesRepository
         .getAccountDataByUserId(userId, sessionData)
@@ -308,7 +331,7 @@ public class PatronRepository {
         getRecalls(userId, sessionData).compose(recalls -> addRecalls(recalls, startItem, endItem,
             patronInformation.getSummary() == RECALL_ITEMS, builder));
     // When all operations complete, build and return the final PatronInformationResponse
-    return Future.all(manualBlocksFuture, accountFuture, holdsFuture,
+    return Future.all(patronStatusFuture, accountFuture, holdsFuture,
         overdueFuture, recallsFuture, loansFuture)
         .map(result -> {
           log.info(sessionData, "validPatron language:{} institutionId:{}",
@@ -351,18 +374,24 @@ public class PatronRepository {
         .getFeeAmountByUserId(userId, sessionData)
         .map(accounts -> totalAmount(sessionData, accounts, builder));
 
-    final Future<PatronStatusResponseBuilder> manualBlocksFuture = feeFinesRepository
-        .getManualBlocksByUserId(userId, sessionData)
-        .map(blocks -> {
-          builder.patronStatus(extractPatronStatusFromBlocks(blocks));
-          final List<String> messages = extractBlockMessages(blocks);
+    final Future<PatronStatusResponseBuilder> blocksFuture = Future.all(
+        feeFinesRepository.getManualBlocksByUserId(userId, sessionData),
+        feeFinesRepository.getAutomatedBlocksByUserId(userId, sessionData))
+        .map(cf -> {
+          var manualBlocks = (JsonObject) cf.resultAt(0);
+          var automatedBlocks = (JsonObject) cf.resultAt(1);
+          var patronStatusFlags = extractPatronStatusFromBlocks(manualBlocks);
+          patronStatusFlags.addAll(extractPatronStatusFromAutomatedBlocks(automatedBlocks));
+          builder.patronStatus(patronStatusFlags);
+          var messages = new ArrayList<>(extractBlockMessages(manualBlocks));
+          messages.addAll(extractAutomatedBlockMessages(automatedBlocks));
           if (!messages.isEmpty()) {
             builder.screenMessage(messages);
           }
           return builder;
         });
 
-    return Future.all(getFeeAmountFuture, manualBlocksFuture).map(cf -> builder
+    return Future.all(getFeeAmountFuture, blocksFuture).map(cf -> builder
             .language(patronStatus.getLanguage())
             .transactionDate(OffsetDateTime.now(clock))
             .institutionId(patronStatus.getInstitutionId())
@@ -475,39 +504,118 @@ public class PatronRepository {
   }
 
 
-  private PatronInformationResponseBuilder buildPatronStatus(JsonObject blocks,
+  private PatronInformationResponseBuilder buildPatronStatus(JsonObject manualBlocks,
+      JsonObject automatedBlocks,
       PatronInformationResponseBuilder builder) {
-    final EnumSet<PatronStatus> patronStatus = extractPatronStatusFromBlocks(blocks);
+    var patronStatus = extractPatronStatusFromBlocks(manualBlocks);
+    patronStatus.addAll(extractPatronStatusFromAutomatedBlocks(automatedBlocks));
 
     if (!patronStatus.isEmpty()) {
-      builder.screenMessage(extractBlockMessages(blocks));
+      var messages = new ArrayList<>(extractBlockMessages(manualBlocks));
+      messages.addAll(extractAutomatedBlockMessages(automatedBlocks));
+      builder.screenMessage(messages);
     }
 
     return builder.patronStatus(patronStatus);
   }
 
+  private static EnumSet<PatronStatus> extractPatronStatusFromAutomatedBlocks(JsonObject blocks) {
+    final var patronStatus = EnumSet.noneOf(PatronStatus.class);
+
+    if (blocks != null) {
+      blocks.getJsonArray("automatedPatronBlocks", new JsonArray()).stream()
+          .map(o -> (JsonObject) o)
+          .map(PatronRepository::toAutomatedBlockStatusFlags)
+          .forEach(patronStatus::addAll);
+    }
+
+    return patronStatus;
+  }
+
+  private static EnumSet<PatronStatus> toAutomatedBlockStatusFlags(JsonObject jo) {
+    var flags = toBlockStatusFlags(
+        jo.getBoolean("blockBorrowing", FALSE),
+        jo.getBoolean("blockRenewals", FALSE),
+        jo.getBoolean("blockRequests", FALSE));
+    flags.addAll(toConditionStatusFlags(jo.getString("patronBlockConditionId")));
+    return flags;
+  }
+
+  /**
+   * Maps a FOLIO patron-block-condition id to the informational SIP2 patron status
+   * positions. Only the six seed conditions defined by mod-patron-blocks have a mapping.
+   * SIP2 positions 7 (too many renewals), 8 (too many claims returned) and 13 (too many
+   * items billed) have no corresponding FOLIO automated-block condition and are never set.
+   */
+  private static EnumSet<PatronStatus> toConditionStatusFlags(String conditionId) {
+    if (conditionId == null) {
+      return EnumSet.noneOf(PatronStatus.class);
+    }
+    return switch (conditionId) {
+      case CONDITION_MAX_ITEMS_CHARGED_OUT -> EnumSet.of(TOO_MANY_ITEMS_CHARGED);
+      case CONDITION_MAX_OVERDUE_ITEMS -> EnumSet.of(TOO_MANY_ITEMS_OVERDUE);
+      case CONDITION_MAX_OVERDUE_RECALLS,
+          CONDITION_RECALL_OVERDUE_BY_MAX_DAYS -> EnumSet.of(RECALL_OVERDUE);
+      case CONDITION_MAX_LOST_ITEMS -> EnumSet.of(TOO_MANY_ITEMS_LOST);
+      case CONDITION_MAX_FEE_FINE_BALANCE ->
+          EnumSet.of(EXCESSIVE_OUTSTANDING_FINES, EXCESSIVE_OUTSTANDING_FEES);
+      default -> EnumSet.noneOf(PatronStatus.class);
+    };
+  }
+
+  protected static List<String> extractAutomatedBlockMessages(JsonObject blocks) {
+    if (blocks == null) {
+      return Collections.emptyList();
+    }
+
+    return blocks.getJsonArray("automatedPatronBlocks", new JsonArray()).stream()
+        .map(o -> (JsonObject) o)
+        .filter(PatronRepository::hasAnyAutomatedBlock)
+        .map(PatronRepository::resolveAutomatedBlockMessage)
+        .toList();
+  }
+
+  private static boolean hasAnyAutomatedBlock(JsonObject jo) {
+    return jo.getBoolean("blockBorrowing", FALSE)
+        || jo.getBoolean("blockRenewals", FALSE)
+        || jo.getBoolean("blockRequests", FALSE);
+  }
+
+  private static String resolveAutomatedBlockMessage(JsonObject jo) {
+    var message = jo.getString("message");
+    return StringUtils.isNotBlank(message) ? message : MESSAGE_BLOCKED_PATRON;
+  }
+
   private static EnumSet<PatronStatus> extractPatronStatusFromBlocks(JsonObject blocks) {
-    final EnumSet<PatronStatus> patronStatus = EnumSet.noneOf(PatronStatus.class);
+    final var patronStatus = EnumSet.noneOf(PatronStatus.class);
 
     if (blocks != null && blocks.getInteger(FIELD_TOTAL_RECORDS, 0) > 0) {
       blocks.getJsonArray("manualblocks", new JsonArray()).stream()
           .map(o -> (JsonObject) o)
-          .forEach(jo -> {
-            if (jo.getBoolean("borrowing", FALSE)) {
-              patronStatus.addAll(EnumSet.allOf(PatronStatus.class));
-            } else {
-              if (jo.getBoolean("renewals", FALSE)) {
-                patronStatus.add(RENEWAL_PRIVILEGES_DENIED);
-              }
-              if (jo.getBoolean(FIELD_REQUESTS, FALSE)) {
-                patronStatus.add(HOLD_PRIVILEGES_DENIED);
-                patronStatus.add(RECALL_PRIVILEGES_DENIED);
-              }
-            }
-          });
+          .map(jo -> toBlockStatusFlags(
+              jo.getBoolean("borrowing", FALSE),
+              jo.getBoolean("renewals", FALSE),
+              jo.getBoolean(FIELD_REQUESTS, FALSE)))
+          .forEach(patronStatus::addAll);
     }
 
     return patronStatus;
+  }
+
+  private static EnumSet<PatronStatus> toBlockStatusFlags(
+      boolean borrowing, boolean renewals, boolean requests) {
+    var flags = EnumSet.noneOf(PatronStatus.class);
+    if (borrowing) {
+      flags.add(CHARGE_PRIVILEGES_DENIED);
+    }
+    if (renewals) {
+      flags.add(RENEWAL_PRIVILEGES_DENIED);
+    }
+    if (requests) {
+      flags.add(HOLD_PRIVILEGES_DENIED);
+      flags.add(RECALL_PRIVILEGES_DENIED);
+    }
+    return flags;
   }
 
   protected static List<String> extractBlockMessages(JsonObject blocks) {
@@ -521,11 +629,11 @@ public class PatronRepository {
             || jo.getBoolean("renewals", FALSE)
             || jo.getBoolean(FIELD_REQUESTS, FALSE))
         .map(jo -> {
-          final String patronMessage = jo.getString("patronMessage");
+          var patronMessage = jo.getString("patronMessage");
           if (StringUtils.isNotBlank(patronMessage)) {
             return patronMessage;
           }
-          final String desc = jo.getString("desc");
+          var desc = jo.getString("desc");
           if (StringUtils.isNotBlank(desc)) {
             return desc;
           }

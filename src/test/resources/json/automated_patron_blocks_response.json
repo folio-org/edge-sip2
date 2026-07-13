@@ -1,0 +1,9 @@
+{
+  "automatedPatronBlocks" : [ {
+    "patronBlockConditionId" : "3d7c52dc-c732-4223-8bf8-e5917801386f",
+    "blockBorrowing" : true,
+    "blockRenewals" : true,
+    "blockRequests" : true,
+    "message" : "Patron has too many items checked out"
+  } ]
+}

@@ -1,0 +1,32 @@
+{
+  "priority": 2,
+  "request": {
+    "method": "GET",
+    "urlPath": "/automated-patron-blocks/bec20636-fb68-41fd-84ea-2cf910673599",
+    "headers": {
+      "x-okapi-tenant": {
+        "equalTo": "testtenant"
+      },
+      "x-okapi-token": {
+        "equalTo": "test-jwt"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "automatedPatronBlocks": [
+        {
+          "patronBlockConditionId": "3d7c52dc-c732-4223-8bf8-e5917801386f",
+          "blockBorrowing": true,
+          "blockRenewals": false,
+          "blockRequests": false,
+          "message": "Patron has too many items checked out"
+        }
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
