@@ -44,6 +44,37 @@ class PatronStatusIT extends AbstractErrorDetectionEnabledTest {
               assertThat(response.getValidPatron()).isTrue();
               assertThat(response.getPatronStatus()).isEmpty();
               assertThat(response.getScreenMessage()).isNull();
+              assertThat(response.getFeeAmount()).isEqualTo("25.00");
+            }
+        ));
+  }
+
+  @Test
+  @WiremockStubs({
+      "/wiremock/stubs/mod-settings/200-get-locale(DE).json",
+      "/wiremock/stubs/mod-settings/200-get-settings.json",
+      "/wiremock/stubs/mod-login/201-post-acs-login.json",
+      "/wiremock/stubs/mod-users/200-get-user-by-patron-identifier.json",
+      "/wiremock/stubs/mod-users-bl/200-get-user-by-id.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-accounts-open-status.json",
+      "/wiremock/stubs/mod-fee-fines/200-get-manualblocks.json",
+  })
+  void getPatronStatus_noManualBlocks_feePaidWithGermanLocale() throws Throwable {
+    executeInSession(
+        successLoginExchange(),
+        sip2Exchange(
+            Sip2Commands.patronStatus(PATRON_BARCODE),
+            sip2Result -> {
+              assertSuccessfulExchange(sip2Result);
+
+              var respMsg = sip2Result.getResponseMessage();
+              assertThat(respMsg).startsWith("24");
+
+              var response = parseResponse(respMsg);
+              assertThat(response.getValidPatron()).isTrue();
+              assertThat(response.getPatronStatus()).isEmpty();
+              assertThat(response.getScreenMessage()).isNull();
+              assertThat(response.getFeeAmount()).isEqualTo("25.00");
             }
         ));
   }

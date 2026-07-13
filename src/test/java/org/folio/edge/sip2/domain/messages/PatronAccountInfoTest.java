@@ -3,21 +3,24 @@ package org.folio.edge.sip2.domain.messages;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.OffsetDateTime;
+import org.folio.edge.sip2.support.tags.UnitTest;
 import org.junit.jupiter.api.Test;
 
+@UnitTest
 public class PatronAccountInfoTest {
+
   @Test
   void testBasicValues() {
-    String id = "df5c1d2b-5ca0-4d1b-bc99-0aa1b8501d31";
-    String feeFineType = "7214a939-a355-411a-951a-6b8e84f6a9a8";
-    Double feeFineAmount = 50.0;
-    Double feeFineRemaining = 25.0;
-    Double feeFinePaid = 25.0;
-    String itemBarcode = "abc123";
-    OffsetDateTime feeCreationDate = OffsetDateTime.now();
-    String feeFineId = "fe9f31e9-149f-4e90-b5fa-b6e55e7641c0";
-    String feeDescription = "A fee";
-    String itemTitle = "Code Harder, Better, Faster, Stronger";
+    var id = "df5c1d2b-5ca0-4d1b-bc99-0aa1b8501d31";
+    var feeFineType = "7214a939-a355-411a-951a-6b8e84f6a9a8";
+    var feeFineAmount = "50.00";
+    var feeFineRemaining = "25.00";
+    var feeFinePaid = "25.00";
+    var itemBarcode = "abc123";
+    var feeCreationDate = OffsetDateTime.now();
+    var feeFineId = "fe9f31e9-149f-4e90-b5fa-b6e55e7641c0";
+    var feeDescription = "A fee";
+    var itemTitle = "Code Harder, Better, Faster, Stronger";
 
     PatronAccountInfo patronAccountInfo = new PatronAccountInfo();
     patronAccountInfo.setId(id);

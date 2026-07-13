@@ -1,5 +1,8 @@
 package org.folio.edge.sip2.utils;
 
+import static java.util.Locale.ROOT;
+import static java.util.Locale.filter;
+
 import io.micrometer.common.util.StringUtils;
 import io.vertx.core.json.JsonObject;
 import java.time.OffsetDateTime;
@@ -82,6 +85,11 @@ public final class Utils {
    */
   public static OffsetDateTime convertDateTime(OffsetDateTime instance, String timeZone) {
     return OffsetDateTime.ofInstant(instance.toInstant(), ZoneId.of(timeZone));
+  }
+
+  public static String getCurrencyValue(JsonObject actionJson, String field) {
+    var fieldValue = actionJson.getDouble(field);
+    return fieldValue != null ? String.format(ROOT, "%.2f", fieldValue) : null;
   }
 
   /**

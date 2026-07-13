@@ -13,18 +13,7 @@ public class RenewResponseParser extends Sip2ResponseParser<RenewResponse> {
   }
 
   @Override
-  public RenewResponse parse(String responseMessage) {
-    if (responseMessage == null || responseMessage.length() < 2) {
-      throw new IllegalArgumentException("Invalid response message");
-    }
-
-    position = 0;
-    var messageChars = responseMessage.toCharArray();
-    var statusCode = parseString(messageChars, 2);
-    if (!"30".equals(statusCode)) {
-      throw new IllegalArgumentException("Invalid message type: expected 30, got: " + statusCode);
-    }
-
+  public RenewResponse parseBody(char[] messageChars) {
     var builder = RenewResponse.builder();
     builder.ok(parseBoolean(messageChars));
     builder.renewalOk(parseBoolean(messageChars));
@@ -35,10 +24,7 @@ public class RenewResponseParser extends Sip2ResponseParser<RenewResponse> {
     var screenMessages = new ArrayList<String>();
     var printLines = new ArrayList<String>();
 
-    while (position < messageChars.length && messageChars[position] != delimiter) {
-      var fieldCode = parseFieldCode(messageChars);
-      var fieldValue = parseVariableLengthField(messageChars);
-
+    parseVariableLengthFields(messageChars, (fieldCode, fieldValue) -> {
       switch (fieldCode) {
         case "AO" -> builder.institutionId(fieldValue);
         case "AA" -> builder.patronIdentifier(fieldValue);
@@ -54,19 +40,18 @@ public class RenewResponseParser extends Sip2ResponseParser<RenewResponse> {
         case "BU" -> builder.transactionId(fieldValue);
         case "AF" -> screenMessages.add(fieldValue);
         case "AG" -> printLines.add(fieldValue);
-        default -> {
-          // Ignore unrecognized field codes
-        }
+        default -> doNothing();
       }
-
-      if (position < messageChars.length && messageChars[position] == delimiter) {
-        position++;
-      }
-    }
+    });
 
     builder.screenMessage(screenMessages);
     builder.printLine(printLines);
 
     return builder.build();
+  }
+
+  @Override
+  public int getCommandCode() {
+    return 30;
   }
 }

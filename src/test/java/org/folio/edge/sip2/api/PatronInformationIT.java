@@ -198,7 +198,7 @@ class PatronInformationIT extends AbstractErrorDetectionEnabledTest {
       .validPatron(true)
       .validPatronPassword(null)
       .currencyType(CurrencyType.EUR)
-      .feeAmount("25.0")
+      .feeAmount("25.00")
       .holdItems(List.of("testItemBarcode1"))
       .overdueItems(List.of())
       .chargedItems(List.of())

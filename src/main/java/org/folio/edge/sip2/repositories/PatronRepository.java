@@ -15,13 +15,14 @@ import static org.folio.edge.sip2.domain.messages.enumerations.Summary.RECALL_IT
 import static org.folio.edge.sip2.domain.messages.enumerations.Summary.UNAVAILABLE_HOLDS;
 import static org.folio.edge.sip2.utils.JsonUtils.getChildString;
 import static org.folio.edge.sip2.utils.Utils.DEFAULT_USER_LOANS_LIMIT;
+import static org.folio.edge.sip2.utils.Utils.getCurrencyValue;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import jakarta.inject.Inject;
 import java.math.BigDecimal;
-import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -403,12 +405,11 @@ public class PatronRepository {
   private PatronInformationResponseBuilder totalAmount(
       SessionData sessionData, JsonObject jo,
       PatronInformationResponseBuilder builder) {
-    Float total;
     if (jo != null) {
       final JsonArray arr = jo.getJsonArray(FIELD_ACCOUNTS);
-      total = getTotalRemaining(arr);
+      String total = getTotalRemaining(arr);
       log.debug(sessionData, "Total is {}", total);
-      return builder.feeAmount(total.toString());
+      return builder.feeAmount(total);
     }
     return null;
   }
@@ -418,19 +419,19 @@ public class PatronRepository {
       PatronStatusResponseBuilder builder) {
 
     final JsonArray arr = jo.getJsonArray(FIELD_ACCOUNTS);
-    Float total = getTotalRemaining(arr);
+    String total = getTotalRemaining(arr);
     log.debug(sessionData, "Total is {}", total);
-    return builder.feeAmount(total.toString());
+    return builder.feeAmount(total);
   }
 
-  protected static Float getTotalRemaining(JsonArray accounts) {
+  protected static String getTotalRemaining(JsonArray accounts) {
     BigDecimal total = BigDecimal.ZERO;
     for (int i = 0; i < accounts.size(); i++) {
       BigDecimal bdValue = BigDecimal.valueOf(accounts.getJsonObject(i)
           .getFloat(FIELD_REMAINING));
       total = total.add(bdValue);
     }
-    return total.round(MathContext.DECIMAL32).floatValue();
+    return total.setScale(2, RoundingMode.HALF_UP).toPlainString();
   }
 
 
@@ -753,10 +754,9 @@ public class PatronRepository {
       if (!"Open".equalsIgnoreCase(status) || (feeFineRemaining != null && feeFineRemaining <= 0)) {
         continue;
       }
-      Double feeFineAmount = jo.getNumber("amount") != null
-          ? jo.getNumber("amount").doubleValue() : null;
-      patronAccount.setFeeFineAmount(feeFineAmount);
-      patronAccount.setFeeFineRemaining(feeFineRemaining);
+      patronAccount.setFeeFineAmount(getCurrencyValue(jo, "amount"));
+      patronAccount.setFeeFineRemaining(feeFineRemaining != null
+          ? String.format(Locale.ROOT, "%.2f", feeFineRemaining) : null);
       patronAccount.setItemBarcode(jo.getString(FIELD_BARCODE));
       patronAccount.setId(jo.getString("id"));
       patronAccount.setFeeFineId(jo.getString("feeFineId"));

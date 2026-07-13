@@ -2,6 +2,7 @@ package org.folio.edge.sip2.repositories;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static org.folio.edge.sip2.utils.Utils.getCurrencyValue;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
@@ -48,7 +49,6 @@ public class FeeFinesRepository {
   private final UsersRepository usersRepository;
   private Clock clock;
 
-
   @Inject
   FeeFinesRepository(IResourceProvider<IRequestData> resourceProvider,
       UsersRepository usersRepository,
@@ -92,9 +92,6 @@ public class FeeFinesRepository {
         .map(IResource::getResource);
   }
 
-
-
-
   /**
    * Get a patron's total fee amount.
    *
@@ -120,7 +117,6 @@ public class FeeFinesRepository {
         .otherwise(() -> null)
         .map(IResource::getResource);
   }
-
 
   /**
    * Get a patron's account.
@@ -452,7 +448,7 @@ public class FeeFinesRepository {
                 patronAccountInfo.setId(accountJson.getString("id"));
                 patronAccountInfo.setItemBarcode(accountJson.getString("barcode"));
                 patronAccountInfo.setFeeFineId(accountJson.getString("feeFineId"));
-                patronAccountInfo.setFeeFineAmount(accountJson.getDouble("amount"));
+                patronAccountInfo.setFeeFineAmount(getCurrencyValue(accountJson, "amount"));
                 String accountDate = getDateFromAccountJson(accountJson);
                 patronAccountInfo.setFeeCreationDate(accountDate != null
                     ? OffsetDateTime.parse(accountDate) : null);
@@ -564,8 +560,8 @@ public class FeeFinesRepository {
         String accountId = actionJson.getString("accountId");
         for (PatronAccountInfo patronAccountInfo : patronAccountInfoList) {
           if (patronAccountInfo.getId().equals(accountId)) {
-            patronAccountInfo.setFeeFineRemaining(actionJson.getDouble("balance"));
-            patronAccountInfo.setFeeFinePaid(actionJson.getDouble("amountAction"));
+            patronAccountInfo.setFeeFineRemaining(getCurrencyValue(actionJson, "balance"));
+            patronAccountInfo.setFeeFinePaid(getCurrencyValue(actionJson, "amountAction"));
             break;
           }
         }
