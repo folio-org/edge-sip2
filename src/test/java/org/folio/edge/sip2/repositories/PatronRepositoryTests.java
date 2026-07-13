@@ -2783,7 +2783,7 @@ public class PatronRepositoryTests {
         testContext.succeeding(patronStatusResponse -> testContext.verify(() -> {
           assertNotNull(patronStatusResponse);
           assertEquals(true, patronStatusResponse.getValidPatron());
-          assertEquals(feeAmount.toString(), patronStatusResponse.getFeeAmount());
+          assertEquals("34.50", patronStatusResponse.getFeeAmount());
           assertEquals("Joe Zee Blow", patronStatusResponse.getPersonalName());
           assertEquals(EnumSet.of(CHARGE_PRIVILEGES_DENIED, RENEWAL_PRIVILEGES_DENIED,
               RECALL_PRIVILEGES_DENIED, HOLD_PRIVILEGES_DENIED, TOO_MANY_ITEMS_CHARGED),
