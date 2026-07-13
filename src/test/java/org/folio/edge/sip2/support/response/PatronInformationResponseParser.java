@@ -1,12 +1,8 @@
 package org.folio.edge.sip2.support.response;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import org.folio.edge.sip2.domain.messages.enumerations.CurrencyType;
-import org.folio.edge.sip2.domain.messages.enumerations.Language;
-import org.folio.edge.sip2.domain.messages.enumerations.PatronStatus;
 import org.folio.edge.sip2.domain.messages.responses.PatronInformationResponse;
-import org.folio.edge.sip2.parser.LanguageMapper;
 
 public class PatronInformationResponseParser extends Sip2ResponseParser<PatronInformationResponse> {
 
@@ -15,20 +11,9 @@ public class PatronInformationResponseParser extends Sip2ResponseParser<PatronIn
   }
 
   @Override
-  public PatronInformationResponse parse(String responseMessage) {
-    if (responseMessage == null || responseMessage.length() < 2) {
-      throw new IllegalArgumentException("Invalid response message");
-    }
-
-    position = 0;
-    var messageChars = responseMessage.toCharArray();
-    var statusCode = parseString(messageChars, 2);
-    if (!"64".equals(statusCode)) {
-      throw new IllegalArgumentException("Invalid message type: expected 64, got: " + statusCode);
-    }
-
+  public PatronInformationResponse parseBody(char[] messageChars) {
     var builder = PatronInformationResponse.builder();
-    builder.patronStatus(parsePatronStatus(messageChars, 14));
+    builder.patronStatus(parsePatronStatuses(messageChars));
     builder.language(parseLanguage(messageChars));
     builder.transactionDate(parseDateTime(messageChars));
     builder.holdItemsCount(parseInteger(messageChars, 4));
@@ -47,10 +32,7 @@ public class PatronInformationResponseParser extends Sip2ResponseParser<PatronIn
     var screenMessages = new ArrayList<String>();
     var printLines = new ArrayList<String>();
 
-    while (position < messageChars.length && messageChars[position] != delimiter) {
-      var fieldCode = parseFieldCode(messageChars);
-      var fieldValue = parseVariableLengthField(messageChars);
-
+    parseVariableLengthFields(messageChars, (fieldCode, fieldValue) -> {
       switch (fieldCode) {
         case "AO" -> builder.institutionId(fieldValue);
         case "AA" -> builder.patronIdentifier(fieldValue);
@@ -73,15 +55,9 @@ public class PatronInformationResponseParser extends Sip2ResponseParser<PatronIn
         case "CQ" -> builder.validPatronPassword(parseBoolean(fieldValue));
         case "FU" -> builder.borrowerType(fieldValue);
         case "FV" -> builder.borrowerTypeDescription(fieldValue);
-        default -> {
-          // Ignore unrecognized field codes
-        }
+        default -> doNothing();
       }
-
-      if (position < messageChars.length && messageChars[position] == delimiter) {
-        position++;
-      }
-    }
+    });
 
     builder.holdItems(holdItems);
     builder.overdueItems(overdueItems);
@@ -95,26 +71,8 @@ public class PatronInformationResponseParser extends Sip2ResponseParser<PatronIn
     return builder.build();
   }
 
-  private EnumSet<PatronStatus> parsePatronStatus(char[] messageChars, int length) {
-    if (position + length > messageChars.length) {
-      return EnumSet.noneOf(PatronStatus.class);
-    }
-
-    var statuses = EnumSet.noneOf(PatronStatus.class);
-    var statusValues = PatronStatus.values();
-
-    for (int i = 0; i < length && i < statusValues.length; i++) {
-      if (messageChars[position + i] == 'Y') {
-        statuses.add(statusValues[i]);
-      }
-    }
-
-    position += length;
-    return statuses;
-  }
-
-  private Language parseLanguage(char[] messageChars) {
-    var langCode = parseString(messageChars, 3);
-    return LanguageMapper.find(langCode).getLanguage();
+  @Override
+  public int getCommandCode() {
+    return 64;
   }
 }

@@ -5,6 +5,7 @@ import static java.lang.String.format;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
@@ -135,6 +136,7 @@ public class SessionData {
     var random = new SecureRandom();
     return format("%06d%s", random.nextInt(1000000), "/sip2");
   }
+
 
   /**
    * Sets the tenant for the session and logs the change.

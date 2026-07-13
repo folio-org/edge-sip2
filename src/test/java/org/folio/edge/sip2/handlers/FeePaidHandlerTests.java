@@ -12,7 +12,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +28,6 @@ import org.folio.edge.sip2.parser.Command;
 import org.folio.edge.sip2.repositories.FeeFinesRepository;
 import org.folio.edge.sip2.session.SessionData;
 import org.folio.edge.sip2.support.tags.UnitTest;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -41,44 +39,35 @@ class FeePaidHandlerTests {
 
   private final FreemarkerRepository freemarkerRepository = new FreemarkerRepository();
 
-  @AfterEach
-  void tearDown() {
-    System.clearProperty("sip2TemplateLocale");
-  }
-
   @Test
   void canPayFeeWithHandler(Vertx vertx,
       VertxTestContext testContext,
       @Mock FeeFinesRepository mockFeeFinesRepository) {
 
-    final String patronIdentifier = "1029384756";
-    final String accountIdentifier = "c78489bd-4d1b-4e4f-87d3-caa915946aa4";
-    final String feeFineIdentifier = "9ffed8e5-d1b2-4857-a07b-30199204783d";
-    final String transactionId = "7e15ba2d-cc85-4226-963d-d6c7d5c03f26";
-    final double feeAmount = 66.67;
-    final String itemBarcode = "a32451";
-    final List<PatronAccountInfo> patronAccountInfoList = new ArrayList<>();
-    final PatronAccountInfo patronAccountInfo = new PatronAccountInfo();
-    final String feeFineCreationDate = "2023-11-13T10:15:02+01:00";
-    final double feeRemaining = 3.33;
-    final String feeRemainingString = String.format(Locale.ROOT, "%.2f", feeRemaining);
-    final String feeAmountString = String.format(Locale.ROOT, "%.2f", feeAmount);
+    var accountIdentifier = "c78489bd-4d1b-4e4f-87d3-caa915946aa4";
+    var feeFineIdentifier = "9ffed8e5-d1b2-4857-a07b-30199204783d";
+
+    var patronAccountInfo = new PatronAccountInfo();
+    var feeFineCreationDate = "2023-11-13T10:15:02+01:00";
 
     patronAccountInfo.setId(accountIdentifier);
-    patronAccountInfo.setFeeFinePaid(66.67);
-    patronAccountInfo.setFeeFineAmount(70.0);
-    patronAccountInfo.setFeeFineRemaining(3.33);
-    patronAccountInfo.setItemBarcode(itemBarcode);
+    patronAccountInfo.setFeeFinePaid("66.67");
+    patronAccountInfo.setFeeFineAmount("70.00");
+    patronAccountInfo.setFeeFineRemaining("3.33");
+    patronAccountInfo.setItemBarcode("a32451");
     patronAccountInfo.setFeeFineId(feeFineIdentifier);
     patronAccountInfo.setFeeCreationDate(OffsetDateTime.parse(feeFineCreationDate));
 
+    var patronAccountInfoList = new ArrayList<PatronAccountInfo>();
     patronAccountInfoList.add(patronAccountInfo);
 
-    final Clock clock = TestUtils.getUtcFixedClock();
+    var clock = TestUtils.getUtcFixedClock();
+    var sessionData = TestUtils.getMockedSessionData();
 
-    final SessionData sessionData = TestUtils.getMockedSessionData();
-
-    final FeePaid feePaid = FeePaid.builder()
+    var patronIdentifier = "1029384756";
+    var transactionId = "7e15ba2d-cc85-4226-963d-d6c7d5c03f26";
+    var feeAmountString = String.format(Locale.ROOT, "%.2f", 66.67);
+    var feePaid = FeePaid.builder()
         .institutionId("diku")
         .patronIdentifier(patronIdentifier)
         .transactionId(transactionId)
@@ -97,10 +86,11 @@ class FeePaidHandlerTests {
         .build()
       ));
 
-    final FeePaidHandler handler = new FeePaidHandler(mockFeeFinesRepository,
+    var handler = new FeePaidHandler(mockFeeFinesRepository,
         freemarkerRepository.getFreemarkerTemplate(Command.FEE_PAID_RESPONSE));
 
-    final String expectedString = "38" + "Y"
+    var feeRemainingString = String.format(Locale.ROOT, "%.2f", 3.33);
+    var expectedString = "38" + "Y"
         + TestUtils.getFormattedLocalDateTime(OffsetDateTime.now(clock))
         + "AO" + "diku" + "|" + "AA" + patronIdentifier + "|"
         + "BK" + transactionId + "|"
@@ -126,23 +116,21 @@ class FeePaidHandlerTests {
   }
 
   @Test
-  void renderFeePaidResponse_positive_sip2LocaleSystemPropertyIsRespected() {
-    System.setProperty("sip2TemplateLocale", "de-DE");
-    var result = renderFeePaidResponse(new FreemarkerRepository());
-    assertThat(result).contains("FA0,01", "FG0,05");
-  }
-
-  @Test
-  void renderFeePaidResponse_positive_sip2LocaleIsInvalid() {
-    System.setProperty("sip2TemplateLocale", "not_a_locale");
-    var result = renderFeePaidResponse(new FreemarkerRepository());
-    assertThat(result).contains("FA0.01", "FG0.05");
+  void renderFeePaidResponse_positive_germanJvmLocale_stillProducesDotDecimal() {
+    var originalLocale = Locale.getDefault();
+    try {
+      Locale.setDefault(Locale.GERMANY);
+      var result = renderFeePaidResponse(new FreemarkerRepository());
+      assertThat(result).contains("FA0.01", "FG0.05");
+    } finally {
+      Locale.setDefault(originalLocale);
+    }
   }
 
   private String renderFeePaidResponse(FreemarkerRepository repo) {
     var account = new PatronAccountInfo();
-    account.setFeeFineRemaining(0.01);
-    account.setFeeFinePaid(0.05);
+    account.setFeeFineRemaining("0.01");
+    account.setFeeFinePaid("0.05");
 
     var response = FeePaidResponse.builder()
         .paymentAccepted(Boolean.TRUE)

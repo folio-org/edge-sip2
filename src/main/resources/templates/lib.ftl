@@ -683,7 +683,7 @@
 </#macro>
 
 <#macro feeRemaining value>
-  <@variableLengthCurrencyField id="FA" value=value/>
+  <@variableLengthField id="FA" value=value/>
 </#macro>
 
 <#macro accountItemIdentifier value>
@@ -707,7 +707,7 @@
 </#macro>
 
 <#macro feePaid value>
-  <@variableLengthCurrencyField id="FG" value=value/>
+  <@variableLengthField id="FG" value=value/>
 </#macro>
 
 <#macro pickupServicePoint value>
