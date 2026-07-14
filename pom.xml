@@ -58,12 +58,12 @@
     <commons-net.version>3.13.0</commons-net.version>
 
     <!-- 3rd party test library versions  -->
-    <rest-assured.version>6.0.0</rest-assured.version>
+    <rest-assured.version>6.0.1</rest-assured.version>
     <junit-bom.version>6.1.2</junit-bom.version>
     <mockito-bom.version>5.23.0</mockito-bom.version>
     <testcontainers-bom.version>2.0.5</testcontainers-bom.version>
     <wiremock.version>3.13.2</wiremock.version>
-    <bcpkix-jdk15to18.version>1.84</bcpkix-jdk15to18.version>
+    <bcpkix-jdk15to18.version>1.85</bcpkix-jdk15to18.version>
     <assertj-core.version>3.27.7</assertj-core.version>
 
     <!-- Maven plugin versions -->
