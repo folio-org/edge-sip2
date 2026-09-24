@@ -34,6 +34,26 @@
     {
       "id": "settings",
       "version": "1.2"
+    },
+    {
+      "id": "users-bl",
+      "version": "6.1"
+    },
+    {
+      "id": "patron-pin",
+      "version": "1.0"
+    },
+    {
+      "id": "holdings-storage",
+      "version": "8.2"
+    },
+    {
+      "id": "inventory",
+      "version": "14.4"
+    },
+    {
+      "id": "automated-patron-blocks",
+      "version": "0.1"
     }
   ],
   "permissionSets": [
