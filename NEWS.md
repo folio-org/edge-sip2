@@ -1,3 +1,10 @@
+## 4.0.3 2026-09-24
+
+### Dependencies
+* Add missing dependencies ([SIP2-325](https://folio-org.atlassian.net/browse/SIP2-325))
+
+---
+
 ## 4.0.2 2026-06-19
 
 ### Bug fixes
