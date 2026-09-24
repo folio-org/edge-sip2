@@ -16,7 +16,8 @@ public class MinioContainerExtension implements BeforeAllCallback, AfterAllCallb
   public static final String TEST_AWS_REGION = "us-west-1";
   public static final String TEST_BUCKET_NAME = "test-sip2";
   private static final DockerImageName IMAGE_NAME =
-      DockerImageName.parse("minio/minio:RELEASE.2023-09-04T19-57-37Z");
+      DockerImageName.parse("quay.io/minio/minio:RELEASE.2025-07-23T15-54-02Z")
+          .asCompatibleSubstituteFor("minio/minio");
 
   @Container
   private static final MinIOContainer MINIO_CONTAINER = new MinIOContainer(IMAGE_NAME)
