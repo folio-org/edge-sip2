@@ -1,6 +1,9 @@
 ## 4.1.0-SNAPSHOT In progress
 
-## Bug fixes
+### Features
+* Upgrade from Java 21 to Java 25 ([SIP2-330](https://folio-org.atlassian.net/browse/SIP2-330))
+
+### Bug fixes
 * Fix manual patron blocks not reflected in SIP2 Patron Status Response (24) ([SIP2-310](https://folio-org.atlassian.net/browse/SIP2-310))
 * Use GitHub Workflows for Maven ([SIP2-307](https://folio-org.atlassian.net/browse/SIP2-307))
 * Fix misleading log messages when token refresh fails and recovery login is used([SIP2-316](https://folio-org.atlassian.net/browse/SIP2-316))
